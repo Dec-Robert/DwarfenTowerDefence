@@ -13,13 +13,13 @@ public class HexMapGenerator : MonoBehaviour
     public int chunkRadius = 3;
 
     [Header("Punkty Strategiczne")]
-    [Tooltip("Punkt docelowy w Bazie (Koniec gry).")]
+    [Tooltip("Punkt na krawędzi Chunku 0, gdzie kończy się droga z sąsiedniego chunku.")]
     public Vector2Int baseRoadEndLocal = new Vector2Int(3, -2);
 
     [Header("Materiały")]
-    public Material exitMaterial;   // Wyjście z chunku (Brama wyjściowa)
-    public Material enterMaterial;  // Wejście do chunku (Brama wejściowa / Start)
-    public Material roadMaterial;   // Zwykła droga
+    public Material exitMaterial; // Materiał końca (Baza)
+    public Material enterMaterial; // Materiał startu (Spawner)
+    public Material roadMaterial;
 
     [Header("Wymiary")]
     public float hexSize = 1f;
@@ -29,15 +29,15 @@ public class HexMapGenerator : MonoBehaviour
     private Transform mapHolder;
     private MaterialPropertyBlock propBlock;
 
-    // Klucz: ChunkCoord, Wartość: Dane o ścieżce
     private Dictionary<Vector2Int, ChunkPathData> chunkPaths = new Dictionary<Vector2Int, ChunkPathData>();
+    private Dictionary<Vector2Int, int> movementCostMap = new Dictionary<Vector2Int, int>();
+    private Vector2Int spawnerChunkCoord;
 
-    // Struktura danych
     struct ChunkPathData
     {
-        public Vector2Int entryHex; // Punkt startowy wewnątrz chunku
-        public Vector2Int exitHex;  // Punkt końcowy wewnątrz chunku
-        public HashSet<Vector2Int> internalPath; // Zbiór heksów drogi
+        public Vector2Int entryHex;
+        public Vector2Int exitHex;
+        public HashSet<Vector2Int> internalPath;
     }
 
     private void Start()
@@ -56,21 +56,19 @@ public class HexMapGenerator : MonoBehaviour
         mapHolder = new GameObject("World Map").transform;
         mapHolder.parent = transform;
 
-        // 1. Oblicz logiczną ścieżkę
+        movementCostMap.Clear();
+
         CalculateSpawnerChunkLocation();
         CalculateChunkPathAndConnections();
 
-        // 2. Generuj heksy
         for (int x = 0; x <= mapWidth; x++)
         {
             for (int y = mapMinY; y <= mapMaxY; y++)
             {
                 int chunkQ = x;
                 int chunkR = y - (x / 2);
-
                 int centerQ = chunkQ * (2 * chunkRadius + 1) + chunkR * chunkRadius;
                 int centerR = chunkQ * -chunkRadius + chunkR * (chunkRadius + 1);
-
                 CreateChunk(chunkQ, chunkR, centerQ, centerR);
             }
         }
@@ -90,7 +88,6 @@ public class HexMapGenerator : MonoBehaviour
         bool hasPath = chunkPaths.ContainsKey(chunkCoord);
         if (hasPath) pathData = chunkPaths[chunkCoord];
 
-        // Tło chunku
         Color chunkColor = ((chunkID_Q + chunkID_R) % 2 == 0) ? new Color(0.8f, 0.8f, 0.8f) : new Color(0.6f, 0.6f, 0.6f);
         if (isBaseChunk) chunkColor = new Color(0.3f, 0.7f, 0.3f);
         if (isSpawnerChunk) chunkColor = new Color(0.8f, 0.3f, 0.3f);
@@ -100,7 +97,6 @@ public class HexMapGenerator : MonoBehaviour
             int finalQ = centerGlobalQ + localQ;
             int finalR = centerGlobalR + localR;
             Vector2Int localCoord = new Vector2Int(localQ, localR);
-
             Vector3 worldPos = AxialToWorld(finalQ, finalR);
             GameObject hex = Instantiate(hexPrefab, worldPos, Quaternion.identity);
             hex.name = $"Hex_{finalQ}_{finalR}";
@@ -108,53 +104,49 @@ public class HexMapGenerator : MonoBehaviour
 
             bool usesCustomMaterial = false;
 
-            if (hasPath)
+            // --- SPECJALNA LOGIKA DLA BAZY (CHUNK 0) ---
+            if (isBaseChunk)
             {
-                // --- CASE 1: SPAWNER START (Tylko środek spawnera) ---
+                // W bazie NIE rysujemy żadnych dróg wewnętrznych.
+                // Jedynie oznaczamy punkt styku, aby wizualnie pasował do drogi z sąsiedniego chunku.
+                if (localCoord == baseRoadEndLocal)
+                {
+                    ApplySpecialHex(hex, exitMaterial, "Road end"); // "Road end" jako punkt docelowy bazy
+                    usesCustomMaterial = true;
+                }
+            }
+            // --- LOGIKA DLA POZOSTAŁYCH CHUNKÓW ZE ŚCIEŻKĄ ---
+            else if (hasPath)
+            {
+                bool isEntry = (localCoord == pathData.entryHex);
+                bool isExit = (localCoord == pathData.exitHex);
+                bool isPath = (pathData.internalPath != null && pathData.internalPath.Contains(localCoord));
+
+                // 1. Spawner Start (Punkt startowy)
                 if (isSpawnerChunk && localCoord == Vector2Int.zero)
                 {
-                    // To jest jedyny Road Start
                     ApplySpecialHex(hex, enterMaterial, "Road start");
                     hex.transform.localScale *= 1.2f;
                     usesCustomMaterial = true;
                 }
-                // --- CASE 2: BASE END (Tylko punkt docelowy bazy) ---
-                else if (isBaseChunk && localCoord == baseRoadEndLocal)
+                // 2. Drogi, wejścia i wyjścia w chunkach
+                else if (isEntry || isExit || isPath)
                 {
-                    // To jest jedyny Road End
-                    ApplySpecialHex(hex, exitMaterial, "Road end");
+                    Material matToUse = roadMaterial;
+                    string tagToUse = "Road";
+
+                    if (isEntry && !isSpawnerChunk) matToUse = enterMaterial;
+                    if (isExit) matToUse = roadMaterial; // Wyjścia są zwykłą drogą, chyba że to koniec gry (obsłużony wyżej w BaseChunk)
+
+                    ApplySpecialHex(hex, matToUse, tagToUse);
                     usesCustomMaterial = true;
-                }
-                // --- CASE 3: DROGA WEWNĘTRZNA I BRAMY ---
-                else
-                {
-                    // Sprawdzamy czy heks jest częścią ścieżki
-                    bool isEntry = (localCoord == pathData.entryHex);
-                    bool isExit = (localCoord == pathData.exitHex);
-                    bool isPath = (pathData.internalPath != null && pathData.internalPath.Contains(localCoord));
-
-                    if (isEntry || isExit || isPath)
-                    {
-                        // Domyślnie materiał drogi
-                        Material matToUse = roadMaterial;
-                        string tagToUse = "Road";
-
-                        // Jeśli to brama wejściowa/wyjściowa na krawędzi (poza Startem/Koniecem gry)
-                        // Baza nie powinna mieć "Enter Material" jeśli nie chcemy, ale zaznaczmy bramy:
-                        if (isEntry && !isSpawnerChunk) matToUse = enterMaterial;
-                        if (isExit && !isBaseChunk) matToUse = exitMaterial;
-
-                        ApplySpecialHex(hex, matToUse, tagToUse);
-                        usesCustomMaterial = true;
-                    }
                 }
             }
 
-            // --- STANDARDOWE TAGOWANIE KRAWĘDZI ---
+            // Standardowe tagi krawędzi i kolory tła
             if (!usesCustomMaterial)
             {
                 HandleTags(hex, localQ, localR, chunkRadius);
-
                 Renderer r = hex.GetComponentInChildren<Renderer>();
                 if (r != null)
                 {
@@ -168,9 +160,18 @@ public class HexMapGenerator : MonoBehaviour
 
     void CalculateChunkPathAndConnections()
     {
-        List<Vector2Int> path = FindPathAStar(spawnerChunkCoord, Vector2Int.zero);
+        // 1. Znajdź sąsiedni chunk, który jest najbliżej punktu 'baseRoadEndLocal' w Bazie.
+        // To będzie nasz faktyczny cel podróży dla algorytmu A* (zamiast (0,0)).
+        Vector2Int gateChunk = FindNeighborChunkTouchingLocalHex(Vector2Int.zero, baseRoadEndLocal);
 
-        if (path == null || path.Count == 0) return;
+        // 2. Znajdź drogę od Spawnera do tego "Bramnego Chunku"
+        List<Vector2Int> path = FindPathAStar(spawnerChunkCoord, gateChunk);
+
+        if (path == null || path.Count == 0)
+        {
+            Debug.LogError("Nie znaleziono ścieżki między chunkami!");
+            return;
+        }
 
         for (int i = 0; i < path.Count; i++)
         {
@@ -178,53 +179,55 @@ public class HexMapGenerator : MonoBehaviour
             ChunkPathData data = new ChunkPathData();
             data.internalPath = new HashSet<Vector2Int>();
 
-            // --- KROK 1: Ustalenie punktów Entry i Exit ---
-
-            if (i == 0) // SPAWNER CHUNK
+            // --- A. ENTRY HEX ---
+            if (i == 0) // Spawner Chunk
             {
-                Vector2Int nextChunk = path[i + 1];
-
-                // ZMIANA: Startem jest ŚRODEK (0,0), a nie krawędź
-                data.entryHex = Vector2Int.zero;
-
-                // Wyjście w stronę następnego chunku
-                data.exitHex = FindHexFacingChunk(currentChunk, nextChunk);
+                data.entryHex = Vector2Int.zero; // Startujemy ze środka
             }
-            else if (i == path.Count - 1) // BASE CHUNK
+            else
             {
                 Vector2Int prevChunk = path[i - 1];
-
-                // Wejście od poprzedniego chunku
                 data.entryHex = FindHexFacingChunk(currentChunk, prevChunk);
-
-                // Wyjście to punkt docelowy w bazie
-                data.exitHex = baseRoadEndLocal;
             }
-            else // CHUNKI POŚREDNIE
-            {
-                Vector2Int prevChunk = path[i - 1];
-                Vector2Int nextChunk = path[i + 1];
 
-                data.entryHex = FindHexFacingChunk(currentChunk, prevChunk);
+            // --- B. EXIT HEX ---
+            if (i == path.Count - 1) // Ostatni Chunk (Ten stykający się z bazą)
+            {
+                // Tutaj kluczowa zmiana: Exit nie celuje w środek chunku (0,0).
+                // Exit celuje w KONKRETNY hex (baseRoadEndLocal) wewnątrz chunku (0,0).
+                Vector3 baseEndWorldPos = GetChunkCenterWorld(Vector2Int.zero) + AxialToWorld(baseRoadEndLocal.x, baseRoadEndLocal.y);
+                data.exitHex = FindHexClosestToWorldPos(currentChunk, baseEndWorldPos);
+            }
+            else // Chunki pośrednie
+            {
+                Vector2Int nextChunk = path[i + 1];
                 data.exitHex = FindHexFacingChunk(currentChunk, nextChunk);
             }
 
-            // --- KROK 2: Wyznaczenie drogi wewnątrz chunku (A*) ---
-            // Łączymy entryHex z exitHex
+            // --- C. INTERNAL PATH ---
             List<Vector2Int> localPath = FindLocalPath(data.entryHex, data.exitHex);
-            foreach (var hex in localPath)
+
+            // Fallback: Wydłużanie drogi
+            if (localPath.Count < 4 && path.Count > 1)
             {
-                data.internalPath.Add(hex);
+                if (data.entryHex != Vector2Int.zero && data.exitHex != Vector2Int.zero)
+                {
+                    List<Vector2Int> p1 = FindLocalPath(data.entryHex, Vector2Int.zero);
+                    List<Vector2Int> p2 = FindLocalPath(Vector2Int.zero, data.exitHex);
+                    if (p1.Count > 0 && p2.Count > 0)
+                    {
+                        localPath = p1;
+                        localPath.AddRange(p2.GetRange(1, p2.Count - 1));
+                    }
+                }
             }
 
+            foreach (var hex in localPath) data.internalPath.Add(hex);
             chunkPaths.Add(currentChunk, data);
         }
     }
 
-    // --- Reszta funkcji pomocniczych bez zmian ---
-    // (Dla kompletności kodu - kopiuj z poprzednich odpowiedzi jeśli potrzeba, 
-    //  ale kluczowe zmiany są powyżej)
-
+    // --- ALGORYTM A* LOKALNY ---
     List<Vector2Int> FindLocalPath(Vector2Int start, Vector2Int goal)
     {
         var frontier = new PriorityQueue<Vector2Int>();
@@ -240,10 +243,33 @@ public class HexMapGenerator : MonoBehaviour
 
             foreach (var next in GetHexNeighbors(current))
             {
+                // Bounds Check
                 int dist = (Mathf.Abs(next.x) + Mathf.Abs(next.y) + Mathf.Abs(next.x + next.y)) / 2;
-                if (dist > chunkRadius) continue; // Granica chunku
+                if (dist > chunkRadius) continue;
 
-                int newCost = costSoFar[current] + 1;
+                // Krawędzie tylko dla start/goal
+                if (dist == chunkRadius)
+                {
+                    if (next != start && next != goal) continue;
+                }
+
+                // Unikanie klastrów (wężyk)
+                bool createsCluster = false;
+                Vector2Int? trace = current;
+                while (trace != null)
+                {
+                    if (trace.Value != current)
+                    {
+                        if (HexDistance(next, trace.Value) == 1) { createsCluster = true; break; }
+                    }
+                    trace = cameFrom[trace.Value];
+                }
+                if (createsCluster) continue;
+
+                // Koszt
+                if (!movementCostMap.ContainsKey(next)) movementCostMap[next] = Random.Range(1, 5);
+                int newCost = costSoFar[current] + movementCostMap[next];
+
                 if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                 {
                     costSoFar[next] = newCost;
@@ -256,32 +282,46 @@ public class HexMapGenerator : MonoBehaviour
 
         List<Vector2Int> path = new List<Vector2Int>();
         if (!cameFrom.ContainsKey(goal)) return path;
-
         Vector2Int? curr = goal;
         while (curr != null) { path.Add(curr.Value); curr = cameFrom[curr.Value]; }
+        path.Reverse();
         return path;
     }
 
-    // --- Standardowe Helpery ---
+    // --- HELPERY ---
 
-    // (Zakładam, że te funkcje masz w kodzie z poprzedniej odpowiedzi,
-    //  są niezbędne do działania: FindPathAStar, FindHexFacingChunk, FindHexClosestToWorldPos, etc.)
+    // Nowa funkcja do znajdowania sąsiada bazy, który jest najbliżej punktu wejścia
+    Vector2Int FindNeighborChunkTouchingLocalHex(Vector2Int baseChunkCoord, Vector2Int localHexInBase)
+    {
+        Vector3 targetWorldPos = GetChunkCenterWorld(baseChunkCoord) + AxialToWorld(localHexInBase.x, localHexInBase.y);
 
-    Vector2Int spawnerChunkCoord; // Deklaracja dla kompilatora w tym kontekście
+        Vector2Int bestChunk = baseChunkCoord;
+        float minDst = float.MaxValue;
 
-    // Poniżej skrócone wersje brakujących metod, wklej je do klasy:
+        List<Vector2Int> neighbors = GetChunkNeighbors(baseChunkCoord);
+        foreach (var neighbor in neighbors)
+        {
+            float dst = Vector3.Distance(GetChunkCenterWorld(neighbor), targetWorldPos);
+            if (dst < minDst)
+            {
+                minDst = dst;
+                bestChunk = neighbor;
+            }
+        }
+        return bestChunk;
+    }
 
     Vector2Int FindHexFacingChunk(Vector2Int originChunk, Vector2Int targetChunk)
     {
         Vector3 targetPos = GetChunkCenterWorld(targetChunk);
         return FindHexClosestToWorldPos(originChunk, targetPos);
     }
+
     Vector2Int FindHexClosestToWorldPos(Vector2Int chunkCoord, Vector3 targetWorldPos)
     {
         Vector2Int best = Vector2Int.zero; float minD = float.MaxValue;
         Vector3 center = GetChunkCenterWorld(chunkCoord);
-        GenerateHexGridLogic(chunkRadius, (q, r) =>
-        {
+        GenerateHexGridLogic(chunkRadius, (q, r) => {
             if ((Mathf.Abs(q) + Mathf.Abs(r) + Mathf.Abs(q + r)) / 2 == chunkRadius)
             {
                 float d = Vector3.Distance(center + AxialToWorld(q, r), targetWorldPos);
@@ -290,6 +330,7 @@ public class HexMapGenerator : MonoBehaviour
         });
         return best;
     }
+
     Vector3 GetChunkCenterWorld(Vector2Int chunkCoord)
     {
         int cq = chunkCoord.x; int cr = chunkCoord.y;
@@ -297,17 +338,24 @@ public class HexMapGenerator : MonoBehaviour
         int centerR = cq * -chunkRadius + cr * (chunkRadius + 1);
         return AxialToWorld(centerQ, centerR);
     }
+
     List<Vector2Int> FindPathAStar(Vector2Int start, Vector2Int goal)
     {
         var frontier = new PriorityQueue<Vector2Int>(); frontier.Enqueue(start, 0);
         var cameFrom = new Dictionary<Vector2Int, Vector2Int?>(); cameFrom[start] = null;
         var costSoFar = new Dictionary<Vector2Int, int>(); costSoFar[start] = 0;
+
         while (frontier.Count > 0)
         {
-            var curr = frontier.Dequeue(); if (curr == goal) break;
+            var curr = frontier.Dequeue();
+            if (curr == goal) break;
+
             foreach (var next in GetChunkNeighbors(curr))
             {
                 if (next.x < 0 || next.x > mapWidth) continue;
+                // Ważne: Nie pozwól, aby ścieżka przeszła przez samą Bazę (0,0), chyba że to Baza jest celem (ale tu celem jest sąsiad)
+                if (next == Vector2Int.zero && goal != Vector2Int.zero) continue;
+
                 int newCost = costSoFar[curr] + 1;
                 if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                 {
@@ -320,18 +368,23 @@ public class HexMapGenerator : MonoBehaviour
         while (c != null) { path.Add(c.Value); c = cameFrom[c.Value]; }
         path.Reverse(); return path;
     }
+
     List<Vector2Int> GetChunkNeighbors(Vector2Int hex) { return GetHexNeighbors(hex); }
+
     List<Vector2Int> GetHexNeighbors(Vector2Int hex)
     {
         return new List<Vector2Int> { new Vector2Int(hex.x + 1, hex.y), new Vector2Int(hex.x + 1, hex.y - 1), new Vector2Int(hex.x, hex.y - 1), new Vector2Int(hex.x - 1, hex.y), new Vector2Int(hex.x - 1, hex.y + 1), new Vector2Int(hex.x, hex.y + 1) };
     }
+
     int HexDistance(Vector2Int a, Vector2Int b) { return (Mathf.Abs(a.x - b.x) + Mathf.Abs(a.x + a.y - b.x - b.y) + Mathf.Abs(a.y - b.y)) / 2; }
+
     void ApplySpecialHex(GameObject hex, Material mat, string tagName)
     {
         hex.tag = tagName;
         Renderer r = hex.GetComponentInChildren<Renderer>();
         if (r != null && mat != null) r.sharedMaterial = mat;
     }
+
     void CalculateSpawnerChunkLocation()
     {
         List<Vector2Int> c = new List<Vector2Int>(); int maxD = 0;
@@ -343,9 +396,30 @@ public class HexMapGenerator : MonoBehaviour
                 if (d > maxD) maxD = d;
             }
         spawnerChunkCoord = (c.Count > 0) ? c[Random.Range(0, c.Count)] : Vector2Int.zero;
-        if (c.Count == 0 && maxD > 0) { /* Fallback code for small maps */ }
+        if (spawnerChunkCoord == Vector2Int.zero && c.Count > 0) spawnerChunkCoord = c[0];
     }
-    void HandleTags(GameObject hex, int q, int r, int radius) { /* Logika krawędzi bez zmian */ }
+
+    void HandleTags(GameObject hex, int q, int r, int radius)
+    {
+        int dist = (Mathf.Abs(q) + Mathf.Abs(r) + Mathf.Abs(q + r)) / 2;
+        if (dist != radius) return;
+        int s = -q - r;
+        bool isCorner = false;
+        if (q == 0 && r == radius) isCorner = true;
+        else if (q == radius && r == 0) isCorner = true;
+        else if (q == radius && r == -radius) isCorner = true;
+        else if (q == 0 && r == -radius) isCorner = true;
+        else if (q == -radius && r == 0) isCorner = true;
+        else if (q == -radius && r == radius) isCorner = true;
+        if (isCorner) { hex.tag = "Chunk Corner"; return; }
+        if (r == radius) hex.tag = "Chunk edge 0";
+        else if (s == -radius) hex.tag = "Chunk edge 1";
+        else if (q == radius) hex.tag = "Chunk edge 2";
+        else if (r == -radius) hex.tag = "Chunk edge 3";
+        else if (s == radius) hex.tag = "Chunk edge 4";
+        else if (q == -radius) hex.tag = "Chunk edge 5";
+    }
+
     void GenerateHexGridLogic(int radius, System.Action<int, int> onPointGenerated)
     {
         for (int q = -radius; q <= radius; q++)
@@ -355,35 +429,12 @@ public class HexMapGenerator : MonoBehaviour
             for (int r = r1; r <= r2; r++) onPointGenerated(q, r);
         }
     }
+
     Vector3 AxialToWorld(int q, int r)
     {
         float size = hexSize + padding;
         float x = size * Mathf.Sqrt(3) * (q + r / 2f);
         float z = size * 3f / 2f * r;
         return new Vector3(x, 0, z);
-    }
-
-    // Wklej to NA SAMYM KOŃCU pliku, POZA klamrą klasy HexMapGenerator
-
-    public class PriorityQueue<T>
-    {
-        private List<KeyValuePair<T, int>> elements = new List<KeyValuePair<T, int>>();
-
-        public int Count => elements.Count;
-
-        public void Enqueue(T item, int priority)
-        {
-            elements.Add(new KeyValuePair<T, int>(item, priority));
-            // Sortujemy listę tak, aby element z najmniejszym priorytetem (kosztem) był pierwszy.
-            // To prosta implementacja dla celów edukacyjnych.
-            elements.Sort((x, y) => x.Value.CompareTo(y.Value));
-        }
-
-        public T Dequeue()
-        {
-            var item = elements[0].Key;
-            elements.RemoveAt(0);
-            return item;
-        }
     }
 }
