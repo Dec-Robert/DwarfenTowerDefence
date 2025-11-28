@@ -459,6 +459,7 @@ MonoBehaviour:
   mapMinY: -3
   mapMaxY: 3
   chunkRadius: 3
+  baseRoadEndLocal: {x: 3, y: -2}
   exitMaterial: {fileID: 2100000, guid: cff614c30f540a04f8227dd8e83f0747, type: 2}
   enterMaterial: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
   roadMaterial: {fileID: 2100000, guid: d75c9b64f7c92134ab819ad47fad24f6, type: 2}
