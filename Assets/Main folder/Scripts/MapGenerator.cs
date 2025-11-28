@@ -33,11 +33,12 @@ public class HexMapGenerator : MonoBehaviour
     private Dictionary<Vector2Int, int> movementCostMap = new Dictionary<Vector2Int, int>();
     private Vector2Int spawnerChunkCoord;
 
-    struct ChunkPathData
+    // ZMIANA: HashSet na List, aby zachować kolejność kroków
+    public struct ChunkPathData
     {
         public Vector2Int entryHex;
         public Vector2Int exitHex;
-        public HashSet<Vector2Int> internalPath;
+        public List<Vector2Int> internalPath;
     }
 
     private void Start()
@@ -177,7 +178,7 @@ public class HexMapGenerator : MonoBehaviour
         {
             Vector2Int currentChunk = path[i];
             ChunkPathData data = new ChunkPathData();
-            data.internalPath = new HashSet<Vector2Int>();
+            data.internalPath = new List<Vector2Int>();
 
             // --- A. ENTRY HEX ---
             if (i == 0) // Spawner Chunk
@@ -321,7 +322,8 @@ public class HexMapGenerator : MonoBehaviour
     {
         Vector2Int best = Vector2Int.zero; float minD = float.MaxValue;
         Vector3 center = GetChunkCenterWorld(chunkCoord);
-        GenerateHexGridLogic(chunkRadius, (q, r) => {
+        GenerateHexGridLogic(chunkRadius, (q, r) =>
+        {
             if ((Mathf.Abs(q) + Mathf.Abs(r) + Mathf.Abs(q + r)) / 2 == chunkRadius)
             {
                 float d = Vector3.Distance(center + AxialToWorld(q, r), targetWorldPos);
@@ -436,5 +438,39 @@ public class HexMapGenerator : MonoBehaviour
         float x = size * Mathf.Sqrt(3) * (q + r / 2f);
         float z = size * 3f / 2f * r;
         return new Vector3(x, 0, z);
+    }
+
+    // Nowa metoda do wyciągania pełnej trasy w koordynatach świata (Vector3)
+    public List<Vector3> GetGlobalWorldPath()
+    {
+        List<Vector3> fullWorldPath = new List<Vector3>();
+
+        // 1. Odtwarzamy kolejność chunków (musimy to zrobić ponownie, lub zapisać wcześniej w zmiennej)
+        // Dla uproszczenia obliczamy to tu szybko:
+        Vector2Int gateChunk = FindNeighborChunkTouchingLocalHex(Vector2Int.zero, baseRoadEndLocal);
+        List<Vector2Int> chunksOrder = FindPathAStar(spawnerChunkCoord, gateChunk);
+
+        if (chunksOrder == null) return fullWorldPath;
+
+        // 2. Iterujemy przez chunki i sklejamy ich wewnętrzne ścieżki
+        foreach (var chunkCoord in chunksOrder)
+        {
+            if (chunkPaths.ContainsKey(chunkCoord))
+            {
+                var data = chunkPaths[chunkCoord];
+                // Konwertujemy każdy hex lokalny na pozycję świata
+                foreach (var localHex in data.internalPath)
+                {
+                    Vector3 worldPos = GetChunkCenterWorld(chunkCoord) + AxialToWorld(localHex.x, localHex.y);
+                    fullWorldPath.Add(worldPos);
+                }
+            }
+        }
+
+        // 3. Dodajemy finalny punkt w bazie (baseRoadEndLocal)
+        Vector3 finalBasePos = GetChunkCenterWorld(Vector2Int.zero) + AxialToWorld(baseRoadEndLocal.x, baseRoadEndLocal.y);
+        fullWorldPath.Add(finalBasePos);
+
+        return fullWorldPath;
     }
 }

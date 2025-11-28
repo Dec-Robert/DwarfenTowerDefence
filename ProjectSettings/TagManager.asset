@@ -15,6 +15,7 @@ TagManager:
   - Chunk Corner
   - Spawner
   - Road
+  - Enemy
   layers:
   - Default
   - TransparentFX
