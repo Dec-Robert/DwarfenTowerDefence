@@ -4,7 +4,7 @@ public class SimpleBullet : MonoBehaviour
 {
     private Transform target;
     private float damage;
-    private float speed = 10f;
+    private float speed = 20f;
 
     public void Seek(Transform _target, float _damage)
     {
