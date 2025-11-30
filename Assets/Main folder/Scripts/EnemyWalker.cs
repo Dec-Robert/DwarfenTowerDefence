@@ -48,6 +48,7 @@ public class EnemyWalker : MonoBehaviour
     void ReachDestination()
     {
         Debug.Log("Przeciwnik dotar³ do bazy!");
+        GameManager.Instance.ModifyBaseHealth(-1);
         Destroy(gameObject);
         // Tutaj w przysz³oœci odejmiesz ¿ycie graczowi
     }

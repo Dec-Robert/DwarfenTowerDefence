@@ -42,7 +42,7 @@ public class EnemyStats : MonoBehaviour
     void Die()
     {
         Debug.Log("Przeciwnik zniszczony!");
-        // Tu w przysz³oœci dodasz drop z³ota
+        GameManager.Instance.ModifyGold(2);
         Destroy(gameObject);
     }
 }

@@ -12,18 +12,18 @@ public class EnemySpawner : MonoBehaviour
     public float spawnInterval = 2.0f;
     public bool spawningActive = true;
 
+    public int enemiesPerWave = 10;
+    public int additionEnemiesPerWave = 5;
+
     private List<Vector3> cachedPath;
 
     void Start()
     {
-        // Czekamy chwilê na wygenerowanie mapy (prosta metoda)
-        // W wersji finalnej lepiej u¿yæ eventów/Action
         StartCoroutine(WaitForMapAndSpawn());
     }
 
     IEnumerator WaitForMapAndSpawn()
     {
-        // Czekamy 2 klatki, ¿eby upewniæ siê, ¿e Start() w Generatorze siê wykona³
         yield return null;
         yield return null;
 
@@ -33,7 +33,6 @@ public class EnemySpawner : MonoBehaviour
             yield break;
         }
 
-        // Pobieramy trasê RAZ (optymalizacja)
         cachedPath = mapGenerator.GetGlobalWorldPath();
 
         if (cachedPath == null || cachedPath.Count == 0)
@@ -42,30 +41,52 @@ public class EnemySpawner : MonoBehaviour
             yield break;
         }
 
+        int spawnedInWave = 0;
+
         // Pêtla spawnowania
         while (spawningActive)
         {
-            SpawnEnemy();
-            yield return new WaitForSeconds(spawnInterval);
+            // Sytuacja 1: Trwa fala i mamy kogo spawnowaæ
+            if (GameManager.Instance.currentGameState == GameManager.gameStates.InWave && spawnedInWave < enemiesPerWave)
+            {
+                SpawnEnemy();
+                spawnedInWave++;
+
+                // Obliczenie czasu (doda³em 'f' przy 8, ¿eby dzielenie by³o zmiennoprzecinkowe)
+                float currentDelay = spawnInterval - (GameManager.Instance.waveNumber + 1) / 8f;
+                // Zabezpieczenie, ¿eby delay nie by³ ujemny
+                if (currentDelay < 0.1f) currentDelay = 0.1f;
+
+                yield return new WaitForSeconds(currentDelay);
+            }
+            // Sytuacja 2: Trwa fala, ale wyczerpaliœmy limit wrogów -> Koñczymy falê
+            else if (GameManager.Instance.currentGameState == GameManager.gameStates.InWave && spawnedInWave >= enemiesPerWave)
+            {
+                GameManager.Instance.EndWave();
+                spawnedInWave = 0;
+                enemiesPerWave = enemiesPerWave + additionEnemiesPerWave;
+
+                // WA¯NE: Musimy poczekaæ klatkê po zmianie stanu, ¿eby nie wpaœæ w pêtlê
+                yield return null;
+            }
+            // Sytuacja 3: Faza PreparePhase lub GameOver -> Czekamy
+            else
+            {
+                // TO JEST LINIKA, KTÓRA NAPRAWIA ZAWIESZANIE
+                // Jeœli nie spawnowaliœmy i nie koñczyliœmy fali, czekamy do nastêpnej klatki
+                yield return null;
+            }
         }
     }
 
     void SpawnEnemy()
     {
         if (enemyPrefab == null) return;
-
-        // Tworzymy wroga (pozycjê ustawi sobie sam w Initialize)
         GameObject newEnemy = Instantiate(enemyPrefab);
-
-        // Pobieramy komponent ruchu i dajemy mu trasê
         EnemyWalker walker = newEnemy.GetComponent<EnemyWalker>();
         if (walker != null)
         {
             walker.Initialize(cachedPath);
-        }
-        else
-        {
-            Debug.LogWarning("Prefab wroga nie ma komponentu EnemyWalker!");
         }
     }
 }

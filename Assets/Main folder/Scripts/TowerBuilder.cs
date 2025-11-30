@@ -3,7 +3,8 @@ using UnityEngine;
 public class TowerBuilder : MonoBehaviour
 {
     public GameObject towerPrefab;
-    public LayerMask hexLayer; // Warstwa, na której s¹ heksy (opcjonalne, ale zalecane)
+    public LayerMask hexLayer; // Warstwa, na której s¹ heksy (opcjonalne, ale zalecane)'
+    public int towerCost=10;
 
     void Update()
     {
@@ -58,15 +59,26 @@ public class TowerBuilder : MonoBehaviour
 
     void PlaceTower(Transform hexTransform)
     {
-        // Tworzymy wie¿ê dok³adnie w pozycji hexa
-        GameObject newTower = Instantiate(towerPrefab, hexTransform.position, Quaternion.identity);
+        if (towerCost <= GameManager.Instance.gold)
+        {
+            GameManager.Instance.ModifyGold(-towerCost);
+            // Tworzymy wie¿ê dok³adnie w pozycji hexa
+            GameObject newTower = Instantiate(towerPrefab, hexTransform.position, Quaternion.identity);
 
-        // Ustawiamy hexa jako rodzica (dziêki temu heks "trzyma" wie¿ê i ³atwo sprawdziæ zajêtoœæ)
-        newTower.transform.parent = hexTransform;
+            // Ustawiamy hexa jako rodzica (dziêki temu heks "trzyma" wie¿ê i ³atwo sprawdziæ zajêtoœæ)
+            newTower.transform.parent = hexTransform;
 
-        // Ewentualna korekta wysokoœci (jeœli wie¿a wchodzi w ziemiê)
-        newTower.transform.localPosition += Vector3.up * 0.5f;
+            // Ewentualna korekta wysokoœci (jeœli wie¿a wchodzi w ziemiê)
+            newTower.transform.localPosition += Vector3.up * 0.5f;
 
-        Debug.Log("Wie¿a postawiona!");
+            Debug.Log("Wie¿a postawiona!");
+
+        }
+        else
+        {
+            Debug.Log("Brakuje pieniêdzy na wie¿e");
+            Debug.Log("Potrzeba:" + towerCost+ ". Jest w skarbcu: "+GameManager.Instance.gold);
+        }
+
     }
 }
