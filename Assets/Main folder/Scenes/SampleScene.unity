@@ -1852,17 +1852,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2ebbf342d20bd44fbc74b95e03d69ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapWidth: 5
+  mapWidth: 15
   mapMinY: -3
   mapMaxY: 3
-  chunkRadius: 3
-  baseRoadEndLocal: {x: 3, y: -2}
+  chunkRadius: 4
+  minChunkDistance: 20
+  maxGenerationAttempts: 1000
+  globalObstacleChance: 50
+  internalSettings:
+    highwayWeight: 20
+    windingWeight: 50
+    mazeWeight: 30
+    highCostAmount: 20
+    windingNoiseDensity: 15
+    mazeNoiseDensity: 40
+    blockCenterInMaze: 1
+  baseRoadEndLocal: {x: 4, y: -2}
   exitMaterial: {fileID: 2100000, guid: cff614c30f540a04f8227dd8e83f0747, type: 2}
   enterMaterial: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
   roadMaterial: {fileID: 2100000, guid: d75c9b64f7c92134ab819ad47fad24f6, type: 2}
+  obstacleMaterial: {fileID: 0}
+  hexPrefab: {fileID: 2512261185576593462, guid: 33185b04f8d037f4484da5836dbfa94c, type: 3}
   hexSize: 1
   padding: 0.01
-  hexPrefab: {fileID: 2512261185576593462, guid: 33185b04f8d037f4484da5836dbfa94c, type: 3}
 --- !u!4 &1837610583
 Transform:
   m_ObjectHideFlags: 0
@@ -1925,7 +1937,7 @@ MonoBehaviour:
   selectedTower: {fileID: 0}
   hexLayer:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 128
 --- !u!1 &1973995084
 GameObject:
   m_ObjectHideFlags: 0
