@@ -1858,20 +1858,25 @@ MonoBehaviour:
   chunkRadius: 4
   minChunkDistance: 20
   maxGenerationAttempts: 1000
+  allowExtraSpawners: 1
+  extraSpawnerChances: 500000003c0000002800000014000000
+  extraSpawnDistanceRange: {x: 2, y: 6}
+  chanceForMoreBranching: 30
   globalObstacleChance: 50
   internalSettings:
-    highwayWeight: 20
-    windingWeight: 50
-    mazeWeight: 30
-    highCostAmount: 20
-    windingNoiseDensity: 15
-    mazeNoiseDensity: 40
-    blockCenterInMaze: 1
+    highwayWeight: 30
+    windingWeight: 30
+    mazeWeight: 40
+    wallCost: 50
+    windingWallCount: 2
+    windingWallLength: 3
+    mazeWallCount: 6
+    mazeWallLength: 5
   baseRoadEndLocal: {x: 4, y: -2}
   exitMaterial: {fileID: 2100000, guid: cff614c30f540a04f8227dd8e83f0747, type: 2}
   enterMaterial: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
   roadMaterial: {fileID: 2100000, guid: d75c9b64f7c92134ab819ad47fad24f6, type: 2}
-  obstacleMaterial: {fileID: 0}
+  obstacleMaterial: {fileID: 2100000, guid: cff614c30f540a04f8227dd8e83f0747, type: 2}
   hexPrefab: {fileID: 2512261185576593462, guid: 33185b04f8d037f4484da5836dbfa94c, type: 3}
   hexSize: 1
   padding: 0.01
@@ -1887,7 +1892,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1983592480}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1871804221
@@ -2074,6 +2080,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1973995084}
   m_CullTransparentMesh: 1
+--- !u!1 &1983592479
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1983592480}
+  m_Layer: 0
+  m_Name: World Map
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1983592480
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1983592479}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1837610583}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1991588455
 GameObject:
   m_ObjectHideFlags: 0
