@@ -269,7 +269,7 @@ GameObject:
   - component: {fileID: 330585547}
   - component: {fileID: 330585548}
   m_Layer: 0
-  m_Name: --Main Camera
+  m_Name: ------Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -342,13 +342,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
+  m_LocalRotation: {x: 0.4964001, y: 0.32275194, z: -0.20561564, w: 0.77919215}
   m_LocalPosition: {x: 0, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 30, y: 45, z: 0}
+  m_LocalEulerAnglesHint: {x: 65, y: 45, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -405,12 +405,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83c5e7edfe9418f49a69ce7483d5e0dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 20
-  zoomSpeed: 10
+  moveSpeed: 30
+  zoomSpeed: 30
   smoothing: 2
-  minHeight: 10
-  maxHeight: 25
-  mapLimit: {x: 50, y: 50}
+  minHeight: 25
+  maxHeight: 50
+  mapLimit: {x: 500, y: 500}
 --- !u!1 &362314250
 GameObject:
   m_ObjectHideFlags: 0
@@ -1087,7 +1087,7 @@ GameObject:
   - component: {fileID: 548684864}
   - component: {fileID: 548684863}
   m_Layer: 5
-  m_Name: UI
+  m_Name: --UI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1360,11 +1360,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapGenerator: {fileID: 1837610582}
+  fogManager: {fileID: 1733010596}
   enemyPrefab: {fileID: 6987379787904698027, guid: 0ed6f20242337c64b8df5c77925df8ad, type: 3}
   spawnInterval: 2
   spawningActive: 1
   enemiesPerWave: 10
   additionEnemiesPerWave: 5
+  baseFormulaConst: 10
+  perSpawnerMultiplier: 2.5
+  activeRoutes: []
 --- !u!1 &1289381277
 GameObject:
   m_ObjectHideFlags: 0
@@ -1823,6 +1827,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1566844633}
   m_CullTransparentMesh: 1
+--- !u!1 &1733010595
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1733010597}
+  - component: {fileID: 1733010596}
+  m_Layer: 0
+  m_Name: ----FOG MANAGER
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1733010596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733010595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bdf571270d0c1343a4eab9a93713bea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fogPrefab: {fileID: 3859522560190237151, guid: a4e28ed9c9a12614ba2741e7bcc8106f, type: 3}
+  fogHeightOffset: 2
+  showDebugLogs: 0
+  debugClickToReveal: 0
+--- !u!4 &1733010597
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733010595}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -32.919056, y: 32.00124, z: 4.294948}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1837610581
 GameObject:
   m_ObjectHideFlags: 0
@@ -1833,8 +1885,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1837610583}
   - component: {fileID: 1837610582}
+  - component: {fileID: 1837610584}
   m_Layer: 0
-  m_Name: ----MAP GENERATOR
+  m_Name: ----MAP MANAGER
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1852,34 +1905,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2ebbf342d20bd44fbc74b95e03d69ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapWidth: 15
+  visualizer: {fileID: 1837610584}
+  fogManager: {fileID: 1733010596}
+  mapWidth: 8
   mapMinY: -3
   mapMaxY: 3
   chunkRadius: 4
-  minChunkDistance: 20
+  hexSize: 1
+  padding: 0.01
+  minChunkDistance: 4
   maxGenerationAttempts: 1000
   allowExtraSpawners: 1
   extraSpawnerChances: 500000003c0000002800000014000000
   extraSpawnDistanceRange: {x: 2, y: 6}
   chanceForMoreBranching: 30
-  globalObstacleChance: 50
+  globalObstacleChance: 70
+  biomeSeedCount: 3
+  forestClusterChance: 30
+  mountainChance: 15
+  hillChance: 20
+  sinkholeChance: 10
+  fertileSoilChance: 15
+  baseRoadEndLocal: {x: 4, y: -2}
   internalSettings:
-    highwayWeight: 30
+    highwayWeight: 20
     windingWeight: 30
-    mazeWeight: 40
+    mazeWeight: 50
     wallCost: 50
     windingWallCount: 2
     windingWallLength: 3
     mazeWallCount: 6
     mazeWallLength: 5
-  baseRoadEndLocal: {x: 4, y: -2}
-  exitMaterial: {fileID: 2100000, guid: cff614c30f540a04f8227dd8e83f0747, type: 2}
-  enterMaterial: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
-  roadMaterial: {fileID: 2100000, guid: d75c9b64f7c92134ab819ad47fad24f6, type: 2}
-  obstacleMaterial: {fileID: 2100000, guid: cff614c30f540a04f8227dd8e83f0747, type: 2}
-  hexPrefab: {fileID: 2512261185576593462, guid: 33185b04f8d037f4484da5836dbfa94c, type: 3}
-  hexSize: 1
-  padding: 0.01
 --- !u!4 &1837610583
 Transform:
   m_ObjectHideFlags: 0
@@ -1892,10 +1948,34 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1983592480}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1837610584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837610581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48882110f2f92c641b6419baf01a8976, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hexPrefab: {fileID: 2512261185576593462, guid: 33185b04f8d037f4484da5836dbfa94c, type: 3}
+  prefabForest: {fileID: 4575872815272046510, guid: 80e39e16be18ea34f8b736406759debd, type: 3}
+  prefabMountain: {fileID: 1362618508886082739, guid: 78cc11c5f7a6dce4fb697cdfc3a13df2, type: 3}
+  prefabFertile: {fileID: 4983687469535243513, guid: 39669e049b5dfd74fb42bf4fed8d1d51, type: 3}
+  matGrass: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
+  matPath: {fileID: 2100000, guid: d75c9b64f7c92134ab819ad47fad24f6, type: 2}
+  matForest: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
+  matMountain: {fileID: 2100000, guid: ecf964584f2921a42a52d9d4bc81e15f, type: 2}
+  matHill: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
+  matSinkhole: {fileID: 2100000, guid: cff614c30f540a04f8227dd8e83f0747, type: 2}
+  matFertile: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
+  matBase: {fileID: 2100000, guid: 9c4fa65ee65d1124eb407a3143ee0955, type: 2}
+  matBeacon: {fileID: 2100000, guid: 26da7d67a911ba04ea40392c2719aad7, type: 2}
 --- !u!1 &1871804221
 GameObject:
   m_ObjectHideFlags: 0
@@ -2080,37 +2160,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1973995084}
   m_CullTransparentMesh: 1
---- !u!1 &1983592479
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1983592480}
-  m_Layer: 0
-  m_Name: World Map
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1983592480
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1983592479}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1837610583}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1991588455
 GameObject:
   m_ObjectHideFlags: 0
@@ -2334,12 +2383,13 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 330585546}
   - {fileID: 1478630900}
   - {fileID: 1837610583}
+  - {fileID: 1733010597}
   - {fileID: 1226635595}
   - {fileID: 1871804222}
-  - {fileID: 330585546}
+  - {fileID: 548684867}
   - {fileID: 410087041}
   - {fileID: 832575519}
-  - {fileID: 548684867}
   - {fileID: 1998564238}
