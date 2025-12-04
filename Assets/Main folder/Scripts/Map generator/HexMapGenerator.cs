@@ -9,8 +9,9 @@ using UnityEditor;
 public class HexMapGenerator : MonoBehaviour
 {
     [Header("Referencje")]
-    public HexMapVisualizer visualizer; // <--- TUTAJ PRZYPISZ NOWY KOMPONENT
+    public HexMapVisualizer visualizer;
     public FogOfWarManager fogManager;
+    public MapExpansionManager expansionManager;
 
     [Header("Rozmiar Mapy")]
     public int mapWidth = 8;
@@ -31,13 +32,31 @@ public class HexMapGenerator : MonoBehaviour
     [Range(0, 100)] public int chanceForMoreBranching = 30;
     [Range(0, 100)] public int globalObstacleChance = 40;
 
-    [Header("Ustawienia Terenu")]
+    [Header("Generator Biomów")]
     public int biomeSeedCount = 3;
-    [Range(0, 100)] public int forestClusterChance = 30;
-    [Range(0, 100)] public int mountainChance = 15;
-    [Range(0, 100)] public int hillChance = 20;
-    [Range(0, 100)] public int sinkholeChance = 10;
-    [Range(0, 100)] public int fertileSoilChance = 15;
+
+    [System.Serializable]
+    public class BiomeSettings
+    {
+        public string name;
+        public BiomeType type;
+
+        [Header("Wygląd")]
+        public Material biomeGroundMaterial;
+
+        [Header("Lasy (Klastry)")]
+        [Tooltip("Szansa, że w chunku pojawi się klaster lasu.")]
+        [Range(0, 100)] public int forestClusterChance;
+
+        [Header("Pola Pojedyncze (Suma wag)")]
+        [Range(0, 100)] public int mountainChance;
+        [Range(0, 100)] public int hillChance;
+        [Range(0, 100)] public int sinkholeChance;
+        [Range(0, 100)] public int fertileSoilChance;
+    }
+
+    [Header("Konfiguracja Biomów")]
+    public List<BiomeSettings> biomeSettings = new List<BiomeSettings>();
 
     [Header("Punkty Strategiczne")]
     public Vector2Int baseRoadEndLocal = new Vector2Int(3, -2);
@@ -79,6 +98,14 @@ public class HexMapGenerator : MonoBehaviour
     private List<Vector2Int> generatedChunkSequence = new List<Vector2Int>();
     private HexPathfinder pathfinder;
 
+    private void Reset()
+    {
+        biomeSettings.Clear();
+        biomeSettings.Add(new BiomeSettings { name = "Plains", type = BiomeType.Plains, forestClusterChance = 30, mountainChance = 5, hillChance = 10, sinkholeChance = 5, fertileSoilChance = 20 });
+        biomeSettings.Add(new BiomeSettings { name = "Forest", type = BiomeType.Forest, forestClusterChance = 80, mountainChance = 5, hillChance = 10, sinkholeChance = 5, fertileSoilChance = 10 });
+        biomeSettings.Add(new BiomeSettings { name = "Mountains", type = BiomeType.Mountains, forestClusterChance = 10, mountainChance = 40, hillChance = 30, sinkholeChance = 5, fertileSoilChance = 0 });
+    }
+
     private void Start()
     {
         pathfinder = new HexPathfinder(chunkRadius);
@@ -114,8 +141,16 @@ public class HexMapGenerator : MonoBehaviour
         GenerateBiomeMap();
         GenerateTerrain();
 
-        // DELEGOWANIE RYSOWANIA DO WIZUALIZERA
-        visualizer.VisualizeWorld(worldData, allValidChunks, chunkRadius, hexSize, padding);
+        Dictionary<BiomeType, Material> biomeMatDict = new Dictionary<BiomeType, Material>();
+        foreach (var bs in biomeSettings)
+        {
+            if (bs.biomeGroundMaterial != null && !biomeMatDict.ContainsKey(bs.type))
+            {
+                biomeMatDict.Add(bs.type, bs.biomeGroundMaterial);
+            }
+        }
+
+        visualizer.VisualizeWorld(worldData, allValidChunks, chunkBiomes, biomeMatDict, chunkRadius, hexSize, padding);
 
         if (fogManager != null)
         {
@@ -127,28 +162,40 @@ public class HexMapGenerator : MonoBehaviour
     // --- LOGIKA TERENU ---
     void GenerateBiomeMap()
     {
-        List<Vector2Int> biomeCenters = new List<Vector2Int> { Vector2Int.zero };
-        Dictionary<Vector2Int, BiomeType> centerTypes = new Dictionary<Vector2Int, BiomeType> { { Vector2Int.zero, BiomeType.Plains } };
+        Dictionary<Vector2Int, BiomeType> centerTypes = new Dictionary<Vector2Int, BiomeType>();
+        List<Vector2Int> centers = new List<Vector2Int>();
 
+        // 1. Plains na środku
+        centers.Add(Vector2Int.zero);
+        centerTypes.Add(Vector2Int.zero, BiomeType.Plains);
+
+        // 2. Losowe biomy
+        List<BiomeType> availableBiomes = new List<BiomeType>();
+        foreach (var bs in biomeSettings) if (bs.type != BiomeType.Plains) availableBiomes.Add(bs.type);
+
+        for (int i = 0; i < availableBiomes.Count; i++) { BiomeType temp = availableBiomes[i]; int r = Random.Range(i, availableBiomes.Count); availableBiomes[i] = availableBiomes[r]; availableBiomes[r] = temp; }
+
+        int biomesToPick = Mathf.Min(2, availableBiomes.Count);
         List<Vector2Int> validCandidates = allValidChunks.ToList();
         validCandidates.Remove(Vector2Int.zero);
-        int centersToSpawn = Mathf.Min(biomeSeedCount, validCandidates.Count);
 
-        for (int i = 0; i < centersToSpawn; i++)
+        for (int i = 0; i < biomesToPick; i++)
         {
+            if (validCandidates.Count == 0) break;
             Vector2Int rndChunk = validCandidates[Random.Range(0, validCandidates.Count)];
             validCandidates.Remove(rndChunk);
-            biomeCenters.Add(rndChunk);
-            centerTypes.Add(rndChunk, (BiomeType)Random.Range(0, 3));
+            centers.Add(rndChunk);
+            centerTypes.Add(rndChunk, availableBiomes[i]);
         }
 
         foreach (var chunk in allValidChunks)
         {
             Vector2Int closestCenter = Vector2Int.zero;
             float minDst = float.MaxValue;
-            foreach (var center in biomeCenters)
+            foreach (var center in centers)
             {
                 float d = HexGridMath.GetDistance(chunk, center);
+                d += Random.Range(-0.5f, 0.5f);
                 if (d < minDst) { minDst = d; closestCenter = center; }
             }
             chunkBiomes[chunk] = centerTypes[closestCenter];
@@ -190,51 +237,106 @@ public class HexMapGenerator : MonoBehaviour
         else SetFeature(Vector2Int.zero, new Vector2Int(1, 0), HexFeatureType.Beacon);
     }
 
+    // --- ZMODYFIKOWANA METODA GENEROWANIA LASÓW ---
     void FillChunkFeatures(Vector2Int chunkCoord, BiomeType biome)
     {
         var chunkCells = worldData[chunkCoord];
         List<Vector2Int> availableHexes = chunkCells.Keys.Where(k => !chunkCells[k].isPath).ToList();
 
-        int forestChance = forestClusterChance;
-        int mntChance = mountainChance;
-        int hlChance = hillChance;
-        int sinkChance = sinkholeChance;
+        BiomeSettings settings = biomeSettings.Find(s => s.type == biome);
+        if (settings == null)
+        {
+            if (biomeSettings.Count > 0) settings = biomeSettings[0];
+            else return;
+        }
 
-        if (biome == BiomeType.Forest) { forestChance += 40; mntChance -= 10; }
-        if (biome == BiomeType.Mountains) { forestChance -= 20; mntChance += 30; hlChance += 20; sinkChance -= 10; }
+        // A. KLASTRY LASÓW (SEKWENCYJNE SZANSE)
+        // Szanse dla kolejnych sąsiadów: 1->50%, 2->40%, 3->30%, 4->20%, 5->10%, 6->0%
+        int[] neighborForestChances = new int[] { 50, 40, 30, 20, 10, 0 };
 
-        int numClusters = Random.Range(1, 4);
+        int numClusters = Random.Range(1, 4); // Ile prób klastrów na chunk
         for (int i = 0; i < numClusters; i++)
         {
-            if (Random.Range(0, 100) < forestChance && availableHexes.Count > 0)
+            // Czy w ogóle próbujemy zrespić las?
+            if (Random.Range(0, 100) < settings.forestClusterChance && availableHexes.Count > 0)
             {
+
+                // 1. Wybierz i zagwarantuj ŚRODEK lasu
                 Vector2Int center = availableHexes[Random.Range(0, availableHexes.Count)];
-                List<Vector2Int> cluster = new List<Vector2Int> { center };
-                foreach (var n in HexGridMath.GetNeighbors(center)) cluster.Add(n);
-                foreach (var hex in cluster)
+
+                if (chunkCells.ContainsKey(center) && !chunkCells[center].isPath && chunkCells[center].feature == HexFeatureType.None)
                 {
-                    if (chunkCells.ContainsKey(hex) && !chunkCells[hex].isPath && chunkCells[hex].feature == HexFeatureType.None)
+                    chunkCells[center].feature = HexFeatureType.Forest;
+                    chunkCells[center].featureLevel = 1; // 1 = GŁÓWNY LAS (Centrum)
+                    availableHexes.Remove(center);
+
+                    // 2. Pobierz sąsiadów
+                    List<Vector2Int> neighbors = HexGridMath.GetNeighbors(center);
+
+                    // Potasuj sąsiadów, żeby kształt był losowy
+                    for (int k = 0; k < neighbors.Count; k++)
                     {
-                        chunkCells[hex].feature = HexFeatureType.Forest;
-                        availableHexes.Remove(hex);
+                        Vector2Int temp = neighbors[k];
+                        int rand = Random.Range(k, neighbors.Count);
+                        neighbors[k] = neighbors[rand];
+                        neighbors[rand] = temp;
+                    }
+
+                    // 3. Iteruj po sąsiadach z malejącą szansą
+                    for (int nIdx = 0; nIdx < neighbors.Count; nIdx++)
+                    {
+                        Vector2Int neighbor = neighbors[nIdx];
+
+                        // Sprawdź czy sąsiad jest w ogóle dostępny
+                        if (chunkCells.ContainsKey(neighbor) &&
+                            !chunkCells[neighbor].isPath &&
+                            chunkCells[neighbor].feature == HexFeatureType.None)
+                        {
+                            // Pobierz szansę (50, 40, 30...)
+                            int chance = (nIdx < neighborForestChances.Length) ? neighborForestChances[nIdx] : 0;
+
+                            if (Random.Range(0, 100) < chance)
+                            {
+                                // Udało się - stawiamy las boczny
+                                chunkCells[neighbor].feature = HexFeatureType.Forest;
+                                chunkCells[neighbor].featureLevel = 0; // 0 = ZWYKŁY LAS
+                                availableHexes.Remove(neighbor);
+                            }
+                            else
+                            {
+                                // Nie udało się - przerywamy rozrost tego klastra
+                                break;
+                            }
+                        }
                     }
                 }
             }
         }
 
+        // B. RESZTA TERENU (Góry itp.)
+        // Odświeżamy listę, bo lasy zabrały pola
         availableHexes = chunkCells.Keys.Where(k => !chunkCells[k].isPath && chunkCells[k].feature == HexFeatureType.None).ToList();
+
         foreach (var hex in availableHexes)
         {
             int roll = Random.Range(0, 100);
-            if (roll < mntChance) chunkCells[hex].feature = HexFeatureType.Mountain;
-            else if (roll < mntChance + hlChance) { chunkCells[hex].feature = HexFeatureType.Hill; chunkCells[hex].featureLevel = Random.Range(1, 6); }
-            else if (roll < mntChance + hlChance + sinkChance) { chunkCells[hex].feature = HexFeatureType.Sinkhole; chunkCells[hex].featureLevel = Random.Range(-5, 0); }
-            else if (roll < mntChance + hlChance + sinkChance + fertileSoilChance) { if (biome != BiomeType.Mountains) chunkCells[hex].feature = HexFeatureType.FertileSoil; }
+
+            int threshold = settings.mountainChance;
+            if (roll < threshold) { chunkCells[hex].feature = HexFeatureType.Mountain; continue; }
+
+            threshold += settings.hillChance;
+            if (roll < threshold) { chunkCells[hex].feature = HexFeatureType.Hill; chunkCells[hex].featureLevel = Random.Range(1, 6); continue; }
+
+            threshold += settings.sinkholeChance;
+            if (roll < threshold) { chunkCells[hex].feature = HexFeatureType.Sinkhole; chunkCells[hex].featureLevel = Random.Range(-5, 0); continue; }
+
+            threshold += settings.fertileSoilChance;
+            if (roll < threshold) { chunkCells[hex].feature = HexFeatureType.FertileSoil; continue; }
         }
     }
 
     // =================================================================================
-    //                    PATHFINDING I POMOCNIKI (Bez zmian logiki)
+    //                    PATHFINDING I POMOCNIKI (Bez zmian)
     // =================================================================================
 
     bool CalculateMainPath()
@@ -332,7 +434,6 @@ public class HexMapGenerator : MonoBehaviour
     }
     public List<Vector3> GetGlobalWorldPath() { List<List<Vector3>> allPaths = GetAllSpawnPaths(); if (allPaths != null && allPaths.Count > 0) return allPaths[0]; return new List<Vector3>(); }
 
-    // API: GetAllSpawnPaths (z precyzyjnym grafem drogowym)
     public List<List<Vector3>> GetAllSpawnPaths()
     {
         List<List<Vector3>> allPaths = new List<List<Vector3>>();
@@ -376,7 +477,36 @@ public class HexMapGenerator : MonoBehaviour
     Vector2Int GetBestGateChunk(Vector3 targetWorldPos) { Vector2Int best = new Vector2Int(1, 0); float minDst = float.MaxValue; foreach (var n in HexGridMath.GetNeighbors(Vector2Int.zero)) { float d = Vector3.Distance(HexGridMath.GetChunkCenterWorld(n, chunkRadius, hexSize, padding), targetWorldPos); if (d < minDst) { minDst = d; best = n; } } return best; }
     void SetFeature(Vector2Int chunk, Vector2Int local, HexFeatureType type) { if (worldData.ContainsKey(chunk) && worldData[chunk].ContainsKey(local)) worldData[chunk][local].feature = type; }
     bool IsPath(Vector2Int chunk, Vector2Int local) { if (worldData.ContainsKey(chunk) && worldData[chunk].ContainsKey(local)) return worldData[chunk][local].isPath; return false; }
-    void HandleInitialFogReveal() { fogManager.RevealChunk(Vector2Int.zero); if (generatedChunkSequence != null) { for (int i = generatedChunkSequence.Count - 1; i >= 0; i--) { Vector2Int chunk = generatedChunkSequence[i]; if (HexGridMath.GetDistance(chunk, Vector2Int.zero) == 1) { fogManager.RevealChunk(chunk); break; } } } }
+
+    void HandleInitialFogReveal()
+    {
+        List<Vector2Int> initialRevealed = new List<Vector2Int>();
+
+        // 1. Baza
+        fogManager.RevealChunk(Vector2Int.zero);
+        initialRevealed.Add(Vector2Int.zero);
+
+        // 2. Sąsiad Bazy
+        if (generatedChunkSequence != null)
+        {
+            for (int i = generatedChunkSequence.Count - 1; i >= 0; i--)
+            {
+                Vector2Int chunk = generatedChunkSequence[i];
+                if (HexGridMath.GetDistance(chunk, Vector2Int.zero) == 1)
+                {
+                    fogManager.RevealChunk(chunk);
+                    initialRevealed.Add(chunk);
+                    break;
+                }
+            }
+        }
+
+        // Inicjalizacja Managera Ekspansji
+        if (expansionManager != null)
+        {
+            expansionManager.InitializeStartingChunks(initialRevealed);
+        }
+    }
 }
 
 #if UNITY_EDITOR

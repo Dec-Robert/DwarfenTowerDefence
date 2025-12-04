@@ -4,6 +4,9 @@ using System;
 
 public class FogOfWarManager : MonoBehaviour
 {
+    [Header("Interakcja")]
+    public MapExpansionManager expansionManager;
+
     [Header("Ustawienia Wizualne")]
     public GameObject fogPrefab;
     public float fogHeightOffset = 2.0f;
@@ -25,36 +28,35 @@ public class FogOfWarManager : MonoBehaviour
     // --- NOWA METODA UPDATE DO OBS£UGI KLIKNIÊÆ ---
     private void Update()
     {
-        // Jeœli debug jest wy³¹czony, nic nie rób
-        if (!debugClickToReveal) return;
+        // Blokada klikania przez UI
+        if (UnityEngine.EventSystems.EventSystem.current != null &&
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            return;
 
-        // Reakcja na lewy przycisk myszy
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            // Strzelamy promieniem (Wymaga Collidera na obiekcie mg³y!)
+            // Uwaga: Heksy wewn¹trz prefabu mg³y musz¹ mieæ Collidery!
             if (Physics.Raycast(ray, out hit))
             {
-                GameObject hitObj = hit.transform.gameObject;
-
-                // Szukamy, który to chunk (iterujemy po s³owniku)
-                Vector2Int? foundCoord = null;
+                // Iterujemy po wszystkich aktywnych chunkach mg³y
                 foreach (var kvp in activeFogChunks)
                 {
-                    if (kvp.Value == hitObj)
-                    {
-                        foundCoord = kvp.Key;
-                        break;
-                    }
-                }
+                    GameObject fogRoot = kvp.Value;
 
-                // Jeœli znaleŸliœmy pasuj¹cy chunk, odkrywamy go
-                if (foundCoord.HasValue)
-                {
-                    if (showDebugLogs) Debug.Log($"[FogManager Debug] Klikniêto i odkryto: {foundCoord.Value}");
-                    RevealChunk(foundCoord.Value);
+                    // SPRAWDZENIE:
+                    // Czy trafiliœmy w sam korzeñ mg³y LUB w którekolwiek z jego dzieci (ma³e heksy)?
+                    if (hit.transform.gameObject == fogRoot || hit.transform.IsChildOf(fogRoot.transform))
+                    {
+                        // Mamy trafienie!
+                        if (expansionManager != null)
+                        {
+                            expansionManager.OnFogClicked(kvp.Key);
+                        }
+                        return; // Przerywamy pêtlê, znaleŸliœmy w³aœciwy chunk
+                    }
                 }
             }
         }
@@ -77,8 +79,7 @@ public class FogOfWarManager : MonoBehaviour
         GameObject fogObj = Instantiate(fogPrefab, spawnPos, Quaternion.identity, transform);
         fogObj.name = $"Fog_{coord.x}_{coord.y}";
 
-        float width = (chunkRadius * 2 + 1) * hexSize * 1.75f;
-        fogObj.transform.localScale = new Vector3(width, 1, width);
+        fogObj.transform.localScale = new Vector3(1, 1, 1);
 
         activeFogChunks.Add(coord, fogObj);
     }

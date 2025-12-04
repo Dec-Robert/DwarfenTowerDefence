@@ -9,8 +9,7 @@ public class HexMapVisualizer : MonoBehaviour
     public GameObject prefabMountain;
     public GameObject prefabFertile;
 
-    [Header("Materia³y Pod³o¿a")]
-    public Material matGrass;
+    [Header("Materia³y Specjalne")]
     public Material matPath;
     public Material matForest;
     public Material matMountain;
@@ -20,31 +19,47 @@ public class HexMapVisualizer : MonoBehaviour
     public Material matBase;
     public Material matBeacon;
 
+    [Header("Materia³ Domyœlny (Fallback)")]
+    public Material matDefaultGrass;
+
     private Transform mapHolder;
-    private MaterialPropertyBlock propBlock;
 
-    private void Awake()
-    {
-        propBlock = new MaterialPropertyBlock();
-    }
-
-    // G³ówna metoda rysuj¹ca - wywo³ywana przez Generator
+    // G³ówna metoda rysuj¹ca
     public void VisualizeWorld(
         Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData,
         HashSet<Vector2Int> allValidChunks,
+        Dictionary<Vector2Int, BiomeType> chunkBiomes,
+        Dictionary<BiomeType, Material> biomeMaterials,
         int chunkRadius,
         float hexSize,
         float padding)
     {
-        // Czyszczenie starej mapy
         if (mapHolder != null) DestroyImmediate(mapHolder.gameObject);
         mapHolder = new GameObject("World Map").transform;
-        mapHolder.parent = transform.parent; // Podpinamy pod ten sam obiekt co generator
+        mapHolder.parent = transform.parent;
 
         foreach (var chunkCoord in allValidChunks)
         {
             Vector3 centerWorld = HexGridMath.GetChunkCenterWorld(chunkCoord, chunkRadius, hexSize, padding);
-            GameObject chunkObj = new GameObject($"Chunk_{chunkCoord.x}_{chunkCoord.y}");
+
+            // --- ZMIANA: Pobieranie nazwy biomu do nazwy obiektu ---
+            string biomeName = "Unknown";
+            Material chunkBaseMat = matDefaultGrass;
+
+            if (chunkBiomes != null && chunkBiomes.ContainsKey(chunkCoord))
+            {
+                BiomeType biome = chunkBiomes[chunkCoord];
+                biomeName = biome.ToString(); // Np. "Forest", "Plains"
+
+                if (biomeMaterials != null && biomeMaterials.ContainsKey(biome))
+                {
+                    chunkBaseMat = biomeMaterials[biome];
+                }
+            }
+
+            // --- ZMIANA: Dodanie nazwy biomu do nazwy GameObjectu ---
+            GameObject chunkObj = new GameObject($"Chunk_{chunkCoord.x}_{chunkCoord.y}_{biomeName}");
+
             chunkObj.transform.parent = mapHolder;
             chunkObj.transform.position = centerWorld;
 
@@ -57,30 +72,29 @@ public class HexMapVisualizer : MonoBehaviour
 
                     Vector3 basePos = centerWorld + HexGridMath.AxialToWorld(local.x, local.y, hexSize, padding);
 
-                    // Modyfikacja wysokoœci
                     float heightOffset = 0f;
                     if (cellData.feature == HexFeatureType.Hill)
                         heightOffset = cellData.featureLevel * 0.1f;
                     else if (cellData.feature == HexFeatureType.Sinkhole)
-                        heightOffset = cellData.featureLevel * 0.1f; // level ujemny
+                        heightOffset = cellData.featureLevel * 0.1f;
 
                     Vector3 finalPos = basePos + Vector3.up * heightOffset;
 
                     GameObject hex = Instantiate(hexPrefab, finalPos, Quaternion.identity, chunkObj.transform);
                     hex.name = $"Hex_{local.x}_{local.y}";
 
-                    ApplyVisualsToHex(hex, cellData);
+                    ApplyVisualsToHex(hex, cellData, chunkBaseMat);
                 }
             }
         }
     }
 
-    void ApplyVisualsToHex(GameObject hexObj, HexCellData data)
+    void ApplyVisualsToHex(GameObject hexObj, HexCellData data, Material groundMat)
     {
         Renderer r = hexObj.GetComponentInChildren<Renderer>();
         if (r == null) return;
 
-        Material matToUse = matGrass;
+        Material matToUse = groundMat;
         string nameSuffix = "";
         hexObj.transform.localScale = Vector3.one;
 
@@ -118,12 +132,12 @@ public class HexMapVisualizer : MonoBehaviour
                     break;
                 case HexFeatureType.Base:
                     matToUse = matBase;
-                    hexObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                    hexObj.transform.localScale = new Vector3(1f, 1f, 1f);
                     nameSuffix = " [CAPITOL]";
                     break;
                 case HexFeatureType.Beacon:
                     matToUse = matBeacon;
-                    hexObj.transform.localScale = new Vector3(0.8f, 3f, 0.8f);
+                    hexObj.transform.localScale = new Vector3(1f, 1f, 1f);
                     nameSuffix = " [BEACON]";
                     break;
             }
@@ -131,9 +145,6 @@ public class HexMapVisualizer : MonoBehaviour
 
         r.sharedMaterial = matToUse;
         hexObj.name += nameSuffix;
-
-        // Opcjonalnie: Ustawienie koloru w PropertyBlock (jeœli potrzebujesz)
-        // r.SetPropertyBlock(propBlock);
     }
 
     void SpawnProp(GameObject parentHex, GameObject prefab)
@@ -146,7 +157,6 @@ public class HexMapVisualizer : MonoBehaviour
     public void ClearMap()
     {
         if (mapHolder != null) DestroyImmediate(mapHolder.gameObject);
-        // Czyœci dzieci jeœli jakieœ zosta³y
         while (transform.childCount > 0) DestroyImmediate(transform.GetChild(0).gameObject);
     }
 }
