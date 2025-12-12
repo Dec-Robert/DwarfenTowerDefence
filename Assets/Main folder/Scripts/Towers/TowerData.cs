@@ -1,19 +1,25 @@
 using UnityEngine;
+using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "NewTower", menuName = "Tower Defense/Tower Data")]
-
-public class TowerData : ScriptableObject
+[CreateAssetMenu(fileName = "NewTower", menuName = "Game/Tower Data")]
+public class TowerData : BuildingData
 {
-    public string towerName;
-    public string towerDescription;
-    public Sprite icon;
-
+    [Header("Statystyki Bojowe")]
     public float baseRange;
     public float baseDamage;
     public float fireRate;
-    public int cost;
 
-    public GameObject prefab;
+    private BuildingType type;
+
+    [Header("Efekty Specjalne")]
+    // Lista efektów, np. [SlowEffect, PoisonEffect]
+    public List<TowerEffectSO> effects;
+
     public GameObject bulletPrefab;
 
+    // To wymusza typ Defense automatycznie w edytorze
+    private void OnValidate()
+    {
+        type = BuildingType.Defense;
+    }
 }

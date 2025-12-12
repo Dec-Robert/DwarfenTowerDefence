@@ -10,14 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6aba82a7d3e1bbf429f6f0dd24bf047c, type: 3}
-  m_Name: Crossbowman
+  m_Name: Artilerry
   m_EditorClassIdentifier: 
-  towerName: Crossi Crossi
-  towerDescription: 
+  buildingName: 
+  description: 
   icon: {fileID: 0}
-  baseRange: 3
-  baseDamage: 2
-  fireRate: 3
-  cost: 20
+  type: 0
+  allowedTerrain: 0600000001000000030000000500000000000000
+  requiresOccupiedSpace: 0
+  constructionCost:
+  - type: 2
+    amount: 5
+  - type: 1
+    amount: 3
   prefab: {fileID: 6224301533635993970, guid: 4f3a6833ab83b1243aa8bca0ed6e3006, type: 3}
+  baseRange: 20
+  baseDamage: 5
+  fireRate: 2
+  effects:
+  - {fileID: 11400000, guid: 384f32bf67c32c947b26a858dbd59058, type: 2}
   bulletPrefab: {fileID: 1508738095332709406, guid: 85fe7ed40cca507438cd0f907d3acd01, type: 3}

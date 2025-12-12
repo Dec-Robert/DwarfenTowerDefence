@@ -83,6 +83,10 @@ public class HexMapVisualizer : MonoBehaviour
                     GameObject hex = Instantiate(hexPrefab, finalPos, Quaternion.identity, chunkObj.transform);
                     hex.name = $"Hex_{local.x}_{local.y}";
 
+                    HexCell cellComponent = hex.AddComponent<HexCell>();
+                    cellComponent.chunkCoord = chunkCoord;
+                    cellComponent.localCoord = local;
+
                     ApplyVisualsToHex(hex, cellData, chunkBaseMat);
                 }
             }

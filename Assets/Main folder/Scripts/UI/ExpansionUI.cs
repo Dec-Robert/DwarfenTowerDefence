@@ -63,7 +63,7 @@ public class ExpansionUI : MonoBehaviour
 
         if (GameManager.Instance != null)
         {
-            buyButton.interactable = GameManager.Instance.gold >= goldCost;
+            buyButton.interactable = ResourceManager.Instance.GetResourceAmount(ResourceType.Gold) >= goldCost;
         }
 
         // ZABLOKUJ KAMERÊ

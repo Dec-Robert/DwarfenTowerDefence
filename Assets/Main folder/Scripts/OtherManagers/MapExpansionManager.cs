@@ -87,10 +87,12 @@ public class MapExpansionManager : MonoBehaviour
     {
         int cost = CalculateCost();
 
-        if (GameManager.Instance.gold >= cost)
+        if (ResourceManager.Instance.GetResourceAmount(ResourceType.Gold) >= cost)
         {
+            Dictionary<ResourceType, int> tmp = new Dictionary<ResourceType, int>();
+            tmp.Add(ResourceType.Gold, cost);
             // P³atnoœæ
-            GameManager.Instance.ModifyGold(-cost);
+            ResourceManager.Instance.SpendResources(tmp);
 
             // Logika Mapy - wizualne odkrycie od razu
             fogManager.RevealChunk(coord);

@@ -73,19 +73,18 @@ public class TowerController : MonoBehaviour
 
     void Shoot()
     {
-        // Pobieramy prefab pocisku z DANYCH
-        GameObject bulletToSpawn = towerData.bulletPrefab;
-
-        if (bulletToSpawn == null) return;
+        // Rzutowanie, bo w BuildingEntity mamy bazowe BuildingData
+        TowerData tData = towerData as TowerData;
+        if (tData == null || tData.bulletPrefab == null) return;
 
         Vector3 spawnPos = (firePoint != null) ? firePoint.position : transform.position;
-        GameObject bulletGO = Instantiate(bulletToSpawn, spawnPos, Quaternion.identity);
+        GameObject bulletGO = Instantiate(tData.bulletPrefab, spawnPos, Quaternion.identity);
 
         SimpleBullet bullet = bulletGO.GetComponent<SimpleBullet>();
         if (bullet != null)
         {
-            // Pobieramy obra¿enia z DANYCH
-            bullet.Seek(target, towerData.baseDamage);
+            // PRZEKAZUJEMY EFEKTY Z DANYCH DO POCISKU
+            bullet.Seek(target, tData.baseDamage, tData.effects);
         }
     }
 

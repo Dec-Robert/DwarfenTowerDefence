@@ -42,7 +42,7 @@ public class EnemyStats : MonoBehaviour
     void Die()
     {
         Debug.Log("Przeciwnik zniszczony!");
-        GameManager.Instance.ModifyGold(2);
+        ResourceManager.Instance.AddResource(ResourceType.Gold, 2);
         Destroy(gameObject);
     }
 }
