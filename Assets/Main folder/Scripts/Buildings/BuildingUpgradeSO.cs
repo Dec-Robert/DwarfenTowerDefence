@@ -4,21 +4,24 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "NewUpgrade", menuName = "City Builder/Building Upgrade")]
 public class BuildingUpgradeSO : ScriptableObject
 {
-    [Header("Wizualia")]
+    [Header("Informacje")]
     public string upgradeName;
     public Sprite icon;
-    [TextArea] public string description; // Co to daje (opis dla gracza)
+    [TextArea] public string description;
 
-    [Header("Koszt Ulepszenia")]
+    [Header("Koszt")]
     public List<BuildingData.ResourceCost> cost;
 
-    [Header("Zmiany Statystyk (Opcjonalne)")]
-    // Te listy bêd¹ modyfikowaæ bazowe statystyki budynku
-    public List<BuildingData.ResourceCost> productionModifier; // np. Wood +5
-    public List<BuildingData.ResourceCost> upkeepModifier;     // np. Gold +2
+    [Header("Efekty Statystyczne (Addytywne)")]
+    // Np. jeœli tartak produkuje 5, a tu wpiszemy Wood: 2, to bêdzie produkowa³ 7.
+    public List<BuildingData.ResourceCost> productionBonus;
+    public List<BuildingData.ResourceCost> upkeepIncrease;
 
-    [Header("Logika Specjalna (Opcjonalne)")]
-    // Jeœli potrzebujesz skomplikowanej logiki (np. sadzenie lasu), 
-    // mo¿emy tu dodaæ system efektów podobny do wie¿, ale na razie u¿yjemy ID lub nazwy
+    [Header("Logika Specjalna")]
+    // Np. "AUTO_REPLANT" - ID dla skryptu, ¿eby wiedzia³ co robiæ
     public string specialEffectID;
+
+    [Header("Drzewko Rozwoju")]
+    // Jakie ulepszenia stan¹ siê dostêpne po wykupieniu tego? (To jest ten Tier + 1)
+    public List<BuildingUpgradeSO> nextTierOptions;
 }

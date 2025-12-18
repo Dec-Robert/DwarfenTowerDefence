@@ -1,63 +1,79 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using UnityEngine.EventSystems;
 
 public class FogOfWarManager : MonoBehaviour
 {
-    [Header("Interakcja")]
+    [Header("Referencje")]
     public MapExpansionManager expansionManager;
+    public HexMapVisualizer mapVisualizer;
 
     [Header("Ustawienia Wizualne")]
     public GameObject fogPrefab;
-    public float fogHeightOffset = 2.0f;
+
+    public float fogHeightOffset = 0.0f; // Przesuniêcie w pionie
+    public float fogHeightScale = 1.0f;  // Skala Y (ustaw na 5 jeœli chcesz wysoki kloc, na 1 jeœli standard)
 
     [Header("Debug")]
     public bool showDebugLogs = false;
-    [Tooltip("Jeœli zaznaczone, klikniêcie LPM na mg³ê usunie j¹.")]
-    public bool debugClickToReveal = true; // <--- NOWA ZMIENNA
+    public bool debugClickToReveal = true;
 
     private Dictionary<Vector2Int, GameObject> activeFogChunks = new Dictionary<Vector2Int, GameObject>();
-
-    // Zdarzenie dla innych skryptów
     public event Action<Vector2Int> OnChunkRevealed;
 
+    // Zmienne pomocnicze
     private int chunkRadius;
     private float hexSize;
     private float padding;
 
-    // --- NOWA METODA UPDATE DO OBS£UGI KLIKNIÊÆ ---
     private void Update()
     {
-        // Blokada klikania przez UI
+        // 1. Sprawdzenie UI
         if (UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            // Debug.Log("Klikniêcie zablokowane przez UI");
             return;
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            // Uwaga: Heksy wewn¹trz prefabu mg³y musz¹ mieæ Collidery!
+            // 2. Strza³ promieniem
             if (Physics.Raycast(ray, out hit))
             {
-                // Iterujemy po wszystkich aktywnych chunkach mg³y
+                // DEBUG: W co trafiliœmy?
+                Debug.Log($"Raycast trafi³ w obiekt: <b>{hit.transform.name}</b> (Rodzic: {hit.transform.parent?.name})");
+
                 foreach (var kvp in activeFogChunks)
                 {
                     GameObject fogRoot = kvp.Value;
 
-                    // SPRAWDZENIE:
-                    // Czy trafiliœmy w sam korzeñ mg³y LUB w którekolwiek z jego dzieci (ma³e heksy)?
+                    // Sprawdzamy czy trafiony obiekt to czêœæ mg³y
                     if (hit.transform.gameObject == fogRoot || hit.transform.IsChildOf(fogRoot.transform))
                     {
-                        // Mamy trafienie!
+                        Debug.Log($"<color=green>Trafiono w MG£Ê na chunku: {kvp.Key}</color>");
+
                         if (expansionManager != null)
                         {
                             expansionManager.OnFogClicked(kvp.Key);
                         }
-                        return; // Przerywamy pêtlê, znaleŸliœmy w³aœciwy chunk
+                        else
+                        {
+                            Debug.LogError("Brak przypisanego Expansion Managera w FogOfWarManager!");
+                        }
+                        return;
                     }
                 }
+
+                Debug.Log("<color=orange>Trafiono w coœ, ale to NIE jest aktywna mg³a (mo¿e teren pod spodem?).</color>");
+            }
+            else
+            {
+                Debug.Log("<color=red>Raycast nie trafi³ w nic (Brak collidera?).</color>");
             }
         }
     }
@@ -69,17 +85,33 @@ public class FogOfWarManager : MonoBehaviour
 
         if (fogPrefab == null) return;
 
-        foreach (var chunkCoord in allChunks) CreateFogForChunk(chunkCoord);
+        foreach (var chunkCoord in allChunks)
+        {
+            CreateFogForChunk(chunkCoord);
+
+            // Wy³¹czamy chunk terenu na start (ukrywamy go)
+            if (mapVisualizer != null)
+            {
+                GameObject chunkObj = mapVisualizer.GetChunkGameObject(chunkCoord);
+                if (chunkObj != null)
+                {
+                    chunkObj.SetActive(false);
+                }
+            }
+        }
     }
 
     void CreateFogForChunk(Vector2Int coord)
     {
         Vector3 center = HexGridMath.GetChunkCenterWorld(coord, chunkRadius, hexSize, padding);
         Vector3 spawnPos = center + Vector3.up * fogHeightOffset;
+
         GameObject fogObj = Instantiate(fogPrefab, spawnPos, Quaternion.identity, transform);
         fogObj.name = $"Fog_{coord.x}_{coord.y}";
 
-        fogObj.transform.localScale = new Vector3(1, 1, 1);
+        // POPRAWKA: Ustawiamy skalê X i Z na 1, bo Twój prefab ma ju¿ dobry rozmiar.
+        // Skalujemy tylko Y (wysokoœæ) zgodnie z Twoim ¿yczeniem.
+        fogObj.transform.localScale = new Vector3(1f, fogHeightScale, 1f);
 
         activeFogChunks.Add(coord, fogObj);
     }
@@ -91,10 +123,18 @@ public class FogOfWarManager : MonoBehaviour
             if (showDebugLogs) Debug.Log($"[FogManager] Odkrywanie chunku: {coord}");
             GameObject fogObj = activeFogChunks[coord];
             if (fogObj != null) Destroy(fogObj);
-
             activeFogChunks.Remove(coord);
 
-            // Powiadamiamy Spawner
+            // W³¹cz teren pod spodem
+            if (mapVisualizer != null)
+            {
+                GameObject chunkObj = mapVisualizer.GetChunkGameObject(coord);
+                if (chunkObj != null)
+                {
+                    chunkObj.SetActive(true);
+                }
+            }
+
             OnChunkRevealed?.Invoke(coord);
         }
     }
@@ -109,8 +149,6 @@ public class FogOfWarManager : MonoBehaviour
         foreach (var kvp in activeFogChunks) if (kvp.Value != null) Destroy(kvp.Value);
         activeFogChunks.Clear();
 
-        List<GameObject> children = new List<GameObject>();
-        foreach (Transform child in transform) children.Add(child.gameObject);
-        foreach (GameObject child in children) DestroyImmediate(child);
+        for (int i = transform.childCount - 1; i >= 0; i--) DestroyImmediate(transform.GetChild(i).gameObject);
     }
 }

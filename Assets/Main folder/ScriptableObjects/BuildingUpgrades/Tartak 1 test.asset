@@ -13,19 +13,22 @@ MonoBehaviour:
   m_Name: Tartak 1 test
   m_EditorClassIdentifier: 
   upgradeName: Test 1
-  icon: {fileID: 0}
+  icon: {fileID: -1371103804, guid: 31d42cfe27f1f6f4c9ca05453b879da9, type: 3}
   description: 
   cost:
   - type: 0
     amount: 20
   - type: 1
     amount: 1
-  productionModifier:
-  - type: 1
+  productionBonus:
+  - type: 0
     amount: 5
   - type: 0
-    amount: 9
-  upkeepModifier:
-  - type: 1
-    amount: 2
+    amount: 15
+  upkeepIncrease:
+  - type: 2
+    amount: 3
   specialEffectID: 
+  nextTierOptions:
+  - {fileID: 11400000, guid: 2659c2d68bd6b004480ceef956a3d4c3, type: 2}
+  - {fileID: 11400000, guid: 2659c2d68bd6b004480ceef956a3d4c3, type: 2}

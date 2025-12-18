@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce34df5ebabdac64997bb41d4ba2cdf0, type: 3}
   m_Name: Sawmill
   m_EditorClassIdentifier: 
-  buildingName: 
+  buildingName: Tartak
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 289338161, guid: e3d9be7a74271904dae7e1f7ceb9b60d, type: 3}
   type: 0
   allowedTerrain: 01000000
   requiresOccupiedSpace: 0
@@ -25,4 +25,13 @@ MonoBehaviour:
     amount: 5
   - type: 2
     amount: 5
-  prefab: {fileID: 6987379787904698027, guid: 0ed6f20242337c64b8df5c77925df8ad, type: 3}
+  productionPerCycle:
+  - type: 1
+    amount: 15
+  upkeepPerCycle:
+  - type: 2
+    amount: 5
+  tier1Upgrades:
+  - {fileID: 11400000, guid: 88baf687014f6434ebb1403f4be5c30a, type: 2}
+  - {fileID: 11400000, guid: 2659c2d68bd6b004480ceef956a3d4c3, type: 2}
+  prefab: {fileID: 8647511797650135546, guid: a372fba93af731545bd3d3bd85da8b44, type: 3}

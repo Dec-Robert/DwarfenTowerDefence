@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class InteractionManager : MonoBehaviour
 {
@@ -7,44 +8,49 @@ public class InteractionManager : MonoBehaviour
 
     [Header("Referencje")]
     public HexMapGenerator mapGenerator;
-    public LayerMask hexLayer; // Layer z heksami
+    public LayerMask hexLayer; // Upewnij siê, ¿e Heksy s¹ na tej warstwie!
 
     [Header("Stan Budowania")]
-    private BuildingData selectedBuilding; // Mo¿e to byæ Tartak (BuildingData) albo Wie¿a (TowerData)
+    // Jeœli to pole nie jest null, oznacza to, ¿e gracz ma "m³otek w rêku"
+    [SerializeField] private BuildingData selectedBuilding;
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance != null && Instance != this) Destroy(this);
+        else Instance = this;
     }
 
-    // Tê metodê wo³aj¹ przyciski w UI (zarówno wie¿, jak i budynków)
+    // --- API DLA UI (Przyciski w menu budowania) ---
     public void SelectBuildingToBuild(BuildingData data)
     {
         selectedBuilding = data;
         Debug.Log($"Wybrano do budowy: {data.buildingName}");
 
-        // Opcjonalnie: Poka¿ "ducha" budynku pod kursorem
+        // Tu mo¿na dodaæ logikê "Ducha" (Ghost Building) pod¹¿aj¹cego za kursorem
     }
 
     public void CancelBuilding()
     {
         selectedBuilding = null;
-        Debug.Log("Anulowano budowanie.");
+        Debug.Log("Anulowano tryb budowania.");
     }
 
+    // --- G£ÓWNA PÊTLA ---
     void Update()
     {
-        // Prawy przycisk myszy - Anuluj
+        // 1. Anulowanie (Prawy Przycisk Myszy)
         if (Input.GetMouseButtonDown(1))
         {
             CancelBuilding();
+            // Jeœli by³o otwarte menu kontekstowe, te¿ mo¿na je zamkn¹æ
+            if (BuildingContextMenu.Instance != null) BuildingContextMenu.Instance.CloseMenu();
             return;
         }
 
-        // Lewy przycisk myszy - Akcja
+        // 2. Klikniêcie (Lewy Przycisk Myszy)
         if (Input.GetMouseButtonDown(0))
         {
-            // Blokada UI
+            // Blokada klikania "przez" UI (np. ¿eby nie zbudowaæ wie¿y klikaj¹c w przycisk pauzy)
             if (EventSystem.current.IsPointerOverGameObject()) return;
 
             HandleClick();
@@ -56,130 +62,127 @@ public class InteractionManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, 100f, hexLayer))
+        if (Physics.Raycast(ray, out hit, 1000f, hexLayer))
         {
-            // Szukamy komponentu HexCell na trafionym obiekcie
+            // Szukamy komponentu HexCell na trafionym obiekcie (lub jego rodzicu)
             HexCell clickedCell = hit.collider.GetComponentInParent<HexCell>();
 
             if (clickedCell != null)
             {
-                if (selectedBuilding != null)
-                {
-                    // TRYB BUDOWANIA
-                    TryBuildOnHex(clickedCell);
-                }
-                else
-                {
-                    // TRYB SELEKCJI (Poka¿ info, menu kontekstowe)
-                    SelectHex(clickedCell);
-                }
+                ProcessHexInteraction(clickedCell);
             }
         }
     }
 
-    void SelectHex(HexCell cell)
+    void ProcessHexInteraction(HexCell cell)
     {
-        // SprawdŸ czy na heksie jest budynek (BuildingEntity)
-        BuildingEntity building = cell.GetComponentInChildren<BuildingEntity>();
+        // A. SprawdŸ, czy na heksie stoi ju¿ jakiœ budynek
+        BuildingEntity existingBuilding = cell.GetComponentInChildren<BuildingEntity>();
 
-        if (building != null)
+        if (existingBuilding != null)
         {
-            // Jeœli to budynek ekonomiczny -> otwórz menu kontekstowe
-            if (building.data.type == BuildingType.Economic || building.data.type == BuildingType.Utility)
+            // Jeœli jest budynek -> Otwórz Menu Kontekstowe
+            Debug.Log($"Klikniêto budynek: {existingBuilding.data.buildingName}");
+
+            if (BuildingContextMenu.Instance != null)
             {
-                if (ContextMenuUI.Instance != null)
-                {
-                    ContextMenuUI.Instance.ShowMenu(building);
-                }
+                BuildingContextMenu.Instance.OpenMenu(existingBuilding);
             }
-            else if (building.data.type == BuildingType.Defense)
-            {
-                // Tutaj logika dla wie¿ (inne menu)
-                Debug.Log("Klikniêto wie¿ê - tu bêdzie inne menu.");
-            }
+
+            // Jeœli byliœmy w trybie budowania, klikniêcie w inny budynek mo¿e anulowaæ budowanie
+            // lub po prostu je zignorowaæ. Tutaj resetujemy, ¿eby otworzyæ menu.
+            CancelBuilding();
+            return;
         }
-        else
+
+        // B. Jeœli pole jest puste (lub ma tylko drzewa/ska³y) i mamy wybrany budynek -> BUDUJEMY
+        if (selectedBuilding != null)
         {
-            // Pusty heks - mo¿e jakieœ info o terenie?
-            var data = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
-            Debug.Log($"Wybrano pusty heks: {data.feature}");
+            TryBuildOnHex(cell);
+            return;
         }
+
+        // C. Jeœli nic nie budujemy i nic tam nie ma -> Poka¿ info o terenie (Debug)
+        SelectHexInfo(cell);
     }
 
     void TryBuildOnHex(HexCell cell)
     {
-        // 1. Pobierz dane logiczne heksa
+        // 1. Pobierz logiczne dane heksa (biom, typ terenu)
         if (!mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return;
         HexCellData data = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
 
-        // 2. Walidacja Terenu (Czy biom pasuje?)
+        // 2. Walidacja Terenu (Czy budynek pozwala na ten typ terenu?)
         if (!selectedBuilding.allowedTerrain.Contains(data.feature))
         {
-            Debug.Log($"<color=red>Z³y teren!</color> {selectedBuilding.buildingName} wymaga: {string.Join(", ", selectedBuilding.allowedTerrain)}");
+            Debug.Log($"<color=red>Z³y teren!</color> {selectedBuilding.buildingName} wymaga: {string.Join(", ", selectedBuilding.allowedTerrain)} (Tu jest: {data.feature})");
             return;
         }
 
-        // 3. Walidacja Zajêtoœci
-        // Musimy sprawdziæ, czy coœ ju¿ tu stoi.
-        // Jeœli budujemy na lesie (Tartak), to musimy sprawdziæ, czy heks ma cechê Forest.
-        // Ale musimy te¿ sprawdziæ, czy nie ma tu ju¿ Innego Budynku.
-        // Na razie sprawdzamy dzieci transformu (uproszczenie), docelowo HexCellData powinno mieæ pole 'OccupyingBuilding'.
+        // 3. Sprawdzenie kosztów i p³atnoœæ
+        // Zamieniamy listê kosztów na S³ownik dla ResourceManagera
+        Dictionary<ResourceType, int> costDict = selectedBuilding.GetCostDictionary();
 
-        bool isOccupiedByBuilding = cell.GetComponentInChildren<BuildingEntity>() != null;
-        // ^ Zak³adam, ¿e dodamy skrypt BuildingEntity do prefabów budynków
-
-        if (isOccupiedByBuilding)
-        {
-            Debug.Log("To pole jest ju¿ zabudowane!");
-            return;
-        }
-
-        // 4. P³atnoœæ i Budowa
-        var costDict = selectedBuilding.GetCostDictionary();
         if (ResourceManager.Instance.SpendResources(costDict))
         {
-            Build(cell, data);
+            // P³atnoœæ przesz³a pomyœlnie -> Budujemy
+            PerformBuild(cell, data);
         }
         else
         {
             Debug.Log("Za ma³o surowców!");
+            // Tu mo¿na dodaæ dŸwiêk b³êdu
         }
     }
 
-    void Build(HexCell cell, HexCellData data)
+    void PerformBuild(HexCell cell, HexCellData data)
     {
-        // A. Jeœli budujemy na zasobie (np. Tartak na Lesie), nie niszczymy lasu logicznie, ale wizualnie usuwamy drzewka
-        // B. Jeœli budujemy Wie¿ê na pustym polu, nic nie usuwamy (bo nic tam nie ma)
-
-        // Czyœcimy wizualne "œmieci" (drzewka, kamienie) z heksa przed postawieniem budynku
+        // 1. Czyœcimy heks z dekoracji (drzewa, kamienie)
+        // Jeœli budujemy Tartak na Lesie, usuwamy model lasu, ¿eby Tartak nie przenika³ przez drzewa.
+        // Logicznie w 'HexCellData' teren to nadal 'Forest', co jest OK.
         foreach (Transform child in cell.transform)
         {
             Destroy(child.gameObject);
         }
 
-        // Instancjowanie
+        // 2. Instancjowanie budynku
         GameObject newObj = Instantiate(selectedBuilding.prefab, cell.transform.position, Quaternion.identity);
         newObj.transform.parent = cell.transform;
 
-        // Jeœli to wie¿a, konfigurujemy j¹ (rzutowanie sprawdza czy to TowerData)
-        if (selectedBuilding is TowerData towerData)
-        {
-            var controller = newObj.GetComponent<TowerController>();
-            if (controller != null) controller.towerData = towerData;
-        }
+        // Drobna korekta pozycji Y (opcjonalna, zale¿na od pivotów modeli)
+        // newObj.transform.localPosition = Vector3.zero; 
 
-        // Dodanie skryptu identyfikuj¹cego budynek (wa¿ne do logiki klikania póŸniej)
-        // Zak³adam istnienie BuildingEntity (napiszemy go zaraz)
+        // 3. Inicjalizacja komponentu logicznego (BuildingEntity)
         var entity = newObj.GetComponent<BuildingEntity>();
         if (entity == null) entity = newObj.AddComponent<BuildingEntity>();
         entity.Initialize(selectedBuilding);
 
-        Debug.Log($"Zbudowano {selectedBuilding.buildingName}");
+        // 4. Konfiguracja specyficzna dla Wie¿
+        // (Wie¿e u¿ywaj¹ TowerData, które dziedziczy po BuildingData)
+        if (selectedBuilding is TowerData towerData)
+        {
+            var controller = newObj.GetComponent<TowerController>();
+            if (controller != null)
+            {
+                controller.towerData = towerData;
+            }
+        }
 
-        // Reset wyboru (chyba ¿e trzymasz Shift)
+        Debug.Log($"<color=green>Zbudowano {selectedBuilding.buildingName}!</color>");
+
+        // 5. Reset trybu budowania (chyba ¿e trzymamy Shift dla seryjnego budowania)
         if (!Input.GetKey(KeyCode.LeftShift))
         {
             selectedBuilding = null;
         }
+    }
+
+    void SelectHexInfo(HexCell cell)
+    {
+        var data = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
+        Debug.Log($"Info o terenie: {data.feature} (Poziom: {data.featureLevel})");
+
+        // Jeœli menu kontekstowe by³o otwarte dla innego budynku, zamykamy je
+        if (BuildingContextMenu.Instance != null) BuildingContextMenu.Instance.CloseMenu();
     }
 }

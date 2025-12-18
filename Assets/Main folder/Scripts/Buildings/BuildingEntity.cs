@@ -3,96 +3,123 @@ using System.Collections.Generic;
 
 public class BuildingEntity : MonoBehaviour
 {
-    public BuildingData data;
+    [Header("Dane Bazowe")]
+    public BuildingData data; // Referencja do ScriptableObject
 
-    // Stan instancji
-    public int currentTierIndex = 0;
-    public bool isMaxLevel = false;
+    [Header("Stan Instancji")]
+    public int currentTier = 0; // 0 = Podstawa, 1 = Po pierwszym ulepszeniu, itd.
 
-    // Lista zastosowanych ulepszeñ (¿eby móc je zsumowaæ)
-    private List<BuildingUpgradeSO> appliedUpgrades = new List<BuildingUpgradeSO>();
+    // Historia ulepszeñ (co gracz ju¿ kupi³ dla tego konkretnego budynku)
+    public List<BuildingUpgradeSO> appliedUpgrades = new List<BuildingUpgradeSO>();
 
-    // Aktualne statystyki (Bazowe + Ulepszenia)
-    private Dictionary<ResourceType, int> currentProduction = new Dictionary<ResourceType, int>();
-    private Dictionary<ResourceType, int> currentUpkeep = new Dictionary<ResourceType, int>();
-
+    // Metoda inicjalizuj¹ca (wo³ana przy budowie)
     public void Initialize(BuildingData _data)
     {
         data = _data;
-        currentTierIndex = 0;
+        currentTier = 0;
         appliedUpgrades.Clear();
-        RecalculateStats();
     }
 
+    // --- LOGIKA ULEPSZEÑ ---
+
+    // Zwraca listê opcji dostêpnych do kupienia W TYM MOMENCIE
+    public List<BuildingUpgradeSO> GetAvailableUpgrades()
+    {
+        // 1. Jeœli budynek jest nowy (Tier 0), zwracamy opcje startowe z BuildingData
+        if (currentTier == 0)
+        {
+            if (data.tier1Upgrades != null)
+                return data.tier1Upgrades;
+        }
+
+        // 2. Jeœli mamy ju¿ jakieœ ulepszenia, sprawdzamy co odblokowa³o OSTATNIE wybrane ulepszenie
+        // To tworzy efekt "drzewka" - wybór A odblokowuje B, wybór C odblokowuje D.
+        if (appliedUpgrades.Count > 0)
+        {
+            BuildingUpgradeSO lastUpgrade = appliedUpgrades[appliedUpgrades.Count - 1];
+
+            if (lastUpgrade.nextTierOptions != null)
+                return lastUpgrade.nextTierOptions;
+        }
+
+        // Brak dostêpnych ulepszeñ (Max level lub œlepa uliczka)
+        return new List<BuildingUpgradeSO>();
+    }
+
+    // Aplikuje wybrane ulepszenie
     public void ApplyUpgrade(BuildingUpgradeSO upgrade)
     {
-        Debug.Log($"Zastosowano ulepszenie: {upgrade.upgradeName} na {gameObject.name}");
-
-        // Dodajemy do listy posiadanych ulepszeñ
         appliedUpgrades.Add(upgrade);
+        currentTier++;
 
-        // Zwiêkszamy Tier
-        currentTierIndex++;
-        if (data.upgradeTiers != null && currentTierIndex >= data.upgradeTiers.Count)
-        {
-            isMaxLevel = true;
-        }
+        Debug.Log($"Budynek {name} ulepszony do: {upgrade.upgradeName} (Nowy Tier: {currentTier})");
 
-        // Przeliczamy statystyki na nowo
-        RecalculateStats();
+        // Tutaj w przysz³oœci dodasz:
+        // - Zmianê modelu 3D (upgrade.newModelPrefab)
+        // - Efekty wizualne (partikle)
+        // - Obs³ugê specialEffectID (jeœli upgrade robi coœ dziwnego)
     }
 
-    // --- NAPRAWIONA METODA PRZELICZANIA ---
-    private void RecalculateStats()
-    {
-        currentProduction.Clear();
-        currentUpkeep.Clear();
+    // --- KALKULACJE EKONOMICZNE (Baza + Bonusy) ---
 
-        // 1. Wczytaj bazowe wartoœci z BuildingData
-        if (data.productionPerCycle != null)
-        {
-            foreach (var item in data.productionPerCycle)
-                AddToIntDict(currentProduction, item.type, item.amount);
-        }
-
-        if (data.upkeepPerCycle != null)
-        {
-            foreach (var item in data.upkeepPerCycle)
-                AddToIntDict(currentUpkeep, item.type, item.amount);
-        }
-
-        // 2. Dodaj modyfikatory ze wszystkich ulepszeñ
-        foreach (var upgrade in appliedUpgrades)
-        {
-            if (upgrade.productionModifier != null)
-            {
-                foreach (var mod in upgrade.productionModifier)
-                    AddToIntDict(currentProduction, mod.type, mod.amount);
-            }
-
-            if (upgrade.upkeepModifier != null)
-            {
-                foreach (var mod in upgrade.upkeepModifier)
-                    AddToIntDict(currentUpkeep, mod.type, mod.amount);
-            }
-        }
-    }
-
-    // Helper do bezpiecznego dodawania do s³ownika
-    void AddToIntDict(Dictionary<ResourceType, int> dict, ResourceType type, int amount)
-    {
-        if (dict.ContainsKey(type)) dict[type] += amount;
-        else dict[type] = amount;
-    }
-
-    // Metody publiczne dla UI
     public Dictionary<ResourceType, int> GetCurrentProduction()
     {
-        return currentProduction;
+        Dictionary<ResourceType, int> total = new Dictionary<ResourceType, int>();
+
+        // 1. Bazowa produkcja z BuildingData
+        if (data.productionPerCycle != null)
+        {
+            foreach (var res in data.productionPerCycle)
+                AddToDict(total, res.type, res.amount);
+        }
+
+        // 2. Dodajemy bonusy ze wszystkich posiadanych ulepszeñ
+        foreach (var up in appliedUpgrades)
+        {
+            if (up.productionBonus != null)
+            {
+                foreach (var res in up.productionBonus)
+                    AddToDict(total, res.type, res.amount);
+            }
+        }
+        return total;
     }
 
     public Dictionary<ResourceType, int> GetCurrentUpkeep()
     {
-        return currentUpkeep;
+        Dictionary<ResourceType, int> total = new Dictionary<ResourceType, int>();
+
+        // 1. Bazowe utrzymanie
+        if (data.upkeepPerCycle != null)
+        {
+            foreach (var res in data.upkeepPerCycle)
+                AddToDict(total, res.type, res.amount);
+        }
+
+        // 2. Kary/Koszty z ulepszeñ (np. lepsza kopalnia zu¿ywa wiêcej z³ota)
+        foreach (var up in appliedUpgrades)
+        {
+            if (up.upkeepIncrease != null)
+            {
+                foreach (var res in up.upkeepIncrease)
+                    AddToDict(total, res.type, res.amount);
+            }
+        }
+        return total;
+    }
+
+    // Helper do sumowania wartoœci w s³owniku
+    void AddToDict(Dictionary<ResourceType, int> dict, ResourceType type, int amount)
+    {
+        if (dict.ContainsKey(type)) dict[type] += amount;
+        else dict.Add(type, amount);
+    }
+
+    // Metoda do niszczenia budynku
+    public void Demolish()
+    {
+        // Tutaj mo¿na dodaæ logikê zwrotu surowców (np. 50% kosztów)
+        Debug.Log($"Budynek {data.buildingName} zosta³ zburzony.");
+        Destroy(gameObject);
     }
 }
