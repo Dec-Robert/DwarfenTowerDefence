@@ -21,3 +21,23 @@ public enum ResourceType
     Artifacts,  
     Iron        
 }
+
+public enum Race
+{
+    Humans,
+    Elves,
+    Dwarves
+}
+
+public enum WorkState
+{
+    Idle,
+    Working,
+    Exhausted
+}
+
+public enum DayPhase
+{
+    Day,
+    Night
+}
