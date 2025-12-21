@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 7116752032848917176}
   - component: {fileID: 2657325242167498886}
   - component: {fileID: 312398433483079537}
-  - component: {fileID: 5515524366373926925}
+  - component: {fileID: 8649611612240848003}
   m_Layer: 5
-  m_Name: Shift slot
+  m_Name: Worker slot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76,7 +76,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &5515524366373926925
+--- !u!114 &8649611612240848003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -85,10 +85,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5040426612586135777}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e0f0a2ff4e11ad4bb89d98a615677ca, type: 3}
+  m_Script: {fileID: 11500000, guid: 8cf57f3f12c02a5418e601a4a1aceeaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   slotImage: {fileID: 312398433483079537}
-  emptyColor: {r: 0, g: 0, b: 1, a: 1}
-  occupiedColor: {r: 0, g: 0, b: 0, a: 1}
-  busyColor: {r: 1, g: 0, b: 0, a: 1}

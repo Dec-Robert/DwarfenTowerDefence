@@ -3393,8 +3393,6 @@ MonoBehaviour:
   productionText: {fileID: 47272421}
   consumptionText: {fileID: 2059768707}
   buildingIcon: {fileID: 1524046064}
-  shiftsContainer: {fileID: 1745957216}
-  shiftUIPrefab: {fileID: 4884983833229158590, guid: b40e0daf00a594e4a8bc3da204d907a2, type: 3}
   tierText: {fileID: 1390727240}
   upgradesContainer: {fileID: 92154622}
   upgradeButtonPrefab: {fileID: 4561332871453357558, guid: 8ef621e3403f8634f900dd71e214c23f, type: 3}
@@ -3688,6 +3686,7 @@ GameObject:
   - component: {fileID: 581754938}
   - component: {fileID: 581754937}
   - component: {fileID: 581754939}
+  - component: {fileID: 581754940}
   m_Layer: 5
   m_Name: Citizens
   m_TagString: Untagged
@@ -3763,21 +3762,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 581754935}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec1f74c94c6439145997f71a55698e80, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d2aeb4762bd06146b832cefe3871abe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shiftNameText: {fileID: 0}
-  elfAddBtn: {fileID: 2089113687}
-  elfRemBtn: {fileID: 1966172214}
+  addElf: {fileID: 2089113687}
+  addDwarf: {fileID: 2065721130}
+  addHuman: {fileID: 1768895884}
+  removeElf: {fileID: 1966172214}
+  removeDwarf: {fileID: 1445012482}
+  removeHuman: {fileID: 712722047}
   elfCountText: {fileID: 1379024026}
-  humanAddBtn: {fileID: 1768895884}
-  humanRemBtn: {fileID: 712722047}
-  humanCountText: {fileID: 2092485449}
-  dwarfAddBtn: {fileID: 2065721130}
-  dwarfRemBtn: {fileID: 1445012482}
   dwarfCountText: {fileID: 937131092}
-  slotsContainer: {fileID: 1745957216}
-  slotPrefab: {fileID: 4884983833229158590, guid: b40e0daf00a594e4a8bc3da204d907a2, type: 3}
+  humanCountText: {fileID: 2092485449}
+  targetBuilding: {fileID: 0}
+--- !u!114 &581754940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 581754935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c58ebe1a77424a4080d7c6463fd1a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shiftPanel: {fileID: 1745957215}
+  shiftPrefab: {fileID: 4884983833229158590, guid: b40e0daf00a594e4a8bc3da204d907a2, type: 3}
+  workerPrefab: {fileID: 5040426612586135777, guid: 66fbf79b7fac1a349a5d71ce434970cb, type: 3}
 --- !u!1 &586032163
 GameObject:
   m_ObjectHideFlags: 0
@@ -4343,7 +4355,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 61.1, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &832575517
@@ -7329,7 +7341,6 @@ GameObject:
   - component: {fileID: 1478630901}
   - component: {fileID: 1478630905}
   - component: {fileID: 1478630906}
-  - component: {fileID: 1478630907}
   m_Layer: 0
   m_Name: -----GAME MANAGER
   m_TagString: Untagged
@@ -7413,31 +7424,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1478630898}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 794b8838837d12348a145db1a7fb36db, type: 3}
+  m_Script: {fileID: 11500000, guid: 9248055d32c7abe4c950acb6891dfa73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  realSecondsPerHour: 2
-  TIME_SCALE_DAY: 1
-  dayStartHour: 6
-  workStartHour: 9
-  nightStartHour: 20
-  currentPhase: 0
-  currentHour: 6
-  dayNumber: 1
-  isPaused: 0
---- !u!114 &1478630907
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1478630898}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 012c912939bdffc479784f5c5f9d58ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allCitizens: []
+  citizens: []
+  debugMode: 1
 --- !u!1 &1501048681
 GameObject:
   m_ObjectHideFlags: 0
@@ -11277,7 +11268,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Background
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5298915923645643936, guid: b40e0daf00a594e4a8bc3da204d907a2, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

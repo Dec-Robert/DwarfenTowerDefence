@@ -31,9 +31,10 @@ public enum Race
 
 public enum WorkState
 {
-    Idle,
-    Working,
-    Exhausted
+    Idle,       //Nie pracuje   
+    Assigned,   //Przydzielony do pracy, czeka na rozpoczêcie pracy, mozna nim poruszaæ miêdzy budynkami
+    Working,    //Pracuje zablokowany do konca zmiany
+    Exhausted   //Zmêczony po zmianie
 }
 
 public enum DayPhase

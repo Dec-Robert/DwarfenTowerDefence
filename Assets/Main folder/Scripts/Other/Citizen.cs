@@ -1,18 +1,31 @@
 using UnityEngine;
 
-public class Citizen 
+[System.Serializable]
+public class Citizen
 {
-    public string citizenID { get; set; }
-    public string name { get; set; }
-    public Race race { get; set; }
-    public WorkState workState { get; set; }
-    public BuildingEntity currentWorkplace { get; set; }
+    public string citizenID;
+    public Race race;
+    public WorkState workState;
+    public BuildingEntity currentWorkplace;
 
-    void Start()
+    public void InitializeCitizen(Race r)
     {
-        name = Random.Range(0, 1000).ToString();
-
         citizenID = System.Guid.NewGuid().ToString();
+        race = r;
+        workState = WorkState.Idle;
+        currentWorkplace = null;
+    }
+
+    public void AssignToWorkplace(BuildingEntity workplace)
+    {
+        currentWorkplace = workplace;
+        workState = WorkState.Assigned;
+    }
+
+    public void RemoveFromWorkplace()
+    {
+        currentWorkplace = null;
+        workState = WorkState.Idle;
     }
 
 }

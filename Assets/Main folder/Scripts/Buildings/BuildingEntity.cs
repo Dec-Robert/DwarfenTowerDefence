@@ -12,6 +12,13 @@ public class BuildingEntity : MonoBehaviour
     // Historia ulepszeñ (co gracz ju¿ kupi³ dla tego konkretnego budynku)
     public List<BuildingUpgradeSO> appliedUpgrades = new List<BuildingUpgradeSO>();
 
+    [Header("Pracownicy")]
+    [SerializeField] private int maxShifts = 2;
+    [SerializeField] private int maxWorkersPerShift = 3;
+    [SerializeField] List<Citizen> assignedCitizens = new List<Citizen>();
+
+    private int currentShift = 0;
+
     // Metoda inicjalizuj¹ca (wo³ana przy budowie)
     public void Initialize(BuildingData _data)
     {
@@ -122,4 +129,71 @@ public class BuildingEntity : MonoBehaviour
         Debug.Log($"Budynek {data.buildingName} zosta³ zburzony.");
         Destroy(gameObject);
     }
+
+    //// --- ZARZ¥DZANIE PRACOWNIKAMI ---
+    ///
+    public int GetWorkerCount(Race r)
+    {
+        int count = 0;
+        foreach (var citizen in assignedCitizens)
+        {
+            if (citizen.race == r)
+                count++;
+        }
+
+        return count;
+    }
+
+    public List<Citizen> GetAssignedCitizens()
+    {
+        return assignedCitizens;
+    }
+
+    public void RemoveWorker(Race race)
+    {
+        // ZnajdŸ pierwszego pracownika tej rasy w TYM budynku
+        Citizen workerToRemove = assignedCitizens.Find(c => c.race == race && c.workState == WorkState.Assigned);
+        if (workerToRemove != null)
+        {
+            workerToRemove.RemoveFromWorkplace(); // Reset stanu pracownika
+            assignedCitizens.Remove(workerToRemove); // Usuniêcie z listy budynku
+            Debug.Log($"Zwolniono pracownika rasy {race}");
+        }
+        else
+        {
+            Debug.Log($"Brak dostêpnych pracowników");
+        }
+        BuildingCitizenUI.Instance.Refresh(this);
+    }
+
+    public bool TryAddWorker(Race race)
+    {
+        if (assignedCitizens.Count >= (maxShifts * maxWorkersPerShift))
+        {
+            Debug.Log("Brak wolnych miejsc pracy w tym budynku!");
+            return false;
+        }
+
+        Citizen newWorker = CitizenManager.Instance.FindAndAssignCitizen(race, this);
+
+
+        if (newWorker != null)
+        {
+            assignedCitizens.Add(newWorker);
+            newWorker.AssignToWorkplace(this);
+
+            BuildingCitizenUI.Instance.Refresh(this); // Odœwie¿ UI budynku
+            return true;
+        }
+        BuildingCitizenUI.Instance.Refresh(this);
+        return false; // Brak bezrobotnych tej rasy
+    }
+
+    public void NextShift()
+    {
+        currentShift = (currentShift + 1) % maxShifts;
+        Debug.Log($"Prze³¹czono na zmianê {currentShift + 1}");
+    }
+    public int getMaxShifts() { return maxShifts; }
+    public int getMaxWorkersPerShift() { return maxWorkersPerShift; }
 }

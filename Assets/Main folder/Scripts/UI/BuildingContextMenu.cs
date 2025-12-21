@@ -17,7 +17,7 @@ public class BuildingContextMenu : MonoBehaviour
 
     [Header("Sekcja Ulepszeñ")]
     public TextMeshProUGUI tierText;
-    public Transform upgradesContainer; // Pamiêtaj: To musi byæ "ButtonsContainer", a nie g³ówny panel!
+    public Transform upgradesContainer;
     public GameObject upgradeButtonPrefab;
     public GameObject finishedTextObject;
 
@@ -53,7 +53,9 @@ public class BuildingContextMenu : MonoBehaviour
         panelRoot.SetActive(true);
         selectedUpgrade = null;
         sideInfoPanel.SetActive(false);
-
+        BuildingCitizenManager.Instance.Setup(entity);
+        BuildingCitizenUI.Instance.Setup(entity.getMaxShifts(), entity.getMaxWorkersPerShift());
+        BuildingCitizenUI.Instance.Refresh(entity);
         RefreshContent();
     }
 
