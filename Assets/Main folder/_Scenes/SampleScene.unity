@@ -119,6 +119,55 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &34146712
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 34146714}
+  - component: {fileID: 34146713}
+  m_Layer: 0
+  m_Name: -----TIME MANAGER
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &34146713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34146712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a8a55b9932a2c24bbc865b71663a619, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  realSecondsPerHour: 2
+  currentTime: 6
+  currentHour: 6
+  dayCount: 1
+  timeDisplay: {fileID: 1611391497}
+--- !u!4 &34146714
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34146712}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 387.1555, y: 417.62213, z: -439.8737}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &34336569
 GameObject:
   m_ObjectHideFlags: 0
@@ -785,10 +834,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89a3f4213496e57468a4570672c83bab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myBuildingData: {fileID: 0}
+  myBuildingData: {fileID: 11400000, guid: fc6804a5dec031f4a96410c706a346bd, type: 2}
   nameText: {fileID: 2089217322}
   costText: {fileID: 952194985}
-  iconImage: {fileID: 0}
+  iconImage: {fileID: 104389298}
   btn: {fileID: 104389297}
 --- !u!114 &104389297
 MonoBehaviour:
@@ -2443,7 +2492,7 @@ MonoBehaviour:
   myBuildingData: {fileID: 11400000, guid: 305ea702f61030e4184fd8704c128bcf, type: 2}
   nameText: {fileID: 1106058898}
   costText: {fileID: 1864538807}
-  iconImage: {fileID: 0}
+  iconImage: {fileID: 406041124}
   btn: {fileID: 406041123}
 --- !u!114 &406041123
 MonoBehaviour:
@@ -2989,11 +3038,11 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1154555337}
+  m_Father: {fileID: 586032164}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -142.29999, y: 210.6}
+  m_AnchoredPosition: {x: 332.1, y: 225.4}
   m_SizeDelta: {x: 100, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &506004189
@@ -3821,6 +3870,7 @@ RectTransform:
   - {fileID: 541878805}
   - {fileID: 1611391496}
   - {fileID: 1501048682}
+  - {fileID: 506004188}
   - {fileID: 1154555337}
   - {fileID: 362314251}
   - {fileID: 1205226324}
@@ -5526,7 +5576,6 @@ RectTransform:
   - {fileID: 305719951}
   - {fileID: 372570245}
   - {fileID: 1332670113}
-  - {fileID: 506004188}
   - {fileID: 1968056517}
   - {fileID: 1344353366}
   m_Father: {fileID: 586032164}
@@ -6112,7 +6161,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -142.29999, y: 180.6}
+  m_AnchoredPosition: {x: -142.29999, y: 210.6}
   m_SizeDelta: {x: 100, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1344353367
@@ -7463,7 +7512,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 115, y: 175}
+  m_AnchoredPosition: {x: 115, y: 218.9}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1501048683
@@ -7520,8 +7569,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -7813,10 +7862,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89a3f4213496e57468a4570672c83bab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myBuildingData: {fileID: 0}
+  myBuildingData: {fileID: 11400000, guid: 82382e10f37dc5f4697671773e21f8f8, type: 2}
   nameText: {fileID: 284490836}
   costText: {fileID: 574286815}
-  iconImage: {fileID: 0}
+  iconImage: {fileID: 1540402381}
   btn: {fileID: 1540402380}
 --- !u!114 &1540402380
 MonoBehaviour:
@@ -7953,10 +8002,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89a3f4213496e57468a4570672c83bab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myBuildingData: {fileID: 0}
+  myBuildingData: {fileID: 11400000, guid: aa89a7d041da34b45b7be77c10f79ae6, type: 2}
   nameText: {fileID: 1663253756}
   costText: {fileID: 1462920763}
-  iconImage: {fileID: 0}
+  iconImage: {fileID: 1549737783}
   btn: {fileID: 1549737782}
 --- !u!114 &1549737782
 MonoBehaviour:
@@ -8210,7 +8259,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 115, y: 196}
+  m_AnchoredPosition: {x: 115, y: 234.2}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1611391497
@@ -8267,8 +8316,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -11284,6 +11333,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 330585546}
+  - {fileID: 34146714}
   - {fileID: 1478630900}
   - {fileID: 1837610583}
   - {fileID: 1226635595}

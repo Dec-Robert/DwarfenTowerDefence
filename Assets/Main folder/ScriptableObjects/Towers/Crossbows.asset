@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingName: 
   description: 
-  icon: {fileID: 0}
-  type: 0
+  icon: {fileID: 21300000, guid: b35b0aeb601ca3248b4529d94239d3cb, type: 3}
+  type: 1
   allowedTerrain: 0600000001000000030000000500000000000000
   requiresOccupiedSpace: 0
   constructionCost:
@@ -23,6 +23,9 @@ MonoBehaviour:
     amount: 5
   - type: 1
     amount: 5
+  productionPerCycle: []
+  upkeepPerCycle: []
+  tier1Upgrades: []
   prefab: {fileID: 6224301533635993970, guid: 4f3a6833ab83b1243aa8bca0ed6e3006, type: 3}
   baseRange: 5
   baseDamage: 7

@@ -32,10 +32,8 @@ public class BuildUIButton : MonoBehaviour
 
         if (nameText != null) nameText.text = myBuildingData.buildingName;
 
-        if (iconImage != null && myBuildingData.icon != null)
-        {
-            iconImage.sprite = myBuildingData.icon;
-        }
+        if (iconImage != null) iconImage.sprite = myBuildingData.icon;
+
 
         if (costText != null)
         {

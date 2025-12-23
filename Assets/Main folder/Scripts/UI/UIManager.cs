@@ -65,7 +65,21 @@ public class UIManager : MonoBehaviour
                 break;
 
             case ResourceType.Population:
-                if (populationText) populationText.text = $"L: {amount}";
+                if (populationText != null && CitizenManager.Instance != null)
+                {
+                    int h = CitizenManager.Instance.GetRaceCount(Race.Humans);
+                    int e = CitizenManager.Instance.GetRaceCount(Race.Elves);
+                    int d = CitizenManager.Instance.GetRaceCount(Race.Dwarves);
+
+                    // Format: H:0 | E:0 | D:0
+                    // Mo¿esz te¿ dodaæ kolory, np. <color=green>E:{e}</color>
+                    populationText.text = $"H:{h} | E:{e} | D:{d}";
+                }
+                else if (populationText != null)
+                {
+                    // Fallback jeœli CitizenManager nie gotowy
+                    populationText.text = $"Pop: {amount}";
+                }
                 break;
 
             case ResourceType.Iron:

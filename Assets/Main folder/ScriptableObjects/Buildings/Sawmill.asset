@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingName: Tartak
   description: 
-  icon: {fileID: 289338161, guid: e3d9be7a74271904dae7e1f7ceb9b60d, type: 3}
+  icon: {fileID: 21300000, guid: a68db608862073a43aaba14e1e37f98c, type: 3}
   type: 0
   allowedTerrain: 01000000
   requiresOccupiedSpace: 0

@@ -7,7 +7,13 @@ public class Citizen
     public Race race;
     public WorkState workState;
     public BuildingEntity currentWorkplace;
+    public HousingEntity home; 
 
+    // Metoda przypisania do domu
+    public void AssignHome(HousingEntity newHome)
+    {
+        home = newHome;
+    }
     public void InitializeCitizen(Race r)
     {
         citizenID = System.Guid.NewGuid().ToString();
