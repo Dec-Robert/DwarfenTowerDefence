@@ -10,13 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce34df5ebabdac64997bb41d4ba2cdf0, type: 3}
-  m_Name: Coal mine
+  m_Name: Farm
   m_EditorClassIdentifier: 
-  buildingName: 
+  buildingName: Farm
   description: 
   icon: {fileID: 0}
   type: 0
-  allowedTerrain: 
+  allowedTerrain: 0000000005000000
   requiresOccupiedSpace: 0
-  constructionCost: []
-  prefab: {fileID: 6987379787904698027, guid: 0ed6f20242337c64b8df5c77925df8ad, type: 3}
+  constructionCost:
+  - type: 1
+    amount: 10
+  - type: 0
+    amount: 10
+  productionPerCycle:
+  - type: 4
+    amount: 40
+  upkeepPerCycle: []
+  tier1Upgrades: []
+  prefab: {fileID: 0}

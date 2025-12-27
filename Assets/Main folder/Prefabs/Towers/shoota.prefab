@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2158778836670754792}
   - component: {fileID: 7185771366030155918}
   - component: {fileID: 7208102148694666296}
+  - component: {fileID: 2390207909590417761}
   m_Layer: 0
   m_Name: shoota
   m_TagString: Untagged
@@ -126,6 +127,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   towerData: {fileID: 11400000, guid: 4746f97a9eec59946ae28357df58ee2d, type: 2}
   firePoint: {fileID: 0}
+  canShoot: 0
+  currentRange: 0
+  currentDamage: 0
+  currentFireRate: 0
+--- !u!114 &2390207909590417761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6224301533635993970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a488de0df40db2459b55eee3158f47a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 0}
+  currentTier: 0
+  appliedUpgrades: []
+  shiftStartHour: 6
+  shiftLength: 10
+  maxShifts: 1
+  maxWorkersPerShift: 2
+  assignedCitizens: []
+  controller: {fileID: 0}
+  isCombatActive: 0
+  hasAmmo: 0
 --- !u!1 &8448916575932266538
 GameObject:
   m_ObjectHideFlags: 0

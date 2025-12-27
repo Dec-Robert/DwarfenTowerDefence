@@ -112,6 +112,14 @@ public class HousingEntity : BuildingEntity
             // P³acimy
             ResourceManager.Instance.SpendResources(resourcesToPay);
 
+            if (FloatingTextManager.Instance != null)
+            {
+                foreach (var kvp in resourcesToPay)
+                {
+                    FloatingTextManager.Instance.ShowLoss(transform.position, kvp.Key.ToString(), kvp.Value);
+                }
+            }
+
             // Odejmujemy zap³acone z bufora
             foreach (var kvp in resourcesToPay)
             {

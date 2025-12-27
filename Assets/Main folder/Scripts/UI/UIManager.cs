@@ -1,110 +1,55 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    [Header("G³ówne Statystyki")]
     public TextMeshProUGUI hpText;
-    //Resources
+
+    [Header("Surowce")]
     public TextMeshProUGUI goldText;
     public TextMeshProUGUI woodText;
     public TextMeshProUGUI stoneText;
     public TextMeshProUGUI foodText;
     public TextMeshProUGUI populationText;
     public TextMeshProUGUI ironText;
-    public TextMeshProUGUI coalText;
+    public TextMeshProUGUI coalText; // Dodane dla wêgla
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    [Header("Kontrola Czasu")]
+    public Button btnPause;
+    public Button btn1x;
+    public Button btn2x;
+    public Button btn3x;
+    public Button btn5x;
+
     void Start()
     {
-        GameManager.Instance.OnHealthChanged += UpdateHpUI;
-        UpdateHpUI(GameManager.Instance.mainGateHP);
-
-        ResourceManager.Instance.OnResourceChanged += UpdateResourceUI;
-        ResourceManager.Instance.UpdateAllUI();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-
-    // --- OBS£UGA ZDROWIA (GameManager) ---
-    private void UpdateHpUI(int currentHp)
-    {
-        if (hpText != null)
+        // 1. Subskrypcja HP z GameManagera
+        if (GameManager.Instance != null)
         {
-            hpText.text = $"HP: {currentHp}";
-
-            // Zmiana koloru na czerwony gdy krytycznie ma³o ¿ycia
-            hpText.color = (currentHp <= 5) ? Color.red : Color.white;
+            GameManager.Instance.OnHealthChanged += UpdateHpUI;
+            UpdateHpUI(GameManager.Instance.mainGateHP);
         }
-    }
 
-    // --- OBS£UGA SUROWCÓW (ResourceManager) ---
-    private void UpdateResourceUI(ResourceType type, int amount)
-    {
-        // Tutaj decydujemy, który tekst zaktualizowaæ w zale¿noœci od typu surowca
-        switch (type)
+        // 2. Subskrypcja Surowców z ResourceManagera
+        if (ResourceManager.Instance != null)
         {
-            case ResourceType.Gold:
-                if (goldText) goldText.text = $"G: {amount}";
-                break;
-
-            case ResourceType.Wood:
-                if (woodText) woodText.text = $"D: {amount}";
-                break;
-
-            case ResourceType.Stone:
-                if (stoneText) stoneText.text = $"K: {amount}";
-                break;
-
-            case ResourceType.Food:
-                if (foodText) foodText.text = $"J: {amount}";
-                break;
-
-            case ResourceType.Population:
-                if (populationText != null && CitizenManager.Instance != null)
-                {
-                    int h = CitizenManager.Instance.GetRaceCount(Race.Humans);
-                    int e = CitizenManager.Instance.GetRaceCount(Race.Elves);
-                    int d = CitizenManager.Instance.GetRaceCount(Race.Dwarves);
-
-                    // Format: H:0 | E:0 | D:0
-                    // Mo¿esz te¿ dodaæ kolory, np. <color=green>E:{e}</color>
-                    populationText.text = $"H:{h} | E:{e} | D:{d}";
-                }
-                else if (populationText != null)
-                {
-                    // Fallback jeœli CitizenManager nie gotowy
-                    populationText.text = $"Pop: {amount}";
-                }
-                break;
-
-            case ResourceType.Iron:
-                if (ironText) ironText.text = $"¯: {amount}";
-                break;
-
-            case ResourceType.Coal:
-                if (coalText) coalText.text = $"W: {amount}";
-                break;
-
+            ResourceManager.Instance.OnResourceChanged += UpdateResourceUI;
+            // Wymuszamy odœwie¿enie wszystkich surowców na start, ¿eby nie by³o pustych pól
+            ResourceManager.Instance.UpdateAllUI();
         }
-    }
 
-    public void NextWave()
-    {
-        if (GameManager.Instance.currentGameState != GameManager.gameStates.InWave)
-        {
-            GameManager.Instance.StartWave();
-
-        }
+        // 3. Konfiguracja przycisków czasu
+        if (btnPause) btnPause.onClick.AddListener(() => SetSpeed(0f));
+        if (btn1x) btn1x.onClick.AddListener(() => SetSpeed(1f));
+        if (btn2x) btn2x.onClick.AddListener(() => SetSpeed(2f));
+        if (btn3x) btn3x.onClick.AddListener(() => SetSpeed(3f));
+        if (btn5x) btn5x.onClick.AddListener(() => SetSpeed(5f));
     }
 
     void OnDestroy()
     {
-        // Pamiêtaj o odsubskrybowaniu, ¿eby unikn¹æ b³êdów przy prze³adowaniu sceny
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnHealthChanged -= UpdateHpUI;
@@ -113,6 +58,76 @@ public class UIManager : MonoBehaviour
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.OnResourceChanged -= UpdateResourceUI;
+        }
+    }
+
+    // --- AKTUALIZACJA UI ---
+
+    private void UpdateHpUI(int currentHp)
+    {
+        if (hpText != null)
+        {
+            hpText.text = $"HP: {currentHp}";
+            hpText.color = (currentHp <= 5) ? Color.red : Color.white;
+        }
+    }
+
+    private void UpdateResourceUI(ResourceType type, int amount)
+    {
+        switch (type)
+        {
+            case ResourceType.Gold:
+                if (goldText) goldText.text = $"Z³oto: {amount}";
+                break;
+
+            case ResourceType.Wood:
+                if (woodText) woodText.text = $"Drewno: {amount}";
+                break;
+
+            case ResourceType.Stone:
+                if (stoneText) stoneText.text = $"Kamieñ: {amount}";
+                break;
+
+            case ResourceType.Food:
+                if (foodText) foodText.text = $"Jedzenie: {amount}";
+                break;
+
+            case ResourceType.Coal:
+                if (coalText) coalText.text = $"Wêgiel: {amount}";
+                break;
+
+            case ResourceType.Iron:
+                if (ironText) ironText.text = $"¯elazo: {amount}";
+                break;
+
+            case ResourceType.Population:
+                if (populationText != null)
+                {
+                    // Jeœli mamy CitizenManagera, pokazujemy podzia³ na rasy
+                    if (CitizenManager.Instance != null)
+                    {
+                        int h = CitizenManager.Instance.GetRaceCount(Race.Humans);
+                        int e = CitizenManager.Instance.GetRaceCount(Race.Elves);
+                        int d = CitizenManager.Instance.GetRaceCount(Race.Dwarves);
+                        populationText.text = $"H:{h} | E:{e} | D:{d}";
+                    }
+                    else
+                    {
+                        // Fallback, gdyby nie by³o managera
+                        populationText.text = $"Pop: {amount}";
+                    }
+                }
+                break;
+        }
+    }
+
+    // --- KONTROLA CZASU ---
+
+    void SetSpeed(float speed)
+    {
+        if (TimeCycleManager.Instance != null)
+        {
+            TimeCycleManager.Instance.SetTimeSpeed(speed);
         }
     }
 }

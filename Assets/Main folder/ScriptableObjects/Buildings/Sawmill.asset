@@ -20,18 +20,14 @@ MonoBehaviour:
   requiresOccupiedSpace: 0
   constructionCost:
   - type: 1
-    amount: 5
+    amount: 15
   - type: 0
-    amount: 5
-  - type: 2
-    amount: 5
+    amount: 30
   productionPerCycle:
   - type: 1
-    amount: 15
+    amount: 25
   upkeepPerCycle:
   - type: 2
     amount: 5
-  tier1Upgrades:
-  - {fileID: 11400000, guid: 88baf687014f6434ebb1403f4be5c30a, type: 2}
-  - {fileID: 11400000, guid: 2659c2d68bd6b004480ceef956a3d4c3, type: 2}
+  tier1Upgrades: []
   prefab: {fileID: 8647511797650135546, guid: a372fba93af731545bd3d3bd85da8b44, type: 3}

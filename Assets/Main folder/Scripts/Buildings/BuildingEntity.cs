@@ -116,10 +116,16 @@ public class BuildingEntity : MonoBehaviour
             if (productionBuffer[type] >= 1.0f)
             {
                 int amountToGive = Mathf.FloorToInt(productionBuffer[type]);
-                productionBuffer[type] -= amountToGive; // Zostawiamy resztê (np. 0.032) w buforze
+                productionBuffer[type] -= amountToGive;
 
                 ResourceManager.Instance.AddResource(type, amountToGive);
-                // Debug.Log($"[Building] {name} wyprodukowa³ {amountToGive} {type}");
+
+                // --- NOWOŒÆ: Wyœwietlanie tekstu ---
+                if (FloatingTextManager.Instance != null)
+                {
+                    FloatingTextManager.Instance.ShowGain(transform.position, type.ToString(), amountToGive);
+                }
+                // ------------------------------------
             }
         }
 

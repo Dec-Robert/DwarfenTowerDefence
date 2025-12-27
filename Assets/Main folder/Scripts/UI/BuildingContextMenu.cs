@@ -47,15 +47,22 @@ public class BuildingContextMenu : MonoBehaviour
 
     public void OpenMenu(BuildingEntity entity)
     {
-        if (entity.data.type != BuildingType.Economic) return;
+
+        if (entity.data.type != BuildingType.Economic && entity.data.type != BuildingType.Defense)
+        {
+            return;
+        }
 
         currentTarget = entity;
         panelRoot.SetActive(true);
         selectedUpgrade = null;
         sideInfoPanel.SetActive(false);
+
+        // Inicjalizacja managerów mieszkañców
         BuildingCitizenManager.Instance.Setup(entity);
         BuildingCitizenUI.Instance.Setup(entity.getMaxShifts(), entity.getMaxWorkersPerShift());
         BuildingCitizenUI.Instance.Refresh(entity);
+
         RefreshContent();
     }
 

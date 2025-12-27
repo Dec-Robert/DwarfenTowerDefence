@@ -3,37 +3,70 @@ using UnityEngine;
 public class TowerController : MonoBehaviour
 {
     [Header("Konfiguracja")]
-    public TowerData towerData; // TU PRZYPISUJEMY NASZ PLIK DANYCH
-
-    [Header("Opcjonalne (np. lufa)")]
+    public TowerData towerData; // Dane bazowe (ScriptableObject)
     public Transform firePoint;
+
+    [Header("Status (Read Only)")]
+    [SerializeField] private bool canShoot = false;
+    [SerializeField] private float currentRange;
+    [SerializeField] private float currentDamage;
+    [SerializeField] private float currentFireRate;
 
     private Transform target;
     private float fireCountdown = 0f;
 
-    // Lokalne zmienne (opcjonalne, przydatne do buffów w trakcie gry)
-    private float currentRange;
-    private float currentFireRate;
+    // Referencja zwrotna do logiki ekonomicznej
+    private TowerEntity towerEntity;
 
     void Start()
     {
-        // Pobieramy statystyki z Data na start
+        towerEntity = GetComponent<TowerEntity>();
+
+        // Inicjalizacja wstêpna (¿eby nie by³o zer, zanim Entity przeliczy)
         if (towerData != null)
         {
             currentRange = towerData.baseRange;
+            currentDamage = towerData.baseDamage;
             currentFireRate = towerData.fireRate;
         }
-        else
-        {
-            Debug.LogError("Wie¿a nie ma przypisanego TowerData!");
-        }
 
+        // Szukanie celu co 0.5s (optymalizacja)
         InvokeRepeating("UpdateTarget", 0f, 0.5f);
     }
 
+    // --- KOMUNIKACJA Z TOWER ENTITY ---
+
+    /// <summary>
+    /// Metoda wywo³ywana przez TowerEntity, gdy zmieni siê obsada, pora dnia lub amunicja.
+    /// </summary>
+    public void UpdateCombatStats(float efficiency, float rangeMod, float damageMod, float fireRateMod, bool isActive)
+    {
+        canShoot = isActive;
+
+        if (towerData != null)
+        {
+            // Matematyka: Baza * Bonus Rasowy * Wydajnoœæ (Obsada)
+
+            // Zasiêg zale¿y g³ównie od rasy (Elf)
+            currentRange = towerData.baseRange * rangeMod;
+
+            // Obra¿enia i Szybkostrzelnoœæ zale¿¹ od obsady (efficiency 0.7 lub 1.0)
+            currentDamage = towerData.baseDamage * damageMod * efficiency;
+            currentFireRate = towerData.fireRate * fireRateMod * efficiency;
+        }
+    }
+
+    // --- LOGIKA BOJOWA ---
+
     void UpdateTarget()
     {
-        // Szukanie celu (zoptymalizowane pod EnemyStats)
+        // Jeœli wie¿a jest wy³¹czona (brak ludzi/ammo), nie szukamy celu (oszczêdnoœæ CPU)
+        if (!canShoot)
+        {
+            target = null;
+            return;
+        }
+
         EnemyStats[] enemies = FindObjectsOfType<EnemyStats>();
         float shortestDistance = Mathf.Infinity;
         GameObject nearestEnemy = null;
@@ -48,6 +81,7 @@ public class TowerController : MonoBehaviour
             }
         }
 
+        // U¿ywamy PRZELICZONEGO zasiêgu (currentRange)
         if (nearestEnemy != null && shortestDistance <= currentRange)
         {
             target = nearestEnemy.transform;
@@ -60,12 +94,18 @@ public class TowerController : MonoBehaviour
 
     void Update()
     {
-        if (target == null) return;
+        // Jeœli nieaktywna lub brak celu -> nic nie rób
+        if (!canShoot || target == null) return;
 
         if (fireCountdown <= 0f)
         {
             Shoot();
-            fireCountdown = 1f / currentFireRate;
+            // U¿ywamy PRZELICZONEJ szybkostrzelnoœci
+            // Zabezpieczenie przed dzieleniem przez zero
+            if (currentFireRate > 0)
+                fireCountdown = 1f / currentFireRate;
+            else
+                fireCountdown = 999f;
         }
 
         fireCountdown -= Time.deltaTime;
@@ -73,28 +113,29 @@ public class TowerController : MonoBehaviour
 
     void Shoot()
     {
-        // Rzutowanie, bo w BuildingEntity mamy bazowe BuildingData
-        TowerData tData = towerData as TowerData;
-        if (tData == null || tData.bulletPrefab == null) return;
+        if (towerData == null || towerData.bulletPrefab == null) return;
 
         Vector3 spawnPos = (firePoint != null) ? firePoint.position : transform.position;
-        GameObject bulletGO = Instantiate(tData.bulletPrefab, spawnPos, Quaternion.identity);
+        GameObject bulletGO = Instantiate(towerData.bulletPrefab, spawnPos, Quaternion.identity);
 
         SimpleBullet bullet = bulletGO.GetComponent<SimpleBullet>();
         if (bullet != null)
         {
-            // PRZEKAZUJEMY EFEKTY Z DANYCH DO POCISKU
-            bullet.Seek(target, tData.baseDamage, tData.effects);
+            // Przekazujemy AKTUALNE obra¿enia i listê efektów z danych
+            bullet.Seek(target, currentDamage, towerData.effects);
+        }
+
+        // Zg³aszamy zu¿ycie (strza³ pad³ -> brak zwrotu amunicji rano)
+        if (towerEntity != null)
+        {
+            towerEntity.RegisterShot();
         }
     }
 
     void OnDrawGizmosSelected()
     {
-        // Rysowanie zasiêgu w edytorze (pobierane z danych, jeœli s¹ przypisane)
-        if (towerData != null)
-        {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireSphere(transform.position, towerData.baseRange);
-        }
+        // Rysujemy aktualny zasiêg (uwzglêdniaj¹c bonusy elfów)
+        Gizmos.color = canShoot ? Color.cyan : Color.red; // Czerwony jeœli nieaktywna
+        Gizmos.DrawWireSphere(transform.position, currentRange > 0 ? currentRange : (towerData ? towerData.baseRange : 0));
     }
 }

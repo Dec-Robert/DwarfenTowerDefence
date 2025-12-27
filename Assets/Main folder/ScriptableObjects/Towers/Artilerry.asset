@@ -24,10 +24,12 @@ MonoBehaviour:
   - type: 1
     amount: 3
   productionPerCycle: []
-  upkeepPerCycle: []
+  upkeepPerCycle:
+  - type: 1
+    amount: 1
   tier1Upgrades: []
   prefab: {fileID: 6224301533635993970, guid: 4f3a6833ab83b1243aa8bca0ed6e3006, type: 3}
-  baseRange: 20
+  baseRange: 9
   baseDamage: 5
   fireRate: 2
   effects:
