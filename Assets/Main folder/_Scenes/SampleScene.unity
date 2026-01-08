@@ -5237,7 +5237,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &845245878
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8865,13 +8865,13 @@ MonoBehaviour:
   DEBUG_MODE: 0
   startingResources:
   - type: 0
-    amount: 100
+    amount: 60
   - type: 1
-    amount: 20
+    amount: 40
   - type: 2
-    amount: 10
+    amount: 30
   - type: 3
-    amount: 10
+    amount: 20
 --- !u!114 &1478630906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8885,7 +8885,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   citizens: []
-  debugMode: 1
+  debugMode: 0
 --- !u!114 &1478630907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8898,7 +8898,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f463b243198db0c418ae75c811b80707, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  floatingTextPrefab: {fileID: 1364447478132943547, guid: 229515f438b164e46b13157c968e30d0, type: 3}
+  floatingTextPrefab: {fileID: 1054092356533683168, guid: 06b15c45459e3534aa15829da5493eb5, type: 3}
   productionColor: {r: 0, g: 1, b: 0, a: 1}
   upkeepColor: {r: 1, g: 0, b: 0, a: 1}
   warningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -11171,10 +11171,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   expansionManager: {fileID: 1478630901}
   mapVisualizer: {fileID: 1837610584}
+  defaultFogMaterial: {fileID: 2100000, guid: ecf964584f2921a42a52d9d4bc81e15f, type: 2}
+  ableToBuyFogMaterial: {fileID: 2100000, guid: 69087ab46eb2d144499180d014dba817, type: 2}
   fogPrefab: {fileID: 3870602923655417153, guid: 3ace50b7f41b02447ba50c08e65fdf93, type: 3}
   fogHeightOffset: 0
   fogHeightScale: 1
-  showDebugLogs: 0
+  showDebugLogs: 1
   debugClickToReveal: 0
 --- !u!1 &1864538805
 GameObject:

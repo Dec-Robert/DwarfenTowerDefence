@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingName: Mines
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 7cd9d0f165028aa49b6d518a7f4dc123, type: 3}
   type: 0
   allowedTerrain: 02000000
   requiresOccupiedSpace: 0

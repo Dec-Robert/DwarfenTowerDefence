@@ -461,6 +461,65 @@ public class HexMapGenerator : MonoBehaviour
         }
         return new List<Vector3>();
     }
+
+    public Dictionary<Vector2Int, Vector2Int> GetRoadRevealDependencies()
+    {
+        Dictionary<Vector2Int, Vector2Int> dependencies = new Dictionary<Vector2Int, Vector2Int>();
+
+        // 1. Zależności Głównej Trasy
+        // Trasa idzie: [0]=Spawner ... [N]=Baza
+        // Żeby odkryć [i], musimy mieć odkryte [i+1] (czyli krok bliżej bazy)
+        if (generatedChunkSequence != null && generatedChunkSequence.Count > 0)
+        {
+            // Dodajemy bazę do sekwencji (jeśli jej tam nie ma, a zazwyczaj kończy się na bramie)
+            List<Vector2Int> fullSequence = new List<Vector2Int>(generatedChunkSequence);
+            if (fullSequence[fullSequence.Count - 1] != Vector2Int.zero)
+            {
+                fullSequence.Add(Vector2Int.zero);
+            }
+
+            for (int i = 0; i < fullSequence.Count - 1; i++)
+            {
+                Vector2Int current = fullSequence[i];      // Np. Spawner
+                Vector2Int requirement = fullSequence[i + 1]; // Np. Sąsiad bliżej bazy
+
+                if (!dependencies.ContainsKey(current))
+                {
+                    dependencies.Add(current, requirement);
+                }
+            }
+        }
+
+        // 2. Zależności Bocznych Tras
+        if (extraSpawnerChunks != null)
+        {
+            // Musimy zasymulować ścieżki, żeby poznać kolejność chunków
+            HashSet<Vector2Int> existingChunks = new HashSet<Vector2Int>(chunkPaths.Keys);
+            existingChunks.Add(Vector2Int.zero);
+
+            foreach (var spawn in extraSpawnerChunks)
+            {
+                var path = pathfinder.FindChunkPath(spawn, Vector2Int.zero, existingChunks, null);
+                if (path != null)
+                {
+                    // Path: [Spawn, A, B, Junction/Base]
+                    for (int i = 0; i < path.Count - 1; i++)
+                    {
+                        Vector2Int current = path[i];
+                        Vector2Int requirement = path[i + 1];
+
+                        if (!dependencies.ContainsKey(current))
+                        {
+                            dependencies.Add(current, requirement);
+                        }
+                    }
+                }
+            }
+        }
+
+        return dependencies;
+    }
+
     List<Vector3> GetNeighborsFromSet(Vector3 center, HashSet<Vector3> allNodes) { List<Vector3> neighbors = new List<Vector3>(); float threshold = hexSize * 1.9f; float thresholdSq = threshold * threshold; foreach (var node in allNodes) { if (node == center) continue; float distSq = (node - center).sqrMagnitude; if (distSq < thresholdSq) neighbors.Add(node); } return neighbors; }
     Vector3 GetClosestNode(Vector3 target, HashSet<Vector3> nodes) { Vector3 best = target; float minDst = float.MaxValue; foreach (var n in nodes) { float d = Vector3.Distance(n, target); if (d < minDst) { minDst = d; best = n; } } return best; }
     List<Vector3> ReconstructVectorPath(Dictionary<Vector3, Vector3> cameFrom, Vector3 current) { var path = new List<Vector3> { current }; while (cameFrom.ContainsKey(current)) { current = cameFrom[current]; path.Add(current); } path.Reverse(); return path; }
