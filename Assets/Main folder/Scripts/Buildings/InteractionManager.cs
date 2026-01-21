@@ -62,14 +62,48 @@ public class InteractionManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
+        // Rysujemy liniê debugow¹ w Scene View, ¿eby widzieæ gdzie celujemy
+        Debug.DrawRay(ray.origin, ray.direction * 1000, Color.yellow, 0.5f);
+
+        // Strzelamy promieniem w warstwê heksów
         if (Physics.Raycast(ray, out hit, 1000f, hexLayer))
         {
-            // Szukamy komponentu HexCell na trafionym obiekcie (lub jego rodzicu)
+            // Próbujemy pobraæ komponent HexCell z trafionego obiektu lub jego rodzica
             HexCell clickedCell = hit.collider.GetComponentInParent<HexCell>();
 
             if (clickedCell != null)
             {
-                ProcessHexInteraction(clickedCell);
+                // SCENARIUSZ A: Mamy wybrany budynek do zbudowania (np. Tartak na kursorze)
+                if (selectedBuilding != null)
+                {
+                    TryBuildOnHex(clickedCell);
+                }
+                // SCENARIUSZ B: Tryb selekcji (Klikamy, ¿eby sprawdziæ co to jest)
+                else
+                {
+                    // Sprawdzamy, czy na tym heksie stoi ju¿ jakiœ budynek
+                    // (BuildingEntity powinien byæ dzieckiem HexCell w hierarchii)
+                    BuildingEntity building = clickedCell.GetComponentInChildren<BuildingEntity>();
+
+                    if (building != null)
+                    {
+                        Debug.Log($"Klikniêto budynek: {building.data.buildingName}");
+
+                        // Otwieramy nowe okno Inspektora (UI Toolkit)
+                        if (UIBuildingInspector.Instance != null)
+                        {
+                            UIBuildingInspector.Instance.ShowInspector(building);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Brak UIBuildingInspector na scenie!");
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Klikniêto pusty heks.");
+                    }
+                }
             }
         }
     }

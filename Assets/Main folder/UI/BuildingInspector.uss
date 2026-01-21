@@ -1,0 +1,126 @@
+
+/* NAG£ÓWEK */
+.inspector-header {
+    font-size: 20px;
+    -unity-font-style: bold;
+    color: #FFD700;
+    margin-bottom: 10px;
+    border-bottom-width: 1px;
+    border-bottom-color: #555;
+}
+
+/* SEKCJA PRACOWNIKÓW */
+.worker-section {
+    margin-top: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.shift-row {
+    flex-direction: row;
+    margin-bottom: 5px;
+    align-items: center;
+}
+
+.shift-label {
+    width: 60px;
+    color: #AAA;
+    font-size: 12px;
+}
+
+/* SLOT PRACOWNIKA (Kwadrat) */
+.worker-slot {
+    width: 25px;
+    height: 25px;
+    margin-right: 5px;
+    border-width: 1px;
+    border-color: #444;
+    border-radius: 3px;
+    background-color: white; /* Domyœlnie pusty */
+}
+
+/* KOLORY STANÓW (U¿yjemy ich w C#) */
+.slot-empty { background-color: #FFFFFF; }
+.slot-assigned { background-color: #00FF00; } /* Zielony */
+.slot-working { background-color: #000000; } /* Czarny */
+.slot-exhausted { background-color: #FF0000; } /* Czerwony */
+
+/* PRZYCISKI KONTROLI PRACOWNIKÓW */
+.worker-controls {
+    flex-direction: row;
+    justify-content: space-around;
+    margin-top: 5px;
+}
+
+.worker-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 10px;
+    border-radius: 4px;
+}
+
+.btn-add { background-color: #4CAF50; color: white; }
+.btn-remove { background-color: #F44336; color: white; }
+
+/* SEKCJA ULEPSZEÑ */
+.upgrade-section {
+    margin-top: 15px;
+    border-top-width: 1px;
+    border-top-color: #555;
+    padding-top: 10px;
+}
+
+.upgrade-btn {
+    height: 40px;
+    margin-bottom: 5px;
+    background-color: #555;
+    color: white;
+    flex-direction: row;
+    align-items: center;
+}
+
+.upgrade-btn:hover { background-color: #777; }
+
+/* PRZYCISK ZAMKNIÊCIA */
+.close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 25px;
+    height: 25px;
+    background-color: #CC0000;
+    color: white;
+    border-radius: 12px;
+}
+
+    /* NOWE: Kontener ca³oœci (trzyma lewy i prawy panel) */
+.total-container {
+    position: absolute;
+    right: 20px;
+    top: 80px;
+    flex-direction: row; /* Uk³ada dzieci w poziomie */
+    align-items: flex-start; /* Wyrównuje do góry */
+}
+
+/* NOWE: Panel Szczegó³ów (Lewy) */
+.details-panel {
+    width: 200px;
+    background-color: rgba(20, 20, 20, 0.95);
+    border-radius: 10px;
+    border-color: #AA0; /* Z³ota ramka */
+    border-width: 1px;
+    padding: 10px;
+    margin-right: 10px; /* Odstêp od g³ównego okna */
+    min-height: 150px;
+}
+
+/* ZMIANA: G³ówne okno (Prawy) - usuwamy pozycjonowanie absolutne, bo teraz jest w kontenerze */
+.inspector-window {    
+    width: 350px;
+    background-color: rgba(30, 30, 30, 0.95);
+    border-radius: 10px;
+    border-color: #666;
+    border-width: 2px;
+    padding: 15px;
+}

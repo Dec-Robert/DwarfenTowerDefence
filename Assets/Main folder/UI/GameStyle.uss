@@ -1,0 +1,195 @@
+/* --- G£ÓWNY KONTENER --- */
+.root-container {
+    flex-grow: 1;
+    justify-content: space-between; /* Rozrzuca Top i Bottom na górê i dó³ ekranu */
+    padding: 10px;
+}
+
+/* --- PASEK GÓRNY (Surowce) --- */
+.top-bar {
+    flex-direction: row;
+    background-color: rgba(30, 30, 30, 0.8); /* Pó³przezroczyste t³o */
+    border-radius: 10px;
+    padding: 8px;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+}
+
+/* Pojedynczy zasób (Ikona + Tekst) */
+.resource-item {
+    flex-direction: row;
+    align-items: center;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.resource-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #FFD700; /* Placeholder na kolor ikony (np. z³oty) */
+    margin-right: 5px;
+    border-radius: 4px;
+}
+
+.resource-text {
+    font-size: 18px;
+    color: white;
+    -unity-font-style: bold;
+}
+
+/* Specjalny kolor dla czasu */
+.time-text {
+    font-size: 20px;
+    color: #44FF44;
+    margin-left: 50px; /* Odstêp od surowców */
+}
+
+/* --- PASEK DOLNY (Kontrolki) --- */
+.bottom-container {
+    flex-direction: row;
+    justify-content: space-between; /* Wie¿e po lewej/œrodku, Czas po prawej */
+    align-items: flex-end;
+}
+
+/* Panel Czasu */
+.time-controls-panel {
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.time-btn {
+    width: 40px;
+    height: 40px;
+    margin: 2px;
+    background-color: #555;
+    border-radius: 5px;
+    color: white;
+    font-size: 14px;
+    -unity-text-align: middle-center;
+    border-width: 0;
+}
+
+.time-btn:hover {
+    background-color: #777;
+}
+
+.time-btn:active {
+    background-color: #333;
+}
+
+/* --- MENU WIE¯ (Sta³e) --- */
+.towers-panel {
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.tower-btn {
+    width: 80px;
+    height: 80px;
+    margin-right: 10px;
+    background-color: #4A4A4A;
+    border-width: 2px;
+    border-color: #222;
+    border-radius: 8px;
+    justify-content: flex-end;
+}
+
+.tower-btn:hover {
+    border-color: #FFFF00;
+    scale: 1.05; /* Lekkie powiêkszenie */
+}
+
+.tower-btn-label {
+    color: white;
+    background-color: rgba(0,0,0,0.7);
+    font-size: 12px;
+    -unity-text-align: middle-center;
+    padding: 2px;
+}
+
+/* --- PRZYCISK OTWIERANIA BUDOWANIA --- */
+.build-menu-btn {
+    width: 100px;
+    height: 40px;
+    background-color: #4CAF50; /* Zielony */
+    color: white;
+    font-size: 16px;
+    -unity-font-style: bold;
+    border-radius: 6px;
+    border-width: 0;
+    margin-bottom: 5px;
+    transition: 0.1s;
+}
+
+.build-menu-btn:hover {
+    background-color: #66BB6A;
+    scale: 1.05;
+}
+
+.build-menu-btn:active {
+    background-color: #2E7D32;
+    scale: 0.95;
+}
+
+/* Styl dla przycisku "Anuluj" (gdy menu jest otwarte) */
+.build-menu-btn-cancel {
+    background-color: #F44336; /* Czerwony */
+}
+
+/* Styl dynamicznego przycisku budynku w panelu */
+.generated-build-btn {
+    width: 70px;
+    height: 70px;
+    margin: 5px;
+    background-color: #555;
+    border-radius: 5px;
+    justify-content: flex-end;
+    overflow: hidden;
+}
+
+.generated-build-btn:hover {
+    border-width: 2px;
+    border-color: yellow;
+}
+
+    /* --- TOOLTIP --- */
+.tooltip-box {
+    background-color: rgba(0, 0, 0, 0.9);
+    border-width: 1px;
+    border-color: #666;
+    border-radius: 6px;
+    padding: 10px;
+    width: 250px; /* Sta³a szerokoœæ dla czytelnoœci */
+    /* Domyœlnie ukryty w C#, ale tu style */
+}
+
+.tooltip-header {
+    color: #FFD700; /* Z³oty */
+    font-size: 16px;
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+    border-bottom-width: 1px;
+    border-bottom-color: #444;
+}
+
+.tooltip-text {
+    color: #DDD;
+    font-size: 12px;
+    white-space: normal; /* Pozwala na zawijanie tekstu */
+    margin-bottom: 5px;
+}
+
+.tooltip-cost {
+    color: #FFAAAA; /* Lekki czerwony/ró¿owy */
+    font-size: 12px;
+    -unity-font-style: bold;
+    margin-top: 5px;
+    border-top-width: 1px;
+    border-top-color: #444;
+    padding-top: 2px;
+}
