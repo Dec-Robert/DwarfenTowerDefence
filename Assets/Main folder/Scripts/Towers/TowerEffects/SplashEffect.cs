@@ -5,6 +5,7 @@ public class SplashEffect : TowerEffectSO
 {
     public float explosionRadius = 3f;
     public float splashDamage = 5f;
+    public DamageType damageType = DamageType.Physical;
 
     public override void ApplyEffect(EnemyStats target, float damageMultiplier)
     {
@@ -15,7 +16,7 @@ public class SplashEffect : TowerEffectSO
             EnemyStats enemy = col.GetComponent<EnemyStats>();
             if (enemy != null && enemy != target) // G³ówny cel ju¿ dosta³ dmg od pocisku
             {
-                enemy.TakeDamage(splashDamage * damageMultiplier);
+                enemy.TakeDamage(splashDamage * damageMultiplier, damageType);
             }
         }
         Debug.Log("BOOM! Obra¿enia obszarowe.");

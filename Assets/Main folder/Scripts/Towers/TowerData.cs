@@ -11,6 +11,9 @@ public class TowerData : BuildingData
 
     private BuildingType type;
 
+    public DamageType damageType;
+
+
     [Header("Efekty Specjalne")]
     // Lista efektów, np. [SlowEffect, PoisonEffect]
     public List<TowerEffectSO> effects;

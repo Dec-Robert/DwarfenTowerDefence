@@ -156,7 +156,7 @@ public class BuildingEntity : MonoBehaviour
 
     // --- ZARZ•DZANIE PRACOWNIKAMI ---
 
-    public bool TryAddWorker(Race race)
+    public virtual bool TryAddWorker(Race race)
     {
         if (assignedCitizens.Count >= (maxShifts * maxWorkersPerShift))
         {
@@ -180,7 +180,7 @@ public class BuildingEntity : MonoBehaviour
         return false;
     }
 
-    public void RemoveWorker(Race race)
+    public virtual void RemoveWorker(Race race)
     {
         // ZMODYFIKOWANE: Szukamy pracownika, ktÛry NIE jest zablokowany (Working).
         // Assigned (zielony) -> moøna usunπÊ.
@@ -197,6 +197,7 @@ public class BuildingEntity : MonoBehaviour
 
             BuildingCitizenUI.Instance.Refresh(this);
         }
+
         else
         {
             // Sprawdümy czy powodem jest brak ludzi czy to, øe wszyscy pracujπ

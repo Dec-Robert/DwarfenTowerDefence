@@ -8,157 +8,301 @@ public class EnemySpawner : MonoBehaviour
     [Header("Referencje")]
     public HexMapGenerator mapGenerator;
     public FogOfWarManager fogManager;
-    public GameObject enemyPrefab;
 
-    [Header("Ustawienia Fali (NOC)")]
-    public float nightSpawnInterval = 1.0f; // Jak szybko wychodz¹ w nocy
-    public int enemiesPerWave = 10;
-    public int additionEnemiesPerWave = 5;
+    [Header("Pula Wrogów")]
+    // Lista wszystkich wrogów dostêpnych do losowania (Szkielet, Blob, Arcanist)
+    public List<EnemyData> availableEnemies;
 
-    [Header("Ustawienia Ambientu (DZIEÑ)")]
-    public float daySpawnInterval = 10.0f; // Co ile sekund próba spawnu w dzieñ
-    [Range(0, 100)] public int daySpawnChance = 30; // Szansa w % ¿e wróg siê pojawi
+    [Header("Fale Fabularne")]
+    // Sztywne rozpiski na konkretne dni (np. Boss w dniu 5)
+    public List<WaveDefinition> predefinedWaves;
+
+    [Header("Matematyka Fali (Bud¿et Zagro¿enia)")]
+    public float baseBudget = 10f;      // Startowa si³a fali
+    public float budgetPerDay = 5f;     // Ile punktów dochodzi co dzieñ
+    public float budgetExponent = 1.1f; // Mno¿nik trudnoœci (krzywa)
+
+    [Header("Interwa³y Spawnu")]
+    public float nightSpawnInterval = 1.0f; // Szybkoœæ spawnu w nocy (co ile sek)
+
+    [Header("Ambient (Dzieñ)")]
+    public float daySpawnInterval = 10.0f;  // Co ile sek próba spawnu w dzieñ
+    [Range(0, 100)] public int daySpawnChance = 30; // Szansa na spawn w dzieñ
 
     [Header("Balans Œcie¿ek (Wagi)")]
     public float baseFormulaConst = 10f;
     public float perSpawnerMultiplier = 2.5f;
 
+    // Klasa pomocnicza trasy
     [System.Serializable]
     public class SpawnRoute
     {
         public string name;
         [Range(0, 100)] public float currentSpawnChance;
 
-        // Pe³na trasa (od krawêdzi mapy do bazy)
-        public List<Vector3> fullPath;
-
-        // Aktualny punkt startu (przesuwa siê wraz z odkrywaniem mapy)
-        public Vector3 currentSpawnPoint;
-
-        // Wycinek trasy od spawnu do bazy (to dostaje przeciwnik)
-        public List<Vector3> currentActivePath;
-
+        public List<Vector3> fullPath;          // Ca³a trasa (Mapa -> Baza)
+        public Vector3 currentSpawnPoint;       // Punkt na granicy mg³y
+        public List<Vector3> currentActivePath; // Odcinek (Spawn -> Baza)
         public float fullLength;
     }
 
-    // Wszystkie trasy pobrane z generatora
+    // Listy tras
     private List<SpawnRoute> allPotentialRoutes = new List<SpawnRoute>();
-
-    // Tylko te trasy, których start jest odkryty (widoczny)
-    [Header("Aktywne Trasy (Podgl¹d)")]
+    [Header("Podgl¹d Aktywnych Tras")]
     public List<SpawnRoute> activeRoutes = new List<SpawnRoute>();
 
-    // Liczniki wewnêtrzne
-    private int spawnedInCurrentWave = 0;
+    // Kolejka wrogów do zrespienia w bie¿¹cej nocy
+    private Queue<EnemyData> enemiesToSpawnQueue = new Queue<EnemyData>();
     private float spawnTimer = 0f;
 
     // --- CYKL ¯YCIA ---
 
     void Start()
     {
-        // Subskrypcja odkrywania mg³y
-        if (fogManager != null)
-            fogManager.OnChunkRevealed += OnChunkRevealedHandler;
-
-        // Subskrypcja zmiany stanu gry (Dzieñ/Noc)
-        if (GameManager.Instance != null)
-            GameManager.Instance.OnStateChanged += HandleStateChanged;
+        if (fogManager != null) fogManager.OnChunkRevealed += OnChunkRevealedHandler;
+        if (GameManager.Instance != null) GameManager.Instance.OnStateChanged += HandleStateChanged;
 
         StartCoroutine(WaitForMapAndSpawn());
     }
 
     void OnDestroy()
     {
-        if (fogManager != null)
-            fogManager.OnChunkRevealed -= OnChunkRevealedHandler;
-
-        if (GameManager.Instance != null)
-            GameManager.Instance.OnStateChanged -= HandleStateChanged;
+        if (fogManager != null) fogManager.OnChunkRevealed -= OnChunkRevealedHandler;
+        if (GameManager.Instance != null) GameManager.Instance.OnStateChanged -= HandleStateChanged;
     }
 
-    // Resetowanie liczników gdy nastaje Noc
+    // Reakcja na zmianê pory dnia
     void HandleStateChanged(GameManager.gameStates newState)
     {
+        // Jeœli nadesz³a NOC (InWave), przygotuj kolejkê wrogów
         if (newState == GameManager.gameStates.InWave)
         {
-            spawnedInCurrentWave = 0;
             spawnTimer = 0f;
-            Debug.Log($"[Spawner] Noc nadesz³a! Fala wielkoœci: {enemiesPerWave}");
+            PrepareWave(GameManager.Instance.waveNumber);
         }
     }
 
-    // --- G£ÓWNA PÊTLA LOGIKI ---
+    // --- LOGIKA GENEROWANIA FALI ---
+
+    void PrepareWave(int day)
+    {
+        enemiesToSpawnQueue.Clear();
+
+        // 1. SprawdŸ czy mamy predefiniowan¹ falê na ten dzieñ
+        WaveDefinition scriptedWave = null;
+        if (predefinedWaves != null)
+        {
+            scriptedWave = predefinedWaves.Find(w => w.dayNumber == day);
+        }
+
+        if (scriptedWave != null)
+        {
+            // --- SCENARIUSZ SZTYWNY (PREDEFINIOWANY) ---
+            Debug.Log($"<color=cyan><b>[Spawner] FALA FABULARNA (Dzieñ {day})</b></color>");
+            Debug.Log($"<color=cyan>Opis: {scriptedWave.waveMessage}</color>");
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine("Sk³ad armii:");
+
+            int totalCount = 0;
+
+            foreach (var group in scriptedWave.enemies)
+            {
+                if (group.enemy != null)
+                {
+                    // Dodawanie do kolejki
+                    for (int i = 0; i < group.count; i++)
+                    {
+                        enemiesToSpawnQueue.Enqueue(group.enemy);
+                    }
+
+                    // Logowanie
+                    sb.AppendLine($"- {group.enemy.name}: {group.count} szt.");
+                    totalCount += group.count;
+                }
+            }
+            sb.AppendLine($"RAZEM: {totalCount} przeciwników.");
+            Debug.Log(sb.ToString());
+        }
+        else
+        {
+            // --- SCENARIUSZ MATEMATYCZNY (KREDYTY) ---
+            GenerateMathematicalWave(day);
+        }
+    }
+
+    void GenerateMathematicalWave(int day)
+    {
+        Debug.Log($"<color=orange><b>[Spawner] FALA MATEMATYCZNA (Dzieñ {day})</b></color>");
+
+        // 1. Obliczenie i logowanie bud¿etu
+        // Wzór: Baza + (Dni * Przyrost) * (Dni ^ Wyk³adnik)
+        float growthFactor = Mathf.Pow(day > 1 ? day : 1, budgetExponent); // oddzielnie dla czytelnoœci
+        float budget = baseBudget + (day * budgetPerDay) * growthFactor;
+
+        Debug.Log($"<b>Obliczanie Bud¿etu Zagro¿enia:</b>\n" +
+                  $"Baza ({baseBudget}) + [Dzieñ ({day}) * Przyrost ({budgetPerDay})] * Mno¿nik ({growthFactor:F2}) = <b>{budget:F1} PKT</b>");
+
+        List<EnemyData> waveList = new List<EnemyData>();
+
+        // S³ownik do zliczania co kupiliœmy (tylko do logów)
+        Dictionary<string, int> purchaseSummary = new Dictionary<string, int>();
+
+        // 2. Kupowanie wrogów
+        int safetyCounter = 1000;
+        float currentBudget = budget;
+
+        while (currentBudget > 0 && safetyCounter > 0)
+        {
+            safetyCounter--;
+
+            // ZnajdŸ wrogów, na których nas staæ
+            var affordableEnemies = availableEnemies.Where(e => e.threatCost <= currentBudget).ToList();
+
+            if (affordableEnemies.Count == 0)
+            {
+                // Jeœli zosta³o np. 0.5 pkt bud¿etu, a najtañszy wróg kosztuje 1, koñczymy
+                break;
+            }
+
+            // Wylosuj wroga
+            EnemyData selected = affordableEnemies[Random.Range(0, affordableEnemies.Count)];
+
+            waveList.Add(selected);
+            currentBudget -= selected.threatCost;
+
+            // Zliczanie do raportu
+            if (purchaseSummary.ContainsKey(selected.name))
+                purchaseSummary[selected.name]++;
+            else
+                purchaseSummary.Add(selected.name, 1);
+        }
+
+        // 3. Raport zakupów
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.AppendLine("Zakupione jednostki:");
+        foreach (var kvp in purchaseSummary)
+        {
+            // ZnajdŸ koszt tego wroga dla info
+            int cost = availableEnemies.Find(e => e.name == kvp.Key).threatCost;
+            sb.AppendLine($"- {kvp.Key} (Koszt {cost}): {kvp.Value} szt.");
+        }
+        sb.AppendLine($"Pozosta³y (niewykorzystany) bud¿et: {currentBudget:F1}");
+        Debug.Log(sb.ToString());
+
+        // 4. Tasowanie i dodawanie do kolejki
+        waveList = ShuffleList(waveList);
+
+        foreach (var enemy in waveList)
+        {
+            enemiesToSpawnQueue.Enqueue(enemy);
+        }
+    }
+
+    // --- G£ÓWNA PÊTLA (COROUTINE) ---
 
     IEnumerator WaitForMapAndSpawn()
     {
-        // Czekamy na inicjalizacjê mapy
-        yield return null;
-        yield return null;
-        yield return null;
+        // Czekamy na inicjalizacjê innych systemów
+        yield return null; yield return null; yield return null;
 
         if (mapGenerator == null || fogManager == null)
         {
-            Debug.LogError("[Spawner] Brak przypisanego MapGeneratora lub FogManagera!");
+            Debug.LogError("[Spawner] Brak referencji do Mapy lub Mg³y!");
             yield break;
         }
 
-        // Pobieramy trasy po raz pierwszy
+        if (availableEnemies == null || availableEnemies.Count == 0)
+        {
+            Debug.LogError("[Spawner] Brak zdefiniowanych wrogów w Available Enemies!");
+        }
+
         InitializeRoutes();
 
-        while (true) // Nieskoñczona pêtla (zastêpuje Update)
+        while (true)
         {
-            // Dzia³amy tylko jeœli mamy sk¹d spawnowaæ (odkryte œcie¿ki)
+            // Spawnowanie mo¿liwe tylko jeœli mamy aktywne trasy
             if (activeRoutes.Count > 0)
             {
-                // 1. TRYB NOCNY (FALA)
+                // A. TRYB NOCNY (FALA)
                 if (GameManager.Instance.currentGameState == GameManager.gameStates.InWave)
                 {
-                    if (spawnedInCurrentWave < enemiesPerWave)
+                    if (enemiesToSpawnQueue.Count > 0)
                     {
                         spawnTimer += Time.deltaTime;
                         if (spawnTimer >= nightSpawnInterval)
                         {
-                            SpawnEnemy();
-                            spawnedInCurrentWave++;
+                            // Pobierz kolejnego wroga z kolejki
+                            EnemyData nextEnemy = enemiesToSpawnQueue.Dequeue();
+                            SpawnEnemy(nextEnemy);
                             spawnTimer = 0f;
                         }
                     }
                     else
                     {
-                        // Fala zakoñczona - powiadamiamy GameManager
-                        // GameManager zmieni stan na PreparePhase, ale dopiero o œwicie?
-                        // LUB: Koñczymy falê logicznie (zwiêkszamy trudnoœæ), a czas p³ynie dalej.
-                        // Tutaj wywo³ujemy EndWave, co w Twoim GameManagerze zmienia stan na PreparePhase od razu.
-                        // Jeœli wolisz czekaæ na œwit, usuñ EndWave st¹d.
-
+                        // Kolejka pusta -> Koniec fali
                         GameManager.Instance.EndWave();
-                        enemiesPerWave += additionEnemiesPerWave;
-                        Debug.Log("[Spawner] Limit fali wyczerpany. Koniec ataku.");
+                        Debug.Log("[Spawner] Fala zakoñczona.");
                     }
                 }
-                // 2. TRYB DZIENNY (AMBIENT / ZWIADOWCY)
+                // B. TRYB DZIENNY (AMBIENT)
                 else if (GameManager.Instance.currentGameState == GameManager.gameStates.PreparePhase)
                 {
                     spawnTimer += Time.deltaTime;
                     if (spawnTimer >= daySpawnInterval)
                     {
                         spawnTimer = 0f;
-                        // Losujemy czy zrespiæ zwiadowcê
                         if (Random.Range(0, 100) < daySpawnChance)
                         {
-                            SpawnEnemy();
-                            Debug.Log("[Spawner] Pojawi³ siê dzienny zwiadowca.");
+                            // W dzieñ spawnujemy losowego s³abego wroga (zwiadowcê)
+                            if (availableEnemies.Count > 0)
+                            {
+                                // Zak³adamy, ¿e pierwszy na liœcie to najs³abszy (np. Szkielet)
+                                // lub losujemy dowolnego
+                                var scout = availableEnemies[Random.Range(0, Mathf.Min(2, availableEnemies.Count))];
+                                SpawnEnemy(scout);
+                                Debug.Log("[Spawner] Zwiadowca.");
+                            }
                         }
                     }
                 }
             }
-            else
-            {
-                // Brak aktywnych tras - mo¿e gracz jeszcze nie odkry³ wyjœcia z bazy?
-            }
 
-            yield return null; // Czekamy jedn¹ klatkê
+            yield return null; // Czekamy klatkê
         }
+    }
+
+    // --- SPAWNOWANIE FIZYCZNE ---
+
+    void SpawnEnemy(EnemyData data)
+    {
+        if (activeRoutes.Count == 0 || data.prefab == null) return;
+
+        // 1. Wybór Trasy (Weighted Random)
+        SpawnRoute selectedRoute = null;
+        float randomVal = Random.Range(0f, 100f);
+        float currentSum = 0f;
+
+        foreach (var route in activeRoutes)
+        {
+            currentSum += route.currentSpawnChance;
+            if (randomVal <= currentSum)
+            {
+                selectedRoute = route;
+                break;
+            }
+        }
+        if (selectedRoute == null) selectedRoute = activeRoutes[0];
+
+        // 2. Instancjonowanie
+        GameObject newEnemy = Instantiate(data.prefab, selectedRoute.currentSpawnPoint, Quaternion.identity);
+
+        // 3. Konfiguracja komponentów
+        EnemyStats stats = newEnemy.GetComponent<EnemyStats>();
+        if (stats != null) stats.Initialize(data);
+
+        EnemyWalker walker = newEnemy.GetComponent<EnemyWalker>();
+        if (walker != null) walker.Initialize(selectedRoute.currentActivePath);
     }
 
     // --- LOGIKA TRAS I MG£Y ---
@@ -166,12 +310,10 @@ public class EnemySpawner : MonoBehaviour
     void InitializeRoutes()
     {
         allPotentialRoutes.Clear();
-        // Pobieramy trasy z generatora (ignorujemy tagi, u¿ywamy geometrii)
         List<List<Vector3>> rawPaths = mapGenerator.GetAllSpawnPaths();
 
         if (rawPaths == null)
         {
-            // Retry mechanism w razie gdyby mapa jeszcze siê nie zrobi³a
             StartCoroutine(RetryInitialize());
             return;
         }
@@ -192,7 +334,7 @@ public class EnemySpawner : MonoBehaviour
             allPotentialRoutes.Add(newRoute);
         }
 
-        // Sortujemy: Najd³u¿sza trasa to zazwyczaj ta g³ówna
+        // Sortujemy malej¹co (Najd³u¿sza = G³ówna)
         allPotentialRoutes = allPotentialRoutes.OrderByDescending(r => r.fullLength).ToList();
 
         RecalculateActiveRoutes();
@@ -206,7 +348,6 @@ public class EnemySpawner : MonoBehaviour
 
     void OnChunkRevealedHandler(Vector2Int revealedChunk)
     {
-        // Gdy mg³a znika, spawny mog¹ siê przesun¹æ
         RecalculateActiveRoutes();
     }
 
@@ -216,7 +357,7 @@ public class EnemySpawner : MonoBehaviour
 
         foreach (var route in allPotentialRoutes)
         {
-            // Szukamy pierwszego punktu na trasie (od dalekiego startu do bazy), który jest ODKRYTY.
+            // Szukamy granicy mg³y na trasie
             int foundIndex = -1;
 
             for (int i = 0; i < route.fullPath.Count; i++)
@@ -227,20 +368,18 @@ public class EnemySpawner : MonoBehaviour
                 if (fogManager.IsChunkRevealed(chunkCoord))
                 {
                     foundIndex = i;
-                    break; // ZnaleŸliœmy granicê mg³y
+                    break;
                 }
             }
 
-            // Jeœli znaleziono punkt i nie jest to sama baza (margines bezpieczeñstwa)
+            // Znaleziono punkt startowy z marginesem od bazy
             if (foundIndex != -1 && foundIndex < route.fullPath.Count - 2)
             {
                 route.currentSpawnPoint = route.fullPath[foundIndex];
-
-                // Kopiujemy resztê trasy (od granicy mg³y do bazy)
                 route.currentActivePath = route.fullPath.GetRange(foundIndex, route.fullPath.Count - foundIndex);
 
                 Vector2Int coords = mapGenerator.GetChunkCoordFromWorldPosition(route.currentSpawnPoint);
-                route.name = $"Spawn at Chunk {coords}";
+                route.name = $"Spawn at {coords}";
 
                 activeRoutes.Add(route);
             }
@@ -248,8 +387,7 @@ public class EnemySpawner : MonoBehaviour
 
         if (activeRoutes.Count == 0) return;
 
-        // --- PRZELICZANIE SZANS (WAGI) ---
-        // Sortujemy aktywne trasy po d³ugoœci (Najd³u¿sza = G³ówna)
+        // Obliczanie szans (Wag)
         activeRoutes = activeRoutes.OrderByDescending(r => r.fullLength).ToList();
         int count = activeRoutes.Count;
 
@@ -278,83 +416,36 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    void SpawnEnemy()
+    // --- UTILS ---
+
+    List<T> ShuffleList<T>(List<T> list)
     {
-        if (enemyPrefab == null || activeRoutes.Count == 0) return;
-
-        // Losowanie trasy na podstawie wag
-        SpawnRoute selectedRoute = null;
-        float randomVal = UnityEngine.Random.Range(0f, 100f);
-        float currentSum = 0f;
-
-        foreach (var route in activeRoutes)
+        for (int i = 0; i < list.Count; i++)
         {
-            currentSum += route.currentSpawnChance;
-            if (randomVal <= currentSum)
-            {
-                selectedRoute = route;
-                break;
-            }
+            T temp = list[i];
+            int randomIndex = Random.Range(i, list.Count);
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
         }
-        if (selectedRoute == null) selectedRoute = activeRoutes[0];
-
-        // Spawnowanie
-        GameObject newEnemy = Instantiate(enemyPrefab, selectedRoute.currentSpawnPoint, Quaternion.identity);
-        EnemyWalker walker = newEnemy.GetComponent<EnemyWalker>();
-
-        if (walker != null)
-        {
-            walker.Initialize(selectedRoute.currentActivePath);
-        }
+        return list;
     }
 
-    // --- DEBUG GIZMOS ---
     void OnDrawGizmos()
     {
         if (!Application.isPlaying || activeRoutes == null) return;
 
-        // 1. Rysuj wszystkie trasy (t³o)
-        if (allPotentialRoutes != null)
+        // Trasy aktywne
+        foreach (var route in activeRoutes)
         {
-            int colorIndex = 0;
-            foreach (var route in allPotentialRoutes)
+            Gizmos.color = Color.blue;
+            Gizmos.DrawSphere(route.currentSpawnPoint, 0.8f);
+
+            Gizmos.color = Color.cyan;
+            if (route.currentActivePath != null)
             {
-                if (route.fullPath == null || route.fullPath.Count < 2) continue;
-
-                Color routeColor = Color.HSVToRGB((float)colorIndex / allPotentialRoutes.Count, 0.5f, 0.5f);
-                Gizmos.color = routeColor;
-
-                for (int i = 0; i < route.fullPath.Count - 1; i++)
+                for (int i = 0; i < route.currentActivePath.Count - 1; i++)
                 {
-                    Gizmos.DrawLine(route.fullPath[i], route.fullPath[i + 1]);
-                }
-                colorIndex++;
-            }
-        }
-
-        // 2. Rysuj AKTYWNE odcinki i punkty spawnu (na wierzchu)
-        if (activeRoutes != null)
-        {
-            foreach (var route in activeRoutes)
-            {
-                // Niebieska Kula = Punkt Spawnu (Granica Mg³y)
-                Gizmos.color = Color.blue;
-                Gizmos.DrawSphere(route.currentSpawnPoint, 0.8f);
-
-                // Cyjanowa linia = Droga wroga do bazy
-                Gizmos.color = Color.cyan;
-                if (route.currentActivePath != null)
-                {
-                    for (int i = 0; i < route.currentActivePath.Count - 1; i++)
-                    {
-                        Vector3 p1 = route.currentActivePath[i];
-                        Vector3 p2 = route.currentActivePath[i + 1];
-
-                        // Pogrubiona linia (3 kreski)
-                        Gizmos.DrawLine(p1, p2);
-                        Gizmos.DrawLine(p1 + Vector3.up * 0.2f, p2 + Vector3.up * 0.2f);
-                        Gizmos.DrawLine(p1 + Vector3.right * 0.2f, p2 + Vector3.right * 0.2f);
-                    }
+                    Gizmos.DrawLine(route.currentActivePath[i], route.currentActivePath[i + 1]);
                 }
             }
         }

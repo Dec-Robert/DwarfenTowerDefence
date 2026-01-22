@@ -18,6 +18,11 @@
                 <ui:Label name="Lbl_Production" text="Produkcja..." style="color: rgb(136, 255, 136); font-size: 11px; white-space: normal;" />
                 <ui:Label name="Lbl_Upkeep" text="Utrzymanie..." style="color: rgb(255, 136, 136); font-size: 11px; white-space: normal;" />
             </ui:VisualElement>
+            <ui:VisualElement name="CombatStatsContainer" style="display: none; margin-bottom: 10px; background-color: rgba(0, 0, 0, 0.3); padding: 5px; border-radius: 4px;">
+                <ui:Label name="Lbl_Damage" text="Obrażenia: 10" style="color: rgb(255, 68, 68); font-size: 12px; -unity-font-style: bold;" />
+                <ui:Label name="Lbl_Range" text="Zasięg: 5" style="color: rgb(68, 255, 255); font-size: 12px;" />
+                <ui:Label name="Lbl_FireRate" text="Szybkość: 1.0/s" style="color: rgb(255, 255, 68); font-size: 12px;" />
+            </ui:VisualElement>
             <ui:VisualElement name="WorkerSection" class="worker-section">
                 <ui:Label text="PRACOWNICY" style="color: rgb(221, 221, 221); -unity-font-style: bold; margin-bottom: 5px;" />
                 <ui:VisualElement name="ShiftsContainer" />

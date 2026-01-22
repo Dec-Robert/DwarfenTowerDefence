@@ -92,9 +92,10 @@ public class TimeCycleManager : MonoBehaviour
         }
     }
 
+    // --- POPRAWKA: Dodanie "Dzieñ X" do zwracanego stringa ---
     public string GetFormattedTime()
     {
         float minutes = (currentTime - Mathf.Floor(currentTime)) * 60;
-        return $"{Mathf.FloorToInt(currentTime):00}:{Mathf.FloorToInt(minutes):00}";
+        return $"Dzieñ {dayCount} | {Mathf.FloorToInt(currentTime):00}:{Mathf.FloorToInt(minutes):00}";
     }
 }

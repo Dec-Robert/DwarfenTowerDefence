@@ -514,6 +514,7 @@ GameObject:
   - component: {fileID: 548684863}
   - component: {fileID: 548684868}
   - component: {fileID: 548684869}
+  - component: {fileID: 548684870}
   m_Layer: 5
   m_Name: --UI
   m_TagString: Untagged
@@ -653,6 +654,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 97194934}
+--- !u!114 &548684870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 548684862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cb1a6a494923db48a197f9fc59ebdf7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiDocument: {fileID: 693969841}
+  expansionManager: {fileID: 1837610586}
 --- !u!1 &693969839
 GameObject:
   m_ObjectHideFlags: 0
@@ -818,7 +833,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1478630900}
   - component: {fileID: 1478630899}
-  - component: {fileID: 1478630901}
   - component: {fileID: 1478630905}
   - component: {fileID: 1478630906}
   - component: {fileID: 1478630907}
@@ -857,23 +871,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1478630901
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1478630898}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f18a79d405eae3540a41704dfb1d9eb1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fogManager: {fileID: 1837610585}
-  expansionUI: {fileID: 0}
-  mapGenerator: {fileID: 1837610582}
-  baseRevealCost: 10
-  costIncrement: 5
 --- !u!114 &1478630905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -938,6 +935,7 @@ GameObject:
   - component: {fileID: 1837610582}
   - component: {fileID: 1837610584}
   - component: {fileID: 1837610585}
+  - component: {fileID: 1837610586}
   m_Layer: 0
   m_Name: ----MAP MANAGER
   m_TagString: Untagged
@@ -959,7 +957,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   visualizer: {fileID: 1837610584}
   fogManager: {fileID: 1837610585}
-  expansionManager: {fileID: 1478630901}
+  expansionManager: {fileID: 1837610586}
   mapWidth: 8
   mapMinY: -3
   mapMaxY: 3
@@ -1069,7 +1067,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bdf571270d0c1343a4eab9a93713bea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  expansionManager: {fileID: 1478630901}
+  expansionManager: {fileID: 1837610586}
   mapVisualizer: {fileID: 1837610584}
   defaultFogMaterial: {fileID: 2100000, guid: ecf964584f2921a42a52d9d4bc81e15f, type: 2}
   ableToBuyFogMaterial: {fileID: 2100000, guid: 69087ab46eb2d144499180d014dba817, type: 2}
@@ -1078,6 +1076,23 @@ MonoBehaviour:
   fogHeightScale: 1
   showDebugLogs: 1
   debugClickToReveal: 0
+--- !u!114 &1837610586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837610581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f18a79d405eae3540a41704dfb1d9eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fogManager: {fileID: 1837610585}
+  uiExpansionMenu: {fileID: 548684870}
+  mapGenerator: {fileID: 1837610582}
+  baseRevealCost: 10
+  costIncrement: 5
 --- !u!1 &1871804221
 GameObject:
   m_ObjectHideFlags: 0

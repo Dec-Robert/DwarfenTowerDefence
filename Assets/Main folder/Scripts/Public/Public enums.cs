@@ -42,3 +42,16 @@ public enum DayPhase
     Day,
     Night
 }
+
+public enum DamageType
+{
+    Physical, // Zwyk³e wie¿e (£ucznik, Armata)
+    Magic     // Wie¿e magiczne (Lód, Ogieñ)
+}
+
+public enum EnemyRank
+{
+    Normal,
+    Elite,
+    Boss
+}

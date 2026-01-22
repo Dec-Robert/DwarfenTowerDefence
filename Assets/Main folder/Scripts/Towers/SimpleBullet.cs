@@ -5,19 +5,26 @@ public class SimpleBullet : MonoBehaviour
 {
     private Transform target;
     private float damage;
+    private DamageType damageType;          // Typ (Fizyczne/Magiczne)
+    private List<TowerEffectSO> effects;    // Efekty (Slow, Poison)
     private float speed = 20f;
-    private List<TowerEffectSO> effectsToApply; // Lista efektów do na³o¿enia
 
-    public void Seek(Transform _target, float _damage, List<TowerEffectSO> _effects)
+    // ZMIENIONA METODA SEEK (4 argumenty)
+    public void Seek(Transform _target, float _damage, DamageType _type, List<TowerEffectSO> _effects)
     {
         target = _target;
         damage = _damage;
-        effectsToApply = _effects; // Przekazujemy listê dalej
+        damageType = _type;
+        effects = _effects;
     }
 
     void Update()
     {
-        if (target == null) { Destroy(gameObject); return; }
+        if (target == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         Vector3 dir = target.position - transform.position;
         float distanceThisFrame = speed * Time.deltaTime;
@@ -36,13 +43,13 @@ public class SimpleBullet : MonoBehaviour
         EnemyStats enemy = target.GetComponent<EnemyStats>();
         if (enemy != null)
         {
-            // 1. Zadaj podstawowe obra¿enia
-            enemy.TakeDamage(damage);
+            // 1. Zadaj obra¿enia z uwzglêdnieniem typu (Pancerz/Odpornoœæ)
+            enemy.TakeDamage(damage, damageType);
 
-            // 2. Aplikuj wszystkie efekty specjalne (Lód, Ogieñ, Wybuch)
-            if (effectsToApply != null)
+            // 2. Na³ó¿ efekty specjalne
+            if (effects != null)
             {
-                foreach (var effect in effectsToApply)
+                foreach (var effect in effects)
                 {
                     effect.ApplyEffect(enemy);
                 }

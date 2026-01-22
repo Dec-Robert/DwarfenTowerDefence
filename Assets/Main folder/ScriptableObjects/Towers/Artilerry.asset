@@ -29,9 +29,10 @@ MonoBehaviour:
     amount: 1
   tier1Upgrades: []
   prefab: {fileID: 6224301533635993970, guid: 4f3a6833ab83b1243aa8bca0ed6e3006, type: 3}
-  baseRange: 9
-  baseDamage: 5
-  fireRate: 2
+  baseRange: 15
+  baseDamage: 90
+  fireRate: 1
+  damageType: 0
   effects:
   - {fileID: 11400000, guid: 384f32bf67c32c947b26a858dbd59058, type: 2}
   bulletPrefab: {fileID: 1508738095332709406, guid: 85fe7ed40cca507438cd0f907d3acd01, type: 3}

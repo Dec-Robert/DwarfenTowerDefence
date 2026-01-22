@@ -52,4 +52,15 @@ public class EnemyWalker : MonoBehaviour
         Destroy(gameObject);
         // Tutaj w przysz³oœci odejmiesz ¿ycie graczowi
     }
+
+    public void CopyProgressFrom(EnemyWalker other)
+    {
+        if (other == null) return;
+
+        this.pathPoints = other.pathPoints; // Ta sama trasa
+        this.targetIndex = other.targetIndex; // Ten sam cel
+
+        this.transform.position = other.transform.position;
+        this.isInitialized = true;
+    }
 }

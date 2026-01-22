@@ -113,19 +113,20 @@ public class TowerController : MonoBehaviour
 
     void Shoot()
     {
-        if (towerData == null || towerData.bulletPrefab == null) return;
+        // Rzutowanie na TowerData (bo zmienna to BuildingData)
+        TowerData tData = towerData as TowerData;
+
+        if (tData == null || tData.bulletPrefab == null) return;
 
         Vector3 spawnPos = (firePoint != null) ? firePoint.position : transform.position;
-        GameObject bulletGO = Instantiate(towerData.bulletPrefab, spawnPos, Quaternion.identity);
+        GameObject bulletGO = Instantiate(tData.bulletPrefab, spawnPos, Quaternion.identity);
 
         SimpleBullet bullet = bulletGO.GetComponent<SimpleBullet>();
         if (bullet != null)
         {
-            // Przekazujemy AKTUALNE obra¿enia i listê efektów z danych
-            bullet.Seek(target, currentDamage, towerData.effects);
+            bullet.Seek(target, currentDamage, tData.damageType, tData.effects);
         }
 
-        // Zg³aszamy zu¿ycie (strza³ pad³ -> brak zwrotu amunicji rano)
         if (towerEntity != null)
         {
             towerEntity.RegisterShot();
@@ -138,4 +139,15 @@ public class TowerController : MonoBehaviour
         Gizmos.color = canShoot ? Color.cyan : Color.red; // Czerwony jeœli nieaktywna
         Gizmos.DrawWireSphere(transform.position, currentRange > 0 ? currentRange : (towerData ? towerData.baseRange : 0));
     }
+
+    // --- API DLA UI (INSPECJA) ---
+    public float GetCurrentDamage() => currentDamage;
+    public float GetBaseDamage() => towerData != null ? towerData.baseDamage : 0;
+
+    public float GetCurrentRange() => currentRange;
+    public float GetBaseRange() => towerData != null ? towerData.baseRange : 0;
+
+    public float GetCurrentFireRate() => currentFireRate;
+    public float GetBaseFireRate() => towerData != null ? towerData.fireRate : 0;
+
 }

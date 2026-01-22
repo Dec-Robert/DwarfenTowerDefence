@@ -172,5 +172,30 @@ public class TowerEntity : BuildingEntity
         {
             controller.UpdateCombatStats(efficiency, rangeBonus, damageBonus, fireRateBonus, isCombatActive);
         }
+
+
+    }
+
+    public override bool TryAddWorker(Race race)
+    {
+        // 1. Wykonaj standardow¹ logikê (przypisanie, szukanie w managerze)
+        bool success = base.TryAddWorker(race);
+
+        // 2. Jeœli siê uda³o, NATYCHMIAST przelicz statystyki
+        if (success)
+        {
+            RecalculateStats();
+        }
+
+        return success;
+    }
+
+    public override void RemoveWorker(Race race)
+    {
+        // 1. Wykonaj standardowe usuwanie
+        base.RemoveWorker(race);
+
+        // 2. NATYCHMIAST przelicz statystyki
+        RecalculateStats();
     }
 }
