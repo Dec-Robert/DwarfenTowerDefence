@@ -515,6 +515,7 @@ GameObject:
   - component: {fileID: 548684868}
   - component: {fileID: 548684869}
   - component: {fileID: 548684870}
+  - component: {fileID: 548684871}
   m_Layer: 5
   m_Name: --UI
   m_TagString: Untagged
@@ -668,6 +669,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 693969841}
   expansionManager: {fileID: 1837610586}
+--- !u!114 &548684871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 548684862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 687e75f5dfca1244c829db571d59fe91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiDocument: {fileID: 693969841}
+  colorLvl1: {r: 0.05, g: 0.05, b: 0.2, a: 1}
+  colorLvl2: {r: 0.2, g: 0.4, b: 0.8, a: 1}
+  colorLvl3: {r: 1, g: 1, b: 0.8, a: 1}
+  colorLvl4: {r: 1, g: 0.6, b: 0, a: 1}
+  colorLvl5: {r: 1, g: 0.2, b: 0, a: 1}
+  colorInactive: {r: 0.2, g: 0.2, b: 0.2, a: 0.5}
 --- !u!1 &693969839
 GameObject:
   m_ObjectHideFlags: 0
@@ -814,10 +834,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapGenerator: {fileID: 1837610582}
   fogManager: {fileID: 1837610585}
-  enemyPrefab: {fileID: 6987379787904698027, guid: 0ed6f20242337c64b8df5c77925df8ad, type: 3}
+  availableEnemies:
+  - {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+  - {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
+  - {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+  predefinedWaves:
+  - {fileID: 11400000, guid: 0f7f43213ef54a34f88709c518929875, type: 2}
+  baseBudget: 10
+  budgetPerDay: 5
+  budgetExponent: 1.1
   nightSpawnInterval: 1
-  enemiesPerWave: 10
-  additionEnemiesPerWave: 5
   daySpawnInterval: 10
   daySpawnChance: 30
   baseFormulaConst: 10
@@ -1046,6 +1072,8 @@ MonoBehaviour:
   prefabForest: {fileID: 4575872815272046510, guid: 80e39e16be18ea34f8b736406759debd, type: 3}
   prefabMountain: {fileID: 1362618508886082739, guid: 78cc11c5f7a6dce4fb697cdfc3a13df2, type: 3}
   prefabFertile: {fileID: 4983687469535243513, guid: 39669e049b5dfd74fb42bf4fed8d1d51, type: 3}
+  prefabBase: {fileID: 4011031713050108421, guid: 07c2962ef65bb134394603a64ca2250e, type: 3}
+  prefabBeacon: {fileID: 4189068666463913954, guid: e4e39cba01fd49643bcaa5024318311c, type: 3}
   matPath: {fileID: 2100000, guid: d75c9b64f7c92134ab819ad47fad24f6, type: 2}
   matForest: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
   matMountain: {fileID: 2100000, guid: ecf964584f2921a42a52d9d4bc81e15f, type: 2}

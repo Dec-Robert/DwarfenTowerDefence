@@ -276,9 +276,11 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemy(EnemyData data)
     {
+        // 1. Walidacja
         if (activeRoutes.Count == 0 || data.prefab == null) return;
 
-        // 1. Wybór Trasy (Weighted Random)
+        // 2. Wybór Trasy (Weighted Random)
+        // Losujemy trasê na podstawie % szans wyliczonych w RecalculateActiveRoutes
         SpawnRoute selectedRoute = null;
         float randomVal = Random.Range(0f, 100f);
         float currentSum = 0f;
@@ -292,17 +294,41 @@ public class EnemySpawner : MonoBehaviour
                 break;
             }
         }
+        // Zabezpieczenie (fallback do pierwszej trasy)
         if (selectedRoute == null) selectedRoute = activeRoutes[0];
 
-        // 2. Instancjonowanie
+        // 3. Instancjonowanie Wroga
+        // Spawnujemy w 'currentSpawnPoint', czyli na granicy odkrytego terenu
         GameObject newEnemy = Instantiate(data.prefab, selectedRoute.currentSpawnPoint, Quaternion.identity);
 
-        // 3. Konfiguracja komponentów
-        EnemyStats stats = newEnemy.GetComponent<EnemyStats>();
-        if (stats != null) stats.Initialize(data);
+        // 4. Pobieranie modyfikatorów z Beacona (Wp³yw ognia na wrogów)
+        float countMod = 1f; // Nieu¿ywane przy pojedynczym spawnie, ale metoda zwraca
+        float hpMod = 1f;
+        float speedMod = 1f;
+        float eliteMod = 1f;
 
+        if (BeaconEntity.Instance != null)
+        {
+            BeaconEntity.Instance.GetEnemyModifiers(out countMod, out hpMod, out speedMod, out eliteMod);
+        }
+
+        // 5. Konfiguracja Statystyk
+        EnemyStats stats = newEnemy.GetComponent<EnemyStats>();
+        if (stats != null)
+        {
+            // Przekazujemy Dane + Modyfikatory z Beacona
+            // UWAGA: Upewnij siê, ¿e w EnemyStats masz zaktualizowan¹ metodê Initialize
+            // która przyjmuje te floaty!
+            stats.Initialize(data, hpMod, speedMod, eliteMod);
+        }
+
+        // 6. Konfiguracja Ruchu
         EnemyWalker walker = newEnemy.GetComponent<EnemyWalker>();
-        if (walker != null) walker.Initialize(selectedRoute.currentActivePath);
+        if (walker != null)
+        {
+            // Przekazujemy tylko aktywny odcinek trasy (od spawnu do bazy)
+            walker.Initialize(selectedRoute.currentActivePath);
+        }
     }
 
     // --- LOGIKA TRAS I MG£Y ---

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
+  m_Name: New inside organization II
+  m_EditorClassIdentifier: 
+  id: 11
+  upgradeName: New inside organization II
+  description: "Domy mog\u0105 mie\u0107 1 populacje max wi\u0119cej\r\n"
+  icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
+  cost: 1
+  isUnlocked: 0
+  prerequisites:
+  - {fileID: 11400000, guid: 16183f60b74b1994593dc655cc6efd21, type: 2}

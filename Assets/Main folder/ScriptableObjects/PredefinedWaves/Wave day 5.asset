@@ -12,6 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c8964dde39bde5459a3bf59f693206d, type: 3}
   m_Name: Wave day 5
   m_EditorClassIdentifier: 
-  dayNumber: 0
-  enemies: []
+  dayNumber: 5
   waveMessage: 
+  enemies:
+  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    count: 5
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    count: 5
+  - enemy: {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
+    count: 20

@@ -96,6 +96,12 @@ public class BuildingEntity : MonoBehaviour
             efficiency += (workerCount - 1) * 0.10f;
         }
 
+        // 4b. Wydajnoœæ z beaconu
+        if (BeaconEntity.Instance != null)
+        {
+            efficiency *= BeaconEntity.Instance.GetGlobalProductionMultiplier();
+        }
+
         // 5. Produkcja
         Dictionary<ResourceType, int> totalDailyProduction = GetCurrentProduction();
 

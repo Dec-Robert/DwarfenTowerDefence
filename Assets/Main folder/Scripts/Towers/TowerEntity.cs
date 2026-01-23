@@ -153,6 +153,13 @@ public class TowerEntity : BuildingEntity
             if (worker.race == Race.Humans) fireRateBonus += 0.1f;   // Cz³owiek = +10% speed
         }
 
+        // 3,5. Bonusy z Beaconu
+        if (BeaconEntity.Instance != null)
+        {
+            rangeBonus *= BeaconEntity.Instance.GetTowerRangeMultiplier();
+            damageBonus *= BeaconEntity.Instance.GetTowerDamageMultiplier();
+        }
+
         // 4. Decyzja czy dzia³a
         // Wie¿a dzia³a jeœli: Ma ludzi ORAZ (Jest dzieñ LUB (Jest noc i ma amunicje))
         bool isNight = TimeCycleManager.Instance.currentHour >= NIGHT_START_HOUR || TimeCycleManager.Instance.currentHour < NIGHT_END_HOUR;

@@ -9,6 +9,11 @@ public class HexMapVisualizer : MonoBehaviour
     public GameObject prefabMountain;
     public GameObject prefabFertile;
 
+    // --- NOWOŒÆ: Prefaby Specjalne ---
+    [Header("Prefaby Budynków Specjalnych")]
+    public GameObject prefabBase;   // Kapitol
+    public GameObject prefabBeacon; // Beacon of Hope
+
     [Header("Materia³y Specjalne")]
     public Material matPath;
     public Material matForest;
@@ -24,10 +29,9 @@ public class HexMapVisualizer : MonoBehaviour
 
     private Transform mapHolder;
 
-    // NOWOŒÆ: S³ownik przechowuj¹cy fizyczne obiekty chunków
+    // S³ownik przechowuj¹cy fizyczne obiekty chunków
     private Dictionary<Vector2Int, GameObject> chunkGameObjects = new Dictionary<Vector2Int, GameObject>();
 
-    // API dla Fog Managera
     public GameObject GetChunkGameObject(Vector2Int coord)
     {
         if (chunkGameObjects.ContainsKey(coord)) return chunkGameObjects[coord];
@@ -43,7 +47,7 @@ public class HexMapVisualizer : MonoBehaviour
         float hexSize,
         float padding)
     {
-        ClearMap(); // Czyœci te¿ s³ownik
+        ClearMap();
 
         if (mapHolder == null)
         {
@@ -72,7 +76,6 @@ public class HexMapVisualizer : MonoBehaviour
             chunkObj.transform.parent = mapHolder;
             chunkObj.transform.position = centerWorld;
 
-            // NOWOŒÆ: Rejestrujemy chunk w s³owniku
             chunkGameObjects.Add(chunkCoord, chunkObj);
 
             if (worldData.ContainsKey(chunkCoord))
@@ -93,7 +96,6 @@ public class HexMapVisualizer : MonoBehaviour
                     GameObject hex = Instantiate(hexPrefab, finalPos, Quaternion.identity, chunkObj.transform);
                     hex.name = $"Hex_{local.x}_{local.y}";
 
-                    // Dodajemy komponent logiczny
                     HexCell cellComponent = hex.AddComponent<HexCell>();
                     cellComponent.chunkCoord = chunkCoord;
                     cellComponent.localCoord = local;
@@ -145,15 +147,36 @@ public class HexMapVisualizer : MonoBehaviour
                     nameSuffix = " (Fertile)";
                     if (prefabFertile != null) SpawnProp(hexObj, prefabFertile);
                     break;
+
+                // --- TUTAJ ZMIANA: KAPITOL ---
                 case HexFeatureType.Base:
                     matToUse = matBase;
-                    hexObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                     nameSuffix = " [CAPITOL]";
+                    if (prefabBase != null)
+                    {
+                        SpawnProp(hexObj, prefabBase);
+                    }
+                    else
+                    {
+                        // Fallback (stare skalowanie)
+                        hexObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                    }
                     break;
+
+                // --- TUTAJ ZMIANA: BEACON ---
                 case HexFeatureType.Beacon:
                     matToUse = matBeacon;
-                    hexObj.transform.localScale = new Vector3(0.8f, 3f, 0.8f);
                     nameSuffix = " [BEACON]";
+                    if (prefabBeacon != null)
+                    {
+                        // Instancjujemy Prefab (który ma skrypt BeaconEntity!)
+                        SpawnProp(hexObj, prefabBeacon);
+                    }
+                    else
+                    {
+                        // Fallback
+                        hexObj.transform.localScale = new Vector3(0.8f, 3f, 0.8f);
+                    }
                     break;
             }
         }
@@ -166,12 +189,16 @@ public class HexMapVisualizer : MonoBehaviour
     {
         GameObject prop = Instantiate(prefab, parentHex.transform);
         prop.transform.localPosition = Vector3.zero;
+
+        // Dla budynków wa¿nych (Beacon/Base) lepiej nie losowaæ rotacji, ¿eby sta³y prosto
+        // Ale dla lasów/gór losowa rotacja jest OK.
+        // Mo¿emy to prosto rozró¿niæ lub zostawiæ losowo dla klimatu.
         prop.transform.localRotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
     }
 
     public void ClearMap()
     {
-        chunkGameObjects.Clear(); // Czyœcimy s³ownik
+        chunkGameObjects.Clear();
         if (mapHolder != null) DestroyImmediate(mapHolder.gameObject);
         while (transform.childCount > 0) DestroyImmediate(transform.GetChild(0).gameObject);
     }

@@ -10,25 +10,28 @@ public class UIBuildingInspector : MonoBehaviour
     [Header("Referencje")]
     public UIDocument uiDocument;
 
-    // Elementy G³ówne
+    // Kontenery
     private VisualElement totalContainer, mainInspector, upgradeDetailsPanel;
+
+    // G³ówne
     private Label lblName, lblWorkerCounts;
     private Button btnClose, btnDestroy;
 
-    // Elementy Ekonomiczne
-    private VisualElement statsContainer, upgradeSection;
+    // Sekcje
+    private VisualElement workerSection;
+    private VisualElement shiftsContainer;
+    private VisualElement statsContainer, upgradeSection, upgradesList;
     private Label lblProd, lblUpkeep;
-    private VisualElement upgradesList;
-
-    // Elementy Bojowe (NOWE)
     private VisualElement combatStatsContainer;
     private Label lblDamage, lblRange, lblFireRate;
+    private VisualElement beaconControlSection;
+    private SliderInt coalSlider;
+    private Label lblCoalVal;
 
-    // Elementy Pracowników
-    private VisualElement shiftsContainer;
+    // Przyciski Pracowników
     private Button btnAddH, btnRemH, btnAddE, btnRemE, btnAddD, btnRemD;
 
-    // Elementy Szczegó³ów Ulepszenia
+    // Detale Ulepszeñ
     private Label detTitle, detDesc, detEffects, detCost;
     private Button btnConfirmBuy, btnCancelBuy;
 
@@ -44,16 +47,24 @@ public class UIBuildingInspector : MonoBehaviour
     private void OnEnable()
     {
         var uiRoot = uiDocument.rootVisualElement;
+
         totalContainer = uiRoot.Q<VisualElement>("TotalContainer");
         mainInspector = uiRoot.Q<VisualElement>("InspectorRoot");
         upgradeDetailsPanel = uiRoot.Q<VisualElement>("UpgradeDetailsPanel");
 
+        // G³ówne
         lblName = mainInspector.Q<Label>("Lbl_Name");
-        lblWorkerCounts = mainInspector.Q<Label>("Lbl_WorkerCounts");
-        shiftsContainer = mainInspector.Q<VisualElement>("ShiftsContainer");
-
         btnClose = mainInspector.Q<Button>("Btn_Close");
         btnDestroy = mainInspector.Q<Button>("Btn_Destroy");
+
+        // Pracownicy
+        workerSection = mainInspector.Q<VisualElement>("WorkerSection");
+        shiftsContainer = mainInspector.Q<VisualElement>("ShiftsContainer");
+        lblWorkerCounts = mainInspector.Q<Label>("Lbl_WorkerCounts");
+
+        btnAddH = mainInspector.Q<Button>("Btn_AddHuman"); btnRemH = mainInspector.Q<Button>("Btn_RemHuman");
+        btnAddE = mainInspector.Q<Button>("Btn_AddElf"); btnRemE = mainInspector.Q<Button>("Btn_RemElf");
+        btnAddD = mainInspector.Q<Button>("Btn_AddDwarf"); btnRemD = mainInspector.Q<Button>("Btn_RemDwarf");
 
         // Ekonomia
         statsContainer = mainInspector.Q<VisualElement>("StatsContainer");
@@ -68,6 +79,14 @@ public class UIBuildingInspector : MonoBehaviour
         lblRange = mainInspector.Q<Label>("Lbl_Range");
         lblFireRate = mainInspector.Q<Label>("Lbl_FireRate");
 
+        // Beacon
+        beaconControlSection = mainInspector.Q<VisualElement>("BeaconControlSection");
+        coalSlider = mainInspector.Q<SliderInt>("Slider_CoalInput");
+        lblCoalVal = mainInspector.Q<Label>("Lbl_CoalInputVal");
+
+        if (coalSlider != null)
+            coalSlider.RegisterValueChangedCallback(evt => OnCoalSliderChanged(evt.newValue));
+
         // Detale
         detTitle = upgradeDetailsPanel.Q<Label>("Det_Title");
         detDesc = upgradeDetailsPanel.Q<Label>("Det_Desc");
@@ -75,11 +94,6 @@ public class UIBuildingInspector : MonoBehaviour
         detCost = upgradeDetailsPanel.Q<Label>("Det_Cost");
         btnConfirmBuy = upgradeDetailsPanel.Q<Button>("Btn_ConfirmBuy");
         btnCancelBuy = upgradeDetailsPanel.Q<Button>("Btn_CancelBuy");
-
-        // Przyciski pracowników
-        btnAddH = mainInspector.Q<Button>("Btn_AddHuman"); btnRemH = mainInspector.Q<Button>("Btn_RemHuman");
-        btnAddE = mainInspector.Q<Button>("Btn_AddElf"); btnRemE = mainInspector.Q<Button>("Btn_RemElf");
-        btnAddD = mainInspector.Q<Button>("Btn_AddDwarf"); btnRemD = mainInspector.Q<Button>("Btn_RemDwarf");
 
         // Eventy
         btnClose.clicked += Hide;
@@ -121,26 +135,63 @@ public class UIBuildingInspector : MonoBehaviour
     {
         if (currentTarget == null) return;
 
-        // 1. Nazwa
-        string tierInfo = (currentTarget is TowerEntity) ? "" : $"(Tier {currentTarget.currentTier + 1})";
+        string tierInfo = (currentTarget is TowerEntity || currentTarget is BeaconEntity) ? "" : $"(Tier {currentTarget.currentTier + 1})";
         lblName.text = $"{currentTarget.data.buildingName} {tierInfo}";
 
-        // 2. Rozró¿nienie UI (Wie¿a vs Ekonomia)
+        // --- OBS£UGA PRZYCISKU NISZCZENIA ---
+        if (btnDestroy != null)
+        {
+            // Ukryj przycisk, jeœli to budynek unikalny (Unique) lub Beacon
+            if (currentTarget.data.type == BuildingType.Unique || currentTarget.data.type == BuildingType.Unique || currentTarget is BeaconEntity)
+            {
+                btnDestroy.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                btnDestroy.style.display = DisplayStyle.Flex;
+            }
+        }
+        // ------------------------------------
+
+        // Reset widocznoœci sekcji
+        if (statsContainer != null) statsContainer.style.display = DisplayStyle.None;
+        if (combatStatsContainer != null) combatStatsContainer.style.display = DisplayStyle.None;
+        if (upgradeSection != null) upgradeSection.style.display = DisplayStyle.None;
+        if (beaconControlSection != null) beaconControlSection.style.display = DisplayStyle.None;
+        if (workerSection != null) workerSection.style.display = DisplayStyle.None;
+
+        // --- PRZE£¥CZANIE WIDOKÓW ---
+
+        // A. BEACON
+        if (currentTarget is BeaconEntity beacon)
+        {
+            if (beaconControlSection != null)
+            {
+                beaconControlSection.style.display = DisplayStyle.Flex;
+
+                if (coalSlider != null) coalSlider.SetValueWithoutNotify(beacon.dailyCoalInput);
+                if (lblCoalVal != null) lblCoalVal.text = beacon.dailyCoalInput.ToString();
+            }
+            return;
+        }
+
+        // B. RESZTA (Poka¿ pracowników)
+        if (workerSection != null) workerSection.style.display = DisplayStyle.Flex;
+
         if (currentTarget is TowerEntity tower)
         {
-            // TRYB WIE¯Y
-            statsContainer.style.display = DisplayStyle.None;
-            upgradeSection.style.display = DisplayStyle.None;
-            combatStatsContainer.style.display = DisplayStyle.Flex;
-
-            UpdateCombatStatsUI(tower);
+            // C. WIE¯A
+            if (combatStatsContainer != null)
+            {
+                combatStatsContainer.style.display = DisplayStyle.Flex;
+                UpdateCombatStatsUI(tower);
+            }
         }
         else
         {
-            // TRYB EKONOMII
-            statsContainer.style.display = DisplayStyle.Flex;
-            upgradeSection.style.display = DisplayStyle.Flex;
-            combatStatsContainer.style.display = DisplayStyle.None;
+            // D. BUDYNEK EKONOMICZNY
+            if (statsContainer != null) statsContainer.style.display = DisplayStyle.Flex;
+            if (upgradeSection != null) upgradeSection.style.display = DisplayStyle.Flex;
 
             lblProd.text = "Produkcja: " + FormatResourcesWithHourly(currentTarget.GetCurrentProduction(), currentTarget.shiftLength);
             lblUpkeep.text = "Utrzymanie: " + FormatResourcesWithHourly(currentTarget.GetCurrentUpkeep(), currentTarget.shiftLength);
@@ -148,7 +199,7 @@ public class UIBuildingInspector : MonoBehaviour
             GenerateUpgradesList();
         }
 
-        // 3. Pracownicy (Wspólne)
+        // Pracownicy
         int h = currentTarget.GetWorkerCount(Race.Humans);
         int e = currentTarget.GetWorkerCount(Race.Elves);
         int d = currentTarget.GetWorkerCount(Race.Dwarves);
@@ -157,30 +208,29 @@ public class UIBuildingInspector : MonoBehaviour
         GenerateShiftSlots();
     }
 
-    // --- LOGIKA WIE¯Y ---
+    // --- BEACON ---
+    void OnCoalSliderChanged(int newValue)
+    {
+        if (currentTarget is BeaconEntity beacon)
+        {
+            beacon.dailyCoalInput = newValue;
+            if (lblCoalVal != null) lblCoalVal.text = newValue.ToString();
+        }
+    }
+
+    // --- WIE¯A ---
     void UpdateCombatStatsUI(TowerEntity tower)
     {
         if (tower.controller == null) return;
-
-        float curDmg = tower.controller.GetCurrentDamage();
-        float baseDmg = tower.controller.GetBaseDamage();
-        lblDamage.text = FormatStat("Obra¿enia", curDmg, baseDmg);
-
-        float curRange = tower.controller.GetCurrentRange();
-        float baseRange = tower.controller.GetBaseRange();
-        lblRange.text = FormatStat("Zasiêg", curRange, baseRange);
-
-        float curRate = tower.controller.GetCurrentFireRate();
-        float baseRate = tower.controller.GetBaseFireRate();
-        lblFireRate.text = FormatStat("Szybkoœæ", curRate, baseRate, "/s");
+        lblDamage.text = FormatStat("Obra¿enia", tower.controller.GetCurrentDamage(), tower.controller.GetBaseDamage());
+        lblRange.text = FormatStat("Zasiêg", tower.controller.GetCurrentRange(), tower.controller.GetBaseRange());
+        lblFireRate.text = FormatStat("Szybkoœæ", tower.controller.GetCurrentFireRate(), tower.controller.GetBaseFireRate(), "/s");
     }
 
     string FormatStat(string name, float current, float baseVal, string suffix = "")
     {
-        // Jeœli wartoœci s¹ ró¿ne (np. buff od elfa lub kara za brak ludzi), poka¿ bazê w nawiasie
         if (Mathf.Abs(current - baseVal) > 0.01f)
         {
-            // Kolorowanie: Jeœli current > base -> Zielony, jeœli mniej -> Czerwony
             string color = current >= baseVal ? "#88FF88" : "#FF8888";
             return $"{name}: <color={color}>{current:F1}{suffix}</color> <color=#AAAAAA>({baseVal:F1})</color>";
         }
@@ -223,7 +273,6 @@ public class UIBuildingInspector : MonoBehaviour
         for (int i = 0; i < visualSlots.Count; i++)
         {
             VisualElement slot = visualSlots[i];
-            // Reset klas
             slot.RemoveFromClassList("slot-empty"); slot.RemoveFromClassList("slot-assigned");
             slot.RemoveFromClassList("slot-working"); slot.RemoveFromClassList("slot-exhausted");
 
@@ -238,20 +287,15 @@ public class UIBuildingInspector : MonoBehaviour
                     default: slot.AddToClassList("slot-empty"); break;
                 }
 
-                // TOOLTIP DLA PRACOWNIKA W WIE¯Y
                 if (currentTarget is TowerEntity)
                 {
                     string bonus = "";
                     if (worker.race == Race.Elves) bonus = "+10% Zasiêg";
                     else if (worker.race == Race.Dwarves) bonus = "+10% Obra¿enia";
                     else if (worker.race == Race.Humans) bonus = "+10% Szybkoœæ";
-
                     slot.tooltip = $"{worker.race} ({worker.workState})\nEfekt: {bonus}";
                 }
-                else
-                {
-                    slot.tooltip = $"{worker.race} ({worker.workState})";
-                }
+                else slot.tooltip = $"{worker.race} ({worker.workState})";
             }
             else
             {
@@ -261,15 +305,84 @@ public class UIBuildingInspector : MonoBehaviour
         }
     }
 
-    // --- ULEPSZENIA & RESZTA (Bez zmian logicznych) ---
-    // (Skopiuj resztê metod z poprzedniego pliku: GenerateUpgradesList, ShowUpgradeDetails, OnWorkerAction itp.)
+    void OnWorkerAction(Race race, bool add)
+    {
+        if (currentTarget == null) return;
+        bool changed = false;
+        if (add) changed = currentTarget.TryAddWorker(race);
+        else { currentTarget.RemoveWorker(race); changed = true; }
+        if (changed) RefreshContent();
+    }
 
-    // SKRÓT POZOSTA£YCH METOD (Wklej tu pe³ne wersje z poprzedniej odpowiedzi)
-    void GenerateUpgradesList() { upgradesList.Clear(); var upgrades = currentTarget.GetAvailableUpgrades(); if (upgrades.Count == 0) { upgradesList.Add(new Label("Maksymalny poziom.")); return; } foreach (var up in upgrades) { Button btn = new Button(); btn.text = up.upgradeName; btn.AddToClassList("upgrade-btn"); btn.clicked += () => ShowUpgradeDetails(up); upgradesList.Add(btn); } }
-    void ShowUpgradeDetails(BuildingUpgradeSO upgrade) { selectedUpgrade = upgrade; upgradeDetailsPanel.style.display = DisplayStyle.Flex; detTitle.text = upgrade.upgradeName; detDesc.text = upgrade.description; StringBuilder costSb = new StringBuilder("Koszt: "); foreach (var c in upgrade.cost) costSb.Append($"{c.amount} {c.type}, "); detCost.text = costSb.ToString().TrimEnd(',', ' '); StringBuilder effSb = new StringBuilder(); if (upgrade.productionBonus != null) foreach (var p in upgrade.productionBonus) effSb.Append($"+{p.amount} {p.type} Prod, "); if (upgrade.upkeepIncrease != null) foreach (var u in upgrade.upkeepIncrease) effSb.Append($"+{u.amount} {u.type} Utrzymania, "); detEffects.text = effSb.Length > 0 ? effSb.ToString().TrimEnd(',', ' ') : "Brak zmiany statystyk"; }
+    // --- ULEPSZENIA ---
+    void GenerateUpgradesList()
+    {
+        upgradesList.Clear();
+        var upgrades = currentTarget.GetAvailableUpgrades();
+
+        if (upgrades.Count == 0)
+        {
+            upgradesList.Add(new Label("Maksymalny poziom."));
+            return;
+        }
+
+        foreach (var up in upgrades)
+        {
+            Button btn = new Button();
+            btn.text = up.upgradeName;
+            btn.AddToClassList("upgrade-btn");
+            btn.clicked += () => ShowUpgradeDetails(up);
+            upgradesList.Add(btn);
+        }
+    }
+
+    void ShowUpgradeDetails(BuildingUpgradeSO upgrade)
+    {
+        selectedUpgrade = upgrade;
+        upgradeDetailsPanel.style.display = DisplayStyle.Flex;
+        detTitle.text = upgrade.upgradeName;
+        detDesc.text = upgrade.description;
+
+        StringBuilder costSb = new StringBuilder("Koszt: ");
+        foreach (var c in upgrade.cost) costSb.Append($"{c.amount} {c.type}, ");
+        detCost.text = costSb.ToString().TrimEnd(',', ' ');
+
+        StringBuilder effSb = new StringBuilder();
+        if (upgrade.productionBonus != null) foreach (var p in upgrade.productionBonus) effSb.Append($"+{p.amount} {p.type} Prod, ");
+        if (upgrade.upkeepIncrease != null) foreach (var u in upgrade.upkeepIncrease) effSb.Append($"+{u.amount} {u.type} Utrzymania, ");
+        detEffects.text = effSb.Length > 0 ? effSb.ToString().TrimEnd(',', ' ') : "Brak zmiany statystyk";
+    }
+
     void CloseUpgradeDetails() { selectedUpgrade = null; upgradeDetailsPanel.style.display = DisplayStyle.None; }
-    void OnBuyConfirm() { if (selectedUpgrade == null || currentTarget == null) return; Dictionary<ResourceType, int> costs = new Dictionary<ResourceType, int>(); foreach (var c in selectedUpgrade.cost) costs.Add(c.type, c.amount); if (ResourceManager.Instance.SpendResources(costs)) { currentTarget.ApplyUpgrade(selectedUpgrade); RefreshContent(); CloseUpgradeDetails(); } else { Debug.Log("Nie staæ Ciê!"); } }
-    void OnWorkerAction(Race race, bool add) { if (currentTarget == null) return; bool changed = false; if (add) changed = currentTarget.TryAddWorker(race); else { currentTarget.RemoveWorker(race); changed = true; } if (changed) RefreshContent(); }
-    void OnDestroyClicked() { if (currentTarget != null) { currentTarget.Demolish(); Hide(); } }
-    string FormatResourcesWithHourly(Dictionary<ResourceType, int> dict, int shiftLength) { if (dict.Count == 0) return "-"; StringBuilder sb = new StringBuilder(); foreach (var kvp in dict) { float hourly = (float)kvp.Value / shiftLength; sb.Append($"{kvp.Value} {kvp.Key} ({hourly:F1}/h)\n"); } return sb.ToString(); }
+
+    void OnBuyConfirm()
+    {
+        if (selectedUpgrade == null || currentTarget == null) return;
+        Dictionary<ResourceType, int> costs = new Dictionary<ResourceType, int>();
+        foreach (var c in selectedUpgrade.cost) costs.Add(c.type, c.amount);
+
+        if (ResourceManager.Instance.SpendResources(costs))
+        {
+            currentTarget.ApplyUpgrade(selectedUpgrade);
+            RefreshContent(); CloseUpgradeDetails();
+        }
+        else Debug.Log("Nie staæ Ciê!");
+    }
+
+    void OnDestroyClicked()
+    {
+        if (currentTarget != null) { currentTarget.Demolish(); Hide(); }
+    }
+
+    string FormatResourcesWithHourly(Dictionary<ResourceType, int> dict, int shiftLength)
+    {
+        if (dict.Count == 0) return "-";
+        StringBuilder sb = new StringBuilder();
+        foreach (var kvp in dict)
+        {
+            float hourly = (float)kvp.Value / shiftLength;
+            sb.Append($"{kvp.Value} {kvp.Key} ({hourly:F1}/h)\n");
+        }
+        return sb.ToString();
+    }
 }

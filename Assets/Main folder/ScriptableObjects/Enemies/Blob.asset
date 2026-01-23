@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Blob
   m_EditorClassIdentifier: 
   prefab: {fileID: 6987379787904698027, guid: 56ea7a1b4e1eb70429cfcd1b02d6b7a1, type: 3}
+  threatCost: 3
   enemyName: Blob
   baseHp: 200
-  moveSpeed: 2
+  moveSpeed: 1
   armor: 10
   magicResist: 0
   dodgeChance: 0

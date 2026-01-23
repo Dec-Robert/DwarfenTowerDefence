@@ -7,8 +7,8 @@ public class EnemyStats : MonoBehaviour
     public EnemyData data;
     public EnemyRank rank = EnemyRank.Normal;
 
-    private float currentHealth;
-    private float maxHealth;
+    [SerializeField] private float currentHealth;
+    [SerializeField] private float maxHealth;
 
     // Aktywne statystyki (po modyfikatorach)
     private float currentArmor;
@@ -22,14 +22,17 @@ public class EnemyStats : MonoBehaviour
     public Renderer meshRenderer;
     private Color originalColor;
 
-    // Inicjalizacja wywo³ywana przez Spawner
-    public void Initialize(EnemyData _data, bool forceElite = false)
+    // --- ZMIENIONA METODA INITIALIZE ---
+    // Teraz przyjmuje modyfikatory globalne (np. z Beacona)
+    public void Initialize(EnemyData _data, float globalHpMod = 1f, float globalSpeedMod = 1f, float globalEliteChanceMod = 1f)
     {
         data = _data;
 
-        // 1. Losowanie Rangi
+        // 1. Losowanie Rangi (z uwzglêdnieniem modyfikatora Beacona)
         float roll = Random.Range(0f, 100f);
-        if (forceElite || (data.canBeElite && roll < data.eliteSpawnChance))
+        float finalEliteChance = data.eliteSpawnChance * globalEliteChanceMod;
+
+        if (data.canBeElite && roll < finalEliteChance)
         {
             rank = EnemyRank.Elite;
         }
@@ -39,19 +42,21 @@ public class EnemyStats : MonoBehaviour
         }
 
         // 2. Ustawianie Statystyk
-        maxHealth = data.baseHp;
+        // Baza * Modyfikator globalny (Beacon)
+        maxHealth = data.baseHp * globalHpMod;
+        float speed = data.moveSpeed * globalSpeedMod;
+
         currentArmor = data.armor;
         currentMagicResist = data.magicResist;
         currentDodge = data.dodgeChance;
 
-        float speed = data.moveSpeed;
-
+        // Jeœli Elita -> Nak³adamy dodatkowe mno¿niki
         if (rank == EnemyRank.Elite)
         {
             maxHealth *= data.eliteHpMultiplier;
             speed *= data.eliteSpeedMultiplier;
 
-            // Wizualne odró¿nienie elity (np. wiêkszy i czerwony)
+            // Wizualne odró¿nienie elity
             transform.localScale *= 1.2f;
             if (meshRenderer) meshRenderer.material.color = Color.red;
         }
@@ -62,7 +67,7 @@ public class EnemyStats : MonoBehaviour
 
         currentHealth = maxHealth;
 
-        // Ustawienie prêdkoœci w Walkerze
+        // Przekazanie prêdkoœci do Walkera
         var walker = GetComponent<EnemyWalker>();
         if (walker) walker.speed = speed;
 
@@ -71,8 +76,7 @@ public class EnemyStats : MonoBehaviour
         {
             foreach (var prefab in data.skillPrefabs)
             {
-                // Instancjujemy skill jako dziecko lub dodajemy komponent
-                // Zak³adam, ¿e prefab zawiera skrypt dziedzicz¹cy po EnemySkill
+                // Instancjujemy skill jako dziecko
                 GameObject skillObj = Instantiate(prefab, transform);
                 EnemySkill skill = skillObj.GetComponent<EnemySkill>();
                 if (skill != null)
@@ -83,7 +87,7 @@ public class EnemyStats : MonoBehaviour
             }
         }
 
-        // Pobranie renderera do flashowania
+        // Pobranie renderera do flashowania (jeœli nie przypisany)
         if (meshRenderer == null) meshRenderer = GetComponentInChildren<Renderer>();
         if (meshRenderer != null) originalColor = meshRenderer.material.color;
     }
@@ -93,7 +97,7 @@ public class EnemyStats : MonoBehaviour
         // 1. Unik
         if (currentDodge > 0 && Random.Range(0f, 100f) < currentDodge)
         {
-            Debug.Log($"{name} UNIKN¥£ ataku!");
+            // Debug.Log($"{name} UNIKN¥£ ataku!");
             return;
         }
 
@@ -122,10 +126,9 @@ public class EnemyStats : MonoBehaviour
         }
 
         // 5. Umiejêtnoœci: On Damage (np. Blob split)
-        // Robimy pêtlê wsteczn¹, bo skill mo¿e zniszczyæ obiekt (split)
         for (int i = skills.Count - 1; i >= 0; i--)
         {
-            if (this == null) return; // Jeœli obiekt zgin¹³ w trakcie pêtli (np. split)
+            if (this == null) return;
             skills[i].OnDamageTaken(finalDamage, currentHealth);
         }
 
@@ -153,16 +156,13 @@ public class EnemyStats : MonoBehaviour
             if (Random.Range(0, 100) < 20) Debug.Log("<color=magenta>DROP: Druga Runa (Bonus)</color>");
         }
 
-        // Powiadom skille o œmierci (np. wybuch przy œmierci)
         foreach (var skill in skills) skill.OnDeath();
 
         Destroy(gameObject);
     }
 
-    // Helpery
     public float GetMaxHealth() => maxHealth;
 
-    // U¿ywane przez Bloba do ustawienia HP dzieci
     public void SetHealthManually(float amount)
     {
         maxHealth = amount;

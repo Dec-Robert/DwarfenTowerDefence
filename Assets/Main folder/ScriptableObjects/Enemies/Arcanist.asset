@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Arcanist
   m_EditorClassIdentifier: 
   prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
+  threatCost: 2
   enemyName: Arcanist
   baseHp: 400
   moveSpeed: 1

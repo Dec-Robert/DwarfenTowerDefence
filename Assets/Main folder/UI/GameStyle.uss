@@ -244,3 +244,11 @@
     height: 35px;
 }
 .expansion-btn-close:hover { background-color: #E53935; }
+
+.beacon-segment {
+    width: 20px;
+    height: 10px;
+    margin: 1px;
+    background-color: grey;
+    border-radius: 2px;
+}
