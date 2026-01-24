@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Main%20folder/UI/PauseMenu/PauseMenu.uss?fileID=7433441132597879392&amp;guid=b6be4c678561c9245a4338fa86b02b2e&amp;type=3#PauseMenu" />
+    <ui:VisualElement name="Overlay" class="pause-overlay" style="display: none;">
+        <ui:VisualElement name="MainPanel" class="pause-window">
+            <ui:Label text="PAUZA" class="pause-header" />
+            <ui:Button name="Btn_Resume" text="WZNÓW GRĘ" class="menu-btn" />
+            <ui:Button name="Btn_MainMenu" text="MENU GŁÓWNE" class="menu-btn" />
+            <ui:Button name="Btn_Quit" text="WYJDŹ Z GRY" class="menu-btn quit-btn" />
+        </ui:VisualElement>
+        <ui:VisualElement name="ConfirmPanel" class="confirm-popup" style="display: none;">
+            <ui:Label text="Czy na pewno chcesz wyjść z gry?\nNiezapisany postęp zostanie utracony." class="confirm-text" />
+            <ui:VisualElement class="confirm-btn-container">
+                <ui:Button name="Btn_ConfirmYes" text="TAK" class="menu-btn btn-yes" />
+                <ui:Button name="Btn_ConfirmNo" text="NIE" class="menu-btn btn-no" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

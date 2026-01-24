@@ -252,3 +252,41 @@
     background-color: grey;
     border-radius: 2px;
 }
+
+/* --- TUTORIAL POPUP --- */
+.tutorial-popup {
+    position: absolute;
+    top: 70px;    /* Zaraz pod TopBar */
+    right: 10px;  /* Prawy róg */
+    width: 280px;
+    background-color: rgba(20, 20, 20, 0.95);
+    border-width: 1px;
+    border-color: #FFD700; /* Z³ota ramka */
+    border-radius: 8px;
+    padding: 15px;
+    padding-top: 20px; /* Miejsce na X */
+}
+
+.tutorial-text {
+    color: #EEE;
+    font-size: 12px;
+    white-space: normal; /* Zawijanie tekstu */
+    -unity-text-align: middle-center;
+}
+
+.tutorial-close-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: #C62828;
+    color: white;
+    font-size: 10px;
+    border-radius: 10px; /* Kó³ko */
+    border-width: 0;
+}
+
+.tutorial-close-btn:hover {
+    background-color: #FF5555;
+}

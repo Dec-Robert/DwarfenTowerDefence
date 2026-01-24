@@ -38,6 +38,7 @@ public class HexCellData
 
     public bool isPath = false;     // Czy to jest droga wroga?
 
+    public BuildingData startingBuilding;
     // Tu bêdziemy trzymaæ budynek, jeœli zostanie zbudowany
     // public Building constructedBuilding; 
 }

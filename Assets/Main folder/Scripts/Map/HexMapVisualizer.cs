@@ -62,6 +62,7 @@ public class HexMapVisualizer : MonoBehaviour
             string biomeName = "Unknown";
             Material chunkBaseMat = matDefaultGrass;
 
+            // Ustalanie biomu i materia³u dla chunku
             if (chunkBiomes != null && chunkBiomes.ContainsKey(chunkCoord))
             {
                 BiomeType biome = chunkBiomes[chunkCoord];
@@ -76,6 +77,7 @@ public class HexMapVisualizer : MonoBehaviour
             chunkObj.transform.parent = mapHolder;
             chunkObj.transform.position = centerWorld;
 
+            // Rejestracja w s³owniku (dla Fog of War)
             chunkGameObjects.Add(chunkCoord, chunkObj);
 
             if (worldData.ContainsKey(chunkCoord))
@@ -87,24 +89,38 @@ public class HexMapVisualizer : MonoBehaviour
 
                     Vector3 basePos = centerWorld + HexGridMath.AxialToWorld(local.x, local.y, hexSize, padding);
 
+                    // Modyfikacja wysokoœci dla specjalnych terenów
                     float heightOffset = 0f;
                     if (cellData.feature == HexFeatureType.Hill) heightOffset = cellData.featureLevel * 0.1f;
                     else if (cellData.feature == HexFeatureType.Sinkhole) heightOffset = cellData.featureLevel * 0.1f;
 
                     Vector3 finalPos = basePos + Vector3.up * heightOffset;
 
+                    // Instancjowanie bazy heksa
                     GameObject hex = Instantiate(hexPrefab, finalPos, Quaternion.identity, chunkObj.transform);
                     hex.name = $"Hex_{local.x}_{local.y}";
 
+                    // Dodanie komponentu logicznego
                     HexCell cellComponent = hex.AddComponent<HexCell>();
                     cellComponent.chunkCoord = chunkCoord;
                     cellComponent.localCoord = local;
 
+                    // Nak³adanie wizualiów terenu (Trawa, Las, Góry)
                     ApplyVisualsToHex(hex, cellData, chunkBaseMat);
+
+                    // --- NOWOŒÆ: Budowanie predefiniowanych budynków ---
+                    // Jeœli dane mówi¹, ¿e tu ma staæ budynek, stawiamy go (i usuwamy las pod spodem)
+                    if (cellData.startingBuilding != null)
+                    {
+                        SpawnPredefinedBuilding(hex, cellData.startingBuilding);
+                    }
                 }
             }
         }
     }
+
+
+
 
     void ApplyVisualsToHex(GameObject hexObj, HexCellData data, Material groundMat)
     {
@@ -201,5 +217,57 @@ public class HexMapVisualizer : MonoBehaviour
         chunkGameObjects.Clear();
         if (mapHolder != null) DestroyImmediate(mapHolder.gameObject);
         while (transform.childCount > 0) DestroyImmediate(transform.GetChild(0).gameObject);
+    }
+
+    void SpawnPredefinedBuilding(GameObject hexObj, BuildingData buildingData)
+    {
+        if (buildingData.prefab == null) return;
+
+        // 1. CZYSZCZENIE TERENU
+        // ApplyVisualsToHex mog³o dodaæ drzewka lub ska³y jako dzieci heksa.
+        // Musimy je usun¹æ, ¿eby budynek nie przenika³ siê z lasem.
+        // Robimy listê tymczasow¹, bo nie mo¿na usuwaæ obiektów podczas iteracji po transform.
+        List<GameObject> childrenToDestroy = new List<GameObject>();
+        foreach (Transform child in hexObj.transform)
+        {
+            childrenToDestroy.Add(child.gameObject);
+        }
+
+        // Niszczymy dekoracje (u¿ywamy DestroyImmediate, bo to dzieje siê w trakcie generowania)
+        foreach (var child in childrenToDestroy)
+        {
+            DestroyImmediate(child);
+        }
+
+        // 2. INSTANCJOWANIE BUDYNKU
+        GameObject buildingObj = Instantiate(buildingData.prefab, hexObj.transform.position, Quaternion.identity);
+        buildingObj.transform.parent = hexObj.transform;
+
+        // 3. INICJALIZACJA LOGIKI
+
+        // A. Jeœli to wie¿a - przeka¿ dane do kontrolera
+        if (buildingData is TowerData towerData)
+        {
+            var controller = buildingObj.GetComponent<TowerController>();
+            if (controller != null)
+            {
+                controller.towerData = towerData;
+            }
+        }
+
+        // B. Inicjalizacja BuildingEntity (Logika ekonomii/pracowników)
+        var entity = buildingObj.GetComponent<BuildingEntity>();
+
+        // Jeœli prefab nie ma skryptu (np. prosty model), dodajemy go
+        if (entity == null)
+        {
+            // Sprawdzamy typ, ¿eby dodaæ odpowiedni skrypt (np. TowerEntity dla wie¿)
+            if (buildingData is TowerData) entity = buildingObj.AddComponent<TowerEntity>();
+            else if (buildingData is HousingBuildingData) entity = buildingObj.AddComponent<HousingEntity>();
+            else entity = buildingObj.AddComponent<BuildingEntity>();
+        }
+
+        // Wymuszamy startow¹ inicjalizacjê
+        entity.Initialize(buildingData);
     }
 }

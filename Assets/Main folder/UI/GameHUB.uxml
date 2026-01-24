@@ -82,5 +82,10 @@
             <ui:Label name="TooltipBody" text="Opis..." class="tooltip-text" />
             <ui:Label name="TooltipCost" text="Koszt: 100 G" class="tooltip-cost" />
         </ui:VisualElement>
+
+        <ui:VisualElement name="TutorialPopup" class="tutorial-popup">
+            <ui:Button name="Btn_CloseTutorial" text="X" class="tutorial-close-btn" />
+            <ui:Label text="Żeby budynek generował surowce lub żeby wieże strzelały potrzebują pracowników.&#10;&#10;Kliknij na budynek aby otworzyć menu.&#10;&#10;Twoi pracownicy pracują tylko podczas zmian." class="tutorial-text" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -17,5 +17,5 @@ MonoBehaviour:
   description: "Zwi\u0119ksz hp bramy o 5\r\n"
   icon: {fileID: 21300000, guid: 83138ab479ec71d478362992d2aa21a9, type: 3}
   cost: 1
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites: []

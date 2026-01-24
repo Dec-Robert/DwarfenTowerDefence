@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f0d008fa78e8ab4bb34c23a202191d5, type: 3}
+  m_Name: MetaMapConfig
+  m_EditorClassIdentifier: 
+  startingChunkBase: {fileID: 11400000, guid: 528b1edbd72cc8540976b065afe415fc, type: 2}
+  expansions:
+  - chunkCoordinate: {x: -1, y: 0}
+    requiredUpgrade: {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}
+    baseLayout: {fileID: 11400000, guid: 0e2d3e0c21648984fae19a88daf84366, type: 2}
+  - chunkCoordinate: {x: -1, y: 1}
+    requiredUpgrade: {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
+    baseLayout: {fileID: 11400000, guid: 1d2b9bcec586ff04a8271c20a9bac4ac, type: 2}
+  - chunkCoordinate: {x: -2, y: 1}
+    requiredUpgrade: {fileID: 11400000, guid: 577f24d4ea052c748bb11bcde3703a16, type: 2}
+    baseLayout: {fileID: 11400000, guid: 3ca9b1f9c44a6ac408fa22f5583a7844, type: 2}
+  globalModifiers:
+  - name: Tree expansion
+    targetChunk: {x: -1, y: 0}
+    requiredUpgrade: {fileID: 11400000, guid: 72972713b88d6604c8381c22ae1b7a39, type: 2}
+    modifierLayout: {fileID: 11400000, guid: eea8ec8aa75a45c4c825d2e598e1790a, type: 2}
+  - name: Tree->Sawmil expansion
+    targetChunk: {x: -1, y: 0}
+    requiredUpgrade: {fileID: 11400000, guid: 6f5c90464f8a20c4dbee08a0f5f671e1, type: 2}
+    modifierLayout: {fileID: 11400000, guid: 7ccdddbe18cf2414db2a72abd2004fd0, type: 2}

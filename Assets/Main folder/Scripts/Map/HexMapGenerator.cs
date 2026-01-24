@@ -32,28 +32,8 @@ public class HexMapGenerator : MonoBehaviour
     [Range(0, 100)] public int chanceForMoreBranching = 30;
     [Range(0, 100)] public int globalObstacleChance = 40;
 
-    [Header("Generator Biomów")]
-    public int biomeSeedCount = 3;
-
-    [System.Serializable]
-    public class BiomeSettings
-    {
-        public string name;
-        public BiomeType type;
-
-        [Header("Wygląd")]
-        public Material biomeGroundMaterial;
-
-        [Header("Lasy (Klastry)")]
-        [Tooltip("Szansa, że w chunku pojawi się klaster lasu.")]
-        [Range(0, 100)] public int forestClusterChance;
-
-        [Header("Pola Pojedyncze (Suma wag)")]
-        [Range(0, 100)] public int mountainChance;
-        [Range(0, 100)] public int hillChance;
-        [Range(0, 100)] public int sinkholeChance;
-        [Range(0, 100)] public int fertileSoilChance;
-    }
+    [Header("Meta Progresja Mapy")]
+    public MetaMapConfig metaConfig;
 
     [Header("Konfiguracja Biomów")]
     public List<BiomeSettings> biomeSettings = new List<BiomeSettings>();
@@ -61,11 +41,22 @@ public class HexMapGenerator : MonoBehaviour
     [Header("Punkty Strategiczne")]
     public Vector2Int baseRoadEndLocal = new Vector2Int(3, -2);
 
-    // --- DANE ---
     public Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData = new Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>>();
     private Dictionary<Vector2Int, BiomeType> chunkBiomes = new Dictionary<Vector2Int, BiomeType>();
 
-    // --- WEWNĘTRZNE ---
+    [System.Serializable]
+    public class BiomeSettings
+    {
+        public string name;
+        public BiomeType type;
+        public Material biomeGroundMaterial;
+        [Range(0, 100)] public int forestClusterChance;
+        [Range(0, 100)] public int mountainChance;
+        [Range(0, 100)] public int hillChance;
+        [Range(0, 100)] public int sinkholeChance;
+        [Range(0, 100)] public int fertileSoilChance;
+    }
+
     [System.Serializable]
     public class ChunkStyleSettings
     {
@@ -124,6 +115,7 @@ public class HexMapGenerator : MonoBehaviour
         extraSpawnerChunks.Clear();
 
         RegisterAllChunks();
+        ApplyMetaChunks();
 
         bool success = false;
         for (int i = 0; i < maxGenerationAttempts; i++)
@@ -159,17 +151,144 @@ public class HexMapGenerator : MonoBehaviour
         }
     }
 
-    // --- LOGIKA TERENU ---
+    void ApplyMetaChunks()
+    {
+        if (metaConfig == null) return;
+
+        // 1. GENEROWANIE BAZY (0,0)
+        if (metaConfig.startingChunkBase != null)
+        {
+            CreateEmptyDataForChunk(Vector2Int.zero);
+            ApplyLayoutToChunk(Vector2Int.zero, metaConfig.startingChunkBase);
+
+            // Domyślny biom bazy
+            if (!chunkBiomes.ContainsKey(Vector2Int.zero))
+                chunkBiomes.Add(Vector2Int.zero, BiomeType.Plains);
+
+            // Ustalenie punktu bramy
+            baseRoadEndLocal = metaConfig.startingChunkBase.roadConnectionEdge;
+            if (worldData[Vector2Int.zero].ContainsKey(baseRoadEndLocal))
+            {
+                worldData[Vector2Int.zero][baseRoadEndLocal].isPath = true;
+            }
+        }
+
+        // 2. GENEROWANIE EKSPANSJI (Baza terenów dodatkowych)
+        foreach (var exp in metaConfig.expansions)
+        {
+            if (exp.requiredUpgrade != null && exp.requiredUpgrade.isUnlocked)
+            {
+                Vector2Int coord = exp.chunkCoordinate;
+                if (!allValidChunks.Contains(coord)) allValidChunks.Add(coord);
+
+                CreateEmptyDataForChunk(coord);
+                ApplyLayoutToChunk(coord, exp.baseLayout);
+
+                if (!chunkBiomes.ContainsKey(coord))
+                    chunkBiomes.Add(coord, BiomeType.Plains);
+            }
+        }
+
+        // 3. NAKŁADANIE MODYFIKATORÓW (Warstwy ulepszeń)
+        // To pozwala np. dodać lasy do chunku (-1, 0) jeśli masz odpowiedni upgrade
+        if (metaConfig.globalModifiers != null)
+        {
+            foreach (var mod in metaConfig.globalModifiers)
+            {
+                // Sprawdzamy, czy gracz ma upgrade I czy chunk docelowy w ogóle istnieje
+                if (mod.requiredUpgrade != null && mod.requiredUpgrade.isUnlocked)
+                {
+                    if (worldData.ContainsKey(mod.targetChunk))
+                    {
+                        // Nakładamy layout modyfikatora na istniejące dane
+                        ApplyLayoutToChunk(mod.targetChunk, mod.modifierLayout);
+                        Debug.Log($"Nałożono modyfikator '{mod.name}' na chunk {mod.targetChunk}");
+                    }
+                }
+            }
+        }
+    }
+
+    void CreateEmptyDataForChunk(Vector2Int coord)
+    {
+        if (!worldData.ContainsKey(coord))
+        {
+            worldData[coord] = new Dictionary<Vector2Int, HexCellData>();
+            GenerateHexGridPoints(chunkRadius, (q, r) => {
+                HexCellData cell = new HexCellData();
+                cell.chunkCoord = coord;
+                cell.localCoord = new Vector2Int(q, r);
+                worldData[coord].Add(new Vector2Int(q, r), cell);
+            });
+        }
+    }
+
+    void ApplyLayoutToChunk(Vector2Int chunkCoord, ChunkLayoutSO layout)
+    {
+        if (layout == null || layout.hexes == null) return;
+
+        var chunkData = worldData[chunkCoord];
+
+        foreach (var hexDef in layout.hexes)
+        {
+            if (chunkData.ContainsKey(hexDef.localCoord))
+            {
+                HexCellData cell = chunkData[hexDef.localCoord];
+
+                // 1. Najpierw ustawiamy teren (np. Las)
+                if (hexDef.feature != HexFeatureType.None)
+                {
+                    cell.feature = hexDef.feature;
+                    cell.featureLevel = hexDef.featureLevel;
+                }
+
+                // 2. Potem próbujemy postawić budynek (np. Tartak)
+                if (hexDef.building != null)
+                {
+                    // WALIDACJA: Czy budynek może stać na tym terenie?
+                    if (hexDef.building.allowedTerrain.Contains(cell.feature))
+                    {
+                        cell.startingBuilding = hexDef.building;
+                    }
+                    else
+                    {
+                        Debug.LogError($"[Generator Error] Próba postawienia {hexDef.building.buildingName} na terenie {cell.feature} w chunku {chunkCoord}! Wymagany: {string.Join(",", hexDef.building.allowedTerrain)}.");
+                        // Nie przypisujemy budynku, żeby uniknąć błędów w grze
+                        cell.startingBuilding = null;
+                    }
+                }
+            }
+        }
+    }
+
+    void RevealMetaChunks()
+    {
+        foreach (var chunk in allValidChunks)
+        {
+            if (IsMetaChunk(chunk))
+            {
+                fogManager.RevealChunk(chunk);
+                if (expansionManager != null) expansionManager.InitializeStartingChunks(new List<Vector2Int> { chunk });
+            }
+        }
+    }
+
+    bool IsMetaChunk(Vector2Int coord)
+    {
+        if (coord == Vector2Int.zero) return true;
+        foreach (var exp in metaConfig.expansions)
+            if (exp.chunkCoordinate == coord && exp.requiredUpgrade.isUnlocked) return true;
+        return false;
+    }
+
     void GenerateBiomeMap()
     {
         Dictionary<Vector2Int, BiomeType> centerTypes = new Dictionary<Vector2Int, BiomeType>();
         List<Vector2Int> centers = new List<Vector2Int>();
 
-        // 1. Plains na środku
         centers.Add(Vector2Int.zero);
         centerTypes.Add(Vector2Int.zero, BiomeType.Plains);
 
-        // 2. Losowe biomy
         List<BiomeType> availableBiomes = new List<BiomeType>();
         foreach (var bs in biomeSettings) if (bs.type != BiomeType.Plains) availableBiomes.Add(bs.type);
 
@@ -178,6 +297,12 @@ public class HexMapGenerator : MonoBehaviour
         int biomesToPick = Mathf.Min(2, availableBiomes.Count);
         List<Vector2Int> validCandidates = allValidChunks.ToList();
         validCandidates.Remove(Vector2Int.zero);
+
+        foreach (var exp in metaConfig.expansions)
+        {
+            if (exp.requiredUpgrade != null && exp.requiredUpgrade.isUnlocked)
+                validCandidates.Remove(exp.chunkCoordinate);
+        }
 
         for (int i = 0; i < biomesToPick; i++)
         {
@@ -190,6 +315,8 @@ public class HexMapGenerator : MonoBehaviour
 
         foreach (var chunk in allValidChunks)
         {
+            if (chunkBiomes.ContainsKey(chunk)) continue;
+
             Vector2Int closestCenter = Vector2Int.zero;
             float minDst = float.MaxValue;
             foreach (var center in centers)
@@ -206,15 +333,18 @@ public class HexMapGenerator : MonoBehaviour
     {
         foreach (var chunkCoord in allValidChunks)
         {
-            worldData[chunkCoord] = new Dictionary<Vector2Int, HexCellData>();
-            BiomeType currentBiome = chunkBiomes[chunkCoord];
+            if (!worldData.ContainsKey(chunkCoord))
+            {
+                worldData[chunkCoord] = new Dictionary<Vector2Int, HexCellData>();
+                GenerateHexGridPoints(chunkRadius, (q, r) => {
+                    HexCellData cell = new HexCellData();
+                    cell.chunkCoord = chunkCoord;
+                    cell.localCoord = new Vector2Int(q, r);
+                    worldData[chunkCoord].Add(new Vector2Int(q, r), cell);
+                });
+            }
 
-            GenerateHexGridPoints(chunkRadius, (q, r) => {
-                HexCellData cell = new HexCellData();
-                cell.chunkCoord = chunkCoord;
-                cell.localCoord = new Vector2Int(q, r);
-                worldData[chunkCoord].Add(new Vector2Int(q, r), cell);
-            });
+            BiomeType currentBiome = chunkBiomes[chunkCoord];
 
             if (chunkPaths.ContainsKey(chunkCoord))
             {
@@ -228,7 +358,11 @@ public class HexMapGenerator : MonoBehaviour
                     }
                 }
             }
-            FillChunkFeatures(chunkCoord, currentBiome);
+
+            if (!IsMetaChunk(chunkCoord))
+            {
+                FillChunkFeatures(chunkCoord, currentBiome);
+            }
         }
 
         SetFeature(Vector2Int.zero, Vector2Int.zero, HexFeatureType.Base);
@@ -237,11 +371,10 @@ public class HexMapGenerator : MonoBehaviour
         else SetFeature(Vector2Int.zero, new Vector2Int(1, 0), HexFeatureType.Beacon);
     }
 
-    // --- ZMODYFIKOWANA METODA GENEROWANIA LASÓW ---
     void FillChunkFeatures(Vector2Int chunkCoord, BiomeType biome)
     {
         var chunkCells = worldData[chunkCoord];
-        List<Vector2Int> availableHexes = chunkCells.Keys.Where(k => !chunkCells[k].isPath).ToList();
+        List<Vector2Int> availableHexes = chunkCells.Keys.Where(k => !chunkCells[k].isPath && chunkCells[k].feature == HexFeatureType.None).ToList();
 
         BiomeSettings settings = biomeSettings.Find(s => s.type == biome);
         if (settings == null)
@@ -250,30 +383,22 @@ public class HexMapGenerator : MonoBehaviour
             else return;
         }
 
-        // A. KLASTRY LASÓW (SEKWENCYJNE SZANSE)
-        // Szanse dla kolejnych sąsiadów: 1->50%, 2->40%, 3->30%, 4->20%, 5->10%, 6->0%
         int[] neighborForestChances = new int[] { 50, 40, 30, 20, 10, 0 };
+        int numClusters = Random.Range(1, 4);
 
-        int numClusters = Random.Range(1, 4); // Ile prób klastrów na chunk
         for (int i = 0; i < numClusters; i++)
         {
-            // Czy w ogóle próbujemy zrespić las?
             if (Random.Range(0, 100) < settings.forestClusterChance && availableHexes.Count > 0)
             {
-
-                // 1. Wybierz i zagwarantuj ŚRODEK lasu
                 Vector2Int center = availableHexes[Random.Range(0, availableHexes.Count)];
 
                 if (chunkCells.ContainsKey(center) && !chunkCells[center].isPath && chunkCells[center].feature == HexFeatureType.None)
                 {
                     chunkCells[center].feature = HexFeatureType.Forest;
-                    chunkCells[center].featureLevel = 1; // 1 = GŁÓWNY LAS (Centrum)
+                    chunkCells[center].featureLevel = 1;
                     availableHexes.Remove(center);
 
-                    // 2. Pobierz sąsiadów
                     List<Vector2Int> neighbors = HexGridMath.GetNeighbors(center);
-
-                    // Potasuj sąsiadów, żeby kształt był losowy
                     for (int k = 0; k < neighbors.Count; k++)
                     {
                         Vector2Int temp = neighbors[k];
@@ -282,29 +407,20 @@ public class HexMapGenerator : MonoBehaviour
                         neighbors[rand] = temp;
                     }
 
-                    // 3. Iteruj po sąsiadach z malejącą szansą
                     for (int nIdx = 0; nIdx < neighbors.Count; nIdx++)
                     {
                         Vector2Int neighbor = neighbors[nIdx];
-
-                        // Sprawdź czy sąsiad jest w ogóle dostępny
-                        if (chunkCells.ContainsKey(neighbor) &&
-                            !chunkCells[neighbor].isPath &&
-                            chunkCells[neighbor].feature == HexFeatureType.None)
+                        if (chunkCells.ContainsKey(neighbor) && !chunkCells[neighbor].isPath && chunkCells[neighbor].feature == HexFeatureType.None)
                         {
-                            // Pobierz szansę (50, 40, 30...)
                             int chance = (nIdx < neighborForestChances.Length) ? neighborForestChances[nIdx] : 0;
-
                             if (Random.Range(0, 100) < chance)
                             {
-                                // Udało się - stawiamy las boczny
                                 chunkCells[neighbor].feature = HexFeatureType.Forest;
-                                chunkCells[neighbor].featureLevel = 0; // 0 = ZWYKŁY LAS
+                                chunkCells[neighbor].featureLevel = 0;
                                 availableHexes.Remove(neighbor);
                             }
                             else
                             {
-                                // Nie udało się - przerywamy rozrost tego klastra
                                 break;
                             }
                         }
@@ -313,10 +429,7 @@ public class HexMapGenerator : MonoBehaviour
             }
         }
 
-        // B. RESZTA TERENU (Góry itp.)
-        // Odświeżamy listę, bo lasy zabrały pola
         availableHexes = chunkCells.Keys.Where(k => !chunkCells[k].isPath && chunkCells[k].feature == HexFeatureType.None).ToList();
-
         foreach (var hex in availableHexes)
         {
             int roll = Random.Range(0, 100);
@@ -335,29 +448,70 @@ public class HexMapGenerator : MonoBehaviour
         }
     }
 
-    // =================================================================================
-    //                    PATHFINDING I POMOCNIKI (Bez zmian)
-    // =================================================================================
-
     bool CalculateMainPath()
     {
-        chunkPaths.Clear(); chunkInternalCosts.Clear();
+        chunkPaths.Clear();
+        chunkInternalCosts.Clear();
+
         mainSpawnerChunk = GetFurthestOrRandomChunk();
-        Vector3 baseTargetWorld = HexGridMath.GetChunkCenterWorld(Vector2Int.zero, chunkRadius, hexSize, padding) + HexGridMath.AxialToWorld(baseRoadEndLocal.x, baseRoadEndLocal.y, hexSize, padding);
+
+        Vector3 baseTargetWorld = HexGridMath.GetChunkCenterWorld(Vector2Int.zero, chunkRadius, hexSize, padding)
+                                + HexGridMath.AxialToWorld(baseRoadEndLocal.x, baseRoadEndLocal.y, hexSize, padding);
         Vector2Int gateChunk = GetBestGateChunk(baseTargetWorld);
+
+        // --- FILTROWANIE CHUNKÓW (Nowość) ---
+        // Wrogowie mogą chodzić tylko po dziczy i wejść do bazy (0,0).
+        // Nie mogą wchodzić na inne chunki Meta (bezpieczne zaplecze).
+        HashSet<Vector2Int> walkableChunks = new HashSet<Vector2Int>();
+        foreach (var c in allValidChunks)
+        {
+            // Jeśli to NIE jest meta chunk LUB to jest baza (0,0) -> dodaj
+            if (!IsMetaChunk(c) || c == Vector2Int.zero)
+            {
+                walkableChunks.Add(c);
+            }
+        }
+        // ------------------------------------
+
         Dictionary<Vector2Int, int> globalChunkCosts = new Dictionary<Vector2Int, int>();
-        foreach (var chunk in allValidChunks) { if (HexGridMath.GetDistance(chunk, Vector2Int.zero) <= 1 || chunk == mainSpawnerChunk) globalChunkCosts[chunk] = 1; else globalChunkCosts[chunk] = (Random.Range(0, 100) < globalObstacleChance) ? 10 : 1; }
-        List<Vector2Int> chunkSequence = pathfinder.FindChunkPath(mainSpawnerChunk, gateChunk, allValidChunks, globalChunkCosts);
+        foreach (var chunk in walkableChunks) // Iterujemy po walkable, nie allValid
+        {
+            if (HexGridMath.GetDistance(chunk, Vector2Int.zero) <= 1 || chunk == mainSpawnerChunk)
+                globalChunkCosts[chunk] = 1;
+            else
+                globalChunkCosts[chunk] = (Random.Range(0, 100) < globalObstacleChance) ? 10 : 1;
+        }
+
+        // Używamy walkableChunks zamiast allValidChunks
+        List<Vector2Int> chunkSequence = pathfinder.FindChunkPath(mainSpawnerChunk, gateChunk, walkableChunks, globalChunkCosts);
+
         generatedChunkSequence = chunkSequence;
+
         if (chunkSequence == null || chunkSequence.Count < minChunkDistance) return false;
+
         Vector3 previousExitWorldPos = Vector3.zero;
+
         for (int i = 0; i < chunkSequence.Count; i++)
         {
-            Vector2Int currentChunk = chunkSequence[i]; ChunkPathData data = new ChunkPathData();
-            if (i == 0) data.entryHex = Vector2Int.zero; else data.entryHex = FindHexClosestToWorldPos(currentChunk, previousExitWorldPos);
-            if (i == chunkSequence.Count - 1) data.exitHex = FindHexClosestToWorldPos(currentChunk, baseTargetWorld); else { Vector2Int nextChunk = chunkSequence[i + 1]; data.exitHex = FindRandomHexFacingChunk(currentChunk, nextChunk); }
-            previousExitWorldPos = HexGridMath.GetChunkCenterWorld(currentChunk, chunkRadius, hexSize, padding) + HexGridMath.AxialToWorld(data.exitHex.x, data.exitHex.y, hexSize, padding);
+            Vector2Int currentChunk = chunkSequence[i];
+            ChunkPathData data = new ChunkPathData();
+
+            if (i == 0) data.entryHex = Vector2Int.zero;
+            else data.entryHex = FindHexClosestToWorldPos(currentChunk, previousExitWorldPos);
+
+            if (i == chunkSequence.Count - 1)
+                data.exitHex = FindHexClosestToWorldPos(currentChunk, baseTargetWorld);
+            else
+            {
+                Vector2Int nextChunk = chunkSequence[i + 1];
+                data.exitHex = FindRandomHexFacingChunk(currentChunk, nextChunk);
+            }
+
+            previousExitWorldPos = HexGridMath.GetChunkCenterWorld(currentChunk, chunkRadius, hexSize, padding)
+                                 + HexGridMath.AxialToWorld(data.exitHex.x, data.exitHex.y, hexSize, padding);
+
             if (!GenerateAndValidateInternalPath(currentChunk, data)) return false;
+
             chunkPaths.Add(currentChunk, data);
         }
         return true;
@@ -381,10 +535,38 @@ public class HexMapGenerator : MonoBehaviour
 
     List<Vector2Int> TryGenerateBranch(Vector2Int junctionChunk)
     {
-        Vector2Int newSpawn = FindValidExtraSpawnChunk(junctionChunk); if (newSpawn == Vector2Int.zero) return null;
-        HashSet<Vector2Int> validForBranch = new HashSet<Vector2Int>(allValidChunks); foreach (var c in chunkPaths.Keys) if (c != junctionChunk) validForBranch.Remove(c);
+        Vector2Int newSpawn = FindValidExtraSpawnChunk(junctionChunk);
+        if (newSpawn == Vector2Int.zero) return null;
+
+        // Kopiujemy wszystkie valid chunki...
+        HashSet<Vector2Int> validForBranch = new HashSet<Vector2Int>(allValidChunks);
+
+        // 1. Usuwamy istniejące ścieżki (żeby się nie przecinały) - z wyjątkiem węzła
+        foreach (var c in chunkPaths.Keys)
+            if (c != junctionChunk) validForBranch.Remove(c);
+
+        // 2. --- NOWOŚĆ: Usuwamy bezpieczne chunki Meta (poza bazą, choć tu i tak nie dojdą do bazy) ---
+        // Chcemy usunąć wszystkie MetaChunki, które NIE są dziczą.
+        // Robimy to na liście do usunięcia, żeby nie psuć pętli
+        List<Vector2Int> toRemove = new List<Vector2Int>();
+        foreach (var c in validForBranch)
+        {
+            if (IsMetaChunk(c) && c != Vector2Int.zero)
+            {
+                toRemove.Add(c);
+            }
+        }
+        foreach (var c in toRemove) validForBranch.Remove(c);
+        // ------------------------------------------------------------------------------------------
+
         var branchPath = pathfinder.FindChunkPath(newSpawn, junctionChunk, validForBranch, null);
-        if (branchPath != null && branchPath.Count >= extraSpawnDistanceRange.x && branchPath.Count <= extraSpawnDistanceRange.y) { extraSpawnerChunks.Add(newSpawn); ProcessBranchPathInternal(branchPath, junctionChunk); return branchPath; }
+
+        if (branchPath != null && branchPath.Count >= extraSpawnDistanceRange.x && branchPath.Count <= extraSpawnDistanceRange.y)
+        {
+            extraSpawnerChunks.Add(newSpawn);
+            ProcessBranchPathInternal(branchPath, junctionChunk);
+            return branchPath;
+        }
         return null;
     }
 
@@ -426,13 +608,22 @@ public class HexMapGenerator : MonoBehaviour
         var emptyCosts = new Dictionary<Vector2Int, int>(); data.internalPath = pathfinder.FindLocalPath(data.entryHex, data.exitHex, emptyCosts); chunkInternalCosts[chunkCoord] = emptyCosts; return true;
     }
 
-    public Vector2Int GetChunkCoordFromWorldPosition(Vector3 worldPos)
+    public Dictionary<Vector2Int, Vector2Int> GetRoadRevealDependencies()
     {
-        Vector2Int bestChunk = Vector2Int.zero; float minDst = float.MaxValue;
-        foreach (var chunk in allValidChunks) { Vector3 center = HexGridMath.GetChunkCenterWorld(chunk, chunkRadius, hexSize, padding); float d = Vector2.Distance(new Vector2(center.x, center.z), new Vector2(worldPos.x, worldPos.z)); if (d < minDst) { minDst = d; bestChunk = chunk; } }
-        return bestChunk;
+        Dictionary<Vector2Int, Vector2Int> dependencies = new Dictionary<Vector2Int, Vector2Int>();
+        if (generatedChunkSequence != null && generatedChunkSequence.Count > 0)
+        {
+            List<Vector2Int> fullSequence = new List<Vector2Int>(generatedChunkSequence);
+            if (fullSequence[fullSequence.Count - 1] != Vector2Int.zero) fullSequence.Add(Vector2Int.zero);
+            for (int i = 0; i < fullSequence.Count - 1; i++) { Vector2Int current = fullSequence[i]; Vector2Int requirement = fullSequence[i + 1]; if (!dependencies.ContainsKey(current)) dependencies.Add(current, requirement); }
+        }
+        if (extraSpawnerChunks != null)
+        {
+            HashSet<Vector2Int> existingChunks = new HashSet<Vector2Int>(chunkPaths.Keys); existingChunks.Add(Vector2Int.zero);
+            foreach (var spawn in extraSpawnerChunks) { var path = pathfinder.FindChunkPath(spawn, Vector2Int.zero, existingChunks, null); if (path != null) { for (int i = 0; i < path.Count - 1; i++) { Vector2Int current = path[i]; Vector2Int requirement = path[i + 1]; if (!dependencies.ContainsKey(current)) dependencies.Add(current, requirement); } } }
+        }
+        return dependencies;
     }
-    public List<Vector3> GetGlobalWorldPath() { List<List<Vector3>> allPaths = GetAllSpawnPaths(); if (allPaths != null && allPaths.Count > 0) return allPaths[0]; return new List<Vector3>(); }
 
     public List<List<Vector3>> GetAllSpawnPaths()
     {
@@ -461,65 +652,6 @@ public class HexMapGenerator : MonoBehaviour
         }
         return new List<Vector3>();
     }
-
-    public Dictionary<Vector2Int, Vector2Int> GetRoadRevealDependencies()
-    {
-        Dictionary<Vector2Int, Vector2Int> dependencies = new Dictionary<Vector2Int, Vector2Int>();
-
-        // 1. Zależności Głównej Trasy
-        // Trasa idzie: [0]=Spawner ... [N]=Baza
-        // Żeby odkryć [i], musimy mieć odkryte [i+1] (czyli krok bliżej bazy)
-        if (generatedChunkSequence != null && generatedChunkSequence.Count > 0)
-        {
-            // Dodajemy bazę do sekwencji (jeśli jej tam nie ma, a zazwyczaj kończy się na bramie)
-            List<Vector2Int> fullSequence = new List<Vector2Int>(generatedChunkSequence);
-            if (fullSequence[fullSequence.Count - 1] != Vector2Int.zero)
-            {
-                fullSequence.Add(Vector2Int.zero);
-            }
-
-            for (int i = 0; i < fullSequence.Count - 1; i++)
-            {
-                Vector2Int current = fullSequence[i];      // Np. Spawner
-                Vector2Int requirement = fullSequence[i + 1]; // Np. Sąsiad bliżej bazy
-
-                if (!dependencies.ContainsKey(current))
-                {
-                    dependencies.Add(current, requirement);
-                }
-            }
-        }
-
-        // 2. Zależności Bocznych Tras
-        if (extraSpawnerChunks != null)
-        {
-            // Musimy zasymulować ścieżki, żeby poznać kolejność chunków
-            HashSet<Vector2Int> existingChunks = new HashSet<Vector2Int>(chunkPaths.Keys);
-            existingChunks.Add(Vector2Int.zero);
-
-            foreach (var spawn in extraSpawnerChunks)
-            {
-                var path = pathfinder.FindChunkPath(spawn, Vector2Int.zero, existingChunks, null);
-                if (path != null)
-                {
-                    // Path: [Spawn, A, B, Junction/Base]
-                    for (int i = 0; i < path.Count - 1; i++)
-                    {
-                        Vector2Int current = path[i];
-                        Vector2Int requirement = path[i + 1];
-
-                        if (!dependencies.ContainsKey(current))
-                        {
-                            dependencies.Add(current, requirement);
-                        }
-                    }
-                }
-            }
-        }
-
-        return dependencies;
-    }
-
     List<Vector3> GetNeighborsFromSet(Vector3 center, HashSet<Vector3> allNodes) { List<Vector3> neighbors = new List<Vector3>(); float threshold = hexSize * 1.9f; float thresholdSq = threshold * threshold; foreach (var node in allNodes) { if (node == center) continue; float distSq = (node - center).sqrMagnitude; if (distSq < thresholdSq) neighbors.Add(node); } return neighbors; }
     Vector3 GetClosestNode(Vector3 target, HashSet<Vector3> nodes) { Vector3 best = target; float minDst = float.MaxValue; foreach (var n in nodes) { float d = Vector3.Distance(n, target); if (d < minDst) { minDst = d; best = n; } } return best; }
     List<Vector3> ReconstructVectorPath(Dictionary<Vector3, Vector3> cameFrom, Vector3 current) { var path = new List<Vector3> { current }; while (cameFrom.ContainsKey(current)) { current = cameFrom[current]; path.Add(current); } path.Reverse(); return path; }
@@ -529,23 +661,89 @@ public class HexMapGenerator : MonoBehaviour
     void GenerateHexGridPoints(int radius, System.Action<int, int> action) { for (int q = -radius; q <= radius; q++) { int r1 = Mathf.Max(-radius, -q - radius); int r2 = Mathf.Min(radius, -q + radius); for (int r = r1; r <= r2; r++) action(q, r); } }
     Vector2Int FindHexClosestToWorldPos(Vector2Int chunkCoord, Vector3 targetWorldPos) { Vector2Int best = Vector2Int.zero; float minDst = float.MaxValue; Vector3 center = HexGridMath.GetChunkCenterWorld(chunkCoord, chunkRadius, hexSize, padding); GenerateHexGridPoints(chunkRadius, (q, r) => { float d = Vector3.Distance(center + HexGridMath.AxialToWorld(q, r, hexSize, padding), targetWorldPos); if (d < minDst) { minDst = d; best = new Vector2Int(q, r); } }); return best; }
     Vector2Int FindRandomHexFacingChunk(Vector2Int currentChunk, Vector2Int nextChunk) { Vector3 currentCenter = HexGridMath.GetChunkCenterWorld(currentChunk, chunkRadius, hexSize, padding); Vector3 nextCenter = HexGridMath.GetChunkCenterWorld(nextChunk, chunkRadius, hexSize, padding); List<Vector2Int> candidates = new List<Vector2Int>(); GenerateHexGridPoints(chunkRadius, (q, r) => { if ((Mathf.Abs(q) + Mathf.Abs(r) + Mathf.Abs(q + r)) / 2 == chunkRadius) candidates.Add(new Vector2Int(q, r)); }); candidates.Sort((a, b) => { Vector3 posA = currentCenter + HexGridMath.AxialToWorld(a.x, a.y, hexSize, padding); Vector3 posB = currentCenter + HexGridMath.AxialToWorld(b.x, b.y, hexSize, padding); return Vector3.Distance(posA, nextCenter).CompareTo(Vector3.Distance(posB, nextCenter)); }); int count = Mathf.Min(candidates.Count, 3); return (count > 0) ? candidates[Random.Range(0, count)] : Vector2Int.zero; }
-    Vector2Int FindValidExtraSpawnChunk(Vector2Int center) { List<Vector2Int> candidates = new List<Vector2Int>(); foreach (var chunk in allValidChunks) { if (chunkPaths.ContainsKey(chunk)) continue; int dist = HexGridMath.GetDistance(center, chunk); if (dist >= extraSpawnDistanceRange.x && dist <= extraSpawnDistanceRange.y) candidates.Add(chunk); } if (candidates.Count > 0) return candidates[Random.Range(0, candidates.Count)]; return Vector2Int.zero; }
+
+    Vector2Int FindValidExtraSpawnChunk(Vector2Int center)
+    {
+        List<Vector2Int> candidates = new List<Vector2Int>();
+        foreach (var chunk in allValidChunks)
+        {
+            if (chunkPaths.ContainsKey(chunk)) continue;
+
+            // --- NOWOŚĆ: Nie spawnujemy w bezpiecznych strefach Meta ---
+            if (IsMetaChunk(chunk)) continue;
+            // -----------------------------------------------------------
+
+            int dist = HexGridMath.GetDistance(center, chunk);
+            if (dist >= extraSpawnDistanceRange.x && dist <= extraSpawnDistanceRange.y)
+            {
+                candidates.Add(chunk);
+            }
+        }
+
+        if (candidates.Count > 0) return candidates[Random.Range(0, candidates.Count)];
+        return Vector2Int.zero;
+    }
+
     Dictionary<Vector2Int, int> GenerateStructuredCosts(int seed, int style, Vector2Int entry, Vector2Int exit, int wallCountOverride) { Dictionary<Vector2Int, int> costs = new Dictionary<Vector2Int, int>(); System.Random rng = new System.Random(seed); GenerateHexGridPoints(chunkRadius, (q, r) => costs[new Vector2Int(q, r)] = 1); if (style == 0) return costs; int wallLength = (style == 1) ? internalSettings.windingWallLength : internalSettings.mazeWallLength; if (style == 2) wallLength += rng.Next(0, 3); List<Vector2Int> allHexes = new List<Vector2Int>(costs.Keys); for (int w = 0; w < wallCountOverride; w++) { Vector2Int current = allHexes[rng.Next(allHexes.Count)]; for (int step = 0; step < wallLength; step++) { if (current != entry && current != exit) costs[current] = internalSettings.wallCost; var neighbors = HexGridMath.GetNeighbors(current); var validNeighbors = neighbors.Where(n => costs.ContainsKey(n)).ToList(); if (validNeighbors.Count > 0) current = validNeighbors[rng.Next(validNeighbors.Count)]; else break; } } if (style == 1) { Vector2Int centerPoint = Vector2Int.RoundToInt((Vector2)(entry + exit) / 2f); costs[centerPoint] = internalSettings.wallCost; foreach (var n in HexGridMath.GetNeighbors(centerPoint)) if (costs.ContainsKey(n) && n != entry && n != exit) costs[n] = internalSettings.wallCost; } costs[entry] = 1; costs[exit] = 1; return costs; }
     int RollStyle() { int r = Random.Range(0, internalSettings.highwayWeight + internalSettings.windingWeight + internalSettings.mazeWeight); if (r < internalSettings.highwayWeight) return 0; if (r < internalSettings.highwayWeight + internalSettings.windingWeight) return 1; return 2; }
-    Vector2Int GetFurthestOrRandomChunk() { List<Vector2Int> valid = new List<Vector2Int>(); int maxDistFound = 0; foreach (var c in allValidChunks) { if (c == Vector2Int.zero) continue; int d = HexGridMath.GetDistance(Vector2Int.zero, c); if (d > maxDistFound) maxDistFound = d; } int targetDist = Mathf.Min(minChunkDistance, maxDistFound); int minAcceptable = Mathf.Max(1, targetDist - 1); foreach (var c in allValidChunks) { if (c == Vector2Int.zero) continue; int d = HexGridMath.GetDistance(Vector2Int.zero, c); if (d >= minAcceptable) valid.Add(c); } if (valid.Count > 0) return valid[Random.Range(0, valid.Count)]; return new Vector2Int(mapWidth, 0); }
+
+    Vector2Int GetFurthestOrRandomChunk()
+    {
+        List<Vector2Int> valid = new List<Vector2Int>();
+        int maxDistFound = 0;
+
+        // 1. Znajdź najdalszy możliwy dystans (ignorując bezpieczne strefy)
+        foreach (var c in allValidChunks)
+        {
+            if (c == Vector2Int.zero) continue;
+
+            // WAŻNE: Ignorujemy chunki z Meta Progresji (Safe Heaven)
+            if (IsMetaChunk(c)) continue;
+
+            int d = HexGridMath.GetDistance(Vector2Int.zero, c);
+            if (d > maxDistFound) maxDistFound = d;
+        }
+
+        // Ustal minimalny akceptowalny dystans (nie mniej niż minChunkDistance, chyba że mapa jest za mała)
+        int targetDist = Mathf.Min(minChunkDistance, maxDistFound);
+        int minAcceptable = Mathf.Max(1, targetDist - 1);
+
+        // 2. Zbierz wszystkie chunki spełniające kryteria odległości
+        foreach (var c in allValidChunks)
+        {
+            if (c == Vector2Int.zero) continue;
+
+            // WAŻNE: Ignorujemy chunki z Meta Progresji
+            if (IsMetaChunk(c)) continue;
+
+            int d = HexGridMath.GetDistance(Vector2Int.zero, c);
+            if (d >= minAcceptable) valid.Add(c);
+        }
+
+        // 3. Wylosuj jeden z nich
+        if (valid.Count > 0) return valid[Random.Range(0, valid.Count)];
+
+        // Fallback (zwraca skraj mapy, jeśli nic nie znaleziono)
+        return new Vector2Int(mapWidth, 0);
+    }
+
     Vector2Int GetBestGateChunk(Vector3 targetWorldPos) { Vector2Int best = new Vector2Int(1, 0); float minDst = float.MaxValue; foreach (var n in HexGridMath.GetNeighbors(Vector2Int.zero)) { float d = Vector3.Distance(HexGridMath.GetChunkCenterWorld(n, chunkRadius, hexSize, padding), targetWorldPos); if (d < minDst) { minDst = d; best = n; } } return best; }
     void SetFeature(Vector2Int chunk, Vector2Int local, HexFeatureType type) { if (worldData.ContainsKey(chunk) && worldData[chunk].ContainsKey(local)) worldData[chunk][local].feature = type; }
     bool IsPath(Vector2Int chunk, Vector2Int local) { if (worldData.ContainsKey(chunk) && worldData[chunk].ContainsKey(local)) return worldData[chunk][local].isPath; return false; }
 
     void HandleInitialFogReveal()
     {
+        // Lista wszystkich chunków, które mają być aktywne na start
         List<Vector2Int> initialRevealed = new List<Vector2Int>();
 
-        // 1. Baza
-        fogManager.RevealChunk(Vector2Int.zero);
-        initialRevealed.Add(Vector2Int.zero);
+        // 1. ZAWSZE ODKRYWAMY BAZĘ (0,0)
+        if (!initialRevealed.Contains(Vector2Int.zero))
+        {
+            fogManager.RevealChunk(Vector2Int.zero);
+            initialRevealed.Add(Vector2Int.zero);
+        }
 
-        // 2. Sąsiad Bazy
+        // 2. ODKRYWAMY SĄSIADA BAZY (Start Drogi)
         if (generatedChunkSequence != null)
         {
             for (int i = generatedChunkSequence.Count - 1; i >= 0; i--)
@@ -553,25 +751,40 @@ public class HexMapGenerator : MonoBehaviour
                 Vector2Int chunk = generatedChunkSequence[i];
                 if (HexGridMath.GetDistance(chunk, Vector2Int.zero) == 1)
                 {
-                    fogManager.RevealChunk(chunk);
-                    initialRevealed.Add(chunk);
+                    if (!initialRevealed.Contains(chunk))
+                    {
+                        fogManager.RevealChunk(chunk);
+                        initialRevealed.Add(chunk);
+                    }
                     break;
                 }
             }
         }
 
-        // Inicjalizacja Managera Ekspansji
+        // 3. ODKRYWAMY META CHUNKI (Z predefiniowanej konfiguracji)
+        // Przechodzimy przez wszystkie valid chunki i sprawdzamy czy są meta
+        foreach (var chunk in allValidChunks)
+        {
+            if (IsMetaChunk(chunk))
+            {
+                if (!initialRevealed.Contains(chunk))
+                {
+                    fogManager.RevealChunk(chunk);
+                    initialRevealed.Add(chunk);
+                }
+            }
+        }
+
+        // 4. INICJALIZACJA MANAGERA EKSPANSJI (RAZ, Z PEŁNĄ LISTĄ)
         if (expansionManager != null)
         {
             expansionManager.InitializeStartingChunks(initialRevealed);
         }
+        else
+        {
+            Debug.LogWarning("Brak przypisanego MapExpansionManager w HexMapGeneratorze!");
+        }
     }
-}
 
-#if UNITY_EDITOR
-[CustomEditor(typeof(HexMapGenerator))]
-public class HexMapGeneratorEditor : Editor
-{
-    public override void OnInspectorGUI() { DrawDefaultInspector(); HexMapGenerator gen = (HexMapGenerator)target; GUILayout.Space(10); if (GUILayout.Button("Generuj Mapę (Debug)", GUILayout.Height(30))) gen.GenerateMap(); if (GUILayout.Button("Wyczyść Mapę", GUILayout.Height(20))) { if (gen.visualizer != null) gen.visualizer.ClearMap(); } }
+    public Vector2Int GetChunkCoordFromWorldPosition(Vector3 worldPos) { Vector2Int bestChunk = Vector2Int.zero; float minDst = float.MaxValue; foreach (var chunk in allValidChunks) { Vector3 center = HexGridMath.GetChunkCenterWorld(chunk, chunkRadius, hexSize, padding); float d = Vector2.Distance(new Vector2(center.x, center.z), new Vector2(worldPos.x, worldPos.z)); if (d < minDst) { minDst = d; bestChunk = chunk; } } return bestChunk; }
 }
-#endif

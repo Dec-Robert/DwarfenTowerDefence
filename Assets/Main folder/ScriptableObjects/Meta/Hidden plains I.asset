@@ -17,5 +17,5 @@ MonoBehaviour:
   description: "Startowy teren jest powi\u0119kszony o jeden chunk."
   icon: {fileID: 21300000, guid: a65a6e5b462c3ea4680b2da4cf9e1fed, type: 3}
   cost: 1
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites: []

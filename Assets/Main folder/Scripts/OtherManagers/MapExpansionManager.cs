@@ -103,8 +103,13 @@ public class MapExpansionManager : MonoBehaviour
         }
     }
 
-    // ... (Reszta metod: HandleStateChanged, ActivatePendingChunks, Helpers - BEZ ZMIAN) ...
-    // Skopiuj ze starego pliku lub u¿yj tych skrótów:
+    public void ForceAddActiveChunk(Vector2Int coord)
+    {
+        if (!activeChunks.Contains(coord))
+        {
+            activeChunks.Add(coord);
+        }
+    }
     private void HandleStateChanged(GameManager.gameStates newState) { if (newState == GameManager.gameStates.PreparePhase) ActivatePendingChunks(); }
     private void ActivatePendingChunks() { if (pendingChunks.Count > 0) { foreach (var chunk in pendingChunks) activeChunks.Add(chunk); pendingChunks.Clear(); fogManager.UpdateAllFogVisuals(); } }
     private bool IsNeighborToActiveChunk(Vector2Int target) { foreach (var neighbor in HexGridMath.GetNeighbors(target)) if (activeChunks.Contains(neighbor)) return true; return false; }

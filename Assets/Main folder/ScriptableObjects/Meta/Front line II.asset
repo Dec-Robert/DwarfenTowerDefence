@@ -17,6 +17,6 @@ MonoBehaviour:
   description: "bramy regeneruj\u0105 1hp na dzie\u0144"
   icon: {fileID: 21300000, guid: be6c839a82e53b6479fc40a0b60ca912, type: 3}
   cost: 1
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 5c7dd8fdd5767ea4795437ad34997c98, type: 2}

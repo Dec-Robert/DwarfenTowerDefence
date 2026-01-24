@@ -17,6 +17,6 @@ MonoBehaviour:
   description: "Domy zaczynaj\u0105 z 1 wi\u0119cej populacja\r\n"
   icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
   cost: 1
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}
