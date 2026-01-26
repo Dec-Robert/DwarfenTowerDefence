@@ -75,8 +75,10 @@ public class GameManager : MonoBehaviour
     private void EndGame()
     {
         Debug.Log("KONIEC GRY!");
-        OnGameOver?.Invoke();
-        Time.timeScale = 1f; // Zatrzymanie czasu (opcjonalne)
+        OnGameOver?.Invoke(); // To uruchomi ekran
+
+        // Opcjonalnie tutaj, ale GameOverController robi to lepiej (bo obs³uguje UI)
+        // Time.timeScale = 0f; 
     }
 
     // ZARZ¥DZANIE STANAMI

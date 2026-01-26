@@ -21,6 +21,9 @@ public class TimeCycleManager : MonoBehaviour
     [Header("UI")]
     public TextMeshProUGUI timeDisplay;
 
+    // Zmienna do zapamiêtania prêdkoœci przed pauz¹ (domyœlnie 1x)
+    private float storedSpeed = 1f;
+
     public event Action<int> OnHourTick;
     public event Action<int> OnDayChanged;
 
@@ -32,21 +35,20 @@ public class TimeCycleManager : MonoBehaviour
 
     private void Start()
     {
-        // ZMIANA: Gra startuje ZAPAUZOWANA (0f)
-        SetTimeSpeed(0f);
+        // Gra startuje zapauzowana, ale storedSpeed ustawiamy na 1,
+        // ¿eby po wciœniêciu spacji gra ruszy³a 1x, a nie zosta³a na 0.
+        storedSpeed = 1f;
+        Time.timeScale = 0f;
     }
 
     private void Update()
     {
-        // Czas gry korzysta ze zwyk³ego deltaTime (wiêc zatrzyma siê, gdy timeScale = 0)
         currentTime += Time.deltaTime / realSecondsPerHour;
-
         UpdateUI();
 
         if (currentTime >= currentHour + 1)
         {
             currentHour++;
-
             CheckPhaseChange(currentHour);
 
             if (currentHour >= 24)
@@ -56,7 +58,6 @@ public class TimeCycleManager : MonoBehaviour
                 dayCount++;
                 OnDayChanged?.Invoke(dayCount);
             }
-
             OnHourTick?.Invoke(currentHour);
         }
     }
@@ -77,10 +78,33 @@ public class TimeCycleManager : MonoBehaviour
         }
     }
 
+    // --- ZMIENIONA METODA USTAWIANIA PRÊDKOŒCI ---
     public void SetTimeSpeed(float scale)
     {
         Time.timeScale = scale;
-        // Debug.Log($"Prêdkoœæ gry: {scale}x"); // Opcjonalnie wy³¹cz log, ¿eby nie spamowa³
+
+        // Jeœli ustawiamy prêdkoœæ wiêksz¹ od 0, zapamiêtujemy j¹ jako "ostatni¹ dobr¹"
+        if (scale > 0)
+        {
+            storedSpeed = scale;
+        }
+    }
+
+    // --- NOWA METODA: PRZE£¥CZANIE PAUZY (Dla Spacji) ---
+    public void TogglePause()
+    {
+        if (Time.timeScale == 0f)
+        {
+            // Wznów (wróæ do zapamiêtanej)
+            Time.timeScale = storedSpeed;
+        }
+        else
+        {
+            // Zapauzuj (storedSpeed zaktualizowa³o siê automatycznie w SetTimeSpeed lub jest aktualne)
+            // Ale dla pewnoœci mo¿emy zapisaæ obecn¹ przed zerowaniem
+            storedSpeed = Time.timeScale;
+            Time.timeScale = 0f;
+        }
     }
 
     private void UpdateUI()
@@ -88,11 +112,10 @@ public class TimeCycleManager : MonoBehaviour
         if (timeDisplay != null)
         {
             float minutes = (currentTime - Mathf.Floor(currentTime)) * 60;
-            timeDisplay.text = $"Dzieñ {dayCount} | {Mathf.FloorToInt(currentTime):00}:{Mathf.FloorToInt(minutes):00}";
+            timeDisplay.text = GetFormattedTime();
         }
     }
 
-    // --- POPRAWKA: Dodanie "Dzieñ X" do zwracanego stringa ---
     public string GetFormattedTime()
     {
         float minutes = (currentTime - Mathf.Floor(currentTime)) * 60;

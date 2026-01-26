@@ -27,9 +27,9 @@ MonoBehaviour:
   upkeepPerCycle: []
   tier1Upgrades: []
   prefab: {fileID: 6224301533635993970, guid: 4f3a6833ab83b1243aa8bca0ed6e3006, type: 3}
-  baseRange: 9
-  baseDamage: 25
-  fireRate: 4
+  baseRange: 5
+  baseDamage: 50
+  fireRate: 3
   damageType: 0
   effects:
   - {fileID: 11400000, guid: a71c2ccdd0f365f4280548024b936091, type: 2}

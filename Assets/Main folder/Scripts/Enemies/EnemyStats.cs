@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System; // Potrzebne do Action
+using Random = UnityEngine.Random; // ROZWI¥ZANIE PROBLEMU: Wymuszamy u¿ycie Random z Unity
 
 public class EnemyStats : MonoBehaviour
 {
@@ -15,20 +17,26 @@ public class EnemyStats : MonoBehaviour
     private float currentMagicResist;
     private float currentDodge;
 
-    // Lista umiejêtnoœci
+    // Lista umiejêtnoœci (instancje)
     private List<EnemySkill> skills = new List<EnemySkill>();
 
     [Header("Wizualizacja")]
     public Renderer meshRenderer;
     private Color originalColor;
 
-    // --- ZMIENIONA METODA INITIALIZE ---
-    // Teraz przyjmuje modyfikatory globalne (np. z Beacona)
+    // EVENT DLA UI (Obecne HP, Max HP)
+    public event Action<float, float> OnHealthChanged;
+
+    // --- INICJALIZACJA ---
     public void Initialize(EnemyData _data, float globalHpMod = 1f, float globalSpeedMod = 1f, float globalEliteChanceMod = 1f)
     {
         data = _data;
 
-        // 1. Losowanie Rangi (z uwzglêdnieniem modyfikatora Beacona)
+        // 1. Wizualizacja (Pobranie renderera)
+        if (meshRenderer == null) meshRenderer = GetComponentInChildren<Renderer>();
+        //if (meshRenderer != null) originalColor = meshRenderer.material.color;
+
+        // 2. Losowanie Rangi (z uwzglêdnieniem modyfikatora Beacona)
         float roll = Random.Range(0f, 100f);
         float finalEliteChance = data.eliteSpawnChance * globalEliteChanceMod;
 
@@ -41,8 +49,8 @@ public class EnemyStats : MonoBehaviour
             rank = EnemyRank.Normal;
         }
 
-        // 2. Ustawianie Statystyk
-        // Baza * Modyfikator globalny (Beacon)
+        // 3. Ustawianie Statystyk
+        // Baza * Modyfikator globalny
         maxHealth = data.baseHp * globalHpMod;
         float speed = data.moveSpeed * globalSpeedMod;
 
@@ -50,19 +58,19 @@ public class EnemyStats : MonoBehaviour
         currentMagicResist = data.magicResist;
         currentDodge = data.dodgeChance;
 
-        // Jeœli Elita -> Nak³adamy dodatkowe mno¿niki
+        // Modyfikatory Elity
         if (rank == EnemyRank.Elite)
         {
             maxHealth *= data.eliteHpMultiplier;
             speed *= data.eliteSpeedMultiplier;
 
-            // Wizualne odró¿nienie elity
+            // Zmiana wygl¹du
             transform.localScale *= 1.2f;
             if (meshRenderer) meshRenderer.material.color = Color.red;
         }
         else if (rank == EnemyRank.Boss)
         {
-            // Logika bossa (mo¿na dodaæ póŸniej)
+            // Logika bossa (mo¿na rozwin¹æ w przysz³oœci)
         }
 
         currentHealth = maxHealth;
@@ -71,7 +79,7 @@ public class EnemyStats : MonoBehaviour
         var walker = GetComponent<EnemyWalker>();
         if (walker) walker.speed = speed;
 
-        // 3. Dodawanie Umiejêtnoœci
+        // 4. Dodawanie Umiejêtnoœci (Skills)
         if (data.skillPrefabs != null)
         {
             foreach (var prefab in data.skillPrefabs)
@@ -87,21 +95,21 @@ public class EnemyStats : MonoBehaviour
             }
         }
 
-        // Pobranie renderera do flashowania (jeœli nie przypisany)
-        if (meshRenderer == null) meshRenderer = GetComponentInChildren<Renderer>();
-        if (meshRenderer != null) originalColor = meshRenderer.material.color;
+        // 5. Powiadomienie UI o startowym zdrowiu
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
+    // --- OTRZYMYWANIE OBRA¯EÑ ---
     public void TakeDamage(float rawDamage, DamageType type)
     {
         // 1. Unik
         if (currentDodge > 0 && Random.Range(0f, 100f) < currentDodge)
         {
-            // Debug.Log($"{name} UNIKN¥£ ataku!");
+            // Opcjonalnie: Floating Text "DODGE"
             return;
         }
 
-        // 2. Umiejêtnoœci: Before Damage (np. Hiperpancerz)
+        // 2. Umiejêtnoœci: Modyfikacja obra¿eñ przed ich zadaniem (np. Hiperpancerz)
         foreach (var skill in skills)
         {
             rawDamage = skill.OnBeforeDamageCalculation(rawDamage, type);
@@ -113,25 +121,30 @@ public class EnemyStats : MonoBehaviour
         // Wzór: Procentowa redukcja (Armor 20 = -20% dmg)
         float finalDamage = rawDamage * (1f - (mitigation / 100f));
 
-        if (finalDamage < 1) finalDamage = 1; // Min 1 dmg
+        if (finalDamage < 1) finalDamage = 1; // Minimum 1 dmg
 
         // 4. Aplikacja obra¿eñ
         currentHealth -= finalDamage;
 
-        // Flash efekt
+        // Flash efekt (wizualny)
         if (meshRenderer != null)
         {
             meshRenderer.material.color = Color.white;
             Invoke("ResetColor", 0.1f);
         }
 
-        // 5. Umiejêtnoœci: On Damage (np. Blob split)
+        // 5. Aktualizacja UI
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+
+        // 6. Umiejêtnoœci: Reakcja na otrzymanie obra¿eñ (np. Podzia³ Bloba)
+        // Pêtla odwrotna, bo skill mo¿e zniszczyæ ten obiekt (BlobSplit)
         for (int i = skills.Count - 1; i >= 0; i--)
         {
-            if (this == null) return;
+            if (this == null) return; // Jeœli obiekt zgin¹³/podzieli³ siê w trakcie pêtli
             skills[i].OnDamageTaken(finalDamage, currentHealth);
         }
 
+        // 7. Œmieræ
         if (this != null && currentHealth <= 0)
         {
             Die();
@@ -140,12 +153,13 @@ public class EnemyStats : MonoBehaviour
 
     void ResetColor()
     {
-        if (meshRenderer != null) meshRenderer.material.color = (rank == EnemyRank.Elite) ? Color.red : originalColor;
+        if (meshRenderer != null)
+            meshRenderer.material.color = (rank == EnemyRank.Elite) ? Color.red : originalColor;
     }
 
     void Die()
     {
-        // Loot System
+        // Loot System (Tymczasowy log, tu podepniemy dodawanie surowców)
         if (rank == EnemyRank.Elite)
         {
             if (Random.Range(0, 100) < 50) Debug.Log("<color=magenta>DROP: Runa (z Elity)</color>");
@@ -155,17 +169,25 @@ public class EnemyStats : MonoBehaviour
             Debug.Log("<color=magenta>DROP: Runa GWARANTOWANA (z Bossa)</color>");
             if (Random.Range(0, 100) < 20) Debug.Log("<color=magenta>DROP: Druga Runa (Bonus)</color>");
         }
+        else
+        {
+            // Zwyk³y wróg - np. ma³a szansa na z³oto lub gwarantowane z³oto
+            // ResourceManager.Instance.AddResource(ResourceType.Gold, 5); 
+        }
 
+        // Powiadom skille o œmierci (np. Wybuch po œmierci)
         foreach (var skill in skills) skill.OnDeath();
 
         Destroy(gameObject);
     }
 
+    // --- HELPERY DLA UMIEJÊTNOŒCI (Blob) ---
     public float GetMaxHealth() => maxHealth;
 
     public void SetHealthManually(float amount)
     {
         maxHealth = amount;
         currentHealth = amount;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 }

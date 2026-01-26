@@ -23,15 +23,22 @@
                 <ui:VisualElement class="resource-icon" style="background-color: rgb(50, 205, 50);" />
                 <ui:Label text="20" name="Label_Food" class="resource-text" />
             </ui:VisualElement>
-            <ui:VisualElement name="Pop_Group" class="resource-item">
+            <ui:VisualElement name="Coal_Group" class="resource-item">
+                <ui:VisualElement class="resource-icon icon-coal" />
+                <ui:Label text="0" name="Label_Coal" class="resource-text" />
+            </ui:VisualElement>
+            <ui:VisualElement name="Iron_Group" class="resource-item">
+                <ui:VisualElement class="resource-icon icon-iron" />
+                <ui:Label text="0" name="Label_Iron" class="resource-text" />
+            </ui:VisualElement>
+            <ui:Label text="Dzień 1 | 06:00" name="Label_Time" class="resource-text time-text" style="color: rgb(68, 255, 68); -unity-font-style: bold; font-size: 20px; margin-left: 50px;" />
+            <ui:VisualElement name="Pop_Group" class="resource-item" style="height: 36px; width: 202px;">
                 <ui:VisualElement class="resource-icon" style="background-color: rgb(0, 191, 255);" />
                 <ui:Label text="H:0 | E:0 | D:0" name="Label_Pop" class="resource-text" style="min-width: 120px;" />
             </ui:VisualElement>
-            <ui:Label text="Dzień 1 | 06:00" name="Label_Time" class="resource-text time-text" style="color: #44FF44; -unity-font-style: bold; font-size: 20px; margin-left: 50px;" />
         </ui:VisualElement>
-        <!-- W GameHUD.uxml -->
-        <ui:VisualElement name="BeaconDisplay" style="position: absolute; top: 90px; left: 50%; translate: -50% 0; flex-direction: column; align-items: center;">
-            <ui:VisualElement style="flex-direction: row;">
+        <ui:VisualElement name="BeaconDisplay" style="position: absolute; top: 68px; left: 614px; translate: -50% 0; flex-direction: column; align-items: center; height: 45px;">
+            <ui:VisualElement name="SegmentsBackground" class="beacon-bar-bg">
                 <ui:VisualElement name="Segment_0" class="beacon-segment" />
                 <ui:VisualElement name="Segment_1" class="beacon-segment" />
                 <ui:VisualElement name="Segment_2" class="beacon-segment" />
@@ -82,10 +89,10 @@
             <ui:Label name="TooltipBody" text="Opis..." class="tooltip-text" />
             <ui:Label name="TooltipCost" text="Koszt: 100 G" class="tooltip-cost" />
         </ui:VisualElement>
-
-        <ui:VisualElement name="TutorialPopup" class="tutorial-popup">
+        <ui:VisualElement name="TutorialPopup" class="tutorial-popup" style="top: 295px; right: 636px; left: 494px; bottom: auto; position: absolute; align-items: center; justify-content: flex-start; align-self: auto; align-content: auto; overflow: visible;">
             <ui:Button name="Btn_CloseTutorial" text="X" class="tutorial-close-btn" />
             <ui:Label text="Żeby budynek generował surowce lub żeby wieże strzelały potrzebują pracowników.&#10;&#10;Kliknij na budynek aby otworzyć menu.&#10;&#10;Twoi pracownicy pracują tylko podczas zmian." class="tutorial-text" />
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="HealthBarLayer" picking-mode="Ignore" style="position: absolute; width: 100%; height: 100%; top: 3px; left: 3px;" />
 </ui:UXML>

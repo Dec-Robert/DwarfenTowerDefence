@@ -20,14 +20,47 @@
 .resource-item {
     flex-direction: row;
     align-items: center;
-    margin-left: 15px;
-    margin-right: 15px;
+    justify-content: flex-start; /* Ikona z lewej, tekst obok */
+    
+    /* STA£E WYMIARY */
+    width: 90px;          /* Sta³a szerokoœæ ka¿dej kapsu³ki */
+    height: 32px;         /* Sta³a wysokoœæ */
+    flex-shrink: 0;       /* Blokuje zwê¿anie siê kapsu³ek przy ma³ym ekranie */
+
+    background-color: rgba(10, 25, 45, 0.85); 
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    
+    padding-left: 6px;
+    padding-right: 6px;
+    margin-left: 4px;
+    margin-right: 4px;
+    
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(0, 0, 0, 0.4);
+}
+
+.resource-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0; /* Ikona nie mo¿e siê œcisn¹æ */
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.resource-text {
+    font-size: 15px;
+    color: white;
+    -unity-font-style: bold;
+    margin-left: 4px;
+    flex-grow: 1;      /* Tekst zajmuje resztê miejsca */
+    -unity-text-align: middle-left; /* Wyrównanie do lewej wewn¹trz kapsu³ki */
 }
 
 .resource-icon {
     width: 24px;
     height: 24px;
-    background-color: #FFD700; /* Placeholder na kolor ikony (np. z³oty) */
+    background-color: rgba(0, 0, 0, 0); 
     margin-right: 5px;
     border-radius: 4px;
 }
@@ -245,12 +278,25 @@
 }
 .expansion-btn-close:hover { background-color: #E53935; }
 
+.beacon-bar-bg {
+    flex-direction: row;
+    background-color: rgba(10, 20, 35, 0.9); /* Ciemny granat, podobny do surowców */
+    padding: 4px;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.15);
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+}
+
+/* POJEDYNCZY SEGMENT */
 .beacon-segment {
-    width: 20px;
-    height: 10px;
+    width: 18px;    
+    height: 10px;   
     margin: 1px;
-    background-color: grey;
     border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.1); 
 }
 
 /* --- TUTORIAL POPUP --- */
@@ -289,4 +335,21 @@
 
 .tutorial-close-btn:hover {
     background-color: #FF5555;
+}
+
+/* Konkretne ikony */
+.icon-gold {
+    background-image: url('project://database/Assets/Path/To/Your/gold_icon.png');
+}
+
+.icon-wood {
+    background-image: url('project://database/Assets/Path/To/Your/wood_icon.png');
+}
+
+.icon-iron {
+    background-image: url('project://database/Assets/Main folder/Icons/Resources/Coal icon.png');
+}
+
+.icon-coal {
+    background-image: url('project://database/Assets/Main folder/Icons/Resources/Coal.tif');
 }

@@ -33,29 +33,46 @@ public class CameraController : MonoBehaviour
 
     void HandleMovementInput()
     {
-        float xInput = Input.GetAxisRaw("Horizontal");
-        float zInput = Input.GetAxisRaw("Vertical");
+        float xInput = Input.GetAxisRaw("Horizontal"); // A / D
+        float zInput = Input.GetAxisRaw("Vertical");   // W / S
 
-        Vector3 direction = new Vector3(xInput, 0f, zInput).normalized;
+        // --- ZMIANA LOGIKI RUCHU ---
+
+        // 1. Pobieramy kierunek, w którym patrzy kamera
+        Vector3 cameraForward = transform.forward;
+        Vector3 cameraRight = transform.right;
+
+        // 2. "Sp³aszczamy" te wektory, ¿eby ignorowa³y pochylenie kamery w dó³ (oœ Y)
+        // Chcemy poruszaæ siê tylko po p³aszczyŸnie mapy (X i Z)
+        cameraForward.y = 0;
+        cameraRight.y = 0;
+
+        // 3. Normalizujemy, ¿eby mia³y d³ugoœæ 1 (po sp³aszczeniu mog³a siê zmieniæ)
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        // 4. Tworzymy wektor ruchu relatywny do kamery
+        // W * PrzódKamery + D * PrawoKamery
+        Vector3 direction = (cameraForward * zInput + cameraRight * xInput).normalized;
+        // ---------------------------
 
         if (direction.magnitude >= 0.1f)
         {
-            // ZMIANA: unscaledDeltaTime (niezale¿ne od pauzy/przyspieszenia)
+            // U¿ywamy unscaledDeltaTime dla p³ynnoœci przy zmianie prêdkoœci gry
             targetPosition += direction * moveSpeed * Time.unscaledDeltaTime;
         }
 
-        // Obs³uga wysokoœci
+        // Obs³uga wysokoœci (Zoom)
         float heightInput = 0f;
         if (Input.GetKey(KeyCode.Q)) heightInput = -1f;
         if (Input.GetKey(KeyCode.E)) heightInput = 1f;
 
         if (Mathf.Abs(heightInput) > 0.01f)
         {
-            // ZMIANA: unscaledDeltaTime
             targetPosition.y += heightInput * zoomSpeed * Time.unscaledDeltaTime;
         }
 
-        // Ograniczenia
+        // Ograniczenia (Clamping)
         targetPosition.y = Mathf.Clamp(targetPosition.y, minHeight, maxHeight);
         targetPosition.x = Mathf.Clamp(targetPosition.x, -mapLimit.x, mapLimit.x);
         targetPosition.z = Mathf.Clamp(targetPosition.z, -mapLimit.y, mapLimit.y);
@@ -63,8 +80,6 @@ public class CameraController : MonoBehaviour
 
     void MoveCamera()
     {
-        // ZMIANA: unscaledDeltaTime - dziêki temu kamera nie "szarpie" przy zmianie prêdkoœci gry
-        // i dzia³a p³ynnie nawet na pauzie (TimeScale = 0)
         transform.position = Vector3.Lerp(transform.position, targetPosition, smoothing * Time.unscaledDeltaTime);
     }
 
@@ -72,10 +87,21 @@ public class CameraController : MonoBehaviour
     {
         targetPosition = new Vector3(worldPoint.x, targetPosition.y, worldPoint.z);
 
-        // Offset dla kamery pod k¹tem (np. 60 stopni)
-        float zOffset = targetPosition.y / Mathf.Tan(transform.eulerAngles.x * Mathf.Deg2Rad);
-        targetPosition.z -= zOffset;
+        // Obliczamy offset Z, ¿eby zachowaæ kamerê w odpowiedniej odleg³oœci od punktu
+        // bior¹c pod uwagê jej aktualny k¹t nachylenia (Pitch/X-Rotation)
+        float currentAngleX = transform.eulerAngles.x;
 
+        // Matematyka: tan(k¹t) = przeciwprostok¹tna (Y) / przyprostok¹tna (Z)
+        // Zatem: Z = Y / tan(k¹t)
+        // Uwaga: Jeœli k¹t jest bliski 90 (patrzy pionowo w dó³), tan d¹¿y do nieskoñczonoœci, co jest OK (offset Z bliski 0)
+
+        if (currentAngleX > 5f && currentAngleX < 89f)
+        {
+            float zOffset = targetPosition.y / Mathf.Tan(currentAngleX * Mathf.Deg2Rad);
+            targetPosition.z -= zOffset;
+        }
+
+        // Ponowne na³o¿enie limitów
         targetPosition.x = Mathf.Clamp(targetPosition.x, -mapLimit.x, mapLimit.x);
         targetPosition.z = Mathf.Clamp(targetPosition.z, -mapLimit.y, mapLimit.y);
     }

@@ -1,28 +1,28 @@
 using UnityEngine;
-using UnityEngine.UIElements; // WA¯NE: Namespace dla UI Toolkit
+using UnityEngine.UIElements;
 using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour
 {
-    [Header("UI Toolkit References")]
-    public UIDocument uiDocument; // Przypisz tu komponent UIDocument z hierarchii
+    public static UIManager Instance { get; private set; }
 
-    // Cache elementów (¿eby nie szukaæ ich co klatkê)
-    private Label labelHP;
-    private Label labelGold;
-    private Label labelWood;
-    private Label labelStone;
-    private Label labelFood;
-    private Label labelPop;
-    private Label labelTime;
-    // public Label labelIron; // Opcjonalnie
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) Destroy(gameObject);
+        else Instance = this;
+    }
+
+    [Header("UI Toolkit References")]
+    public UIDocument uiDocument;
+
+    // Cache elementów
+    private Label labelHP, labelGold, labelWood, labelStone, labelFood, labelPop, labelTime, labelIron, labelCoal;
 
     private void OnEnable()
     {
-        // Pobieramy g³ówny korzeñ drzewa UI
+        if (uiDocument == null) return;
         var root = uiDocument.rootVisualElement;
 
-        // Wyszukujemy etykiety po nazwach zdefiniowanych w UXML (name="...")
         labelHP = root.Q<Label>("Label_HP");
         labelGold = root.Q<Label>("Label_Gold");
         labelWood = root.Q<Label>("Label_Wood");
@@ -30,8 +30,9 @@ public class UIManager : MonoBehaviour
         labelFood = root.Q<Label>("Label_Food");
         labelPop = root.Q<Label>("Label_Pop");
         labelTime = root.Q<Label>("Label_Time");
+        labelCoal = root.Q<Label>("Label_Coal");
+        labelIron = root.Q<Label>("Label_Iron");
 
-        // Konfiguracja przycisków czasu
         SetupTimeButton(root, "Btn_Pause", 0f);
         SetupTimeButton(root, "Btn_1x", 1f);
         SetupTimeButton(root, "Btn_2x", 2f);
@@ -42,15 +43,11 @@ public class UIManager : MonoBehaviour
     private void SetupTimeButton(VisualElement root, string btnName, float speed)
     {
         var btn = root.Q<Button>(btnName);
-        if (btn != null)
-        {
-            btn.clicked += () => SetSpeed(speed);
-        }
+        if (btn != null) btn.clicked += () => SetSpeed(speed);
     }
 
     void Start()
     {
-        // Subskrypcje (Bez zmian)
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnHealthChanged += UpdateHpUI;
@@ -64,13 +61,33 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // WA¯NE: Update dla zegara, bo TimeCycleManager nie wysy³a eventu co klatkê
     void Update()
     {
-        if (TimeCycleManager.Instance != null && labelTime != null)
+        if (TimeCycleManager.Instance != null)
         {
-            labelTime.text = TimeCycleManager.Instance.GetFormattedTime();
+            // Aktualizacja tekstu zegara
+            if (labelTime != null)
+                labelTime.text = TimeCycleManager.Instance.GetFormattedTime();
+
+            // --- OBS£UGA KLAWISZY (NOWOŒÆ) ---
+            HandleInput();
         }
+    }
+
+    // Nowa metoda do obs³ugi skrótów klawiszowych
+    void HandleInput()
+    {
+        // Spacja - Toggle Pause
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TimeCycleManager.Instance.TogglePause();
+        }
+
+        // Klawisze numeryczne (nad literami)
+        if (Input.GetKeyDown(KeyCode.Alpha1)) SetSpeed(1f);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) SetSpeed(2f);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) SetSpeed(3f);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) SetSpeed(5f); // 4 klawisz = 5x speed
     }
 
     void OnDestroy()
@@ -78,8 +95,6 @@ public class UIManager : MonoBehaviour
         if (GameManager.Instance != null) GameManager.Instance.OnHealthChanged -= UpdateHpUI;
         if (ResourceManager.Instance != null) ResourceManager.Instance.OnResourceChanged -= UpdateResourceUI;
     }
-
-    // --- AKTUALIZACJA UI (Label.text zamiast TextMeshPro.text) ---
 
     private void UpdateHpUI(int currentHp)
     {
@@ -94,25 +109,24 @@ public class UIManager : MonoBehaviour
     {
         switch (type)
         {
-            case ResourceType.Gold:
-                if (labelGold != null) labelGold.text = amount.ToString();
-                break;
-            case ResourceType.Wood:
-                if (labelWood != null) labelWood.text = amount.ToString();
-                break;
-            case ResourceType.Stone:
-                if (labelStone != null) labelStone.text = amount.ToString();
-                break;
-            case ResourceType.Food:
-                if (labelFood != null) labelFood.text = amount.ToString();
-                break;
+            case ResourceType.Gold: if (labelGold != null) labelGold.text = amount.ToString(); break;
+            case ResourceType.Wood: if (labelWood != null) labelWood.text = amount.ToString(); break;
+            case ResourceType.Stone: if (labelStone != null) labelStone.text = amount.ToString(); break;
+            case ResourceType.Food: if (labelFood != null) labelFood.text = amount.ToString(); break;
+            case ResourceType.Coal: if (labelCoal != null) labelCoal.text = amount.ToString(); break;
+            case ResourceType.Iron: if (labelIron != null) labelIron.text = amount.ToString(); break;
+
             case ResourceType.Population:
-                if (labelPop != null && CitizenManager.Instance != null)
+                if (labelPop != null)
                 {
-                    int h = CitizenManager.Instance.GetRaceCount(Race.Humans);
-                    int e = CitizenManager.Instance.GetRaceCount(Race.Elves);
-                    int d = CitizenManager.Instance.GetRaceCount(Race.Dwarves);
-                    labelPop.text = $"H:{h} | E:{e} | D:{d}";
+                    if (CitizenManager.Instance != null)
+                    {
+                        int h = CitizenManager.Instance.GetRaceCount(Race.Humans);
+                        int e = CitizenManager.Instance.GetRaceCount(Race.Elves);
+                        int d = CitizenManager.Instance.GetRaceCount(Race.Dwarves);
+                        labelPop.text = $"H:{h} | E:{e} | D:{d}";
+                    }
+                    else labelPop.text = $"Pop: {amount}";
                 }
                 break;
         }

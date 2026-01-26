@@ -18,17 +18,23 @@ public class TutorialController : MonoBehaviour
 
     private void Awake()
     {
-        // KROK 1: Definicja treœci tutoriala
-        // Tutaj wpisujemy teksty, które maj¹ siê pojawiaæ po kolei.
+        // KROK 1: Sterowanie (NOWY)
+        tutorialSteps.Add(
+            "Witaj w grze!\n\n" +
+            "Sterowanie kamer¹:\n" +
+            "• [W, A, S, D] - Poruszanie siê po mapie\n" +
+            "• [Q] i [E] - Zmiana wysokoœci (Zoom)\n\n" +
+            "U¿yj lewego przycisku myszy, aby wchodziæ w interakcjê z budynkami i mg³¹."
+        );
 
-        // Strona 1 (O pracownikach)
+        // KROK 2: Pracownicy (Przesuniêty)
         tutorialSteps.Add(
             "¯eby budynek generowa³ surowce lub ¿eby wie¿e strzela³y potrzebuj¹ pracowników.\n\n" +
             "Kliknij na budynek aby otworzyæ menu.\n\n" +
             "Twoi pracownicy pracuj¹ tylko podczas zmian."
         );
 
-        // Strona 2 (O Beaconie - Twój nowy tekst)
+        // KROK 3: Beacon (Przesuniêty)
         tutorialSteps.Add(
             "Pamiêtaj, ¿eby poziom ognia latarni nie spad³ poni¿ej 3 poziomu!\n\n" +
             "Ka¿dy poziom poni¿ej wzmacnia twoich wrogów, ale wrogowie z odmêtów przynosz¹ wtedy wiêcej skarbów.\n\n" +

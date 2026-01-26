@@ -125,8 +125,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9717edcd5d8ebb94ead7c89d2d333d37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  towerData: {fileID: 11400000, guid: 4746f97a9eec59946ae28357df58ee2d, type: 2}
+  rangeIndicatorPrefab: {fileID: 66276893048416449, guid: 46d23b10a158dfb4fb030960fb034997, type: 3}
+  towerData: {fileID: 0}
   firePoint: {fileID: 0}
+  partToRotate: {fileID: 0}
+  turnSpeed: 10
   canShoot: 0
   currentRange: 0
   currentDamage: 0

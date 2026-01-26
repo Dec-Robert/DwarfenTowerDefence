@@ -129,6 +129,12 @@ public class UIBuildingInspector : MonoBehaviour
     {
         totalContainer.style.display = DisplayStyle.None;
         currentTarget = null;
+
+        // Powiadom InteractionManager, ¿eby schowa³ zasiêg
+        if (InteractionManager.Instance != null)
+        {
+            InteractionManager.Instance.DeselectAll();
+        }
     }
 
     public void RefreshContent()

@@ -77,6 +77,9 @@ public class HexMapGenerator : MonoBehaviour
         public List<Vector2Int> extraEntries = new List<Vector2Int>();
         public Vector2Int exitHex;
         public List<Vector2Int> internalPath;
+
+        public Vector2Int nextChunkTowardsBase = new Vector2Int(-999, -999); // Wartość sentinel
+
         public List<Vector2Int> GetAllEntries() { var l = new List<Vector2Int> { entryHex }; l.AddRange(extraEntries); return l; }
     }
 
@@ -214,7 +217,8 @@ public class HexMapGenerator : MonoBehaviour
         if (!worldData.ContainsKey(coord))
         {
             worldData[coord] = new Dictionary<Vector2Int, HexCellData>();
-            GenerateHexGridPoints(chunkRadius, (q, r) => {
+            GenerateHexGridPoints(chunkRadius, (q, r) =>
+            {
                 HexCellData cell = new HexCellData();
                 cell.chunkCoord = coord;
                 cell.localCoord = new Vector2Int(q, r);
@@ -336,7 +340,8 @@ public class HexMapGenerator : MonoBehaviour
             if (!worldData.ContainsKey(chunkCoord))
             {
                 worldData[chunkCoord] = new Dictionary<Vector2Int, HexCellData>();
-                GenerateHexGridPoints(chunkRadius, (q, r) => {
+                GenerateHexGridPoints(chunkRadius, (q, r) =>
+                {
                     HexCellData cell = new HexCellData();
                     cell.chunkCoord = chunkCoord;
                     cell.localCoord = new Vector2Int(q, r);
@@ -459,22 +464,20 @@ public class HexMapGenerator : MonoBehaviour
                                 + HexGridMath.AxialToWorld(baseRoadEndLocal.x, baseRoadEndLocal.y, hexSize, padding);
         Vector2Int gateChunk = GetBestGateChunk(baseTargetWorld);
 
-        // --- FILTROWANIE CHUNKÓW (Nowość) ---
-        // Wrogowie mogą chodzić tylko po dziczy i wejść do bazy (0,0).
-        // Nie mogą wchodzić na inne chunki Meta (bezpieczne zaplecze).
+        // --- 1. FILTROWANIE (Ignorujemy bezpieczne chunki Meta, chyba że to Baza) ---
         HashSet<Vector2Int> walkableChunks = new HashSet<Vector2Int>();
         foreach (var c in allValidChunks)
         {
-            // Jeśli to NIE jest meta chunk LUB to jest baza (0,0) -> dodaj
+            // Możemy chodzić po dziczy LUB wejść do bazy (0,0)
             if (!IsMetaChunk(c) || c == Vector2Int.zero)
             {
                 walkableChunks.Add(c);
             }
         }
-        // ------------------------------------
 
+        // --- 2. KOSZTY GLOBALNE ---
         Dictionary<Vector2Int, int> globalChunkCosts = new Dictionary<Vector2Int, int>();
-        foreach (var chunk in walkableChunks) // Iterujemy po walkable, nie allValid
+        foreach (var chunk in walkableChunks)
         {
             if (HexGridMath.GetDistance(chunk, Vector2Int.zero) <= 1 || chunk == mainSpawnerChunk)
                 globalChunkCosts[chunk] = 1;
@@ -482,13 +485,13 @@ public class HexMapGenerator : MonoBehaviour
                 globalChunkCosts[chunk] = (Random.Range(0, 100) < globalObstacleChance) ? 10 : 1;
         }
 
-        // Używamy walkableChunks zamiast allValidChunks
+        // --- 3. PATHFINDING CHUNKÓW ---
         List<Vector2Int> chunkSequence = pathfinder.FindChunkPath(mainSpawnerChunk, gateChunk, walkableChunks, globalChunkCosts);
-
         generatedChunkSequence = chunkSequence;
 
         if (chunkSequence == null || chunkSequence.Count < minChunkDistance) return false;
 
+        // --- 4. GENEROWANIE WNĘTRZ I RELACJI ---
         Vector3 previousExitWorldPos = Vector3.zero;
 
         for (int i = 0; i < chunkSequence.Count; i++)
@@ -496,9 +499,23 @@ public class HexMapGenerator : MonoBehaviour
             Vector2Int currentChunk = chunkSequence[i];
             ChunkPathData data = new ChunkPathData();
 
-            if (i == 0) data.entryHex = Vector2Int.zero;
+            // A. ZAPISYWANIE RELACJI (Dla MapExpansionManager)
+            if (i < chunkSequence.Count - 1)
+            {
+                // Następny w liście = krok w stronę bazy
+                data.nextChunkTowardsBase = chunkSequence[i + 1];
+            }
+            else
+            {
+                // Ostatni element (sąsiad bazy) wskazuje na samą bazę
+                data.nextChunkTowardsBase = Vector2Int.zero;
+            }
+
+            // B. USTALANIE WEJŚCIA
+            if (i == 0) data.entryHex = Vector2Int.zero; // Start spawnera
             else data.entryHex = FindHexClosestToWorldPos(currentChunk, previousExitWorldPos);
 
+            // C. USTALANIE WYJŚCIA
             if (i == chunkSequence.Count - 1)
                 data.exitHex = FindHexClosestToWorldPos(currentChunk, baseTargetWorld);
             else
@@ -510,10 +527,12 @@ public class HexMapGenerator : MonoBehaviour
             previousExitWorldPos = HexGridMath.GetChunkCenterWorld(currentChunk, chunkRadius, hexSize, padding)
                                  + HexGridMath.AxialToWorld(data.exitHex.x, data.exitHex.y, hexSize, padding);
 
+            // D. GENEROWANIE ŚCIEŻKI WEWNĄTRZ CHUNKU
             if (!GenerateAndValidateInternalPath(currentChunk, data)) return false;
 
             chunkPaths.Add(currentChunk, data);
         }
+
         return true;
     }
 
@@ -572,14 +591,59 @@ public class HexMapGenerator : MonoBehaviour
 
     void ProcessBranchPathInternal(List<Vector2Int> branchChunks, Vector2Int junctionChunk)
     {
-        Vector3 previousExitWorldPos = Vector3.zero; for (int i = 0; i < branchChunks.Count - 1; i++)
+        Vector3 previousExitWorldPos = Vector3.zero;
+
+        // Iterujemy od Spawnera do przed-ostatniego chunku (ostatni to Junction, który już istnieje)
+        for (int i = 0; i < branchChunks.Count - 1; i++)
         {
-            Vector2Int currentChunk = branchChunks[i]; ChunkPathData data = new ChunkPathData();
-            if (i == 0) data.entryHex = Vector2Int.zero; else data.entryHex = FindHexClosestToWorldPos(currentChunk, previousExitWorldPos);
+            Vector2Int currentChunk = branchChunks[i];
+            ChunkPathData data = new ChunkPathData();
+
+            // A. ZAPISYWANIE RELACJI
+            // Następny chunk w liście branchChunks jest krokiem w stronę bazy (lub węzła)
+            data.nextChunkTowardsBase = branchChunks[i + 1];
+
+            // B. USTALANIE WEJŚCIA
+            if (i == 0) data.entryHex = Vector2Int.zero; // Start spawnera
+            else data.entryHex = FindHexClosestToWorldPos(currentChunk, previousExitWorldPos);
+
+            // C. USTALANIE WYJŚCIA I AKTUALIZACJA WĘZŁA
             Vector2Int nextChunk = branchChunks[i + 1];
-            if (nextChunk == junctionChunk) { data.exitHex = FindRandomHexFacingChunk(currentChunk, nextChunk); ChunkPathData jData = chunkPaths[junctionChunk]; Vector3 exitWorld = HexGridMath.GetChunkCenterWorld(currentChunk, chunkRadius, hexSize, padding) + HexGridMath.AxialToWorld(data.exitHex.x, data.exitHex.y, hexSize, padding); Vector2Int junctionEntry = FindHexClosestToWorldPos(junctionChunk, exitWorld); if (!jData.extraEntries.Contains(junctionEntry)) jData.extraEntries.Add(junctionEntry); } else { data.exitHex = FindRandomHexFacingChunk(currentChunk, nextChunk); }
-            previousExitWorldPos = HexGridMath.GetChunkCenterWorld(currentChunk, chunkRadius, hexSize, padding) + HexGridMath.AxialToWorld(data.exitHex.x, data.exitHex.y, hexSize, padding);
-            GenerateAndValidateInternalPath(currentChunk, data); if (!chunkPaths.ContainsKey(currentChunk)) chunkPaths.Add(currentChunk, data);
+
+            if (nextChunk == junctionChunk)
+            {
+                // To jest ostatni krok przed węzłem
+                data.exitHex = FindRandomHexFacingChunk(currentChunk, nextChunk);
+
+                // --- UPDATE JUNCTION (Istniejący chunk) ---
+                if (chunkPaths.ContainsKey(junctionChunk))
+                {
+                    ChunkPathData jData = chunkPaths[junctionChunk];
+
+                    // Obliczamy, w którym miejscu droga wchodzi do węzła
+                    Vector3 exitWorld = HexGridMath.GetChunkCenterWorld(currentChunk, chunkRadius, hexSize, padding)
+                                      + HexGridMath.AxialToWorld(data.exitHex.x, data.exitHex.y, hexSize, padding);
+
+                    Vector2Int junctionEntry = FindHexClosestToWorldPos(junctionChunk, exitWorld);
+
+                    if (!jData.extraEntries.Contains(junctionEntry))
+                        jData.extraEntries.Add(junctionEntry);
+                }
+            }
+            else
+            {
+                // Standardowy krok w środku gałęzi
+                data.exitHex = FindRandomHexFacingChunk(currentChunk, nextChunk);
+            }
+
+            previousExitWorldPos = HexGridMath.GetChunkCenterWorld(currentChunk, chunkRadius, hexSize, padding)
+                                 + HexGridMath.AxialToWorld(data.exitHex.x, data.exitHex.y, hexSize, padding);
+
+            // D. GENEROWANIE ŚCIEŻKI WEWNĄTRZ
+            GenerateAndValidateInternalPath(currentChunk, data);
+
+            if (!chunkPaths.ContainsKey(currentChunk))
+                chunkPaths.Add(currentChunk, data);
         }
     }
 
@@ -608,20 +672,25 @@ public class HexMapGenerator : MonoBehaviour
         var emptyCosts = new Dictionary<Vector2Int, int>(); data.internalPath = pathfinder.FindLocalPath(data.entryHex, data.exitHex, emptyCosts); chunkInternalCosts[chunkCoord] = emptyCosts; return true;
     }
 
+    // --- NOWA WERSJA: Czytamy zapisane relacje ---
     public Dictionary<Vector2Int, Vector2Int> GetRoadRevealDependencies()
     {
         Dictionary<Vector2Int, Vector2Int> dependencies = new Dictionary<Vector2Int, Vector2Int>();
-        if (generatedChunkSequence != null && generatedChunkSequence.Count > 0)
+
+        foreach (var kvp in chunkPaths)
         {
-            List<Vector2Int> fullSequence = new List<Vector2Int>(generatedChunkSequence);
-            if (fullSequence[fullSequence.Count - 1] != Vector2Int.zero) fullSequence.Add(Vector2Int.zero);
-            for (int i = 0; i < fullSequence.Count - 1; i++) { Vector2Int current = fullSequence[i]; Vector2Int requirement = fullSequence[i + 1]; if (!dependencies.ContainsKey(current)) dependencies.Add(current, requirement); }
+            Vector2Int currentChunk = kvp.Key;
+            ChunkPathData data = kvp.Value;
+
+            if (data.nextChunkTowardsBase.x != -999)
+            {
+                if (!dependencies.ContainsKey(currentChunk))
+                {
+                    dependencies.Add(currentChunk, data.nextChunkTowardsBase);
+                }
+            }
         }
-        if (extraSpawnerChunks != null)
-        {
-            HashSet<Vector2Int> existingChunks = new HashSet<Vector2Int>(chunkPaths.Keys); existingChunks.Add(Vector2Int.zero);
-            foreach (var spawn in extraSpawnerChunks) { var path = pathfinder.FindChunkPath(spawn, Vector2Int.zero, existingChunks, null); if (path != null) { for (int i = 0; i < path.Count - 1; i++) { Vector2Int current = path[i]; Vector2Int requirement = path[i + 1]; if (!dependencies.ContainsKey(current)) dependencies.Add(current, requirement); } } }
-        }
+
         return dependencies;
     }
 
@@ -787,4 +856,7 @@ public class HexMapGenerator : MonoBehaviour
     }
 
     public Vector2Int GetChunkCoordFromWorldPosition(Vector3 worldPos) { Vector2Int bestChunk = Vector2Int.zero; float minDst = float.MaxValue; foreach (var chunk in allValidChunks) { Vector3 center = HexGridMath.GetChunkCenterWorld(chunk, chunkRadius, hexSize, padding); float d = Vector2.Distance(new Vector2(center.x, center.z), new Vector2(worldPos.x, worldPos.z)); if (d < minDst) { minDst = d; bestChunk = chunk; } } return bestChunk; }
+
+
+
 }
