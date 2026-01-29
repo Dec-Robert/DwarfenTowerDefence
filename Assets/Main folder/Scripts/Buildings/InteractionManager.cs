@@ -153,10 +153,13 @@ public class InteractionManager : MonoBehaviour
         if (!mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return false;
         HexCellData data = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
 
-        // 1. Czy teren pasuje
+        if (data.isPath)
+        {
+            return false;
+        }
+
         if (!selectedBuilding.allowedTerrain.Contains(data.feature)) return false;
 
-        // 2. Czy zajête przez budynek
         if (cell.GetComponentInChildren<BuildingEntity>() != null) return false;
 
         return true;

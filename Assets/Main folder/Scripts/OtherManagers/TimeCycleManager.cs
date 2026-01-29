@@ -7,15 +7,15 @@ public class TimeCycleManager : MonoBehaviour
     public static TimeCycleManager Instance { get; private set; }
 
     [Header("Konfiguracja Czasu")]
-    public float realSecondsPerHour = 2.0f;
+    public float realSecondsPerHour = 20.0f;
 
     [Header("Cykl Dnia i Nocy")]
     public int dayStartHour = 6;
     public int nightStartHour = 20;
 
     [Header("Podgl¹d")]
-    [Range(0, 24)] public float currentTime = 6.0f;
-    public int currentHour = 6;
+    [Range(0, 24)] public float currentTime = 5.0f;
+    public int currentHour = 5;
     public int dayCount = 1;
 
     [Header("UI")]

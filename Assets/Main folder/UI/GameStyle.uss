@@ -339,17 +339,31 @@
 
 /* Konkretne ikony */
 .icon-gold {
-    background-image: url('project://database/Assets/Path/To/Your/gold_icon.png');
+    background-image: url('project://database/Assets/Main folder/Icons/Resources/Gold.tif');
 }
 
 .icon-wood {
-    background-image: url('project://database/Assets/Path/To/Your/wood_icon.png');
+    background-image: url('project://database/Assets/Main folder/Icons/Resources/Wood.tif');
+
+}
+
+.icon-stone {
+    background-image: url('project://database/Assets/Main folder/Icons/Resources/Stone.tif');
 }
 
 .icon-iron {
-    background-image: url('project://database/Assets/Main folder/Icons/Resources/Coal icon.png');
+    background-image: url('project://database/Assets/Main folder/Icons/Resources/Iron.tif');
 }
 
 .icon-coal {
     background-image: url('project://database/Assets/Main folder/Icons/Resources/Coal.tif');
 }
+
+.icon-food {
+    background-image: url('project://database/Assets/Main folder/Icons/Resources/Food.tif');
+}
+
+.icon-artifact {
+    background-image: url('project://database/Assets/Main folder/Icons/Resources/Coal.tif');
+}
+

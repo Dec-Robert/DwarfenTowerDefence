@@ -16,7 +16,7 @@ MonoBehaviour:
   upgradeName: Hidden plains III
   description: "Startowy teren jest powi\u0119kszony o jeden chunk."
   icon: {fileID: 21300000, guid: a65a6e5b462c3ea4680b2da4cf9e1fed, type: 3}
-  cost: 1
+  cost: 1200
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}

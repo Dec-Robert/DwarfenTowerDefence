@@ -23,6 +23,37 @@
                 </ui:VisualElement>
                 <ui:Label text="Węgiel jest pobierany automatycznie o świcie." style="color: rgb(170, 170, 170); font-size: 9px; margin-top: 5px; white-space: normal; -unity-text-align: middle-center;" />
             </ui:VisualElement>
+
+            <ui:VisualElement name="HousingSection" style="display: none; background-color: rgba(0, 40, 0, 0.3); padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                <ui:Label text="STATYSTYKI MIESZKALNE" style="color: #44FF44; -unity-font-style: bold; margin-bottom: 5px; -unity-text-align: middle-center;" />
+
+                <!-- Pasek Progresu Narodzin -->
+                <ui:VisualElement style="margin-bottom: 10px;">
+                    <ui:Label text="Postęp narodzin:" style="color: #DDD; font-size: 10px;" />
+                    <ui:VisualElement name="BirthBarContainer" style="height: 12px; background-color: #222; border-radius: 4px; overflow: hidden; border-width: 1px; border-color: #444;">
+                        <ui:VisualElement name="BirthBarFill" style="width: 0%; height: 100%; background-color: #4CAF50;" />
+                    </ui:VisualElement>
+                    <ui:Label name="Lbl_BirthDays" text="Pozostało: 2 dni" style="color: #AAA; font-size: 9px; -unity-text-align: middle-right;" />
+                </ui:VisualElement>
+
+                <!-- Kapsułki Zakwaterowania -->
+                <ui:Label text="Mieszkańcy:" style="color: #DDD; font-size: 10px; margin-bottom: 2px;" />
+                <ui:VisualElement name="ResidentCapsules" style="flex-direction: row; justify-content: center; margin-bottom: 10px;" />
+
+                <!-- Szczegółowa Konsumpcja -->
+                <ui:VisualElement style="background-color: rgba(0,0,0,0.2); padding: 5px; border-radius: 3px;">
+                    <ui:Label name="Lbl_HouseBase" text="Koszt bazowy: 1 Food" style="color: #CCC; font-size: 10px;" />
+                    <ui:Label name="Lbl_HouseMaintenance" text="Utrzymanie: 0.5 Food" style="color: #CCC; font-size: 10px;" />
+                    <ui:Label name="Lbl_HouseTotal" text="SUMA (06:00): 1.5 Food" style="color: #FFF; -unity-font-style: bold; font-size: 11px; margin-top: 3px; border-top-width: 1px; border-top-color: #444;" />
+                </ui:VisualElement>
+
+                <!-- Modyfikatory i Status -->
+                <ui:VisualElement style="margin-top: 5px; flex-direction: row; justify-content: space-between;">
+                    <ui:Label name="Lbl_GrowthMod" text="Mod: +10%" style="color: #FFFF44; font-size: 10px;" />
+                    <ui:Label name="Lbl_HouseStatus" text="Status: Rosnący" style="color: #44FF44; font-size: 10px; -unity-font-style: italic;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
             <ui:VisualElement name="StatsContainer" style="display: none;">
                 <ui:Label name="Lbl_Production" text="Produkcja..." style="color: rgb(136, 255, 136); font-size: 11px; white-space: normal;" />
                 <ui:Label name="Lbl_Upkeep" text="Utrzymanie..." style="color: rgb(255, 136, 136); font-size: 11px; white-space: normal;" />

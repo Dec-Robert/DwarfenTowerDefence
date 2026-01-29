@@ -3,34 +3,42 @@
     <Style src="project://database/Assets/Main%20folder/UI/GameStyle.uss?fileID=7433441132597879392&amp;guid=fbb7a55e69984804cb377c49a28dc3f7&amp;type=3#GameStyle" />
     <ui:VisualElement name="Root" picking-mode="Ignore" class="root-container">
         <ui:VisualElement name="TopBar" class="top-bar">
+
             <ui:VisualElement name="HP_Group" class="resource-item">
                 <ui:VisualElement class="resource-icon" style="background-color: rgb(255, 0, 0);" />
                 <ui:Label text="20" name="Label_HP" class="resource-text" />
             </ui:VisualElement>
+
             <ui:VisualElement name="Gold_Group" class="resource-item">
-                <ui:VisualElement class="resource-icon" style="background-color: rgb(255, 215, 0);" />
+                <ui:VisualElement class="resource-icon icon-gold"/>
                 <ui:Label text="100" name="Label_Gold" class="resource-text" />
             </ui:VisualElement>
+
             <ui:VisualElement name="Wood_Group" class="resource-item">
-                <ui:VisualElement class="resource-icon" style="background-color: rgb(139, 69, 19);" />
+                <ui:VisualElement class="resource-icon icon-wood"/>
                 <ui:Label text="50" name="Label_Wood" class="resource-text" />
             </ui:VisualElement>
+
             <ui:VisualElement name="Stone_Group" class="resource-item">
-                <ui:VisualElement class="resource-icon" style="background-color: rgb(128, 128, 128);" />
+                <ui:VisualElement class="resource-icon icon-stone"/>
                 <ui:Label text="0" name="Label_Stone" class="resource-text" />
             </ui:VisualElement>
+
             <ui:VisualElement name="Food_Group" class="resource-item">
-                <ui:VisualElement class="resource-icon" style="background-color: rgb(50, 205, 50);" />
+                <ui:VisualElement class="resource-icon icon-food"/>
                 <ui:Label text="20" name="Label_Food" class="resource-text" />
             </ui:VisualElement>
+
             <ui:VisualElement name="Coal_Group" class="resource-item">
                 <ui:VisualElement class="resource-icon icon-coal" />
                 <ui:Label text="0" name="Label_Coal" class="resource-text" />
             </ui:VisualElement>
+
             <ui:VisualElement name="Iron_Group" class="resource-item">
                 <ui:VisualElement class="resource-icon icon-iron" />
                 <ui:Label text="0" name="Label_Iron" class="resource-text" />
             </ui:VisualElement>
+
             <ui:Label text="Dzień 1 | 06:00" name="Label_Time" class="resource-text time-text" style="color: rgb(68, 255, 68); -unity-font-style: bold; font-size: 20px; margin-left: 50px;" />
             <ui:VisualElement name="Pop_Group" class="resource-item" style="height: 36px; width: 202px;">
                 <ui:VisualElement class="resource-icon" style="background-color: rgb(0, 191, 255);" />
@@ -49,7 +57,9 @@
                 <ui:VisualElement name="Segment_7" class="beacon-segment" />
                 <ui:VisualElement name="Segment_8" class="beacon-segment" />
             </ui:VisualElement>
-            <ui:Label name="Lbl_FuelInfo" text="Paliwo: 60/100" style="color: rgb(170, 170, 170); font-size: 10px; margin-top: 2px;" />
+            <ui:VisualElement name="SegmentsBackground" class="beacon-bar-bg">
+                <ui:Label name="Lbl_FuelInfo" text="Paliwo: 60/100" style="color: rgb(170, 170, 170); font-size: 10px; margin-top: 2px;" />
+            </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="BottomContainer" class="bottom-container">
             <ui:VisualElement name="CenterPanel" style="flex-grow: 1; align-items: flex-end; justify-content: flex-start; flex-direction: row; margin-bottom: 5px;">

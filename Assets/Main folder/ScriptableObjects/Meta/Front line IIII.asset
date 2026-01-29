@@ -17,7 +17,7 @@ MonoBehaviour:
   description: "Bramy pomocnicze mog\u0105 zosta\u0107 ustawione na przepuszczanie
     konkretnego typu przeciwnik\xF3w(normalnych/elitarnych/bos\xF3w)\r\n"
   icon: {fileID: 21300000, guid: be6c839a82e53b6479fc40a0b60ca912, type: 3}
-  cost: 1
+  cost: 5000
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: b17ef3f98dcc7be44b5f07674e04ce71, type: 2}

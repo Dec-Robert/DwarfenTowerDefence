@@ -175,6 +175,11 @@ public class EnemyStats : MonoBehaviour
             // ResourceManager.Instance.AddResource(ResourceType.Gold, 5); 
         }
 
+        if (ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.AddResource(ResourceType.Artifacts, 1);
+        }
+
         // Powiadom skille o œmierci (np. Wybuch po œmierci)
         foreach (var skill in skills) skill.OnDeath();
 

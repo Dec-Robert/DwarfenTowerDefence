@@ -175,24 +175,22 @@ public class BuildingEntity : MonoBehaviour
         if (newWorker != null)
         {
             assignedCitizens.Add(newWorker);
-            // newWorker.AssignToWorkplace(this); <- To robi manager, ale dla pewnoœci nie szkodzi
+            newWorker.AssignToWorkplace(this);
 
-            BuildingCitizenUI.Instance.Refresh(this);
+            // --- POPRAWKA: U¿ywamy nowego UI Building Inspector ---
+            if (UIBuildingInspector.Instance != null)
+            {
+                UIBuildingInspector.Instance.RefreshContent();
+            }
             return true;
         }
 
-        // Refresh na wypadek gdyby coœ siê nie odœwie¿y³o
-        BuildingCitizenUI.Instance.Refresh(this);
         return false;
     }
 
     public virtual void RemoveWorker(Race race)
     {
-        // ZMODYFIKOWANE: Szukamy pracownika, który NIE jest zablokowany (Working).
-        // Assigned (zielony) -> mo¿na usun¹æ.
-        // Exhausted (czerwony) -> mo¿na usun¹æ (bo ju¿ po pracy).
-        // Working (czarny) -> NIE mo¿na usun¹æ (jest w trakcie zmiany).
-
+        // Szukamy kogoœ kto nie pracuje (nie jest zablokowany zmian¹)
         Citizen workerToRemove = assignedCitizens.Find(c => c.race == race && c.workState != WorkState.Working);
 
         if (workerToRemove != null)
@@ -201,17 +199,15 @@ public class BuildingEntity : MonoBehaviour
             assignedCitizens.Remove(workerToRemove);
             Debug.Log($"Zwolniono pracownika rasy {race}");
 
-            BuildingCitizenUI.Instance.Refresh(this);
+            // --- POPRAWKA: U¿ywamy nowego UI Building Inspector ---
+            if (UIBuildingInspector.Instance != null)
+            {
+                UIBuildingInspector.Instance.RefreshContent();
+            }
         }
-
         else
         {
-            // SprawdŸmy czy powodem jest brak ludzi czy to, ¿e wszyscy pracuj¹
-            bool anyoneWorking = assignedCitizens.Exists(c => c.race == race && c.workState == WorkState.Working);
-            if (anyoneWorking)
-                Debug.Log($"Nie mo¿na zwolniæ pracownika {race} - jest w trakcie pracy (Working)!");
-            else
-                Debug.Log($"Brak pracowników rasy {race} w tym budynku.");
+            Debug.Log($"Brak dostêpnych pracowników lub s¹ zablokowani prac¹");
         }
     }
 

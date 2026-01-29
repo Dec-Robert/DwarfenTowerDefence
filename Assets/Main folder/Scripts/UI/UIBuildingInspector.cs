@@ -39,6 +39,10 @@ public class UIBuildingInspector : MonoBehaviour
     private BuildingUpgradeSO selectedUpgrade;
     private List<VisualElement> visualSlots = new List<VisualElement>();
 
+    // Budynki Mieszkalne
+    private VisualElement housingSection, birthBarFill, residentCapsules;
+    private Label lblBirthDays, lblHouseBase, lblHouseMaint, lblHouseTotal, lblGrowthMod, lblHouseStatus;
+
     private void Awake()
     {
         Instance = this;
@@ -95,6 +99,17 @@ public class UIBuildingInspector : MonoBehaviour
         btnConfirmBuy = upgradeDetailsPanel.Q<Button>("Btn_ConfirmBuy");
         btnCancelBuy = upgradeDetailsPanel.Q<Button>("Btn_CancelBuy");
 
+        //Budynki Mieszkalne
+        housingSection = mainInspector.Q<VisualElement>("HousingSection");
+        birthBarFill = mainInspector.Q<VisualElement>("BirthBarFill");
+        residentCapsules = mainInspector.Q<VisualElement>("ResidentCapsules");
+        lblBirthDays = mainInspector.Q<Label>("Lbl_BirthDays");
+        lblHouseBase = mainInspector.Q<Label>("Lbl_HouseBase");
+        lblHouseMaint = mainInspector.Q<Label>("Lbl_HouseMaintenance");
+        lblHouseTotal = mainInspector.Q<Label>("Lbl_HouseTotal");
+        lblGrowthMod = mainInspector.Q<Label>("Lbl_GrowthMod");
+        lblHouseStatus = mainInspector.Q<Label>("Lbl_HouseStatus");
+
         // Eventy
         btnClose.clicked += Hide;
         btnDestroy.clicked += OnDestroyClicked;
@@ -141,78 +156,98 @@ public class UIBuildingInspector : MonoBehaviour
     {
         if (currentTarget == null) return;
 
+        // 1. Ustawienie nazwy i poziomu (Wie¿e i Beacon nie maj¹ wyœwietlanego Tieru w tytule)
         string tierInfo = (currentTarget is TowerEntity || currentTarget is BeaconEntity) ? "" : $"(Tier {currentTarget.currentTier + 1})";
         lblName.text = $"{currentTarget.data.buildingName} {tierInfo}";
 
-        // --- OBS£UGA PRZYCISKU NISZCZENIA ---
+        // 2. Obs³uga przycisku niszczenia (Blokada dla budynków typu Unique oraz Beacona)
         if (btnDestroy != null)
         {
-            // Ukryj przycisk, jeœli to budynek unikalny (Unique) lub Beacon
-            if (currentTarget.data.type == BuildingType.Unique || currentTarget.data.type == BuildingType.Unique || currentTarget is BeaconEntity)
-            {
+            if (currentTarget.data.type == BuildingType.Unique || currentTarget is BeaconEntity)
                 btnDestroy.style.display = DisplayStyle.None;
-            }
             else
-            {
                 btnDestroy.style.display = DisplayStyle.Flex;
-            }
         }
-        // ------------------------------------
 
-        // Reset widocznoœci sekcji
+        // 3. Reset widocznoœci wszystkich sekcji
         if (statsContainer != null) statsContainer.style.display = DisplayStyle.None;
         if (combatStatsContainer != null) combatStatsContainer.style.display = DisplayStyle.None;
         if (upgradeSection != null) upgradeSection.style.display = DisplayStyle.None;
         if (beaconControlSection != null) beaconControlSection.style.display = DisplayStyle.None;
+        if (housingSection != null) housingSection.style.display = DisplayStyle.None;
         if (workerSection != null) workerSection.style.display = DisplayStyle.None;
 
-        // --- PRZE£¥CZANIE WIDOKÓW ---
+        // 4. Logika prze³¹czania widoków (Kontekstowa)
 
-        // A. BEACON
+        // A) BEACON OF HOPE (Pasywny - brak pracowników, brak ulepszeñ)
         if (currentTarget is BeaconEntity beacon)
         {
             if (beaconControlSection != null)
             {
                 beaconControlSection.style.display = DisplayStyle.Flex;
-
                 if (coalSlider != null) coalSlider.SetValueWithoutNotify(beacon.dailyCoalInput);
                 if (lblCoalVal != null) lblCoalVal.text = beacon.dailyCoalInput.ToString();
             }
-            return;
+            return; // Koñczymy, nie pokazujemy sekcji pracowników ani ulepszeñ
         }
 
-        // B. RESZTA (Poka¿ pracowników)
+        // B) DOMY / HOUSING (Pasywny - brak pracowników, ale POSIADA ulepszenia)
+        if (currentTarget is HousingEntity house)
+        {
+            if (housingSection != null)
+            {
+                housingSection.style.display = DisplayStyle.Flex;
+                UpdateHousingUI(house);
+            }
+
+            if (upgradeSection != null)
+            {
+                upgradeSection.style.display = DisplayStyle.Flex;
+                GenerateUpgradesList(); // Pozwalamy na ulepszanie pojemnoœci domu itp.
+            }
+            return; // Koñczymy, domy nie potrzebuj¹ pracowników
+        }
+
+        // --- DLA POZOSTA£YCH BUDYNKÓW (WIE¯E I EKONOMIA) W£¥CZAMY PRACOWNIKÓW ---
         if (workerSection != null) workerSection.style.display = DisplayStyle.Flex;
 
+        // C) WIE¯A OBRONNA
         if (currentTarget is TowerEntity tower)
         {
-            // C. WIE¯A
             if (combatStatsContainer != null)
             {
                 combatStatsContainer.style.display = DisplayStyle.Flex;
                 UpdateCombatStatsUI(tower);
             }
+            // Zgodnie z wczeœniejszym ustaleniem, wie¿e nie maj¹ menu ulepszeñ budynków
         }
+        // D) BUDYNEK EKONOMICZNY (Tartak, Kopalnia itd.)
         else
         {
-            // D. BUDYNEK EKONOMICZNY
             if (statsContainer != null) statsContainer.style.display = DisplayStyle.Flex;
-            if (upgradeSection != null) upgradeSection.style.display = DisplayStyle.Flex;
+            if (upgradeSection != null)
+            {
+                upgradeSection.style.display = DisplayStyle.Flex;
+                GenerateUpgradesList();
+            }
 
             lblProd.text = "Produkcja: " + FormatResourcesWithHourly(currentTarget.GetCurrentProduction(), currentTarget.shiftLength);
             lblUpkeep.text = "Utrzymanie: " + FormatResourcesWithHourly(currentTarget.GetCurrentUpkeep(), currentTarget.shiftLength);
-
-            GenerateUpgradesList();
         }
 
-        // Pracownicy
-        int h = currentTarget.GetWorkerCount(Race.Humans);
-        int e = currentTarget.GetWorkerCount(Race.Elves);
-        int d = currentTarget.GetWorkerCount(Race.Dwarves);
-        lblWorkerCounts.text = $"H: {h} | E: {e} | D: {d}";
+        // 5. Wspólna sekcja pracowników (widoczna tylko dla Wie¿ i Ekonomii)
+        if (lblWorkerCounts != null)
+        {
+            int h = currentTarget.GetWorkerCount(Race.Humans);
+            int e = currentTarget.GetWorkerCount(Race.Elves);
+            int d = currentTarget.GetWorkerCount(Race.Dwarves);
+            lblWorkerCounts.text = $"H: {h} | E: {e} | D: {d}";
+        }
 
         GenerateShiftSlots();
     }
+
+
 
     // --- BEACON ---
     void OnCoalSliderChanged(int newValue)
@@ -271,6 +306,43 @@ public class UIBuildingInspector : MonoBehaviour
         UpdateSlotColors();
     }
 
+    void UpdateHousingUI(HousingEntity house)
+    {
+        // 1. Pasek progresu
+        float progress = house.GetGrowthProgress();
+        birthBarFill.style.width = Length.Percent(progress * 100f);
+        lblBirthDays.text = $"Nastêpne narodziny za: {house.GetDaysRemaining()} dni";
+
+        // 2. Kapsu³ki mieszkañców
+        residentCapsules.Clear();
+        int max = house.housingData.maxResidents;
+        int current = house.residents.Count;
+
+        for (int i = 0; i < max; i++)
+        {
+            VisualElement cap = new VisualElement();
+            cap.AddToClassList("res-capsule");
+            cap.AddToClassList(i < current ? "res-capsule-occupied" : "res-capsule-empty");
+            residentCapsules.Add(cap);
+        }
+
+        // 3. Konsumpcja
+        // Pobieramy dane bezpoœrednio z SO dla bazy
+        float baseVal = 0;
+        if (house.housingData.baseDailyUpkeep.Count > 0) baseVal = house.housingData.baseDailyUpkeep[0].amount;
+
+        lblHouseBase.text = $"Koszt bazy: {baseVal} Food";
+        lblHouseMaint.text = $"Mieszkañcy: {house.GetProjectedUpkeep() - baseVal:F1} Food";
+        lblHouseTotal.text = $"SUMA (06:00): {house.GetProjectedUpkeep():F1} Food";
+
+        // 4. Modyfikatory (np. z Beacona)
+        float mod = 0; // Tu w przysz³oœci dodasz BeaconEntity.Instance.GetGrowthMod();
+        lblGrowthMod.text = $"Modyfikatory: {mod:+0;-0}%";
+
+        // 5. Status
+        lblHouseStatus.text = $"Status: {house.GetGrowthStatus()}";
+        lblHouseStatus.style.color = house.GetGrowthStatus() == "ROSN¥CY" ? Color.green : Color.red;
+    }
     void UpdateSlotColors()
     {
         if (currentTarget == null) return;

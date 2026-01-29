@@ -54,6 +54,12 @@ public class MainMenuController : MonoBehaviour
 
         // Na start poka¿ g³ówne
         SwitchMenu(menuMain);
+
+        if (SaveManager.Instance != null)
+        {
+            playerArtifacts = SaveManager.Instance.currentSaveData.totalArtifacts;
+            SaveManager.Instance.SyncUpgradesWithSave(allMetaUpgrades);
+        }
     }
 
     void SwitchMenu(VisualElement targetMenu)
@@ -202,8 +208,18 @@ public class MainMenuController : MonoBehaviour
         if (playerArtifacts >= upgrade.cost)
         {
             playerArtifacts -= upgrade.cost;
-            upgrade.isUnlocked = true; // Zapiszemy to tylko w sesji, w prawdziwej grze tutaj SaveSystem.Save()
-            RefreshProgressionUI(); // Odœwie¿ widok
+            upgrade.isUnlocked = true;
+
+            // --- AKTUALIZACJA ZAPISU ---
+            SaveManager.Instance.currentSaveData.totalArtifacts = playerArtifacts;
+            if (!SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Contains(upgrade.id))
+            {
+                SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Add(upgrade.id);
+            }
+            SaveManager.Instance.SaveGame(); // Zapisz od razu po zakupie
+                                             // ---------------------------
+
+            RefreshProgressionUI();
         }
     }
 }

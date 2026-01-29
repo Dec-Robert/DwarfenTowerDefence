@@ -3,28 +3,29 @@ using UnityEngine;
 [RequireComponent(typeof(TowerEntity))]
 public class TowerController : MonoBehaviour
 {
-    [Header("Wizualizacja Zasiêgu")]
-    public GameObject rangeIndicatorPrefab; // Ten sam prefab co w InteractionManager
-    private GameObject rangeIndicatorInstance;
-
     [Header("Konfiguracja")]
     public TowerData towerData;
     public Transform firePoint;
-
-    // NOWE: Referencja do czêœci wie¿y, która ma siê obracaæ (np. lufa/g³owica)
-    [Tooltip("Obiekt, który bêdzie obracaæ siê w stronê wroga (np. góra wie¿y)")]
     public Transform partToRotate;
-    public float turnSpeed = 10f; // Prêdkoœæ obracania
+    public float turnSpeed = 10f;
+
+    [Header("Ustawienia Celowania")]
+    [Tooltip("Dopuszczalny b³¹d k¹ta (w stopniach).")]
+    public float shootAngleMargin = 10f;
+
+    [Header("Wizualizacja Zasiêgu")]
+    public GameObject rangeIndicatorPrefab;
+    private GameObject rangeIndicatorInstance;
 
     [Header("Status (Read Only)")]
     [SerializeField] private bool canShoot = false;
     [SerializeField] private float currentRange;
     [SerializeField] private float currentDamage;
     [SerializeField] private float currentFireRate;
+    [SerializeField] private bool isAimed = false;
 
     private Transform target;
     private float fireCountdown = 0f;
-
     private TowerEntity towerEntity;
 
     void Start()
@@ -51,7 +52,7 @@ public class TowerController : MonoBehaviour
             currentDamage = towerData.baseDamage * damageMod * efficiency;
             currentFireRate = towerData.fireRate * fireRateMod * efficiency;
 
-            // AKTUALIZACJA WIZUALNA (jeœli wskaŸnik jest w³¹czony)
+            // Aktualizacja wizualizacji zasiêgu (skalowanie w czasie rzeczywistym)
             if (rangeIndicatorInstance != null && rangeIndicatorInstance.activeSelf)
             {
                 float scale = currentRange * 2f;
@@ -60,13 +61,36 @@ public class TowerController : MonoBehaviour
         }
     }
 
+    // --- METODA PRZYWRÓCONA: POKAZYWANIE ZASIÊGU ---
+    public void ShowRangeIndicator(bool show)
+    {
+        if (show)
+        {
+            if (rangeIndicatorInstance == null && rangeIndicatorPrefab != null)
+            {
+                rangeIndicatorInstance = Instantiate(rangeIndicatorPrefab, transform);
+                rangeIndicatorInstance.transform.localPosition = new Vector3(0, 0.15f, 0);
+            }
+
+            if (rangeIndicatorInstance != null)
+            {
+                rangeIndicatorInstance.SetActive(true);
+                float scale = currentRange * 2f;
+                rangeIndicatorInstance.transform.localScale = new Vector3(scale, 1f, scale);
+            }
+        }
+        else
+        {
+            if (rangeIndicatorInstance != null)
+            {
+                rangeIndicatorInstance.SetActive(false);
+            }
+        }
+    }
+
     void UpdateTarget()
     {
-        if (!canShoot)
-        {
-            target = null;
-            return;
-        }
+        if (!canShoot) { target = null; return; }
 
         EnemyStats[] enemies = FindObjectsOfType<EnemyStats>();
         float shortestDistance = Mathf.Infinity;
@@ -83,85 +107,58 @@ public class TowerController : MonoBehaviour
         }
 
         if (nearestEnemy != null && shortestDistance <= currentRange)
-        {
             target = nearestEnemy.transform;
-        }
         else
-        {
             target = null;
-        }
     }
 
     void Update()
     {
-        // Jeœli nieaktywna -> nic nie rób
-        if (!canShoot) return;
-
-        // Jeœli mamy cel -> obracaj g³owicê wie¿y
-        if (target != null)
+        if (!canShoot || target == null)
         {
-            LockOnTarget();
+            isAimed = false;
+            return;
         }
 
-        // Logika strza³u
-        if (target != null && fireCountdown <= 0f)
-        {
-            Shoot();
-            if (currentFireRate > 0)
-                fireCountdown = 1f / currentFireRate;
-            else
-                fireCountdown = 999f;
-        }
+        // 1. Obracanie
+        LockOnTarget();
 
+        // 2. Sprawdzanie k¹ta
+        CheckIfAimed();
+
+        // 3. Strzelanie
+        if (fireCountdown <= 0f)
+        {
+            if (isAimed)
+            {
+                Shoot();
+                if (currentFireRate > 0)
+                    fireCountdown = 1f / currentFireRate;
+            }
+        }
         fireCountdown -= Time.deltaTime;
     }
 
-    // NOWA METODA: Obracanie wie¿y
     void LockOnTarget()
     {
         if (partToRotate == null) return;
-
-        // Wyliczamy kierunek do celu
         Vector3 dir = target.position - transform.position;
-
-        // Tworzymy rotacjê (interesuje nas g³ównie obrót wokó³ osi Y)
-        Quaternion lookRotation = Quaternion.LookRotation(dir);
-
-        // P³ynne przejœcie (Lerp/Slerp) do celu. 
-        // Nawet przy du¿ym smoothing wie¿a "zd¹¿y" przed strza³em, bo UpdateTarget 
-        // reaguje natychmiast na zmianê celu.
-        Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRotation, Time.deltaTime * turnSpeed).eulerAngles;
-
-        // Zastosowanie rotacji (blokujemy X i Z, ¿eby wie¿a nie "buja³a siê" góra-dó³, 
-        // chyba ¿e modele tego wymagaj¹ - wtedy usuñ .y i przeka¿ ca³e rotation)
-        partToRotate.rotation = Quaternion.Euler(0f, rotation.y, 0f);
+        // Zabezpieczenie przed zerowym wektorem
+        if (dir != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(dir);
+            Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRotation, Time.deltaTime * turnSpeed).eulerAngles;
+            partToRotate.rotation = Quaternion.Euler(0f, rotation.y, 0f);
+        }
     }
 
-    public void ShowRangeIndicator(bool show)
+    void CheckIfAimed()
     {
-        if (show)
-        {
-            if (rangeIndicatorInstance == null && rangeIndicatorPrefab != null)
-            {
-                rangeIndicatorInstance = Instantiate(rangeIndicatorPrefab, transform);
-                rangeIndicatorInstance.transform.localPosition = new Vector3(0, 0.15f, 0); // Lekko nad ziemi¹
-            }
-
-            if (rangeIndicatorInstance != null)
-            {
-                rangeIndicatorInstance.SetActive(true);
-                // Skalujemy na podstawie AKTUALNEGO zasiêgu (currentRange)
-                float scale = currentRange * 2f;
-                rangeIndicatorInstance.transform.localScale = new Vector3(scale, 1f, scale);
-            }
-        }
-        else
-        {
-            if (rangeIndicatorInstance != null)
-            {
-                rangeIndicatorInstance.SetActive(false);
-            }
-        }
+        if (partToRotate == null || target == null) return;
+        Vector3 directionToTarget = (target.position - transform.position).normalized;
+        directionToTarget.y = 0;
+        float angle = Vector3.Angle(partToRotate.forward, directionToTarget);
+        isAimed = angle <= shootAngleMargin;
     }
 
     void Shoot()
@@ -171,23 +168,18 @@ public class TowerController : MonoBehaviour
 
         Vector3 spawnPos = (firePoint != null) ? firePoint.position : transform.position;
 
-        // Pocisk spawnuje siê z rotacj¹ lufy (kluczowe dla LinearProjectile!)
-        GameObject bulletGO = Instantiate(tData.bulletPrefab, spawnPos, firePoint != null ? firePoint.rotation : transform.rotation);
+        // Strza³ w kierunku lufy (firePoint) lub obracanej czêœci
+        Quaternion spawnRot = firePoint != null ? firePoint.rotation : partToRotate.rotation;
 
-        // Pobieramy komponent bazowy
+        GameObject bulletGO = Instantiate(tData.bulletPrefab, spawnPos, spawnRot);
+
         ProjectileBase projectile = bulletGO.GetComponent<ProjectileBase>();
-
         if (projectile != null)
         {
-            // 1. Inicjalizujemy wspólne dane (Dmg, Typ, Efekty)
             projectile.Initialize(currentDamage, tData.damageType, tData.effects);
 
-            // 2. Jeœli to pocisk naprowadzany (SimpleBullet), podajemy mu cel
-            if (projectile is SimpleBullet simple)
-            {
-                simple.Seek(target);
-            }
-            // Jeœli to LinearProjectile, nie robimy nic wiêcej – on leci sam w kierunku rotacji lufy
+            // Jeœli to zwyk³y pocisk, dajemy mu cel. Liniowy poleci sam przed siebie.
+            if (projectile is SimpleBullet simple) simple.Seek(target);
         }
 
         if (towerEntity != null) towerEntity.RegisterShot();
@@ -197,6 +189,15 @@ public class TowerController : MonoBehaviour
     {
         Gizmos.color = canShoot ? Color.cyan : Color.red;
         Gizmos.DrawWireSphere(transform.position, currentRange > 0 ? currentRange : (towerData ? towerData.baseRange : 0));
+
+        // Debug promienia strza³u
+        if (partToRotate != null)
+        {
+            Gizmos.color = Color.yellow;
+            Vector3 forward = partToRotate.forward * 3f;
+            Gizmos.DrawRay(partToRotate.position, Quaternion.AngleAxis(-shootAngleMargin, Vector3.up) * forward);
+            Gizmos.DrawRay(partToRotate.position, Quaternion.AngleAxis(shootAngleMargin, Vector3.up) * forward);
+        }
     }
 
     public float GetCurrentDamage() => currentDamage;

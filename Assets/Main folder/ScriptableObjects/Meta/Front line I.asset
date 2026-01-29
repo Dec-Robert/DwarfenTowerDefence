@@ -14,14 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 3
   upgradeName: Front line I
-  description: "-na zako\u0144czeniu ka\u017Cdej drogi pojawia si\u0119 brama kt\xF3ra
-    posiada (zale\u017Cniue od ilo\u015B\u0107i widocznych \u015Bcie\u017Cek 20,10,8,5)
-    (przeciwnik bo uderzeniu w bram\u0119 umiera i wykorzystuje 1hp, przeciwnicy
-    elitarni trac\u0105 (hp bramy*20%)hp i wykorzystuj\u0105 tyle hp bramy ile jest
-    potrzebne \u017Ceby go zabi\u0107 (przeciwnik z 30%hp zniszczy 2hp bramy pomocniczej),
-    a bossowie (5%*hp bramy))\r\n"
+  description: "Zwi\u0119ksza \u017Cycie bramy o 10 dodatkowo na zako\u0144czeniu
+    ka\u017Cdej drogi pojawia si\u0119 brama kt\xF3ra posiada (zale\u017Cniue od
+    ilo\u015B\u0107i widocznych \u015Bcie\u017Cek 20,10,8,5) (przeciwnik bo uderzeniu
+    w bram\u0119 umiera i wykorzystuje 1hp, przeciwnicy elitarni trac\u0105 (hp bramy*20%)hp
+    i wykorzystuj\u0105 tyle hp bramy ile jest potrzebne \u017Ceby go zabi\u0107
+    (przeciwnik z 30%hp zniszczy 2hp bramy pomocniczej), a bossowie (5%*hp bramy))\r\n"
   icon: {fileID: 21300000, guid: be6c839a82e53b6479fc40a0b60ca912, type: 3}
-  cost: 1
-  isUnlocked: 0
+  cost: 800
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 3fa944e695acfbb4b8fc81ac67db91c8, type: 2}
+  - {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}

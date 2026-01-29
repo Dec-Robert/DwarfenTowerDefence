@@ -16,7 +16,7 @@ MonoBehaviour:
   upgradeName: Optimized work I
   description: "Zwi\u0119ksz max ilo\u015B\u0107 ludzi na zmiania o 1"
   icon: {fileID: 21300000, guid: 06ba1e3080665284eafb05f814c59ab7, type: 3}
-  cost: 1
-  isUnlocked: 0
+  cost: 500
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}

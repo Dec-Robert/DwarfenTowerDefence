@@ -16,8 +16,8 @@ MonoBehaviour:
   upgradeName: Defence architecture II
   description: "Zwi\u0119ksz hp bramy o 5"
   icon: {fileID: 21300000, guid: 83138ab479ec71d478362992d2aa21a9, type: 3}
-  cost: 1
-  isUnlocked: 0
+  cost: 250
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: de08ea098ed151140bfb063dd378349b, type: 2}
-  - {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
+  - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}

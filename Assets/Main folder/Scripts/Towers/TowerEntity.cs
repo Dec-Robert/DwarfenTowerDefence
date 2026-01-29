@@ -185,13 +185,14 @@ public class TowerEntity : BuildingEntity
 
     public override bool TryAddWorker(Race race)
     {
-        // 1. Wykonaj standardow¹ logikê (przypisanie, szukanie w managerze)
+        // 1. Dodaj pracownika (wywo³a te¿ UI Refresh z klasy bazowej)
         bool success = base.TryAddWorker(race);
 
-        // 2. Jeœli siê uda³o, NATYCHMIAST przelicz statystyki
+        // 2. Jeœli siê uda³o, przelicz statystyki walki
         if (success)
         {
             RecalculateStats();
+            if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
         }
 
         return success;
@@ -199,10 +200,8 @@ public class TowerEntity : BuildingEntity
 
     public override void RemoveWorker(Race race)
     {
-        // 1. Wykonaj standardowe usuwanie
         base.RemoveWorker(race);
-
-        // 2. NATYCHMIAST przelicz statystyki
         RecalculateStats();
+        if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
     }
 }

@@ -168,4 +168,34 @@ public class HousingEntity : BuildingEntity
         if (upkeepBuffer.ContainsKey(type)) upkeepBuffer[type] += amount;
         else upkeepBuffer.Add(type, amount);
     }
+
+    public float GetGrowthProgress()
+    {
+        if (residents.Count >= housingData.maxResidents) return 1f;
+        // Obliczamy procent na podstawie dni
+        return (float)daysSinceLastGrowth / housingData.daysPerGrowth;
+    }
+
+    public int GetDaysRemaining() => housingData.daysPerGrowth - daysSinceLastGrowth;
+
+    // Metoda obliczaj¹ca prognozowany koszt na jutro 06:00
+    public float GetProjectedUpkeep()
+    {
+        float total = 0;
+        foreach (var cost in housingData.baseDailyUpkeep) total += cost.amount;
+        foreach (var cost in housingData.upkeepPerResident) total += cost.amount * residents.Count;
+        return total;
+    }
+
+    public string GetGrowthStatus()
+    {
+        if (residents.Count >= housingData.maxResidents) return "DOM PE£NY";
+
+        // Mo¿emy sprawdziæ czy gracz ma jedzenie
+        bool hasFood = true;
+        foreach (var cost in housingData.baseDailyUpkeep)
+            if (!ResourceManager.Instance.CanAfford(cost.type, 1)) hasFood = false;
+
+        return hasFood ? "ROSN¥CY" : "BRAK ¯YWNOŒCI";
+    }
 }
