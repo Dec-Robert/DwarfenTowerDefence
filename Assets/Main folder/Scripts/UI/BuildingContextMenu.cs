@@ -173,7 +173,7 @@ public class BuildingContextMenu : MonoBehaviour
     {
         if (selectedUpgrade == null || currentTarget == null) return;
 
-        Dictionary<ResourceType, int> costs = new Dictionary<ResourceType, int>();
+        Dictionary<ResourceType, float> costs = new Dictionary<ResourceType, float>();
         foreach (var c in selectedUpgrade.cost) costs.Add(c.type, c.amount);
 
         if (ResourceManager.Instance.SpendResources(costs))
@@ -197,7 +197,7 @@ public class BuildingContextMenu : MonoBehaviour
         }
     }
 
-    string FormatResources(Dictionary<ResourceType, int> resources)
+    string FormatResources(Dictionary<ResourceType, float> resources)
     {
         if (resources.Count == 0) return "-";
         StringBuilder sb = new StringBuilder();

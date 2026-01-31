@@ -16,24 +16,36 @@ MonoBehaviour:
   description: 
   icon: {fileID: 21300000, guid: a65a6e5b462c3ea4680b2da4cf9e1fed, type: 3}
   type: 2
+  workerScalingFactor: 0.25
   allowedTerrain: 060000000300000000000000
   requiresOccupiedSpace: 0
   constructionCost:
   - type: 1
-    amount: 5
+    amount: 6
+  - type: 4
+    amount: 4
   productionPerCycle: []
   upkeepPerCycle:
   - type: 1
     amount: 1
   tier1Upgrades: []
   prefab: {fileID: 805186248796621080, guid: b33da802702c20b4f91f7a220e374f3e, type: 3}
+  baseShifts: 1
+  baseWorkersPerShift: 1
   housingRace: 0
   maxResidents: 5
   initialResidents: 2
-  daysPerGrowth: 1
+  growthDifficultyMultiplier: 2
+  baseGrowthTicks: 1
+  productionPerResident:
+  - type: 0
+    amount: 1
   baseDailyUpkeep:
   - type: 4
-    amount: 1
+    amount: 3
   upkeepPerResident:
   - type: 4
-    amount: 0.2
+    amount: 1
+  growthSurplusCost:
+  - type: 0
+    amount: 4

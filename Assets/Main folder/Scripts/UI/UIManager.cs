@@ -105,8 +105,9 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void UpdateResourceUI(ResourceType type, int amount)
+    private void UpdateResourceUI(ResourceType type, float amount)
     {
+        string txt = amount.ToString("F0");
         switch (type)
         {
             case ResourceType.Gold: if (labelGold != null) labelGold.text = amount.ToString(); break;

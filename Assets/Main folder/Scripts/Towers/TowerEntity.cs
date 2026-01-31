@@ -12,7 +12,7 @@ public class TowerEntity : BuildingEntity
     private bool firedShotsTonight = false; // Czy oddano strza³ w nocy?
 
     // Zmienne do przechowywania kosztu z ostatniej nocy (¿eby wiedzieæ ile zwróciæ)
-    private Dictionary<ResourceType, int> paidUpkeepCache = new Dictionary<ResourceType, int>();
+    private Dictionary<ResourceType, float> paidUpkeepCache = new Dictionary<ResourceType, float>();
 
     // Godziny specjalne dla wie¿
     private const int NIGHT_START_HOUR = 20;
@@ -82,12 +82,12 @@ public class TowerEntity : BuildingEntity
     void TryPayAmmoCost()
     {
         // Pobieramy koszt utrzymania (zdefiniowany w BuildingData jako upkeep)
-        Dictionary<ResourceType, int> upkeepCost = GetCurrentUpkeep();
+        Dictionary<ResourceType, float> upkeepCost = GetCurrentUpkeep();
 
         if (ResourceManager.Instance.SpendResources(upkeepCost))
         {
             hasAmmo = true;
-            paidUpkeepCache = new Dictionary<ResourceType, int>(upkeepCost); // Kopia dla zwrotu
+            paidUpkeepCache = new Dictionary<ResourceType, float>(upkeepCost); // Kopia dla zwrotu
             Debug.Log($"[Tower] {name} za³adowana na noc.");
         }
         else

@@ -143,3 +143,35 @@
 .res-capsule-empty {
     background-color: #333; /* Szary - wolne miejsce */
 }
+
+/* Pasek t³a */
+.budget-bar-bg {
+    height: 14px;
+    background-color: #222;
+    border-radius: 3px;
+    margin-bottom: 4px;
+    border-width: 1px;
+    border-color: #444;
+    justify-content: center; /* ¯eby tekst by³ na œrodku */
+}
+
+/* Wype³nienie paska */
+.budget-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #FFD700; /* Z³oty domyœlnie, mo¿na zmieniaæ kodem */
+    border-radius: 2px;
+}
+
+/* Tekst na pasku (np. "15 / 60 Gold") */
+.budget-bar-text {
+    position: absolute;
+    width: 100%;
+    -unity-text-align: middle-center;
+    color: white;
+    font-size: 9px;
+    -unity-font-style: bold;
+    text-shadow: 1px 1px 0px black;
+}

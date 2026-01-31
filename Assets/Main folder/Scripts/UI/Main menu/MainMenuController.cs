@@ -14,7 +14,7 @@ public class MainMenuController : MonoBehaviour
 
     [Header("Meta Dane")]
     public List<MetaUpgradeSO> allMetaUpgrades;
-    public int playerArtifacts = 10; // Tymczasowa waluta gracza (mock)
+    public float playerArtifacts = 10; // Tymczasowa waluta gracza (mock)
 
     // Cache widoków
     private VisualElement menuMain;

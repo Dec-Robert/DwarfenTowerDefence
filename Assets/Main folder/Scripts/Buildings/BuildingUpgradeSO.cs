@@ -17,6 +17,11 @@ public class BuildingUpgradeSO : ScriptableObject
     public List<BuildingData.ResourceCost> productionBonus;
     public List<BuildingData.ResourceCost> upkeepIncrease;
 
+    // Dodaj te pola do klasy BuildingUpgradeSO:
+    [Header("Bonusy do Miejsc Pracy")]
+    public int extraShifts = 0;          // Np. +1 Zmiana
+    public int extraWorkersPerShift = 0; // Np. +1 Pracownik na zmianê
+
     [Header("Logika Specjalna")]
     // Np. "AUTO_REPLANT" - ID dla skryptu, ¿eby wiedzia³ co robiæ
     public string specialEffectID;

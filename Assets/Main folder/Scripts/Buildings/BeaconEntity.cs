@@ -78,10 +78,10 @@ public class BeaconEntity : BuildingEntity
             else
             {
                 // Jeœli nie staæ na ca³oœæ, pobierz tyle ile jest
-                int availableCoal = ResourceManager.Instance.GetResourceAmount(ResourceType.Coal);
+                float availableCoal = ResourceManager.Instance.GetResourceAmount(ResourceType.Coal);
                 if (availableCoal > 0)
                 {
-                    var partialCost = new Dictionary<ResourceType, int>
+                    var partialCost = new Dictionary<ResourceType, float>
                     {
                         { ResourceType.Coal, availableCoal }
                     };

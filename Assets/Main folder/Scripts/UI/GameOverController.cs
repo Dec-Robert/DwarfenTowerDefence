@@ -67,7 +67,7 @@ public class GameOverController : MonoBehaviour
         // 4. Pokazujemy ekran (Pamiêtaj o Sort Order w Unity!)
         root.style.display = DisplayStyle.Flex;
 
-        int earned = ResourceManager.Instance.GetResourceAmount(ResourceType.Artifacts);
+        float earned = ResourceManager.Instance.GetResourceAmount(ResourceType.Artifacts);
 
         // 2. Dodaj do globalnego banku w SaveManager
         if (SaveManager.Instance != null)

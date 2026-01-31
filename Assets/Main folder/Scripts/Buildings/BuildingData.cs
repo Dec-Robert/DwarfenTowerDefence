@@ -19,8 +19,11 @@ public class BuildingData : ScriptableObject
     public Sprite icon;
     public BuildingType type;
 
+    [Header("Ekonomia Produkcji")]
+    [Tooltip("Ile ka¿dy DODATKOWY pracownik zwiêksza zu¿ycie/produkcjê wzglêdem bazy. 0.25 = 25%")]
+    public float workerScalingFactor = 0.25f;
+
     [Header("Wymagania Terenu")]
-    // Na czym mo¿na to postawiæ? (np. Forest dla Tartaku)
     public List<HexFeatureType> allowedTerrain;
     public bool requiresOccupiedSpace = false; // Czy wymaga np. Lasu (który technicznie zajmuje heks)
 
@@ -30,25 +33,29 @@ public class BuildingData : ScriptableObject
     public List<ResourceCost> upkeepPerCycle;     // Co zu¿ywa (np. Food: 1)
 
     [Header("System Ulepszeñ")]
-    // Lista dostêpnych ulepszeñ na start (Tier 1).
-    // Kolejne tiery wynikaj¹ z tego, co wybierzesz tutaj.
+
     public List<BuildingUpgradeSO> tier1Upgrades;
 
     [Header("Prefab")]
     public GameObject prefab;
 
+    // Dodaj te pola do klasy BuildingData:
+
+    [Header("Pracownicy (Baza)")]
+    public int baseShifts = 1;         // Domyœlnie 1 zmiana
+    public int baseWorkersPerShift = 1; // Domyœlnie 1 pracownik
     // Struktura pomocnicza do edytora
     [System.Serializable]
     public struct ResourceCost
     {
         public ResourceType type;
-        public int amount;
+        public float amount;
     }
 
     // Pomocnicza metoda do konwersji listy na s³ownik (dla ResourceManagera)
-    public Dictionary<ResourceType, int> GetCostDictionary()
+    public Dictionary<ResourceType, float> GetCostDictionary()
     {
-        Dictionary<ResourceType, int> dict = new Dictionary<ResourceType, int>();
+        Dictionary<ResourceType, float> dict = new Dictionary<ResourceType, float>();
         foreach (var cost in constructionCost)
         {
             if (dict.ContainsKey(cost.type)) dict[cost.type] += cost.amount;

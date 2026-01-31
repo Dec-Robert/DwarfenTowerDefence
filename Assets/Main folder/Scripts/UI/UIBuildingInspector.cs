@@ -28,6 +28,9 @@ public class UIBuildingInspector : MonoBehaviour
     private SliderInt coalSlider;
     private Label lblCoalVal;
 
+    private VisualElement budgetSection;
+    private VisualElement budgetContainer;
+
     // Przyciski Pracowników
     private Button btnAddH, btnRemH, btnAddE, btnRemE, btnAddD, btnRemD;
 
@@ -110,6 +113,9 @@ public class UIBuildingInspector : MonoBehaviour
         lblGrowthMod = mainInspector.Q<Label>("Lbl_GrowthMod");
         lblHouseStatus = mainInspector.Q<Label>("Lbl_HouseStatus");
 
+        //Budget
+        budgetSection = mainInspector.Q<VisualElement>("BudgetSection");
+        budgetContainer = mainInspector.Q<VisualElement>("BudgetContainer");
         // Eventy
         btnClose.clicked += Hide;
         btnDestroy.clicked += OnDestroyClicked;
@@ -208,6 +214,8 @@ public class UIBuildingInspector : MonoBehaviour
             return; // Koñczymy, domy nie potrzebuj¹ pracowników
         }
 
+        if (budgetSection != null) budgetSection.style.display = DisplayStyle.None;
+
         // --- DLA POZOSTA£YCH BUDYNKÓW (WIE¯E I EKONOMIA) W£¥CZAMY PRACOWNIKÓW ---
         if (workerSection != null) workerSection.style.display = DisplayStyle.Flex;
 
@@ -225,6 +233,15 @@ public class UIBuildingInspector : MonoBehaviour
         else
         {
             if (statsContainer != null) statsContainer.style.display = DisplayStyle.Flex;
+
+            // --- NOWOŒÆ: GENEROWANIE PASKÓW BUD¯ETU ---
+            if (budgetSection != null)
+            {
+                budgetSection.style.display = DisplayStyle.Flex;
+                UpdateBudgetUI();
+            }
+            // --------------------------------------------
+
             if (upgradeSection != null)
             {
                 upgradeSection.style.display = DisplayStyle.Flex;
@@ -243,6 +260,8 @@ public class UIBuildingInspector : MonoBehaviour
             int d = currentTarget.GetWorkerCount(Race.Dwarves);
             lblWorkerCounts.text = $"H: {h} | E: {e} | D: {d}";
         }
+
+
 
         GenerateShiftSlots();
     }
@@ -436,7 +455,7 @@ public class UIBuildingInspector : MonoBehaviour
     void OnBuyConfirm()
     {
         if (selectedUpgrade == null || currentTarget == null) return;
-        Dictionary<ResourceType, int> costs = new Dictionary<ResourceType, int>();
+        Dictionary<ResourceType, float> costs = new Dictionary<ResourceType, float>();
         foreach (var c in selectedUpgrade.cost) costs.Add(c.type, c.amount);
 
         if (ResourceManager.Instance.SpendResources(costs))
@@ -452,7 +471,7 @@ public class UIBuildingInspector : MonoBehaviour
         if (currentTarget != null) { currentTarget.Demolish(); Hide(); }
     }
 
-    string FormatResourcesWithHourly(Dictionary<ResourceType, int> dict, int shiftLength)
+    string FormatResourcesWithHourly(Dictionary<ResourceType, float> dict, int shiftLength)
     {
         if (dict.Count == 0) return "-";
         StringBuilder sb = new StringBuilder();
@@ -462,5 +481,58 @@ public class UIBuildingInspector : MonoBehaviour
             sb.Append($"{kvp.Value} {kvp.Key} ({hourly:F1}/h)\n");
         }
         return sb.ToString();
+    }
+
+    void UpdateBudgetUI()
+    {
+        if (budgetContainer == null) return;
+        budgetContainer.Clear();
+
+        // 1. Pobieramy aktualny stan baku
+        Dictionary<ResourceType, float> currentBudget = currentTarget.GetCurrentBudget();
+
+        // 2. Pobieramy maksymalny stan (pojemnoœæ)
+        Dictionary<ResourceType, float> maxBudget = currentTarget.CalculateMaxDailyConsumption();
+
+        if (maxBudget.Count == 0)
+        {
+            budgetContainer.Add(new Label("Brak kosztów operacyjnych"));
+            return;
+        }
+
+        foreach (var kvp in maxBudget)
+        {
+            ResourceType type = kvp.Key;
+            float maxVal = kvp.Value;
+            float currentVal = currentBudget.ContainsKey(type) ? currentBudget[type] : 0;
+
+            // Obliczamy procent (0-100)
+            float percent = Mathf.Clamp01(currentVal / maxVal) * 100f;
+
+            // --- TWORZENIE ELEMENTÓW UI ---
+
+            // T³o
+            VisualElement barBg = new VisualElement();
+            barBg.AddToClassList("budget-bar-bg");
+
+            // Wype³nienie
+            VisualElement barFill = new VisualElement();
+            barFill.AddToClassList("budget-bar-fill");
+            barFill.style.width = Length.Percent(percent);
+
+            // Kolor zale¿ny od stanu (Zielony = OK, ¯ó³ty = Œrednio, Czerwony = Krytycznie)
+            if (percent > 50) barFill.style.backgroundColor = new Color(0.2f, 0.8f, 0.2f); // Zielony
+            else if (percent > 20) barFill.style.backgroundColor = new Color(0.9f, 0.8f, 0.1f); // ¯ó³ty
+            else barFill.style.backgroundColor = new Color(0.9f, 0.2f, 0.2f); // Czerwony
+
+            // Tekst
+            Label barText = new Label($"{currentVal:F0} / {maxVal:F0} {type}");
+            barText.AddToClassList("budget-bar-text");
+
+            // Sk³adanie
+            barBg.Add(barFill);
+            barBg.Add(barText);
+            budgetContainer.Add(barBg);
+        }
     }
 }

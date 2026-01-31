@@ -1,44 +1,42 @@
-using System;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using System.Collections.Generic;
+using System;
 
 public class ResourceManager : MonoBehaviour
 {
     public static ResourceManager Instance { get; private set; }
 
-    [SerializeField] private bool DEBUG_MODE=false;
-
-    //Inicjalizacja wartoœci pocz¹tkowych
     [System.Serializable]
     public struct ResourceStartAmount
     {
         public ResourceType type;
-        public int amount;
+        public float amount; // ZMIANA NA FLOAT
     }
     public List<ResourceStartAmount> startingResources;
 
-    private Dictionary<ResourceType, int> resourceBank = new Dictionary<ResourceType, int>();
+    // S³ownik teraz przechowuje float
+    private Dictionary<ResourceType, float> resourceBank = new Dictionary<ResourceType, float>();
 
-    public event Action<ResourceType, int> OnResourceChanged;
-
-
-    private void Update()
-    {
-        //DEBUG
-        if (Input.GetKeyDown(KeyCode.M) && DEBUG_MODE) // M jak Money
-        {
-            AddResource(ResourceType.Gold, 100);
-            AddResource(ResourceType.Wood, 50);
-        }
-    }
+    // Event przesy³a teraz float
+    public event Action<ResourceType, float> OnResourceChanged;
 
     private void Awake()
     {
         if (Instance != null && Instance != this) Destroy(this);
         else Instance = this;
-
         InitializeResources();
+    }
+
+    private void InitializeResources()
+    {
+        foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
+        {
+            resourceBank[type] = 0f;
+        }
+        foreach (var entry in startingResources)
+        {
+            resourceBank[entry.type] = entry.amount;
+        }
     }
 
     private void Start()
@@ -46,63 +44,61 @@ public class ResourceManager : MonoBehaviour
         UpdateAllUI();
     }
 
-
-    private void InitializeResources()
+    public float GetResourceAmount(ResourceType type)
     {
-        foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
-        {
-            resourceBank[type] = 0;
-        }
-
-        foreach (var entry in startingResources)
-        {
-            resourceBank[entry.type] = entry.amount;
-        }
+        return resourceBank.ContainsKey(type) ? resourceBank[type] : 0f;
     }
 
-    public int GetResourceAmount(ResourceType type)
+    public void AddResource(ResourceType type, float amount)
     {
-        if (resourceBank.ContainsKey(type))
-            return resourceBank[type];
-        return 0;
-    }
-
-    public void AddResource(ResourceType type, int amount)
-    {
-        if (amount < 0)
-        {
-            Debug.LogWarning("U¿yj SpendResource do odejmowania!");
-            return;
-        }
-
+        if (amount < 0) return;
         resourceBank[type] += amount;
-
-        // Powiadom UI
         OnResourceChanged?.Invoke(type, resourceBank[type]);
-        Debug.Log($"[Resource] Dodano {amount} {type}. Razem: {resourceBank[type]}");
     }
 
-    public bool SpendResources(Dictionary<ResourceType,int> resourcesToSpend)
+    public bool SpendResource(ResourceType type, float amount)
     {
-        foreach (var resource in resourcesToSpend) 
+        if (resourceBank[type] >= amount)
+        {
+            resourceBank[type] -= amount;
+            OnResourceChanged?.Invoke(type, resourceBank[type]);
+            return true;
+        }
+        return false;
+    }
+
+    // Wersja dla s³ownika (transakcja atomowa)
+    public bool SpendResources(Dictionary<ResourceType, float> resourcesToSpend)
+    {
+        if (resourcesToSpend == null || resourcesToSpend.Count == 0) return true;
+
+        foreach (var resource in resourcesToSpend)
         {
             if (!CanAfford(resource.Key, resource.Value)) return false;
         }
 
         foreach (var resource in resourcesToSpend)
         {
-            resourceBank[resource.Key] = resourceBank[resource.Key] - resource.Value;
+            resourceBank[resource.Key] -= resource.Value;
             OnResourceChanged?.Invoke(resource.Key, resourceBank[resource.Key]);
         }
         return true;
     }
 
-    public bool CanAfford(ResourceType type, int amount)
+    // Przeci¹¿enie dla int (kompatybilnoœæ wsteczna z kodem który u¿ywa int)
+    public bool SpendResources(Dictionary<ResourceType, int> resourcesToSpend)
     {
-        return resourceBank.ContainsKey(type) && resourceBank[type] >= amount;
+        // Konwersja w locie
+        Dictionary<ResourceType, float> floatDict = new Dictionary<ResourceType, float>();
+        foreach (var kvp in resourcesToSpend) floatDict.Add(kvp.Key, (float)kvp.Value);
+        return SpendResources(floatDict);
     }
 
-    // Pomocnicza do odœwie¿enia ca³ego UI na raz
+    public bool CanAfford(ResourceType type, float amount)
+    {
+        return resourceBank.ContainsKey(type) && resourceBank[type] >= amount - 0.001f; // Ma³y margines b³êdu float
+    }
+
     public void UpdateAllUI()
     {
         foreach (var kvp in resourceBank)
@@ -110,5 +106,4 @@ public class ResourceManager : MonoBehaviour
             OnResourceChanged?.Invoke(kvp.Key, kvp.Value);
         }
     }
-
 }

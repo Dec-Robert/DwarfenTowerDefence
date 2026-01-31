@@ -9,15 +9,12 @@ public class HousingEntity : BuildingEntity
     [Header("Status Mieszkañców")]
     public List<Citizen> residents = new List<Citizen>();
 
-    // Liczniki
-    private int daysSinceLastGrowth = 0;
-
-    // Bufor zu¿ycia (bo 0.2 jedzenia * 3 osoby = 0.6, musimy to zbieraæ a¿ uzbiera siê 1.0)
-    private Dictionary<ResourceType, float> upkeepBuffer = new Dictionary<ResourceType, float>();
+    // Postêp wzrostu (punkty/dni)
+    public int currentGrowthProgress = 0;
 
     private void Start()
     {
-        // Subskrypcja tylko do zmiany dnia (jedzenie pobieramy rano)
+        // Domy dzia³aj¹ TYLKO w cyklu dobowym (nie godzinowym)
         if (TimeCycleManager.Instance != null)
         {
             TimeCycleManager.Instance.OnDayChanged += HandleMorningRoutine;
@@ -32,10 +29,9 @@ public class HousingEntity : BuildingEntity
         }
     }
 
-    // Nadpisujemy Initialize, ¿eby dodaæ startow¹ populacjê
     public override void Initialize(BuildingData _data)
     {
-        base.Initialize(_data); // Wywo³aj bazow¹ inicjalizacjê
+        base.Initialize(_data);
 
         if (housingData == null)
         {
@@ -46,139 +42,137 @@ public class HousingEntity : BuildingEntity
         // Spawn startowych mieszkañców
         for (int i = 0; i < housingData.initialResidents; i++)
         {
-            TrySpawnCitizen();
+            if (residents.Count < housingData.maxResidents)
+            {
+                Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
+                residents.Add(newC);
+            }
         }
     }
 
-    // --- LOGIKA PORANNA (KONSUMPCJA + WZROST) ---
+    // --- NADPISANIE LOGIKI GODZINOWEJ ---
+    // Zapobiegamy wywo³aniu logiki zmianowej z BuildingEntity dla domów
+    protected override void HandleHourlyProduction(int currentHour)
+    {
+        // Domy nie maj¹ logiki godzinowej
+    }
+
+    // --- G£ÓWNA LOGIKA PORANNA (06:00) ---
     private void HandleMorningRoutine(int day)
     {
-        // 1. Oblicz ca³kowity koszt utrzymania na dziœ
-        // Koszt = Baza + (IloœæMieszkañców * KosztNaG³owê)
-
-        // S³ownik zapotrzebowania na ten poranek (w Intach, bo ResourceManager to Int)
-        Dictionary<ResourceType, int> resourcesToPay = new Dictionary<ResourceType, int>();
-
-        // A. Dodaj koszty bazowe do bufora
-        if (housingData.baseDailyUpkeep != null)
+        // A. Produkcja Pasywna (Na mieszkañca)
+        if (housingData.productionPerResident != null && housingData.productionPerResident.Count > 0)
         {
-            foreach (var cost in housingData.baseDailyUpkeep)
+            foreach (var prod in housingData.productionPerResident)
             {
-                AddUpkeepToBuffer(cost.type, cost.amount);
-            }
-        }
-
-        // B. Dodaj koszty per capita do bufora
-        if (housingData.upkeepPerResident != null)
-        {
-            foreach (var cost in housingData.upkeepPerResident)
-            {
-                float totalForRes = cost.amount * residents.Count;
-                AddUpkeepToBuffer(cost.type, totalForRes);
-            }
-        }
-
-        // C. Przelicz bufor na inty do zap³aty
-        // Tworzymy kopiê kluczy, ¿eby móc modyfikowaæ s³ownik w pêtli
-        List<ResourceType> keys = new List<ResourceType>(upkeepBuffer.Keys);
-
-        bool canAffordEverything = true;
-
-        foreach (var type in keys)
-        {
-            if (upkeepBuffer[type] >= 1.0f)
-            {
-                int toPay = Mathf.FloorToInt(upkeepBuffer[type]);
-
-                // SprawdŸ czy staæ (bez pobierania)
-                if (!ResourceManager.Instance.CanAfford(type, toPay))
+                float totalAmount = prod.amount * residents.Count;
+                if (totalAmount > 0)
                 {
-                    canAffordEverything = false;
-                    Debug.Log($"<color=red>G³ód w {name}! Brakuje {type}</color>");
-                    // Tutaj mo¿na dodaæ logikê kary (np. ktoœ umiera, brak wzrostu)
-                }
-                else
-                {
-                    // Dodaj do rachunku
-                    if (resourcesToPay.ContainsKey(type)) resourcesToPay[type] += toPay;
-                    else resourcesToPay.Add(type, toPay);
+                    ResourceManager.Instance.AddResource(prod.type, totalAmount);
+                    if (FloatingTextManager.Instance != null)
+                        FloatingTextManager.Instance.ShowGain(transform.position, prod.type.ToString(), Mathf.FloorToInt(totalAmount));
                 }
             }
         }
 
-        // 2. Pobierz op³atê i obs³u¿ Wzrost
-        if (canAffordEverything && resourcesToPay.Count > 0)
+        // B. Utrzymanie (Survival Cost)
+        Dictionary<ResourceType, float> survivalCost = CalculateSurvivalCost();
+        bool survivalPaid = ResourceManager.Instance.SpendResources(survivalCost);
+
+        if (survivalPaid && FloatingTextManager.Instance != null)
         {
-            // P³acimy
-            ResourceManager.Instance.SpendResources(resourcesToPay);
-
-            if (FloatingTextManager.Instance != null)
+            foreach (var cost in survivalCost)
             {
-                foreach (var kvp in resourcesToPay)
-                {
-                    FloatingTextManager.Instance.ShowLoss(transform.position, kvp.Key.ToString(), kvp.Value);
-                }
+                if (cost.Value >= 1.0f)
+                    FloatingTextManager.Instance.ShowLoss(transform.position, cost.Key.ToString(), Mathf.FloorToInt(cost.Value));
             }
-
-            // Odejmujemy zap³acone z bufora
-            foreach (var kvp in resourcesToPay)
-            {
-                upkeepBuffer[kvp.Key] -= kvp.Value;
-            }
-
-            // Sukces -> Próbujemy urosn¹æ
-            ProcessGrowth();
         }
-        else if (canAffordEverything && resourcesToPay.Count == 0)
+
+        // C. Logika Wzrostu
+        if (!survivalPaid)
         {
-            // Nic do zap³acenia (ma³e u³amki), ale warunki spe³nione -> roœniemy
-            ProcessGrowth();
+            Debug.Log($"<color=red>G³ód w {name}! Populacja stagnuje/maleje.</color>");
+            if (currentGrowthProgress > 0) currentGrowthProgress--;
         }
         else
         {
-            // Brak surowców -> Wzrost wstrzymany
-            Debug.Log($"Wzrost w {name} wstrzymany z braku zasobów.");
+            if (residents.Count < housingData.maxResidents)
+            {
+                Dictionary<ResourceType, float> growthCost = CalculateGrowthCost();
+
+                if (ResourceManager.Instance.SpendResources(growthCost))
+                {
+                    currentGrowthProgress++;
+                    CheckForNewResident();
+                }
+            }
         }
+
+        if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
     }
 
-    void ProcessGrowth()
+    void CheckForNewResident()
     {
-        if (residents.Count >= housingData.maxResidents) return;
+        int requiredTicks = CalculateRequiredGrowthTicks();
 
-        daysSinceLastGrowth++;
-
-        if (daysSinceLastGrowth >= housingData.daysPerGrowth)
-        {
-            TrySpawnCitizen();
-            daysSinceLastGrowth = 0;
-        }
-    }
-
-    void TrySpawnCitizen()
-    {
-        if (residents.Count < housingData.maxResidents)
+        if (currentGrowthProgress >= requiredTicks)
         {
             Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
             residents.Add(newC);
+            currentGrowthProgress = 0;
         }
     }
 
-    void AddUpkeepToBuffer(ResourceType type, float amount)
+    // --- MATEMATYKA ---
+
+    public int CalculateRequiredGrowthTicks()
     {
-        if (upkeepBuffer.ContainsKey(type)) upkeepBuffer[type] += amount;
-        else upkeepBuffer.Add(type, amount);
+        float val = housingData.baseGrowthTicks + (residents.Count * housingData.growthDifficultyMultiplier);
+        return Mathf.FloorToInt(val);
     }
 
+    Dictionary<ResourceType, float> CalculateSurvivalCost()
+    {
+        Dictionary<ResourceType, float> total = new Dictionary<ResourceType, float>();
+        foreach (var c in housingData.baseDailyUpkeep) AddToDict(total, c.type, c.amount);
+        foreach (var c in housingData.upkeepPerResident) AddToDict(total, c.type, c.amount * residents.Count);
+        return total;
+    }
+
+    Dictionary<ResourceType, float> CalculateGrowthCost()
+    {
+        Dictionary<ResourceType, float> total = new Dictionary<ResourceType, float>();
+        foreach (var c in housingData.growthSurplusCost) AddToDict(total, c.type, c.amount);
+        return total;
+    }
+
+    void AddToDict(Dictionary<ResourceType, float> d, ResourceType t, float a)
+    {
+        if (d.ContainsKey(t)) d[t] += a; else d.Add(t, a);
+    }
+
+    // --- API DLA UI (NAPRAWIONE) ---
+
+    // Zwraca postêp od 0.0 do 1.0 dla paska
     public float GetGrowthProgress()
     {
         if (residents.Count >= housingData.maxResidents) return 1f;
-        // Obliczamy procent na podstawie dni
-        return (float)daysSinceLastGrowth / housingData.daysPerGrowth;
+
+        int required = CalculateRequiredGrowthTicks();
+        if (required == 0) return 1f; // Zabezpieczenie dzielenia przez zero
+
+        return (float)currentGrowthProgress / required;
     }
 
-    public int GetDaysRemaining() => housingData.daysPerGrowth - daysSinceLastGrowth;
+    // Zwraca ile dni (ticków) zosta³o do narodzin
+    public int GetDaysRemaining()
+    {
+        if (residents.Count >= housingData.maxResidents) return 0;
 
-    // Metoda obliczaj¹ca prognozowany koszt na jutro 06:00
+        int required = CalculateRequiredGrowthTicks();
+        return Mathf.Max(0, required - currentGrowthProgress);
+    }
+
     public float GetProjectedUpkeep()
     {
         float total = 0;
@@ -189,13 +183,14 @@ public class HousingEntity : BuildingEntity
 
     public string GetGrowthStatus()
     {
-        if (residents.Count >= housingData.maxResidents) return "DOM PE£NY";
+        if (residents.Count >= housingData.maxResidents) return "PE£NY";
 
-        // Mo¿emy sprawdziæ czy gracz ma jedzenie
-        bool hasFood = true;
-        foreach (var cost in housingData.baseDailyUpkeep)
-            if (!ResourceManager.Instance.CanAfford(cost.type, 1)) hasFood = false;
+        Dictionary<ResourceType, float> cost = CalculateSurvivalCost();
+        foreach (var kvp in cost)
+        {
+            if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value)) return "BRAK ZASOBÓW";
+        }
 
-        return hasFood ? "ROSN¥CY" : "BRAK ¯YWNOŒCI";
+        return "ROSN¥CY";
     }
 }
