@@ -1,88 +1,78 @@
 /* --- G£ÓWNY KONTENER --- */
 .root-container {
     flex-grow: 1;
-    justify-content: space-between; /* Rozrzuca Top i Bottom na górê i dó³ ekranu */
+    justify-content: space-between;
     padding: 10px;
+    width: 100%;
+    height: 100%;
 }
 
 /* --- PASEK GÓRNY (Surowce) --- */
 .top-bar {
     flex-direction: row;
-    background-color: rgba(30, 30, 30, 0.8); /* Pó³przezroczyste t³o */
+    background-color: rgba(30, 30, 30, 0.8);
     border-radius: 10px;
     padding: 8px;
     align-items: center;
     justify-content: center;
     min-height: 50px;
+    /* NOWOŒÆ: Pozwala elementom spaœæ ni¿ej na ma³ym ekranie */
+    flex-wrap: wrap; 
 }
 
 /* Pojedynczy zasób (Ikona + Tekst) */
 .resource-item {
     flex-direction: row;
     align-items: center;
-    justify-content: flex-start; /* Ikona z lewej, tekst obok */
-    
-    /* STA£E WYMIARY */
-    width: 90px;          /* Sta³a szerokoœæ ka¿dej kapsu³ki */
-    height: 32px;         /* Sta³a wysokoœæ */
-    flex-shrink: 0;       /* Blokuje zwê¿anie siê kapsu³ek przy ma³ym ekranie */
-
-    background-color: rgba(10, 25, 45, 0.85); 
+    justify-content: flex-start;
+    width: auto;
+    min-width: 90px;      /* Zwiêkszone z 80px */
+    height: 40px;         /* Zwiêkszone z 32px (+25%) */
+    flex-shrink: 0;
+    background-color: rgba(10, 25, 45, 0.85);
     border-radius: 6px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.1);
-    
-    padding-left: 6px;
-    padding-right: 6px;
-    margin-left: 4px;
-    margin-right: 4px;
-    
+    padding-left: 10px;   /* Wiêkszy padding */
+    padding-right: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 2px;
     border-bottom-width: 2px;
     border-bottom-color: rgba(0, 0, 0, 0.4);
 }
 
 .resource-icon {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0; /* Ikona nie mo¿e siê œcisn¹æ */
+    width: 24px;          /* Zwiêkszone z 20px */
+    height: 24px;         /* Zwiêkszone z 20px */
+    flex-shrink: 0;
     background-color: rgba(0, 0, 0, 0);
-}
-
-.resource-text {
-    font-size: 15px;
-    color: white;
-    -unity-font-style: bold;
-    margin-left: 4px;
-    flex-grow: 1;      /* Tekst zajmuje resztê miejsca */
-    -unity-text-align: middle-left; /* Wyrównanie do lewej wewn¹trz kapsu³ki */
-}
-
-.resource-icon {
-    width: 24px;
-    height: 24px;
-    background-color: rgba(0, 0, 0, 0); 
-    margin-right: 5px;
+    margin-right: 8px;    /* Wiêkszy odstêp od tekstu */
     border-radius: 4px;
 }
 
 .resource-text {
-    font-size: 18px;
+    font-size: 18px;      /* Zwiêkszone z 15px */
     color: white;
     -unity-font-style: bold;
+    -unity-text-align: middle-left;
+    white-space: nowrap;
 }
 
 /* Specjalny kolor dla czasu */
 .time-text {
     font-size: 20px;
     color: #44FF44;
-    margin-left: 50px; /* Odstêp od surowców */
+    /* Marginesy s¹ teraz obs³ugiwane w UXML, ale to zostaje jako fallback */
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 /* --- PASEK DOLNY (Kontrolki) --- */
 .bottom-container {
     flex-direction: row;
-    justify-content: space-between; /* Wie¿e po lewej/œrodku, Czas po prawej */
     align-items: flex-end;
+    /* Usuwamy justify-content space-between, bo UXML u¿ywa flex-grow */
 }
 
 /* Panel Czasu */
@@ -105,104 +95,126 @@
     border-width: 0;
 }
 
-.time-btn:hover {
-    background-color: #777;
-}
-
-.time-btn:active {
-    background-color: #333;
-}
-
-/* --- MENU WIE¯ (Sta³e) --- */
-.towers-panel {
-    flex-direction: row;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 10px;
-}
-
-.tower-btn {
-    width: 80px;
-    height: 80px;
-    margin-right: 10px;
-    background-color: #4A4A4A;
-    border-width: 2px;
-    border-color: #222;
-    border-radius: 8px;
-    justify-content: flex-end;
-}
-
-.tower-btn:hover {
-    border-color: #FFFF00;
-    scale: 1.05; /* Lekkie powiêkszenie */
-}
-
-.tower-btn-label {
-    color: white;
-    background-color: rgba(0,0,0,0.7);
-    font-size: 12px;
-    -unity-text-align: middle-center;
-    padding: 2px;
-}
+.time-btn:hover { background-color: #777; }
+.time-btn:active { background-color: #333; }
 
 /* --- PRZYCISK OTWIERANIA BUDOWANIA --- */
-.build-menu-btn {
-    width: 100px;
-    height: 40px;
-    background-color: #4CAF50; /* Zielony */
-    color: white;
-    font-size: 16px;
-    -unity-font-style: bold;
-    border-radius: 6px;
-    border-width: 0;
-    margin-bottom: 5px;
-    transition: 0.1s;
-}
+/* (Usun¹³em stary .build-menu-btn jeœli nie u¿ywasz, zostawiam main-build-btn) */
 
-.build-menu-btn:hover {
-    background-color: #66BB6A;
-    scale: 1.05;
-}
-
-.build-menu-btn:active {
+/* G£ÓWNY PRZYCISK BUDOWANIA */
+.main-build-btn {
+    width: 80px;
+    height: 80px;
     background-color: #2E7D32;
-    scale: 0.95;
+    border-radius: 10px;
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: white;
+    margin: 5px; /* Mniejszy margines ¿eby nie marnowaæ miejsca */
+    border-width: 2px;
+    border-color: #4CAF50;
+}
+.main-build-btn:hover { background-color: #4CAF50; scale: 1.05; }
+.main-build-btn:active { background-color: #1B5E20; scale: 0.95; }
+
+/* --- PANEL KATEGORII --- */
+.category-panel {
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 5px;
+    margin-bottom: 5px;
+    height: 60px;
+    align-items: center;
 }
 
-/* Styl dla przycisku "Anuluj" (gdy menu jest otwarte) */
-.build-menu-btn-cancel {
-    background-color: #F44336; /* Czerwony */
-}
-
-/* Styl dynamicznego przycisku budynku w panelu */
-.generated-build-btn {
-    width: 70px;
-    height: 70px;
-    margin: 5px;
-    background-color: #555;
+.category-btn {
+    width: 60px;
+    height: 50px;
+    margin: 0 5px;
+    background-color: #444;
+    color: white;
+    font-size: 10px;
     border-radius: 5px;
+    -unity-text-align: middle-center;
+    white-space: normal; /* ¯eby d³ugie nazwy siê zawija³y */
+}
+.category-btn:hover { background-color: #666; border-color: yellow; border-width: 1px; }
+.category-btn-active { background-color: #FFD700; color: black; }
+
+/* --- PANEL LISTY BUDYNKÓW --- */
+.buildings-list-panel {
+    height: 100px;
+    background-color: rgba(20, 20, 20, 0.95);
+    border-radius: 12px;
+    border-width: 2px;
+    border-color: #444;
+    padding: 10px;
+    
+    /* KLUCZOWA ZMIANA: Usuwamy sztywne width */
+    /* width: 640px;  <-- USUNIÊTE */
+    
+    /* Opcjonalnie: ograniczamy max szerokoœæ na ultra-szerokich ekranach, ¿eby nie krêciæ g³ow¹ */
+    max-width: 1600px; 
+    
+    justify-content: center;
+}
+
+.buildings-scroll-view {
+    height: 100%;
+    width: 100%;
+}
+
+.generated-build-btn {
+    width: 80px;
+    height: 80px;
+    margin: 5px;
+    background-color: #333;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: #555;
     justify-content: flex-end;
     overflow: hidden;
+    flex-shrink: 0; /* Wa¿ne: przyciski nie mog¹ siê œciskaæ */
 }
 
 .generated-build-btn:hover {
-    border-width: 2px;
-    border-color: yellow;
+    border-color: #FFD700;
+    scale: 1.05;
 }
 
-    /* --- TOOLTIP --- */
+/* --- SCROLLBARY --- */
+#unity-vertical-scroller { display: none; width: 0; }
+
+#unity-horizontal-scroller {
+    height: 6px;
+    margin-top: 4px;
+}
+
+#unity-horizontal-scroller #unity-dragger {
+    background-color: #555;
+    border-radius: 3px;
+    height: 6px;
+}
+
+.buildings-container {
+    flex-direction: row;
+    align-items: center;
+}
+
+/* --- TOOLTIPY I MENU --- */
+
 .tooltip-box {
     background-color: rgba(0, 0, 0, 0.9);
     border-width: 1px;
     border-color: #666;
     border-radius: 6px;
     padding: 10px;
-    width: 250px; /* Sta³a szerokoœæ dla czytelnoœci */
-    /* Domyœlnie ukryty w C#, ale tu style */
+    width: 250px;
 }
 
 .tooltip-header {
-    color: #FFD700; /* Z³oty */
+    color: #FFD700;
     font-size: 16px;
     -unity-font-style: bold;
     margin-bottom: 5px;
@@ -213,12 +225,12 @@
 .tooltip-text {
     color: #DDD;
     font-size: 12px;
-    white-space: normal; /* Pozwala na zawijanie tekstu */
+    white-space: normal;
     margin-bottom: 5px;
 }
 
 .tooltip-cost {
-    color: #FFAAAA; /* Lekki czerwony/ró¿owy */
+    color: #FFAAAA;
     font-size: 12px;
     -unity-font-style: bold;
     margin-top: 5px;
@@ -227,12 +239,12 @@
     padding-top: 2px;
 }
 
-    /* --- MENU EKSPANSJI --- */
+/* MENU EKSPANSJI */
 .expansion-panel {
-    position: absolute;
+    /* Pozycjonowanie jest teraz w UXML (absolute center), tu tylko wygl¹d */
     width: 300px;
     background-color: rgba(10, 10, 20, 0.95);
-    border-color: #446688; /* Niebieskawy, tajemniczy */
+    border-color: #446688;
     border-width: 2px;
     border-radius: 8px;
     padding: 15px;
@@ -256,9 +268,8 @@
     margin-bottom: 5px;
 }
 
-/* Przyciski */
 .expansion-btn-buy {
-    background-color: #2E7D32; /* Zielony */
+    background-color: #2E7D32;
     color: white;
     border-radius: 4px;
     flex-grow: 1;
@@ -269,7 +280,7 @@
 .expansion-btn-buy:disabled { background-color: #555; color: #888; }
 
 .expansion-btn-close {
-    background-color: #C62828; /* Czerwony */
+    background-color: #C62828;
     color: white;
     border-radius: 4px;
     flex-grow: 1;
@@ -278,9 +289,10 @@
 }
 .expansion-btn-close:hover { background-color: #E53935; }
 
+/* BEACON BAR */
 .beacon-bar-bg {
     flex-direction: row;
-    background-color: rgba(10, 20, 35, 0.9); /* Ciemny granat, podobny do surowców */
+    background-color: rgba(10, 20, 35, 0.9);
     padding: 4px;
     border-radius: 8px;
     border-width: 1px;
@@ -290,33 +302,29 @@
     align-items: center;
 }
 
-/* POJEDYNCZY SEGMENT */
 .beacon-segment {
-    width: 18px;    
-    height: 10px;   
+    width: 18px;
+    height: 10px;
     margin: 1px;
     border-radius: 2px;
-    background-color: rgba(255, 255, 255, 0.1); 
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* --- TUTORIAL POPUP --- */
+/* TUTORIAL POPUP */
 .tutorial-popup {
-    position: absolute;
-    top: 70px;    /* Zaraz pod TopBar */
-    right: 10px;  /* Prawy róg */
-    width: 280px;
+    /* Pozycjonowanie przeniesione do UXML */
     background-color: rgba(20, 20, 20, 0.95);
     border-width: 1px;
-    border-color: #FFD700; /* Z³ota ramka */
+    border-color: #FFD700;
     border-radius: 8px;
     padding: 15px;
-    padding-top: 20px; /* Miejsce na X */
+    padding-top: 20px;
 }
 
 .tutorial-text {
     color: #EEE;
     font-size: 12px;
-    white-space: normal; /* Zawijanie tekstu */
+    white-space: normal;
     -unity-text-align: middle-center;
 }
 
@@ -329,148 +337,12 @@
     background-color: #C62828;
     color: white;
     font-size: 10px;
-    border-radius: 10px; /* Kó³ko */
+    border-radius: 10px;
     border-width: 0;
 }
+.tutorial-close-btn:hover { background-color: #FF5555; }
 
-.tutorial-close-btn:hover {
-    background-color: #FF5555;
-}
-
-/* Konkretne ikony */
-.icon-gold {
-    background-image: url('project://database/Assets/Main folder/Icons/Resources/Gold.tif');
-}
-
-.icon-wood {
-    background-image: url('project://database/Assets/Main folder/Icons/Resources/Wood.tif');
-
-}
-
-.icon-stone {
-    background-image: url('project://database/Assets/Main folder/Icons/Resources/Stone.tif');
-}
-
-.icon-iron {
-    background-image: url('project://database/Assets/Main folder/Icons/Resources/Iron.tif');
-}
-
-.icon-coal {
-    background-image: url('project://database/Assets/Main folder/Icons/Resources/Coal.tif');
-}
-
-.icon-food {
-    background-image: url('project://database/Assets/Main folder/Icons/Resources/Food.tif');
-}
-
-.icon-artifact {
-    background-image: url('project://database/Assets/Main folder/Icons/Resources/Coal.tif');
-}
-
-/* --- G£ÓWNY PRZYCISK BUDOWANIA --- */
-.main-build-btn {
-    width: 80px;
-    height: 80px;
-    background-color: #2E7D32; /* Zielony */
-    border-radius: 10px;
-    font-size: 18px;
-    -unity-font-style: bold;
-    color: white;
-    margin: 10px;
-    border-width: 2px;
-    border-color: #4CAF50;
-}
-.main-build-btn:hover { background-color: #4CAF50; scale: 1.05; }
-.main-build-btn:active { background-color: #1B5E20; scale: 0.95; }
-
-/* --- PANEL KATEGORII --- */
-.category-panel {
-    flex-direction: row;
-    background-color: rgba(0, 0, 0, 0.8);
-    border-radius: 10px;
-    padding: 5px;
-    margin-bottom: 10px;
-    height: 60px;
-    align-items: center;
-}
-
-.category-btn {
-    width: 60px;
-    height: 50px;
-    margin: 0 5px;
-    background-color: #444;
-    color: white;
-    font-size: 10px;
-    border-radius: 5px;
-    -unity-text-align: middle-center;
-}
-.category-btn:hover { background-color: #666; border-color: yellow; border-width: 1px; }
-.category-btn-active { background-color: #FFD700; color: black; } /* Styl aktywnej kategorii */
-
-/* --- PANEL LISTY BUDYNKÓW --- */
-.buildings-list-panel {
-    height: 100px; /* Zwiêkszona wysokoœæ paska */
-    background-color: rgba(20, 20, 20, 0.95);
-    border-radius: 12px;
-    border-width: 2px;
-    border-color: #444;
-    margin-left: 15px;
-    padding: 10px;
-    width: 640px; /* Szerszy panel, ¿eby pomieœciæ wiêksze ikony */
-    justify-content: center;
-}
-
-.buildings-scroll-view {
-    height: 100%;
-    width: 100%;
-}
-
-.generated-build-btn {
-    width: 80px;   /* Zwiêkszone z 70px */
-    height: 80px;   /* Zwiêkszone z 70px */
-    margin: 5px;
-    background-color: #333;
-    border-radius: 8px;
-    border-width: 2px;
-    border-color: #555;
-    justify-content: flex-end;
-    overflow: hidden;
-    flex-shrink: 0; /* Wa¿ne: przyciski nie mog¹ siê zwê¿aæ */
-}
-
-    
-.generated-build-btn:hover {
-    border-color: #FFD700;
-    scale: 1.05;
-}
-
-/* --- REZYGNACJA ZE SCROLLA PIONOWEGO I STYLIZACJA POZIOMEGO --- */
-
-/* Ca³kowite ukrycie suwaka pionowego */
-#unity-vertical-scroller {
-    display: none;
-    width: 0;
-}
-
-/* Ustawienie suwaka poziomego, ¿eby by³ ma³y i dyskretny */
-#unity-horizontal-scroller {
-    height: 6px; /* Cienki pasek */
-    margin-top: 4px;
-}
-
-/* Styl samej 'pigu³ki' przewijania */
-#unity-horizontal-scroller #unity-dragger {
-    background-color: #555;
-    border-radius: 3px;
-    height: 6px;
-}
-
-/* Kontener przycisków wewn¹trz scrolla */
-.buildings-container {
-    flex-direction: row;
-    align-items: center;
-}
-
+/* RESOURCE TOOLTIP */
 .resource-tooltip {
     position: absolute;
     background-color: rgba(20, 25, 30, 0.98);
@@ -480,3 +352,11 @@
     padding: 10px;
     width: 160px;
 }
+
+/* Ikony - jeœli u¿ywasz */
+.icon-gold { background-image: url('project://database/Assets/Main folder/Icons/Resources/Gold.tif'); }
+.icon-wood { background-image: url('project://database/Assets/Main folder/Icons/Resources/Wood.tif'); }
+.icon-stone { background-image: url('project://database/Assets/Main folder/Icons/Resources/Stone.tif'); }
+.icon-iron { background-image: url('project://database/Assets/Main folder/Icons/Resources/Iron.tif'); }
+.icon-coal { background-image: url('project://database/Assets/Main folder/Icons/Resources/Coal.tif'); }
+.icon-food { background-image: url('project://database/Assets/Main folder/Icons/Resources/Food.tif'); }
