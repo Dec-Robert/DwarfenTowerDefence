@@ -122,6 +122,30 @@
             <ui:Button name="Btn_CloseTutorial" text="X" class="tutorial-close-btn" />
             <ui:Label text="Żeby budynek generował surowce lub żeby wieże strzelały potrzebują pracowników.&#10;&#10;Kliknij na budynek aby otworzyć menu.&#10;&#10;Twoi pracownicy pracują tylko podczas zmian." class="tutorial-text" />
         </ui:VisualElement>
+
+
+        <!-- TOOLTIP ZASOBÓW (Prognoza) -->
+    <ui:VisualElement name="ResourceTooltip" class="resource-tooltip" style="display: none;">
+        <ui:Label name="ResTool_Name" text="DREWNO" style="color: #FFD700; -unity-font-style: bold; margin-bottom: 5px; border-bottom-width: 1px; border-bottom-color: #555;" />
+        
+        <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+            <ui:Label text="Przychód:" style="color: #CCC; font-size: 11px;" />
+            <ui:Label name="ResTool_Gain" text="+50.0" style="color: #44FF44; font-size: 11px;" />
+        </ui:VisualElement>
+
+        <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+            <ui:Label text="Wydatki:" style="color: #CCC; font-size: 11px;" />
+            <ui:Label name="ResTool_Loss" text="-10.0" style="color: #FF4444; font-size: 11px;" />
+        </ui:VisualElement>
+        
+        <ui:VisualElement style="height: 1px; background-color: #555; margin-top: 3px; margin-bottom: 3px;" />
+
+        <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+            <ui:Label text="BILANS:" style="color: white; -unity-font-style: bold;" />
+            <ui:Label name="ResTool_Net" text="+40.0" style="color: #44FF44; -unity-font-style: bold;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+
     </ui:VisualElement>
     <ui:VisualElement name="HealthBarLayer" picking-mode="Ignore" style="position: absolute; width: 100%; height: 100%; top: 3px; left: 3px;" />
 </ui:UXML>

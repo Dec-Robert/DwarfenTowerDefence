@@ -12,14 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce34df5ebabdac64997bb41d4ba2cdf0, type: 3}
   m_Name: Retort
   m_EditorClassIdentifier: 
-  buildingName: 
+  buildingName: Retorta
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 12219056c2c89e14c88e6dfd5d7e56d9, type: 3}
   type: 0
-  allowedTerrain: 
+  workerScalingFactor: 0.25
+  allowedTerrain: 000000000100000002000000
   requiresOccupiedSpace: 0
-  constructionCost: []
-  productionPerCycle: []
-  upkeepPerCycle: []
+  constructionCost:
+  - type: 1
+    amount: 40
+  - type: 2
+    amount: 30
+  productionPerCycle:
+  - type: 3
+    amount: 10
+  upkeepPerCycle:
+  - type: 1
+    amount: 15
   tier1Upgrades: []
-  prefab: {fileID: 0}
+  prefab: {fileID: 4011031713050108421, guid: 07c2962ef65bb134394603a64ca2250e, type: 3}
+  bonusRule:
+    requiredFeature: 0
+    range: 0
+    baseBonusPerHex: 0
+    penaltyPerUser: 0
+    minBonus: 0
+    onTopProductionBonus: 0
+  baseShifts: 1
+  baseWorkersPerShift: 1

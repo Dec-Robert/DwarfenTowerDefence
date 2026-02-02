@@ -39,6 +39,9 @@ public class BuildingData : ScriptableObject
     [Header("Prefab")]
     public GameObject prefab;
 
+    [Header("Zasady Produkcji Terenowej")]
+    public TerrainBonusRule bonusRule;
+
     // Dodaj te pola do klasy BuildingData:
 
     [Header("Pracownicy (Baza)")]
@@ -63,4 +66,7 @@ public class BuildingData : ScriptableObject
         }
         return dict;
     }
+
+
+
 }

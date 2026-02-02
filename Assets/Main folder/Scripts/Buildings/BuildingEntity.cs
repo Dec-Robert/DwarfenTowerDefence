@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class BuildingEntity : MonoBehaviour
 {
@@ -11,32 +12,52 @@ public class BuildingEntity : MonoBehaviour
     public List<BuildingUpgradeSO> appliedUpgrades = new List<BuildingUpgradeSO>();
 
     [Header("Ustawienia Czasu Pracy")]
-    public int shiftStartHour = 6;  // Start zmiany (np. 6:00)
-    public int shiftLength = 10;    // D³ugoœæ zmiany w godzinach
+    public int shiftStartHour = 6;
+
+    // Wartoœæ bazowa z inspektora
+    public int shiftLength = 8;
+
+    // Wartoœæ rzeczywista (obliczana)
+    public float currentShiftLength;
 
     [Header("Pracownicy")]
-    [SerializeField] List<Citizen> assignedCitizens = new List<Citizen>();
+    [SerializeField] private List<Citizen> assignedCitizens = new List<Citizen>();
 
-    // --- NOWE ZMIENNE: Bonusy z ulepszeñ (zamiast sztywnych limitów) ---
+    // Bonusy z ulepszeñ lokalnych
     private int localBonusShifts = 0;
     private int localBonusWorkers = 0;
     private int currentShift = 0;
 
     // --- BUFORY ---
-    // 1. Bufor Produkcji (u³amki przed wys³aniem do magazynu)
     private Dictionary<ResourceType, float> productionBuffer = new Dictionary<ResourceType, float>();
-
-    // 2. Bud¿et Operacyjny (paliwo pobrane rano)
     private Dictionary<ResourceType, float> operationalBudget = new Dictionary<ResourceType, float>();
+
+    public static List<BuildingEntity> AllBuildings = new List<BuildingEntity>();
+
+    // --- S¥SIEDZTWO (Naprawione) ---
+    private List<HexCell> adjacentResourceHexes = new List<HexCell>();
+
+    // Cache bonusów (do wyœwietlania w UI)
+    private float cachedTerrainBonus = 0f;
+    private float cachedOnTopBonus = 0f;
 
     // --- CYKL ¯YCIA ---
 
     private void Start()
     {
+        // 1. Podpiêcie pod czas
         if (TimeCycleManager.Instance != null)
         {
             TimeCycleManager.Instance.OnHourTick += HandleHourlyProduction;
             TimeCycleManager.Instance.OnDayChanged += HandleDayReset;
+        }
+
+        // 2. Szukanie s¹siadów (Wymaga gotowej mapy)
+        if (data != null)
+        {
+            // Przeliczamy od razu na start
+            FindAdjacentResources();
+            CalculateFinalShiftLength();
         }
     }
 
@@ -47,6 +68,22 @@ public class BuildingEntity : MonoBehaviour
             TimeCycleManager.Instance.OnHourTick -= HandleHourlyProduction;
             TimeCycleManager.Instance.OnDayChanged -= HandleDayReset;
         }
+
+        // Zwolnienie zasobów w rejestrze
+        foreach (var hexCell in adjacentResourceHexes)
+        {
+            if (hexCell != null) BuildingProductionRegistry.UnregisterUsage(hexCell);
+        }
+    }
+
+    protected virtual void OnEnable()
+    {
+        AllBuildings.Add(this);
+    }
+
+    protected virtual void OnDisable()
+    {
+        AllBuildings.Remove(this);
     }
 
     public virtual void Initialize(BuildingData _data)
@@ -54,14 +91,20 @@ public class BuildingEntity : MonoBehaviour
         data = _data;
         currentTier = 0;
 
-        // Reset stanów
         appliedUpgrades.Clear();
         productionBuffer.Clear();
         operationalBudget.Clear();
+
         localBonusShifts = 0;
         localBonusWorkers = 0;
 
-        // --- Automatyczne nape³nienie 20% baku na start ---
+        // 1. Obliczamy d³ugoœæ zmiany
+        CalculateFinalShiftLength();
+
+        // 2. Szukamy s¹siadów
+        FindAdjacentResources();
+
+        // 3. Tankowanie startowe (20% bud¿etu)
         Dictionary<ResourceType, float> maxDaily = CalculateMaxDailyConsumption();
         foreach (var kvp in maxDaily)
         {
@@ -69,40 +112,220 @@ public class BuildingEntity : MonoBehaviour
         }
     }
 
-    // ========================================================================
-    //                        LOGIKA DZIENNA (TANKOWANIE)
-    // ========================================================================
+    // --- LOGIKA S¥SIEDZTWA I TERENU ---
+
+    void FindAdjacentResources()
+    {
+        // Wyrejestrowanie starych
+        foreach (var cell in adjacentResourceHexes) BuildingProductionRegistry.UnregisterUsage(cell);
+        adjacentResourceHexes.Clear();
+        cachedOnTopBonus = 0f;
+
+        if (data.bonusRule.requiredFeature == HexFeatureType.None) return;
+
+        HexCell myCell = GetComponentInParent<HexCell>();
+        if (myCell == null) return;
+
+        var mapGen = FindObjectOfType<HexMapGenerator>();
+        if (mapGen == null) return;
+
+        // 1. SPRAWDZENIE ON TOP
+        if (mapGen.worldData.ContainsKey(myCell.chunkCoord) && mapGen.worldData[myCell.chunkCoord].ContainsKey(myCell.localCoord))
+        {
+            var myData = mapGen.worldData[myCell.chunkCoord][myCell.localCoord];
+            if (myData.feature == data.bonusRule.requiredFeature)
+            {
+                cachedOnTopBonus = data.bonusRule.onTopProductionBonus;
+            }
+        }
+
+        // 2. SPRAWDZENIE S¥SIADÓW
+        List<Vector2Int> neighbors = HexGridMath.GetNeighbors(myCell.localCoord);
+
+        foreach (var nCoord in neighbors)
+        {
+            if (mapGen.worldData.ContainsKey(myCell.chunkCoord) && mapGen.worldData[myCell.chunkCoord].ContainsKey(nCoord))
+            {
+                HexCellData cellData = mapGen.worldData[myCell.chunkCoord][nCoord];
+
+                if (cellData.feature == data.bonusRule.requiredFeature)
+                {
+                    if (HexMapVisualizer.Instance != null)
+                    {
+                        HexCell neighborCell = HexMapVisualizer.Instance.GetHexCell(myCell.chunkCoord, nCoord);
+
+                        if (neighborCell != null)
+                        {
+                            // Ignorujemy zajête pola
+                            if (neighborCell.HasBuilding()) continue;
+
+                            RegisterHex(neighborCell);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void ForceRescan()
+    {
+        FindAdjacentResources();
+        if (this is TowerEntity tower) tower.RecalculateStats();
+        // UI odœwie¿y siê przy nastêpnym ticku lub otwarciu
+    }
+
+    void RegisterHex(HexCell cell)
+    {
+        BuildingProductionRegistry.RegisterUsage(cell);
+        adjacentResourceHexes.Add(cell);
+    }
+
+    float CalculateTerrainBonus()
+    {
+        if (data.bonusRule.requiredFeature == HexFeatureType.None) return 0f;
+
+        float totalBonus = cachedOnTopBonus;
+        var rule = data.bonusRule;
+
+        foreach (var cell in adjacentResourceHexes)
+        {
+            if (cell == null) continue;
+            int usersCount = BuildingProductionRegistry.GetUsageCount(cell);
+
+            // Wzór: Base - (Penalty * (n - 1))
+            float bonus = rule.baseBonusPerHex - (rule.penaltyPerUser * (usersCount - 1));
+            if (bonus < rule.minBonus) bonus = rule.minBonus;
+
+            totalBonus += bonus;
+        }
+
+        return totalBonus;
+    }
+
+    // --- LOGIKA CZASU I PRODUKCJI ---
+
+    void CalculateFinalShiftLength()
+    {
+        int globalMod = (CityStatsManager.Instance != null) ? CityStatsManager.Instance.globalShiftLengthModifier : 0;
+        currentShiftLength = shiftLength + globalMod;
+        if (currentShiftLength < 1) currentShiftLength = 1;
+    }
+
+    protected virtual void HandleHourlyProduction(int currentHour)
+    {
+        int shiftEndHour = shiftStartHour + (int)currentShiftLength;
+        bool isWorkingHours = (currentHour >= shiftStartHour && currentHour < shiftEndHour);
+        if (!isWorkingHours) return;
+
+        Dictionary<ResourceType, float> loggedProduction = new Dictionary<ResourceType, float>();
+
+        List<Citizen> activeWorkers = assignedCitizens.FindAll(c => c.workState == WorkState.Assigned || c.workState == WorkState.Working);
+        int workerCount = activeWorkers.Count;
+        if (workerCount == 0) return;
+
+        foreach (var w in activeWorkers)
+        {
+            if (w.workState == WorkState.Assigned)
+            {
+                w.workState = WorkState.Working;
+                if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
+            }
+        }
+
+        // Wydajnoœæ
+        float efficiency = 1.0f;
+        float scale = data.workerScalingFactor > 0 ? data.workerScalingFactor : 0.1f;
+        if (workerCount > 1) efficiency += (workerCount - 1) * scale;
+
+        // Bonusy
+        cachedTerrainBonus = CalculateTerrainBonus(); // Aktualizujemy bonus co godzinê
+        float beaconBonus = (BeaconEntity.Instance != null) ? BeaconEntity.Instance.GetGlobalProductionMultiplier() : 1f;
+
+        // Paliwo
+        Dictionary<ResourceType, float> baseUpkeepPerShift = GetCurrentUpkeep();
+        bool hasFuel = true;
+
+        foreach (var cost in baseUpkeepPerShift)
+        {
+            float neededNow = (cost.Value / currentShiftLength) * efficiency;
+            if (!operationalBudget.ContainsKey(cost.Key) || operationalBudget[cost.Key] < neededNow)
+            {
+                hasFuel = false;
+                break;
+            }
+        }
+
+        if (hasFuel)
+        {
+
+            Dictionary<ResourceType, float> baseProdPerShift = GetCurrentProduction();
+
+            foreach (var cost in baseUpkeepPerShift)
+            {
+                float neededNow = (cost.Value / currentShiftLength) * efficiency;
+                operationalBudget[cost.Key] -= neededNow;
+            }
+
+            Dictionary<ResourceType, float> totalProd = GetCurrentProduction(); // Zawiera bonus terenowy!
+
+            foreach (var kvp in totalProd)
+            {
+                float hourlyAmount = (kvp.Value / currentShiftLength) * efficiency * beaconBonus;
+
+                if (!productionBuffer.ContainsKey(kvp.Key)) productionBuffer[kvp.Key] = 0f;
+                productionBuffer[kvp.Key] += hourlyAmount;
+
+                if (productionBuffer[kvp.Key] >= 1.0f)
+                {
+                    int amountToGive = Mathf.FloorToInt(productionBuffer[kvp.Key]);
+                    productionBuffer[kvp.Key] -= amountToGive;
+                    ResourceManager.Instance.AddResource(kvp.Key, amountToGive);
+
+                    if (amountToGive > 0)
+                    {
+                        if (loggedProduction.ContainsKey(kvp.Key)) loggedProduction[kvp.Key] += amountToGive;
+                        else loggedProduction.Add(kvp.Key, amountToGive);
+                    }
+
+                    if (FloatingTextManager.Instance != null)
+                        FloatingTextManager.Instance.ShowGain(transform.position, kvp.Key.ToString(), amountToGive);
+                }
+            }
+            if (loggedProduction.Count > 0 && ResourceLogger.Instance != null)
+            {
+                ResourceLogger.Instance.LogTransaction($"Produkcja: {data.buildingName}", loggedProduction);
+            }
+        }
+        else
+        {
+            // Debug.Log($"[Building] {name} brak paliwa.");
+        }
+
+        if (currentHour == shiftEndHour - 1)
+        {
+            foreach (var w in activeWorkers) w.workState = WorkState.Exhausted;
+            if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
+        }
+    }
 
     private void HandleDayReset(int day)
     {
-        // 1. Reset pracowników (Nowy dzieñ = wypoczêci)
         foreach (var worker in assignedCitizens)
         {
             if (worker.workState == WorkState.Exhausted || worker.workState == WorkState.Working)
-            {
                 worker.workState = WorkState.Assigned;
-            }
         }
 
-        // 2. UZUPE£NIANIE BUD¯ETU OPERACYJNEGO
-        Dictionary<ResourceType, float> maxDailyConsumption = CalculateMaxDailyConsumption();
+        Dictionary<ResourceType, float> maxDaily = CalculateMaxDailyConsumption();
         Dictionary<ResourceType, float> resourcesToRefill = new Dictionary<ResourceType, float>();
 
-        foreach (var kvp in maxDailyConsumption)
+        foreach (var kvp in maxDaily)
         {
-            ResourceType type = kvp.Key;
-            float maxCap = kvp.Value;
-
-            float currentAmount = operationalBudget.ContainsKey(type) ? operationalBudget[type] : 0;
-            float needed = maxCap - currentAmount;
-
-            if (needed > 0)
-            {
-                resourcesToRefill.Add(type, needed);
-            }
+            float current = operationalBudget.ContainsKey(kvp.Key) ? operationalBudget[kvp.Key] : 0;
+            float needed = kvp.Value - current;
+            if (needed > 0) resourcesToRefill.Add(kvp.Key, needed);
         }
 
-        // Pobieramy surowce z magazynu
         foreach (var req in resourcesToRefill)
         {
             if (ResourceManager.Instance.SpendResource(req.Key, req.Value))
@@ -112,7 +335,6 @@ public class BuildingEntity : MonoBehaviour
             }
             else
             {
-                // Jeœli nie staæ na full, bierzemy resztê
                 float available = ResourceManager.Instance.GetResourceAmount(req.Key);
                 if (available > 0)
                 {
@@ -123,162 +345,51 @@ public class BuildingEntity : MonoBehaviour
             }
         }
 
-        if (BuildingCitizenUI.Instance != null) BuildingCitizenUI.Instance.Refresh(this);
         if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
     }
 
-    // ========================================================================
-    //                        LOGIKA GODZINOWA (PRODUKCJA)
-    // ========================================================================
+    // --- GETTERY I API ---
 
-    protected virtual void HandleHourlyProduction(int currentHour)
+    public Dictionary<ResourceType, float> GetCurrentProduction()
     {
-        if (this is HousingEntity) return;
+        Dictionary<ResourceType, float> total = new Dictionary<ResourceType, float>();
 
-        int shiftEndHour = shiftStartHour + shiftLength;
-        bool isWorkingHours = (currentHour >= shiftStartHour && currentHour < shiftEndHour);
-        if (!isWorkingHours) return;
+        // 1. Baza
+        if (data.productionPerCycle != null)
+            foreach (var res in data.productionPerCycle) AddToDict(total, res.type, res.amount);
 
-        // 1. Kto pracuje?
-        List<Citizen> activeWorkers = assignedCitizens.FindAll(c =>
-            c.workState == WorkState.Assigned || c.workState == WorkState.Working);
-        int workerCount = activeWorkers.Count;
+        // 2. Ulepszenia
+        foreach (var up in appliedUpgrades)
+            if (up.productionBonus != null)
+                foreach (var res in up.productionBonus) AddToDict(total, res.type, res.amount);
 
-        if (workerCount == 0) return;
+        // 3. Bonus Terenowy (Obliczany na ¿ywo, aby UI widzia³o zmiany)
+        float currentLiveBonus = CalculateTerrainBonus();
 
-        // Blokowanie pracowników (Godzina minê³a, s¹ w pracy)
-        foreach (var w in activeWorkers)
+        if (currentLiveBonus > 0 && data.productionPerCycle != null && data.productionPerCycle.Count > 0)
         {
-            if (w.workState == WorkState.Assigned)
-            {
-                w.workState = WorkState.Working;
-                if (BuildingCitizenUI.Instance != null) BuildingCitizenUI.Instance.Refresh(this);
-            }
+            ResourceType mainRes = data.productionPerCycle[0].type;
+            if (total.ContainsKey(mainRes)) total[mainRes] += currentLiveBonus;
+            else total.Add(mainRes, currentLiveBonus);
         }
 
-        // 2. Skalowanie kosztów/produkcji
-        float scale = data.workerScalingFactor > 0 ? data.workerScalingFactor : 0.1f;
-        float hourlyScale = 1.0f;
-        if (workerCount > 1)
-            hourlyScale += (workerCount - 1) * scale;
-
-        // Bonus z Beacona
-        float beaconBonus = (BeaconEntity.Instance != null) ? BeaconEntity.Instance.GetGlobalProductionMultiplier() : 1f;
-
-        // 3. Sprawdzanie paliwa
-        Dictionary<ResourceType, float> baseUpkeepPerShift = GetCurrentUpkeep();
-        bool hasFuel = true;
-
-        foreach (var cost in baseUpkeepPerShift)
-        {
-            float neededNow = (cost.Value / shiftLength) * hourlyScale;
-            if (!operationalBudget.ContainsKey(cost.Key) || operationalBudget[cost.Key] < neededNow)
-            {
-                hasFuel = false;
-                break;
-            }
-        }
-
-        if (hasFuel)
-        {
-            // A. Spalanie paliwa
-            foreach (var cost in baseUpkeepPerShift)
-            {
-                float neededNow = (cost.Value / shiftLength) * hourlyScale;
-                operationalBudget[cost.Key] -= neededNow;
-            }
-
-            // B. Produkcja
-            Dictionary<ResourceType, float> totalDailyProduction = GetCurrentProduction();
-            foreach (var kvp in totalDailyProduction)
-            {
-                ResourceType type = kvp.Key;
-                float dailyAmount = kvp.Value;
-
-                float hourlyAmount = ((float)dailyAmount / shiftLength) * hourlyScale * beaconBonus;
-
-                if (!productionBuffer.ContainsKey(type)) productionBuffer[type] = 0f;
-                productionBuffer[type] += hourlyAmount;
-
-                if (productionBuffer[type] >= 1.0f)
-                {
-                    int amountToGive = Mathf.FloorToInt(productionBuffer[type]);
-                    productionBuffer[type] -= amountToGive;
-                    ResourceManager.Instance.AddResource(type, amountToGive);
-
-                    if (FloatingTextManager.Instance != null)
-                        FloatingTextManager.Instance.ShowGain(transform.position, type.ToString(), amountToGive);
-                }
-            }
-        }
-        else
-        {
-            Debug.Log($"[Building] {name} wstrzyma³ pracê (Brak paliwa).");
-        }
-
-        // 4. Koniec zmiany
-        if (currentHour == shiftEndHour - 1)
-        {
-            foreach (var w in activeWorkers) w.workState = WorkState.Exhausted;
-            if (BuildingCitizenUI.Instance != null) BuildingCitizenUI.Instance.Refresh(this);
-        }
+        return total;
     }
 
-    // ========================================================================
-    //                              MATEMATYKA & STATYSTYKI
-    // ========================================================================
-
-    // Oblicza ile budynek potrzebuje na dzieñ przy MAX ob³o¿eniu (Baza + Lokalne + Globalne)
     public Dictionary<ResourceType, float> CalculateMaxDailyConsumption()
     {
         Dictionary<ResourceType, float> maxDaily = new Dictionary<ResourceType, float>();
         Dictionary<ResourceType, float> baseUpkeep = GetCurrentUpkeep();
 
-        // U¿ywamy getterów uwzglêdniaj¹cych bonusy globalne/lokalne
-        int currentMaxWorkers = getMaxWorkersPerShift();
-        int currentMaxShifts = getMaxShifts();
-
         float scale = data.workerScalingFactor > 0 ? data.workerScalingFactor : 0.1f;
-        float maxShiftScale = 1.0f + ((currentMaxWorkers - 1) * scale);
+        float maxShiftScale = 1.0f + ((getMaxWorkersPerShift() - 1) * scale);
 
         foreach (var kvp in baseUpkeep)
         {
-            float total = (kvp.Value * maxShiftScale) * currentMaxShifts;
+            float total = (kvp.Value * maxShiftScale) * getMaxShifts();
             maxDaily.Add(kvp.Key, total);
         }
         return maxDaily;
-    }
-
-    // --- Gettery dynamiczne (Base + Local + Global) ---
-
-    public int getMaxShifts()
-    {
-        int global = (CityStatsManager.Instance != null) ? CityStatsManager.Instance.globalBonusShifts : 0;
-        // Zabezpieczenie przed nullem danych
-        int baseVal = (data != null) ? data.baseShifts : 1;
-        return baseVal + localBonusShifts + global;
-    }
-
-    public int getMaxWorkersPerShift()
-    {
-        int global = (CityStatsManager.Instance != null) ? CityStatsManager.Instance.globalBonusWorkersPerShift : 0;
-        int baseVal = (data != null) ? data.baseWorkersPerShift : 1;
-        return baseVal + localBonusWorkers + global;
-    }
-
-    // --- Produkcja i Utrzymanie ---
-
-    public Dictionary<ResourceType, float> GetCurrentProduction()
-    {
-        Dictionary<ResourceType, float> total = new Dictionary<ResourceType, float>();
-        if (data.productionPerCycle != null)
-            foreach (var res in data.productionPerCycle) AddToDict(total, res.type, res.amount);
-
-        foreach (var up in appliedUpgrades)
-            if (up.productionBonus != null)
-                foreach (var res in up.productionBonus) AddToDict(total, res.type, res.amount);
-
-        return total;
     }
 
     public Dictionary<ResourceType, float> GetCurrentUpkeep()
@@ -286,11 +397,9 @@ public class BuildingEntity : MonoBehaviour
         Dictionary<ResourceType, float> total = new Dictionary<ResourceType, float>();
         if (data.upkeepPerCycle != null)
             foreach (var res in data.upkeepPerCycle) AddToDict(total, res.type, res.amount);
-
         foreach (var up in appliedUpgrades)
             if (up.upkeepIncrease != null)
                 foreach (var res in up.upkeepIncrease) AddToDict(total, res.type, res.amount);
-
         return total;
     }
 
@@ -300,85 +409,29 @@ public class BuildingEntity : MonoBehaviour
         else dict.Add(type, amount);
     }
 
-    // ========================================================================
-    //                        ZARZ¥DZANIE PRACOWNIKAMI
-    // ========================================================================
+    // --- ZARZ¥DZANIE PRACOWNIKAMI ---
 
     public virtual bool TryAddWorker(Race race)
     {
-        // Sprawdzamy limit u¿ywaj¹c dynamicznych getterów
         if (assignedCitizens.Count >= (getMaxShifts() * getMaxWorkersPerShift())) return false;
-
         Citizen newWorker = CitizenManager.Instance.FindAndAssignCitizen(race, this);
-        if (newWorker != null)
-        {
-            assignedCitizens.Add(newWorker);
-
-            if (UIBuildingInspector.Instance != null)
-                UIBuildingInspector.Instance.RefreshContent();
-
-            return true;
-        }
+        if (newWorker != null) { assignedCitizens.Add(newWorker); if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent(); return true; }
         return false;
     }
 
     public virtual void RemoveWorker(Race race)
     {
-        // Usuwamy tylko niezablokowanych (Working = zablokowany)
         Citizen workerToRemove = assignedCitizens.Find(c => c.race == race && c.workState != WorkState.Working);
-        if (workerToRemove != null)
-        {
-            workerToRemove.RemoveFromWorkplace();
-            assignedCitizens.Remove(workerToRemove);
-
-            if (UIBuildingInspector.Instance != null)
-                UIBuildingInspector.Instance.RefreshContent();
-        }
+        if (workerToRemove != null) { workerToRemove.RemoveFromWorkplace(); assignedCitizens.Remove(workerToRemove); if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent(); }
     }
-
-    // ========================================================================
-    //                        SYSTEM ULEPSZEÑ
-    // ========================================================================
-
-    public List<BuildingUpgradeSO> GetAvailableUpgrades()
-    {
-        if (currentTier == 0 && data.tier1Upgrades != null) return data.tier1Upgrades;
-        if (appliedUpgrades.Count > 0)
-        {
-            var last = appliedUpgrades[appliedUpgrades.Count - 1];
-            if (last.nextTierOptions != null) return last.nextTierOptions;
-        }
-        return new List<BuildingUpgradeSO>();
-    }
-
-    public void ApplyUpgrade(BuildingUpgradeSO upgrade)
-    {
-        appliedUpgrades.Add(upgrade);
-        currentTier++;
-
-        // Dodajemy bonusy do slotów (lokalne)
-        localBonusShifts += upgrade.extraShifts;
-        localBonusWorkers += upgrade.extraWorkersPerShift;
-
-        // Odœwie¿enie UI po ulepszeniu
-        if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
-    }
-
-    // ========================================================================
-    //                            INNE HELPERY
-    // ========================================================================
 
     public List<Citizen> GetAssignedCitizens() => assignedCitizens;
-
     public int GetWorkerCount(Race r) => assignedCitizens.FindAll(c => c.race == r).Count;
-
-    public void NextShift() { currentShift = (currentShift + 1) % getMaxShifts(); }
-
+    public int getMaxShifts() { int global = (CityStatsManager.Instance != null) ? CityStatsManager.Instance.globalBonusShifts : 0; return (data != null ? data.baseShifts : 1) + localBonusShifts + global; }
+    public int getMaxWorkersPerShift() { int global = (CityStatsManager.Instance != null) ? CityStatsManager.Instance.globalBonusWorkersPerShift : 0; return (data != null ? data.baseWorkersPerShift : 1) + localBonusWorkers + global; }
     public Dictionary<ResourceType, float> GetCurrentBudget() => operationalBudget;
 
-    public void Demolish()
-    {
-        foreach (var c in new List<Citizen>(assignedCitizens)) c.RemoveFromWorkplace();
-        Destroy(gameObject);
-    }
+    public List<BuildingUpgradeSO> GetAvailableUpgrades() { if (currentTier == 0 && data.tier1Upgrades != null) return data.tier1Upgrades; if (appliedUpgrades.Count > 0) { var last = appliedUpgrades[appliedUpgrades.Count - 1]; if (last.nextTierOptions != null) return last.nextTierOptions; } return new List<BuildingUpgradeSO>(); }
+    public void ApplyUpgrade(BuildingUpgradeSO upgrade) { appliedUpgrades.Add(upgrade); currentTier++; localBonusShifts += upgrade.extraShifts; localBonusWorkers += upgrade.extraWorkersPerShift; CalculateFinalShiftLength(); if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent(); }
+    public void Demolish() { foreach (var c in new List<Citizen>(assignedCitizens)) c.RemoveFromWorkplace(); Destroy(gameObject); }
 }

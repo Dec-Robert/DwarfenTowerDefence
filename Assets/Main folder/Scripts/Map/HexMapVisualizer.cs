@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public class HexMapVisualizer : MonoBehaviour
 {
+    public static HexMapVisualizer Instance { get; private set; }
+
     [Header("Prefaby Terenu")]
     public GameObject hexPrefab;
     public GameObject prefabForest;
@@ -32,6 +34,13 @@ public class HexMapVisualizer : MonoBehaviour
     // S³ownik przechowuj¹cy fizyczne obiekty chunków
     private Dictionary<Vector2Int, GameObject> chunkGameObjects = new Dictionary<Vector2Int, GameObject>();
 
+    private Dictionary<Vector2Int, Dictionary<Vector2Int, HexCell>> visualHexGrid = new Dictionary<Vector2Int, Dictionary<Vector2Int, HexCell>>();
+
+
+    private void Awake()
+    {
+        Instance = this;
+    }
     public GameObject GetChunkGameObject(Vector2Int coord)
     {
         if (chunkGameObjects.ContainsKey(coord)) return chunkGameObjects[coord];
@@ -39,15 +48,15 @@ public class HexMapVisualizer : MonoBehaviour
     }
 
     public void VisualizeWorld(
-        Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData,
-        HashSet<Vector2Int> allValidChunks,
-        Dictionary<Vector2Int, BiomeType> chunkBiomes,
-        Dictionary<BiomeType, Material> biomeMaterials,
-        int chunkRadius,
-        float hexSize,
-        float padding)
+            Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData,
+            HashSet<Vector2Int> allValidChunks,
+            Dictionary<Vector2Int, BiomeType> chunkBiomes,
+            Dictionary<BiomeType, Material> biomeMaterials,
+            int chunkRadius,
+            float hexSize,
+            float padding)
     {
-        ClearMap();
+        ClearMap(); // Czyœci stare obiekty i s³owniki (visualHexGrid i chunkGameObjects)
 
         if (mapHolder == null)
         {
@@ -77,8 +86,15 @@ public class HexMapVisualizer : MonoBehaviour
             chunkObj.transform.parent = mapHolder;
             chunkObj.transform.position = centerWorld;
 
-            // Rejestracja w s³owniku (dla Fog of War)
+            // Rejestracja w s³owniku GameObjectów (dla Fog of War)
             chunkGameObjects.Add(chunkCoord, chunkObj);
+
+            // --- NOWOŒÆ: Inicjalizacja s³ownika heksów dla tego chunku ---
+            if (!visualHexGrid.ContainsKey(chunkCoord))
+            {
+                visualHexGrid[chunkCoord] = new Dictionary<Vector2Int, HexCell>();
+            }
+            // -------------------------------------------------------------
 
             if (worldData.ContainsKey(chunkCoord))
             {
@@ -105,11 +121,15 @@ public class HexMapVisualizer : MonoBehaviour
                     cellComponent.chunkCoord = chunkCoord;
                     cellComponent.localCoord = local;
 
+                    // --- NOWOŒÆ: Rejestracja heksa w szybkim s³owniku ---
+                    // Dziêki temu InteractionManager mo¿e go znaleŸæ w czasie O(1)
+                    visualHexGrid[chunkCoord].Add(local, cellComponent);
+                    // ----------------------------------------------------
+
                     // Nak³adanie wizualiów terenu (Trawa, Las, Góry)
                     ApplyVisualsToHex(hex, cellData, chunkBaseMat);
 
-                    // --- NOWOŒÆ: Budowanie predefiniowanych budynków ---
-                    // Jeœli dane mówi¹, ¿e tu ma staæ budynek, stawiamy go (i usuwamy las pod spodem)
+                    // Budowanie predefiniowanych budynków
                     if (cellData.startingBuilding != null)
                     {
                         SpawnPredefinedBuilding(hex, cellData.startingBuilding);
@@ -118,7 +138,6 @@ public class HexMapVisualizer : MonoBehaviour
             }
         }
     }
-
 
 
 
@@ -214,6 +233,7 @@ public class HexMapVisualizer : MonoBehaviour
 
     public void ClearMap()
     {
+        visualHexGrid.Clear(); // <--- WA¯NE: Czyœcimy referencje
         chunkGameObjects.Clear();
         if (mapHolder != null) DestroyImmediate(mapHolder.gameObject);
         while (transform.childCount > 0) DestroyImmediate(transform.GetChild(0).gameObject);
@@ -270,4 +290,15 @@ public class HexMapVisualizer : MonoBehaviour
         // Wymuszamy startow¹ inicjalizacjê
         entity.Initialize(buildingData);
     }
+
+    public HexCell GetHexCell(Vector2Int chunkCoord, Vector2Int localCoord)
+    {
+        if (visualHexGrid.ContainsKey(chunkCoord) && visualHexGrid[chunkCoord].ContainsKey(localCoord))
+        {
+            return visualHexGrid[chunkCoord][localCoord];
+        }
+        return null;
+    }
+
+
 }

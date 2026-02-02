@@ -29,6 +29,11 @@ public class InteractionManager : MonoBehaviour
 
     private TowerController lastSelectedTower;
 
+    [Header("Wizualizacja Bonusów")]
+    public Material resourceHighlightMat; // Przypisz jasny zielony materia³ (Transparent/Unlit)
+
+    private List<HexCell> highlightedHexes = new List<HexCell>();
+
     private void Awake()
     {
         Instance = this;
@@ -50,6 +55,10 @@ public class InteractionManager : MonoBehaviour
     {
         selectedBuilding = null;
         ClearGhost();
+
+        // NOWOŒÆ: Opuszczenie heksów (zasobów)
+        ClearHighlights();
+
         Debug.Log("[Interaction] Anulowano budowanie.");
     }
 
@@ -118,19 +127,24 @@ public class InteractionManager : MonoBehaviour
             HexCell cell = hit.collider.GetComponentInParent<HexCell>();
             if (cell != null)
             {
-                // Przesuñ widmo do œrodka heksa
+                // 1. Przesuñ widmo do œrodka heksa
                 currentGhost.transform.position = cell.transform.position;
 
-                // SprawdŸ czy miejsce jest poprawne i zmieñ materia³
+                // 2. SprawdŸ czy miejsce jest poprawne i zmieñ kolor widma
                 bool isValid = CheckIfPlacementIsValid(cell);
                 ApplyGhostMaterial(isValid);
+
+                // 3. NOWOŒÆ: Podœwietl i unieœ okoliczne zasoby
+                // Dziêki temu gracz widzi, które lasy zostan¹ "u¿yte" przez tartak zanim go postawi
+                HighlightResourcesFor(selectedBuilding, cell.chunkCoord, cell.localCoord);
 
                 currentGhost.SetActive(true);
             }
         }
         else
         {
-            currentGhost.SetActive(false); // Ukryj jeœli myszka poza map¹
+            currentGhost.SetActive(false);
+            ClearHighlights(); // Jeœli myszka zjedzie z mapy, opuœæ heksy
         }
     }
 
@@ -184,29 +198,32 @@ public class InteractionManager : MonoBehaviour
 
             if (clickedCell != null)
             {
+                // SCENARIUSZ A: Tryb Budowania
                 if (selectedBuilding != null)
                 {
-                    // Tryb budowania: schowaj stary zasiêg, jeœli by³, i buduj
+                    // Stary zasiêg/podœwietlenia znikaj¹
                     DeselectAll();
+
+                    // Próba budowy (jeœli siê uda, PerformBuild zresetuje selectedBuilding, chyba ¿e Shift)
                     TryBuildOnHex(clickedCell);
                 }
+                // SCENARIUSZ B: Tryb Inspekcji
                 else
                 {
-                    // Tryb inspekcji
                     BuildingEntity building = clickedCell.GetComponentInChildren<BuildingEntity>();
 
                     if (building != null)
                     {
-                        // 1. Schowaj zasiêg poprzedniej wie¿y przed pokazaniem nowej
+                        // 1. Czyœcimy poprzednie zaznaczenia
                         DeselectAll();
 
-                        // 2. Poka¿ UI inspektora
+                        // 2. Otwieramy UI Inspektora
                         if (UIBuildingInspector.Instance != null)
                         {
                             UIBuildingInspector.Instance.ShowInspector(building);
                         }
 
-                        // 3. SprawdŸ czy to wie¿a i w³¹cz zasiêg
+                        // 3. Jeœli to wie¿a -> Poka¿ zasiêg
                         if (building is TowerEntity towerEntity)
                         {
                             lastSelectedTower = towerEntity.controller;
@@ -215,12 +232,18 @@ public class InteractionManager : MonoBehaviour
                                 lastSelectedTower.ShowRangeIndicator(true);
                             }
                         }
+
+                        // 4. NOWOŒÆ: Jeœli budynek korzysta z zasobów -> Podnieœ je
+                        // (Np. klikasz Tartak -> okoliczne lasy siê unosz¹)
+                        HighlightResourcesFor(building.data, clickedCell.chunkCoord, clickedCell.localCoord);
                     }
                     else
                     {
-                        // Klikniêto pusty heks - odznacz wszystko
+                        // Klikniêto pusty teren -> Odznacz wszystko i zamknij UI
                         DeselectAll();
                         if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.Hide();
+
+                        // Debug.Log("Klikniêto pusty heks.");
                     }
                 }
             }
@@ -274,6 +297,34 @@ public class InteractionManager : MonoBehaviour
             // Jeœli budujemy dalej, odœwie¿amy widmo (¿eby sprawdzi³o nowe warunki zajêtoœci)
             UpdateGhostPosition();
         }
+
+        NotifyNeighborsAboutChange(cell);
+
+    }
+
+    void NotifyNeighborsAboutChange(HexCell centerCell)
+    {
+        // Pobieramy s¹siadów
+        List<Vector2Int> neighbors = HexGridMath.GetNeighbors(centerCell.localCoord);
+
+        if (HexMapVisualizer.Instance != null)
+        {
+            foreach (var nCoord in neighbors)
+            {
+                // Znajdujemy heksa-s¹siada
+                HexCell neighborHex = HexMapVisualizer.Instance.GetHexCell(centerCell.chunkCoord, nCoord);
+
+                if (neighborHex != null)
+                {
+                    // Jeœli na s¹siedzie stoi budynek -> ka¿ mu przeliczyæ zasoby
+                    BuildingEntity neighborBuilding = neighborHex.GetComponentInChildren<BuildingEntity>();
+                    if (neighborBuilding != null)
+                    {
+                        neighborBuilding.ForceRescan();
+                    }
+                }
+            }
+        }
     }
 
     private bool IsPointerOverUI()
@@ -287,10 +338,60 @@ public class InteractionManager : MonoBehaviour
 
     public void DeselectAll()
     {
+        // Ukryj zasiêg poprzedniej wie¿y
         if (lastSelectedTower != null)
         {
             lastSelectedTower.ShowRangeIndicator(false);
             lastSelectedTower = null;
         }
+
+        // NOWOŒÆ: Opuszczenie heksów (jeœli by³y podœwietlone w trybie inspekcji)
+        ClearHighlights();
+    }
+
+
+
+    // Dodaj tê metodê
+    public void HighlightResourcesFor(BuildingData data, Vector2Int centerChunk, Vector2Int centerLocal)
+    {
+        ClearHighlights();
+
+        if (data.bonusRule.requiredFeature == HexFeatureType.None) return;
+
+        var neighbors = HexGridMath.GetNeighbors(centerLocal);
+        neighbors.Add(centerLocal);
+
+        foreach (var nCoord in neighbors)
+        {
+            // SprawdŸ w danych czy to surowiec (Logic check)
+            if (mapGenerator.worldData.ContainsKey(centerChunk) &&
+                mapGenerator.worldData[centerChunk].ContainsKey(nCoord))
+            {
+                var cellData = mapGenerator.worldData[centerChunk][nCoord];
+
+                if (cellData.feature == data.bonusRule.requiredFeature)
+                {
+                    // --- NAPRAWA: Pobieramy HexCell bezpoœrednio z Wizualizera ---
+                    // Nie u¿ywamy ju¿ nazw stringowych ani transform.Find
+                    HexCell cell = mapGenerator.visualizer.GetHexCell(centerChunk, nCoord);
+
+                    if (cell != null)
+                    {
+                        cell.ToggleHighlight(true, resourceHighlightMat);
+                        highlightedHexes.Add(cell);
+                    }
+                    // else { Debug.LogWarning($"Nie znaleziono wizualnego heksa dla {nCoord}"); }
+                }
+            }
+        }
+    }
+
+    public void ClearHighlights()
+    {
+        foreach (var cell in highlightedHexes)
+        {
+            if (cell != null) cell.ToggleHighlight(false);
+        }
+        highlightedHexes.Clear();
     }
 }

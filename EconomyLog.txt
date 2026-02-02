@@ -1,0 +1,1611 @@
+=== ROZPOCZĘCIE GRY: 01.02.2026 17:44:04 ===
+
+
+[Dzień 1]
+==========================================
+[Śmierć Wroga: Blob] [21:55] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [22:44] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:43] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 2]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [00:19] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [01:27] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [02:31] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [02:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [02:59] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [02:59] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [03:14] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [03:14] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [05:30] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [06:09] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:44] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:58] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [21:13] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [22:56] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:13] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [23:46] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 3]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [00:28] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:44] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:13] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:58] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [02:08] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [02:43] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [02:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [03:58] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [04:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [05:27] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [05:42] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [05:59] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [07:41] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [07:41] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:41] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [09:40] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [21:11] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [21:43] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [23:43] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:56] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 4]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:23] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [01:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [01:56] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [03:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [04:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [04:55] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [05:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [05:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [05:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [06:09] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [06:09] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [06:11] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [06:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [07:06] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:38] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:52] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [07:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [10:04] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [10:38] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:26] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [11:50] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:03] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:32] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [13:38] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [13:53] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [14:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:31] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [14:41] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:05] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:50] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [16:27] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [16:34] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [16:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [21:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [21:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [22:55] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [23:40] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [23:55] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 5]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:08] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [01:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [04:58] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [05:45] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [06:02] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [06:09] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [06:18] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [06:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [06:31] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:23] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:52] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:27] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [09:02] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:05] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [09:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:40] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:40] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:59] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:32] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:47] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:18] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [11:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:47] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:09] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:16] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:16] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:32] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:46] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [13:06] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [13:10] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [13:41] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [13:46] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:03] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [14:10] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:23] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:31] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [16:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [16:32] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [16:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [17:00] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [17:20] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [17:50] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [17:50] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [18:19] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [18:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [18:47] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [18:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [19:17] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [19:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [19:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [19:48] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [20:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [21:08] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [21:23] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [22:02] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [22:40] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [22:59] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:11] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [23:11] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 6]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [00:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [00:36] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [00:40] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [22:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [23:00] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [23:53] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 7]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:02] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:43] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [00:59] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [01:05] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:10] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:20] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [03:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [03:52] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [04:55] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [05:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:03] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:23] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:04] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:58] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:18] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:51] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:17] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:28] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:50] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:04] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:48] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:11] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:32] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:41] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:01] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:29] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:01] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:44] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:52] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:52] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [16:07] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [16:08] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [21:36] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [22:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [22:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [22:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [23:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [23:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [23:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 8]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [01:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [02:06] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [02:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [02:36] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [03:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [03:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [04:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [04:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [05:20] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [06:52] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:28] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [08:09] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:23] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [08:38] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:38] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [10:06] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [10:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [10:23] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [10:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [10:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [10:42] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [10:52] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [11:02] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:08] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [11:10] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:14] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [11:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:28] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [12:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [13:01] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [13:01] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [13:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [13:51] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [14:46] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [14:53] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [15:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [16:07] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [17:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [17:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [17:51] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [18:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [18:44] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [19:10] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [20:06] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [21:02] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [21:09] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [21:29] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [21:47] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [22:47] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:02] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [23:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:50] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 9]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,5
+Stone 	-0,5
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Elf house] [00:00] -----------
+Food 	-2,5
+Wood 	-1,3
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [00:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [00:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [00:42] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [00:42] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:42] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [01:05] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [01:14] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [01:14] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [01:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:48] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:48] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [03:20] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [03:36] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [03:53] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [04:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [06:10] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [06:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [06:26] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [06:28] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [06:51] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [07:05] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [07:13] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:52] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [08:08] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:20] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [08:29] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [09:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:31] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [10:38] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [11:00] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:07] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [11:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [11:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [11:31] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:01] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [12:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [12:43] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [12:54] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [13:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:14] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:14] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [13:48] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:48] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [14:51] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [15:46] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [16:22] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [16:46] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [17:16] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [17:28] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [17:36] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [18:08] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [18:43] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [19:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [19:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [19:53] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [19:53] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [20:39] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [20:42] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [20:51] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [21:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [21:37] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [22:06] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [22:06] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [22:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [22:21] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [22:50] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [22:50] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [22:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:00] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:24] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [23:35] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [23:43] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+
+[Dzień 10]
+==========================================
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-6,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,8
+Stone 	-0,6
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,8
+Stone 	-0,6
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,8
+Stone 	-0,6
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,8
+Stone 	-0,6
+[koniec zdarzenia] -----------
+[Bilans Poranny: Dwarven house] [00:00] -----------
+Food 	-5,3
+Stone 	-0,4
+[koniec zdarzenia] -----------
+[Bilans Poranny: Elf house] [00:00] -----------
+Food 	-2,5
+Wood 	-1,3
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Bilans Poranny: Human house] [00:00] -----------
+Food 	-5,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [00:00] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:07] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:07] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [00:27] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [00:46] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [01:00] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [01:01] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [01:14] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [01:17] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [01:30] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [01:36] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [02:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [02:33] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [02:51] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [03:28] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [04:15] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [04:51] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [06:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [06:12] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [06:25] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Arcanist] [06:48] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Skeleton] [06:55] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [07:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:00] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [07:57] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [08:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Śmierć Wroga: Blob] [08:13] -----------
+Artifacts 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [09:01] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [10:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------
+[Produkcja: Farm] [11:00] -----------
+Food 	+1,0
+[koniec zdarzenia] -----------

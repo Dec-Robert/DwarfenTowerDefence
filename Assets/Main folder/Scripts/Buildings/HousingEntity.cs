@@ -60,6 +60,8 @@ public class HousingEntity : BuildingEntity
     // --- G£ÓWNA LOGIKA PORANNA (06:00) ---
     private void HandleMorningRoutine(int day)
     {
+        Dictionary<ResourceType, float> logChanges = new Dictionary<ResourceType, float>();
+
         // A. Produkcja Pasywna (Na mieszkañca)
         if (housingData.productionPerResident != null && housingData.productionPerResident.Count > 0)
         {
@@ -108,7 +110,17 @@ public class HousingEntity : BuildingEntity
             }
         }
 
+        foreach (var cost in survivalCost)
+        {
+            if (logChanges.ContainsKey(cost.Key)) logChanges[cost.Key] -= cost.Value;
+            else logChanges.Add(cost.Key, -cost.Value);
+        }
         if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
+
+        if (logChanges.Count > 0 && ResourceLogger.Instance != null)
+        {
+            ResourceLogger.Instance.LogTransaction($"Bilans Poranny: {data.buildingName}", logChanges);
+        }
     }
 
     void CheckForNewResident()

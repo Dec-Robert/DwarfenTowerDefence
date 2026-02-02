@@ -55,3 +55,22 @@ public enum EnemyRank
     Elite,
     Boss
 }
+
+[System.Serializable]
+public struct TerrainBonusRule
+{
+    [Tooltip("Jaki teren daje bonus? (np. Forest dla Tartaku)")]
+    public HexFeatureType requiredFeature;
+
+    [Tooltip("Zasiêg poszukiwania (1 = tylko s¹siedzi)")]
+    public int range;
+
+    [Header("Matematyka")]
+    public float baseBonusPerHex;   // np. 0.5
+    public float penaltyPerUser;    // np. 0.2
+    public float minBonus;          // np. 0.1
+
+    // --- NOWE POLE ---
+    [Tooltip("Jednorazowy bonus do produkcji, jeœli budynek stoi BEZPOŒREDNIO na tym terenie.")]
+    public float onTopProductionBonus;
+}

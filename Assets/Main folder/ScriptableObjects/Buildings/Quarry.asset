@@ -16,16 +16,28 @@ MonoBehaviour:
   description: 
   icon: {fileID: 21300000, guid: ab4ae92fb8900154d9583961da916687, type: 3}
   type: 0
+  workerScalingFactor: 0.25
   allowedTerrain: 0300000000000000
   requiresOccupiedSpace: 0
   constructionCost:
   - type: 1
-    amount: 15
+    amount: 30
   - type: 0
-    amount: 25
+    amount: 20
   productionPerCycle:
   - type: 2
-    amount: 20
-  upkeepPerCycle: []
+    amount: 30
+  upkeepPerCycle:
+  - type: 1
+    amount: 5
   tier1Upgrades: []
   prefab: {fileID: 6524460908731403753, guid: aaac537b19e66e145902f1bec629cd9a, type: 3}
+  bonusRule:
+    requiredFeature: 0
+    range: 0
+    baseBonusPerHex: 0
+    penaltyPerUser: 0
+    minBonus: 0
+    onTopProductionBonus: 0
+  baseShifts: 1
+  baseWorkersPerShift: 1

@@ -248,8 +248,8 @@ public class UIBuildingInspector : MonoBehaviour
                 GenerateUpgradesList();
             }
 
-            lblProd.text = "Produkcja: " + FormatResourcesWithHourly(currentTarget.GetCurrentProduction(), currentTarget.shiftLength);
-            lblUpkeep.text = "Utrzymanie: " + FormatResourcesWithHourly(currentTarget.GetCurrentUpkeep(), currentTarget.shiftLength);
+            lblProd.text = "Produkcja (zmiana): " + FormatResourcesPerShift(currentTarget.GetCurrentProduction());
+            lblUpkeep.text = "Utrzymanie (zmiana): " + FormatResourcesPerShift(currentTarget.GetCurrentUpkeep());
         }
 
         // 5. Wspólna sekcja pracowników (widoczna tylko dla Wie¿ i Ekonomii)
@@ -471,18 +471,19 @@ public class UIBuildingInspector : MonoBehaviour
         if (currentTarget != null) { currentTarget.Demolish(); Hide(); }
     }
 
-    string FormatResourcesWithHourly(Dictionary<ResourceType, float> dict, int shiftLength)
+    string FormatResourcesPerShift(Dictionary<ResourceType, float> dict)
     {
         if (dict.Count == 0) return "-";
+
         StringBuilder sb = new StringBuilder();
         foreach (var kvp in dict)
         {
-            float hourly = (float)kvp.Value / shiftLength;
-            sb.Append($"{kvp.Value} {kvp.Key} ({hourly:F1}/h)\n");
+            // Wyœwietlamy sam¹ wartoœæ, zaokr¹glon¹ do 2 miejsc dla porz¹dku
+            // Format: "10.5 Wood"
+            sb.Append($"{kvp.Value:F2} {kvp.Key}\n");
         }
         return sb.ToString();
     }
-
     void UpdateBudgetUI()
     {
         if (budgetContainer == null) return;

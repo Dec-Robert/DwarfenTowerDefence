@@ -7,6 +7,8 @@ public class CityStatsManager : MonoBehaviour
     [Header("Globalne Bonusy (Meta/Eventy)")]
     public int globalBonusShifts = 0;
     public int globalBonusWorkersPerShift = 0;
+    public int globalShiftLengthModifier = 0; 
+
 
     private void Awake()
     {

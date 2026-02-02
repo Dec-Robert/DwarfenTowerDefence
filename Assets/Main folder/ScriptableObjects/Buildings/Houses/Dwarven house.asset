@@ -21,39 +21,42 @@ MonoBehaviour:
   requiresOccupiedSpace: 0
   constructionCost:
   - type: 4
-    amount: 6
+    amount: 30
   - type: 2
-    amount: 2
+    amount: 10
   productionPerCycle: []
   upkeepPerCycle:
   - type: 1
     amount: 1
   tier1Upgrades: []
   prefab: {fileID: 8713615584689418078, guid: c53b8485d701564499c48ccdca6aec42, type: 3}
+  bonusRule:
+    requiredFeature: 0
+    range: 0
+    baseBonusPerHex: 0
+    penaltyPerUser: 0
+    minBonus: 0
+    onTopProductionBonus: 0
   baseShifts: 1
   baseWorkersPerShift: 1
   housingRace: 2
   maxResidents: 4
   initialResidents: 1
-  growthDifficultyMultiplier: 1.5
-  baseGrowthTicks: 2
+  growthDifficultyMultiplier: 2
+  baseGrowthTicks: 3
   productionPerResident:
   - type: 0
-    amount: 0.5
-  - type: 7
-    amount: 0.05
+    amount: 5
   baseDailyUpkeep:
   - type: 4
     amount: 5
   - type: 2
-    amount: 0.25
+    amount: 3
   upkeepPerResident:
   - type: 4
-    amount: 0.25
-  - type: 2
-    amount: 0.1
-  growthSurplusCost:
-  - type: 4
-    amount: 3
+    amount: 6
   - type: 2
     amount: 1
+  growthSurplusCost:
+  - type: 4
+    amount: 8

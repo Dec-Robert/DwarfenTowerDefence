@@ -52,15 +52,28 @@ public class ResourceManager : MonoBehaviour
     public void AddResource(ResourceType type, float amount)
     {
         if (amount < 0) return;
+
         resourceBank[type] += amount;
+
+        // POPRAWKA: Zaokr¹glenie do 4 miejsc po przecinku, aby usun¹æ "œmieci" (0.00001)
+        resourceBank[type] = (float)Math.Round(resourceBank[type], 4);
+
         OnResourceChanged?.Invoke(type, resourceBank[type]);
     }
 
     public bool SpendResource(ResourceType type, float amount)
     {
-        if (resourceBank[type] >= amount)
+        // Sprawdzamy z ma³ym marginesem b³êdu
+        if (resourceBank[type] >= amount - 0.0001f)
         {
             resourceBank[type] -= amount;
+
+            // POPRAWKA: Zaokr¹glenie wyniku
+            resourceBank[type] = (float)Math.Round(resourceBank[type], 4);
+
+            // Zabezpieczenie, ¿eby nie spad³o poni¿ej absolutnego zera przez b³¹d float
+            if (resourceBank[type] < 0) resourceBank[type] = 0;
+
             OnResourceChanged?.Invoke(type, resourceBank[type]);
             return true;
         }
@@ -80,6 +93,11 @@ public class ResourceManager : MonoBehaviour
         foreach (var resource in resourcesToSpend)
         {
             resourceBank[resource.Key] -= resource.Value;
+
+            // POPRAWKA:
+            resourceBank[resource.Key] = (float)Math.Round(resourceBank[resource.Key], 4);
+            if (resourceBank[resource.Key] < 0) resourceBank[resource.Key] = 0;
+
             OnResourceChanged?.Invoke(resource.Key, resourceBank[resource.Key]);
         }
         return true;

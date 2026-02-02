@@ -178,6 +178,12 @@ public class EnemyStats : MonoBehaviour
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.AddResource(ResourceType.Artifacts, 1);
+
+            // LOGOWANIE
+            if (ResourceLogger.Instance != null)
+            {
+                ResourceLogger.Instance.LogSingleEvent($"Œmieræ Wroga: {data.enemyName}", ResourceType.Artifacts, 1);
+            }
         }
 
         // Powiadom skille o œmierci (np. Wybuch po œmierci)
