@@ -17,9 +17,9 @@ public class LinearProjectile : ProjectileBase
     private HashSet<EnemyStats> hitEnemies = new HashSet<EnemyStats>();
     private Vector3 moveDirection;
 
-    public override void Initialize(float _damage, DamageType _type, List<TowerEffectSO> _effects)
+    public override void Initialize(float _damage, DamageType _type, List<TowerEffectSO> _effects,bool _isCritical, float _criticalMultiplier,float _=0f)
     {
-        base.Initialize(_damage, _type, _effects);
+        base.Initialize(_damage, _type, _effects, _isCritical, _criticalMultiplier);
 
         // Zapamiêtujemy kierunek patrzenia lufy (Forward) w momencie strza³u
         // Sp³aszczamy go do p³aszczyzny XZ, ¿eby wysokoœæ kontrolowa³ skrypt

@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6aba82a7d3e1bbf429f6f0dd24bf047c, type: 3}
+  m_Name: 1. Sentinel Arbalest
+  m_EditorClassIdentifier: 
+  buildingName: Arbalet
+  description: "Solidny i nie zawodny mechanizm kt\xF3ry broni\u0142 miasta przez
+    milenia przed nico\u015Bci\u0105."
+  icon: {fileID: 21300000, guid: 966fcf7d12ef7d743ac842b2d6d43888, type: 3}
+  type: 1
+  workerScalingFactor: 0.25
+  allowedTerrain: 0600000001000000030000000500000000000000
+  requiresOccupiedSpace: 0
+  constructionCost:
+  - type: 0
+    amount: 10
+  - type: 1
+    amount: 5
+  productionPerCycle: []
+  upkeepPerCycle:
+  - type: 0
+    amount: 2
+  - type: 0
+    amount: 2
+  tier1Upgrades: []
+  prefab: {fileID: 3908196004931482925, guid: c20acd7fe44159140a7792035788bea9, type: 3}
+  bonusRule:
+    requiredFeature: 0
+    range: 0
+    baseBonusPerHex: 0
+    penaltyPerUser: 0
+    minBonus: 0
+    onTopProductionBonus: 0
+  baseShifts: 1
+  baseWorkersPerShift: 1
+  baseRange: 15
+  baseDamage: 25
+  fireRate: 3
+  criticalChancel: 10
+  criticalDamageMultiplier: 200
+  armorPenetration: 0
+  magicPenetration: 0
+  damageType: 0
+  effects: []
+  bulletPrefab: {fileID: 1508738095332709406, guid: 85fe7ed40cca507438cd0f907d3acd01, type: 3}

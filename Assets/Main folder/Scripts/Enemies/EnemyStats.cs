@@ -1,6 +1,6 @@
-using UnityEngine;
-using System.Collections.Generic;
 using System; // Potrzebne do Action
+using System.Collections.Generic;
+using UnityEngine;
 using Random = UnityEngine.Random; // ROZWI¥ZANIE PROBLEMU: Wymuszamy u¿ycie Random z Unity
 
 public class EnemyStats : MonoBehaviour
@@ -100,15 +100,8 @@ public class EnemyStats : MonoBehaviour
     }
 
     // --- OTRZYMYWANIE OBRA¯EÑ ---
-    public void TakeDamage(float rawDamage, DamageType type)
+    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical, float criticalMultiplier)
     {
-        // 1. Unik
-        if (currentDodge > 0 && Random.Range(0f, 100f) < currentDodge)
-        {
-            // Opcjonalnie: Floating Text "DODGE"
-            return;
-        }
-
         // 2. Umiejêtnoœci: Modyfikacja obra¿eñ przed ich zadaniem (np. Hiperpancerz)
         foreach (var skill in skills)
         {
@@ -116,12 +109,19 @@ public class EnemyStats : MonoBehaviour
             if (rawDamage <= 0) return; // Zablokowane ca³kowicie
         }
 
-        // 3. Redukcja pancerzem/magi¹
-        float mitigation = (type == DamageType.Physical) ? currentArmor : currentMagicResist;
-        // Wzór: Procentowa redukcja (Armor 20 = -20% dmg)
-        float finalDamage = rawDamage * (1f - (mitigation / 100f));
+        float dodgeRoll = Random.Range(0f, 100f);
+        float finalDamage = ModifieDamage(type, rawDamage, armourPiercing, magicPiercing, isCritical, criticalMultiplier);
 
-        if (finalDamage < 1) finalDamage = 1; // Minimum 1 dmg
+        if (dodgeRoll < currentDodge && !isCritical && type != DamageType.True)
+        {
+            // Flash efekt uniku (wizualny)
+            if (meshRenderer != null)
+            {
+                meshRenderer.material.color = Color.yellow;
+                Invoke("ResetColor", 0.1f);
+            }
+            return; // Unikniêto obra¿eñ
+        }
 
         // 4. Aplikacja obra¿eñ
         currentHealth -= finalDamage;
@@ -190,6 +190,32 @@ public class EnemyStats : MonoBehaviour
         foreach (var skill in skills) skill.OnDeath();
 
         Destroy(gameObject);
+    }
+
+    float ModifieDamage(DamageType type, float rawDamage, float armourPiercing, float magicPiercing, bool isCritical, float criticalMultiplier)
+    {
+        float finalArmor = currentArmor;
+        float finalMagicResist = currentMagicResist;
+        if (finalMagicResist > 0) finalMagicResist = Mathf.Max(0, currentMagicResist - magicPiercing);
+        if (finalArmor > 0) finalArmor = Mathf.Max(0, currentArmor - armourPiercing);
+
+        
+
+        switch (type)
+        {
+            case DamageType.Physical:
+               rawDamage *= (1f - finalArmor / 100f); // Zmniejszamy obra¿enia o procent przebicia
+                break; // Ignoruje pancerz i odpornoœæ magiczn¹
+            case DamageType.Magic:
+                rawDamage *= (1f - finalMagicResist / 100f); // Zmniejszamy obra¿enia o procent przebicia
+                break; // Ignoruje pancerz i odpornoœæ magiczn¹
+            case DamageType.True:
+                break; // Ignoruje pancerz i odpornoœæ magiczn¹
+        }
+
+        if(isCritical) rawDamage *= criticalMultiplier/100f; // Zastosowanie mno¿nika krytycznego
+
+        return rawDamage; // Domyœlnie zwracamy niezmodyfikowane obra¿enia
     }
 
     // --- HELPERY DLA UMIEJÊTNOŒCI (Blob) ---

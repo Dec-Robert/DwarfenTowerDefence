@@ -22,6 +22,10 @@ public class TowerController : MonoBehaviour
     [SerializeField] private float currentRange;
     [SerializeField] private float currentDamage;
     [SerializeField] private float currentFireRate;
+
+    [SerializeField] private float criticalChance;
+    [SerializeField] private float criticalMultiplier;
+
     [SerializeField] private bool isAimed = false;
 
     private Transform target;
@@ -37,6 +41,8 @@ public class TowerController : MonoBehaviour
             currentRange = towerData.baseRange;
             currentDamage = towerData.baseDamage;
             currentFireRate = towerData.fireRate;
+            criticalChance = towerData.criticalChancel;
+            criticalMultiplier = towerData.criticalDamageMultiplier;
         }
 
         InvokeRepeating("UpdateTarget", 0f, 0.5f);
@@ -129,11 +135,22 @@ public class TowerController : MonoBehaviour
         // 3. Strzelanie
         if (fireCountdown <= 0f)
         {
-            if (isAimed)
+            if(partToRotate != null)
+            {
+                if (isAimed)
+                {
+
+                    Shoot();
+                    if (currentFireRate > 0)
+                        fireCountdown = 1f / currentFireRate;
+                }
+            }
+            else
             {
                 Shoot();
                 if (currentFireRate > 0)
                     fireCountdown = 1f / currentFireRate;
+
             }
         }
         fireCountdown -= Time.deltaTime;
@@ -174,12 +191,29 @@ public class TowerController : MonoBehaviour
         GameObject bulletGO = Instantiate(tData.bulletPrefab, spawnPos, spawnRot);
 
         ProjectileBase projectile = bulletGO.GetComponent<ProjectileBase>();
+
+        bool isCritical = Random.value*100f < tData.criticalChancel;
+
         if (projectile != null)
         {
-            projectile.Initialize(currentDamage, tData.damageType, tData.effects);
+            projectile.Initialize(currentDamage, tData.damageType, tData.effects, isCritical, criticalMultiplier);
 
             // Jeœli to zwyk³y pocisk, dajemy mu cel. Liniowy poleci sam przed siebie.
             if (projectile is SimpleBullet simple) simple.Seek(target);
+            if (projectile is HitscanProjectile hitscan) hitscan.LaunchAt(firePoint.position, target);
+            if (projectile is FragmentedProjectile fragmentedProjectile) fragmentedProjectile.LaunchAt(target);
+            if (projectile is GroundProjectile groundProjectile)                
+                if (target != null)
+                {
+                    groundProjectile.Launch(target.position);
+                }
+                else
+                {
+                    // Fallback jeœli cel znikn¹³ (strzel przed siebie)
+                    groundProjectile.Launch(transform.position + transform.forward * 5f);
+                }
+
+
         }
 
         if (towerEntity != null) towerEntity.RegisterShot();

@@ -20,13 +20,13 @@ MonoBehaviour:
   allowedTerrain: 0100000000000000
   requiresOccupiedSpace: 0
   constructionCost:
-  - type: 1
-    amount: 10
   - type: 0
-    amount: 20
+    amount: 15
+  - type: 2
+    amount: 5
   productionPerCycle:
   - type: 1
-    amount: 5
+    amount: 10
   upkeepPerCycle:
   - type: 0
     amount: 5
@@ -37,9 +37,9 @@ MonoBehaviour:
   bonusRule:
     requiredFeature: 1
     range: 1
-    baseBonusPerHex: 5
-    penaltyPerUser: 2
+    baseBonusPerHex: 3
+    penaltyPerUser: 0
     minBonus: 1
-    onTopProductionBonus: 15
+    onTopProductionBonus: 5
   baseShifts: 1
   baseWorkersPerShift: 1

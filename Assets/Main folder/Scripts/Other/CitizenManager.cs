@@ -79,4 +79,11 @@ public class CitizenManager : MonoBehaviour
     {
         return citizens.Count(c => c.race == race);
     }
+
+    // Metoda pomocnicza do zliczania (przyjmuje jeden lub wiêcej stanów)
+    public int GetCountByState(Race race, params WorkState[] states)
+    {
+        // U¿ywamy System.Linq
+        return citizens.Count(c => c.race == race && System.Array.Exists(states, state => state == c.workState));
+    }
 }

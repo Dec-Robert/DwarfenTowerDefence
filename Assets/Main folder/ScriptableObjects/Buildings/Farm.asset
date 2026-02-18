@@ -21,27 +21,25 @@ MonoBehaviour:
   requiresOccupiedSpace: 0
   constructionCost:
   - type: 0
-    amount: 10
-  - type: 1
-    amount: 20
-  - type: 2
-    amount: 15
-  productionPerCycle:
-  - type: 4
-    amount: 20
-  upkeepPerCycle:
+    amount: 5
   - type: 1
     amount: 5
-  - type: 0
-    amount: 2
+  - type: 2
+    amount: 5
+  productionPerCycle:
+  - type: 4
+    amount: 30
+  upkeepPerCycle:
+  - type: 1
+    amount: 6
   tier1Upgrades: []
   prefab: {fileID: 2413402597642724196, guid: 03adf5a8c6caa8f45a2868a6af66e344, type: 3}
   bonusRule:
     requiredFeature: 5
     range: 1
-    baseBonusPerHex: 10
-    penaltyPerUser: 3
-    minBonus: 2
-    onTopProductionBonus: 20
+    baseBonusPerHex: 5
+    penaltyPerUser: 2
+    minBonus: 0
+    onTopProductionBonus: 10
   baseShifts: 1
   baseWorkersPerShift: 1

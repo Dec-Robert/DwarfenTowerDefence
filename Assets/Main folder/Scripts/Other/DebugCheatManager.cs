@@ -29,7 +29,7 @@ public class DebugCheatManager : MonoBehaviour
             {
                 // Zadajemy obra¿enia "nieskoñczone", ¿eby na pewno zgin¹³
                 // U¿ywamy DamageType.Physical (lub dowolnego innego), system i tak to przetworzy
-                enemy.TakeDamage(999999f, DamageType.Physical);
+                enemy.TakeDamage(999999f, DamageType.Physical,100,100,true,1000);
             }
         }
 

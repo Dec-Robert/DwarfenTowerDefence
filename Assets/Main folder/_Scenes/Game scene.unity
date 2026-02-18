@@ -24,7 +24,7 @@ RenderSettings:
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 0
+  m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: fe852d6ce9e7d074a9c5f76fdf2b4a8f, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 34146714}
   - component: {fileID: 34146713}
+  - component: {fileID: 34146715}
   m_Layer: 0
   m_Name: TIME MANAGER
   m_TagString: Untagged
@@ -149,6 +150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   realSecondsPerHour: 2
+  nightSlowdownFactor: 3
   dayStartHour: 6
   nightStartHour: 20
   currentTime: 6
@@ -170,6 +172,150 @@ Transform:
   m_Children: []
   m_Father: {fileID: 743555804}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &34146715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34146712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a935961e5a466c44caab9b8d9527b07a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sunLight: {fileID: 410087040}
+  sunriseHour: 6
+  sunYRotation: -30
+  sunColor:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  skyColor:
+    serializedVersion: 2
+    key0: {r: 0.6603774, g: 0.6603774, b: 0.6603774, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 1, g: 1, b: 1, a: 0}
+    key3: {r: 0.6627451, g: 0.6627451, b: 0.6627451, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 13685
+    ctime1: 20817
+    ctime2: 43369
+    ctime3: 50501
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 4
+    m_NumAlphaKeys: 2
+  sunIntensity:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: -0
+      value: 0.00000017881393
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.19262084
+      value: -0.0038693547
+      inSlope: 1.4315536
+      outSlope: 1.4315536
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.29999998
+      value: 1.0028663
+      inSlope: -0.008718656
+      outSlope: -0.008718656
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.35593164
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.50639623
+      value: 1.0033071
+      inSlope: -Infinity
+      outSlope: -Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.5221688
+      value: 1.0003489
+      inSlope: -1.4636729
+      outSlope: -1.4636729
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.49625552
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.69
+      value: -0.008610979
+      inSlope: -4.650318
+      outSlope: -4.650318
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.00000055506825
+      inSlope: -Infinity
+      outSlope: -Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &97194933
 GameObject:
   m_ObjectHideFlags: 0
@@ -690,18 +836,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 693969841}
   allBuildingsDatabase:
-  - {fileID: 11400000, guid: b372bd894687d324ab06de8a0733652f, type: 2}
+  - {fileID: 11400000, guid: 5fb03fe780dcc3d4994601942664b8f2, type: 2}
   - {fileID: 11400000, guid: 1d5fbaa52ab9d8f4c9b37f571ef9c34f, type: 2}
+  - {fileID: 11400000, guid: da0e7ad02644f7a4da50a82712216565, type: 2}
+  - {fileID: 11400000, guid: 7736ae92b813e9d41b65f53700c76301, type: 2}
+  - {fileID: 11400000, guid: f1e80ed22bc5fa24e8d91ef708c48645, type: 2}
+  - {fileID: 11400000, guid: b372bd894687d324ab06de8a0733652f, type: 2}
+  - {fileID: 11400000, guid: a626d0a2160c0404bbcf70734441443e, type: 2}
   - {fileID: 0}
   - {fileID: 11400000, guid: 82382e10f37dc5f4697671773e21f8f8, type: 2}
   - {fileID: 11400000, guid: fc6804a5dec031f4a96410c706a346bd, type: 2}
   - {fileID: 11400000, guid: aa89a7d041da34b45b7be77c10f79ae6, type: 2}
   - {fileID: 0}
+  - {fileID: 11400000, guid: 305ea702f61030e4184fd8704c128bcf, type: 2}
   - {fileID: 11400000, guid: fa44a7101b5c2b947bc70cdc23763547, type: 2}
-  - {fileID: 11400000, guid: 2f35943f5da640b44968e098eec878f6, type: 2}
   - {fileID: 11400000, guid: 369f426513641834ba565adcaee3b114, type: 2}
   - {fileID: 11400000, guid: 8047b4339a3a974419c111f42dd04632, type: 2}
-  - {fileID: 11400000, guid: 305ea702f61030e4184fd8704c128bcf, type: 2}
+  - {fileID: 11400000, guid: 2f35943f5da640b44968e098eec878f6, type: 2}
 --- !u!114 &548684869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1033,7 +1184,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a2b331b144210e48a90ae31e6278c25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingHp: 20
+  startingHp: 20000
 --- !u!4 &1478630900
 Transform:
   m_ObjectHideFlags: 0

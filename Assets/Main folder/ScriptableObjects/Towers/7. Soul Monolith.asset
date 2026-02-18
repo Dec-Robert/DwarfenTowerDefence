@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6aba82a7d3e1bbf429f6f0dd24bf047c, type: 3}
+  m_Name: 7. Soul Monolith
+  m_EditorClassIdentifier: 
+  buildingName: Monolit dusz
+  description: 
+  icon: {fileID: 21300000, guid: b35b0aeb601ca3248b4529d94239d3cb, type: 3}
+  type: 1
+  workerScalingFactor: 0.25
+  allowedTerrain: 0600000001000000030000000500000000000000
+  requiresOccupiedSpace: 0
+  constructionCost:
+  - type: 0
+    amount: 5
+  - type: 1
+    amount: 5
+  productionPerCycle: []
+  upkeepPerCycle: []
+  tier1Upgrades: []
+  prefab: {fileID: 3289850919208233257, guid: 438ac62c35dd0034b86f3b1d3adca435, type: 3}
+  bonusRule:
+    requiredFeature: 0
+    range: 0
+    baseBonusPerHex: 0
+    penaltyPerUser: 0
+    minBonus: 0
+    onTopProductionBonus: 0
+  baseShifts: 1
+  baseWorkersPerShift: 1
+  baseRange: 5
+  baseDamage: 50
+  fireRate: 3
+  damageType: 0
+  effects: []
+  bulletPrefab: {fileID: 1508738095332709406, guid: 85fe7ed40cca507438cd0f907d3acd01, type: 3}

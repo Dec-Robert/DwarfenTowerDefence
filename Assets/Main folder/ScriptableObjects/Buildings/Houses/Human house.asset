@@ -20,8 +20,10 @@ MonoBehaviour:
   allowedTerrain: 060000000300000000000000
   requiresOccupiedSpace: 0
   constructionCost:
+  - type: 0
+    amount: 5
   - type: 1
-    amount: 15
+    amount: 10
   - type: 4
     amount: 20
   productionPerCycle: []
@@ -46,8 +48,12 @@ MonoBehaviour:
   baseGrowthTicks: 1
   productionPerResident:
   - type: 0
-    amount: 8
+    amount: 2
   baseDailyUpkeep:
+  - type: 1
+    amount: 2
+  - type: 2
+    amount: 2
   - type: 4
     amount: 10
   upkeepPerResident:

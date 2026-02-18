@@ -46,7 +46,8 @@ public enum DayPhase
 public enum DamageType
 {
     Physical, // Zwyk³e wie¿e (£ucznik, Armata)
-    Magic     // Wie¿e magiczne (Lód, Ogieñ)
+    Magic,    // Wie¿e magiczne (Lód, Ogieñ)
+    True      // Typ obra¿eñ osi¹galny tylko dziêki niektórym run¹S
 }
 
 public enum EnemyRank

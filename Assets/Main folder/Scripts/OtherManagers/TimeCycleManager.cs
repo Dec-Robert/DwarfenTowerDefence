@@ -9,6 +9,9 @@ public class TimeCycleManager : MonoBehaviour
     [Header("Konfiguracja Czasu")]
     public float realSecondsPerHour = 20.0f;
 
+    [Tooltip("Ile razy wolniej p³ynie czas w NOCY (np. 3 = noc jest 3x d³u¿sza).")]
+    public float nightSlowdownFactor = 3.0f; // <--- NOWOŒÆ
+
     [Header("Cykl Dnia i Nocy")]
     public int dayStartHour = 6;
     public int nightStartHour = 20;
@@ -43,9 +46,20 @@ public class TimeCycleManager : MonoBehaviour
 
     private void Update()
     {
-        currentTime += Time.deltaTime / realSecondsPerHour;
+        // 1. Sprawdzamy czy jest noc (20:00 - 06:00)
+        bool isNight = (currentHour >= nightStartHour) || (currentHour < dayStartHour);
+
+        // 2. Obliczamy aktualn¹ d³ugoœæ godziny
+        // Jeœli noc -> mno¿ymy czas trwania godziny razy faktor (np. 20s * 3 = 60s za godzinê)
+        float currentSecondsPerHour = isNight ? (realSecondsPerHour * nightSlowdownFactor) : realSecondsPerHour;
+
+        // 3. Dodajemy czas
+        // (Time.deltaTime uwzglêdnia przyciski prêdkoœci 1x, 2x, 5x, wiêc to nadal dzia³a)
+        currentTime += Time.deltaTime / currentSecondsPerHour;
+
         UpdateUI();
 
+        // 4. Wybijanie pe³nych godzin
         if (currentTime >= currentHour + 1)
         {
             currentHour++;

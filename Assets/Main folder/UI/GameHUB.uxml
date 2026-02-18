@@ -9,7 +9,6 @@
         <ui:VisualElement name="TopSection" style="width: 100%; align-items: center;">
             
             <!-- Pasek Surowców -->
-            <!-- Pasek Surowców -->
         <ui:VisualElement name="TopBar" class="top-bar" style="width: 100%; justify-content: center; flex-wrap: wrap;">
             
             <ui:VisualElement name="HP_Group" class="resource-item">
@@ -76,9 +75,9 @@
 
         </ui:VisualElement>
 
-        <!-- === KONTROLA CZASU (PRZENIESIONE TUTAJ) === -->
-        <!-- Pozycja absolutna: Prawy górny róg, ale opuszczona o 70px, żeby być pod paskiem TopBar -->
-        <ui:VisualElement name="TimeControls" class="time-controls-panel" style="position: absolute; top: 70px; right: 10px;">
+        <!-- === KONTROLA CZASU === -->
+        <!-- Zmieniono pozycję na: LEWA STRONA (left: 10px) -->
+        <ui:VisualElement name="TimeControls" class="time-controls-panel" style="position: absolute; top: 70px; left: 10px;">
             <ui:Button text="||" name="Btn_Pause" class="time-btn" />
             <ui:Button text="1x" name="Btn_1x" class="time-btn" />
             <ui:Button text="2x" name="Btn_2x" class="time-btn" />
@@ -145,22 +144,74 @@
             <ui:Label text="Żeby budynek generował surowce lub żeby wieże strzelały potrzebują pracowników.&#10;&#10;Kliknij na budynek aby otworzyć menu.&#10;&#10;Twoi pracownicy pracują tylko podczas zmian." class="tutorial-text" />
         </ui:VisualElement>
 
-        <ui:VisualElement name="ResourceTooltip" class="resource-tooltip" style="display: none;">
-            <ui:Label name="ResTool_Name" text="DREWNO" style="color: #FFD700; -unity-font-style: bold; margin-bottom: 5px; border-bottom-width: 1px; border-bottom-color: #555;" />
+<!-- TOOLTIP ZASOBÓW (ZMODYFIKOWANY) -->
+    <ui:VisualElement name="ResourceTooltip" class="resource-tooltip" style="display: none; width: 220px;">
+        
+        <!-- Nagłówek wspólny -->
+        <ui:Label name="ResTool_Name" text="NAZWA" style="color: #FFD700; -unity-font-style: bold; margin-bottom: 5px; border-bottom-width: 1px; border-bottom-color: #555; -unity-text-align: middle-center;" />
+        
+        <!-- WARIANT A: STANDARDOWY (Surowce) -->
+        <ui:VisualElement name="Mode_Standard">
             <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
                 <ui:Label text="Przychód:" style="color: #CCC; font-size: 11px;" />
-                <ui:Label name="ResTool_Gain" text="+50.0" style="color: #44FF44; font-size: 11px;" />
+                <ui:Label name="ResTool_Gain" text="+0" style="color: #44FF44; font-size: 11px;" />
             </ui:VisualElement>
+
             <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
                 <ui:Label text="Wydatki:" style="color: #CCC; font-size: 11px;" />
-                <ui:Label name="ResTool_Loss" text="-10.0" style="color: #FF4444; font-size: 11px;" />
+                <ui:Label name="ResTool_Loss" text="-0" style="color: #FF4444; font-size: 11px;" />
             </ui:VisualElement>
+            
             <ui:VisualElement style="height: 1px; background-color: #555; margin-top: 3px; margin-bottom: 3px;" />
+
             <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
                 <ui:Label text="BILANS:" style="color: white; -unity-font-style: bold;" />
-                <ui:Label name="ResTool_Net" text="+40.0" style="color: #44FF44; -unity-font-style: bold;" />
+                <ui:Label name="ResTool_Net" text="+0" style="color: #44FF44; -unity-font-style: bold;" />
             </ui:VisualElement>
         </ui:VisualElement>
+
+        <!-- WARIANT B: POPULACJA (Tabelka) -->
+        <ui:VisualElement name="Mode_Population" style="display: none;">
+            
+            <!-- Nagłówki Tabeli -->
+            <ui:VisualElement style="flex-direction: row; justify-content: flex-end; margin-bottom: 2px;">
+                <ui:Label text="L" style="width: 30px; -unity-text-align: middle-center; color: #AAA; font-size: 10px; -unity-font-style: bold;" />
+                <ui:Label text="E" style="width: 30px; -unity-text-align: middle-center; color: #AAA; font-size: 10px; -unity-font-style: bold;" />
+                <ui:Label text="K" style="width: 30px; -unity-text-align: middle-center; color: #AAA; font-size: 10px; -unity-font-style: bold;" />
+            </ui:VisualElement>
+
+            <!-- Wiersz: WOLNI -->
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; background-color: rgba(0,255,0,0.1); border-radius: 3px; padding: 2px; margin-bottom: 2px;">
+                <ui:Label text="Wolni" style="color: #CFC; font-size: 11px;" />
+                <ui:VisualElement style="flex-direction: row;">
+                    <ui:Label name="Pop_Idle_H" text="0" style="width: 30px; -unity-text-align: middle-center; color: #FFF; font-size: 11px;" />
+                    <ui:Label name="Pop_Idle_E" text="0" style="width: 30px; -unity-text-align: middle-center; color: #FFF; font-size: 11px;" />
+                    <ui:Label name="Pop_Idle_D" text="0" style="width: 30px; -unity-text-align: middle-center; color: #FFF; font-size: 11px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Wiersz: ZAREZERWOWANI -->
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <ui:Label text="Zarez." style="color: #CCF; font-size: 11px;" />
+                <ui:VisualElement style="flex-direction: row;">
+                    <ui:Label name="Pop_Assigned_H" text="0" style="width: 30px; -unity-text-align: middle-center; color: #BBB; font-size: 11px;" />
+                    <ui:Label name="Pop_Assigned_E" text="0" style="width: 30px; -unity-text-align: middle-center; color: #BBB; font-size: 11px;" />
+                    <ui:Label name="Pop_Assigned_D" text="0" style="width: 30px; -unity-text-align: middle-center; color: #BBB; font-size: 11px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Wiersz: PRACUJĄCY -->
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; background-color: rgba(0,0,0,0.2); border-radius: 3px; padding: 2px;">
+                <ui:Label text="Praca" style="color: #FCC; font-size: 11px;" />
+                <ui:VisualElement style="flex-direction: row;">
+                    <ui:Label name="Pop_Work_H" text="0" style="width: 30px; -unity-text-align: middle-center; color: #999; font-size: 11px;" />
+                    <ui:Label name="Pop_Work_E" text="0" style="width: 30px; -unity-text-align: middle-center; color: #999; font-size: 11px;" />
+                    <ui:Label name="Pop_Work_D" text="0" style="width: 30px; -unity-text-align: middle-center; color: #999; font-size: 11px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
 
     </ui:VisualElement>
     <ui:VisualElement name="HealthBarLayer" picking-mode="Ignore" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;" />

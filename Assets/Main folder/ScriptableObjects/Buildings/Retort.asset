@@ -20,16 +20,18 @@ MonoBehaviour:
   allowedTerrain: 000000000100000002000000
   requiresOccupiedSpace: 0
   constructionCost:
+  - type: 0
+    amount: 10
   - type: 1
-    amount: 40
+    amount: 50
   - type: 2
     amount: 30
   productionPerCycle:
   - type: 3
-    amount: 10
+    amount: 7
   upkeepPerCycle:
   - type: 1
-    amount: 15
+    amount: 20
   tier1Upgrades: []
   prefab: {fileID: 4011031713050108421, guid: 07c2962ef65bb134394603a64ca2250e, type: 3}
   bonusRule:

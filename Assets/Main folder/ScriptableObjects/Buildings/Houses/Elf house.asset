@@ -46,17 +46,19 @@ MonoBehaviour:
   baseGrowthTicks: 2
   productionPerResident:
   - type: 0
-    amount: 4
+    amount: 1
+  - type: 1
+    amount: 1
   baseDailyUpkeep:
   - type: 4
     amount: 6
   - type: 1
     amount: 5
   upkeepPerResident:
-  - type: 4
-    amount: 2
   - type: 1
     amount: 1
+  - type: 4
+    amount: 2
   growthSurplusCost:
   - type: 4
     amount: 8
