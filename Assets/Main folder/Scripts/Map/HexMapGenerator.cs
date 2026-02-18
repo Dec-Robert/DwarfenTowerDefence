@@ -272,7 +272,7 @@ public class HexMapGenerator : MonoBehaviour
             if (IsMetaChunk(chunk))
             {
                 fogManager.RevealChunk(chunk);
-                if (expansionManager != null) expansionManager.InitializeStartingChunks(new List<Vector2Int> { chunk });
+                if (expansionManager != null) expansionManager.Initialize(new List<Vector2Int> { chunk });
             }
         }
     }
@@ -847,7 +847,7 @@ public class HexMapGenerator : MonoBehaviour
         // 4. INICJALIZACJA MANAGERA EKSPANSJI (RAZ, Z PEŁNĄ LISTĄ)
         if (expansionManager != null)
         {
-            expansionManager.InitializeStartingChunks(initialRevealed);
+            expansionManager.Initialize(initialRevealed);
         }
         else
         {
@@ -857,6 +857,10 @@ public class HexMapGenerator : MonoBehaviour
 
     public Vector2Int GetChunkCoordFromWorldPosition(Vector3 worldPos) { Vector2Int bestChunk = Vector2Int.zero; float minDst = float.MaxValue; foreach (var chunk in allValidChunks) { Vector3 center = HexGridMath.GetChunkCenterWorld(chunk, chunkRadius, hexSize, padding); float d = Vector2.Distance(new Vector2(center.x, center.z), new Vector2(worldPos.x, worldPos.z)); if (d < minDst) { minDst = d; bestChunk = chunk; } } return bestChunk; }
 
-
+    public bool IsChunkInMap(Vector2Int coord)
+    {
+        if (allValidChunks.Contains(coord)) return true;
+        return false;
+    }
 
 }

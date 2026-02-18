@@ -7,9 +7,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Ustawienia Startowe")]
     [SerializeField] private int startingHp = 20;
-    // USUNIÊTO: startingGold (teraz ustawiasz to w inspektorze ResourceManagera)
 
-    // USUNIÊTO: public int gold
     public int mainGateHP { get; private set; }
     public int waveNumber { get; private set; }
 

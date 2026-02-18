@@ -75,3 +75,28 @@ public struct TerrainBonusRule
     [Tooltip("Jednorazowy bonus do produkcji, jeœli budynek stoi BEZPOŒREDNIO na tym terenie.")]
     public float onTopProductionBonus;
 }
+
+public enum ChunkState
+{
+    Locked,       // Zablokowany, nie mo¿na nic robiæ, maj¹ to drogi i niodkryte jeszcze chunki
+    Unlocked,     // Odblokowany, mo¿na wys³aæ zwiadowcê, ale nie mo¿na budowaæ
+    Scouting,     // W trakcie odkrywania 
+    MilitaryOnly, // Mo¿na wie¿e, nie mo¿na ekonomii (chyba ¿e minie czas)
+    FullyUnlocked // Mo¿na wszystko
+}
+
+[System.Serializable]
+public class ScoutingMission
+{
+    public Vector2Int targetChunk;
+    public ExpeditionCenterEntity assignedCenter; // Sk¹d wyszed³ zwiadowca
+    public int daysRemaining;
+    public int totalDuration;
+}
+
+[System.Serializable]
+public class ChunkStateData
+{
+    public ChunkState state;
+    public int economyUnlockTimer; // Ile dni do samoistnego odblokowania (jeœli Posterunek nie jest wymagany, ale pisa³eœ o odczekaniu 1-7 dni)
+}

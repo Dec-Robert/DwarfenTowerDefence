@@ -69,16 +69,16 @@ public class UIExpansionMenu : MonoBehaviour
     void UpdateContent()
     {
         bool isBuyable = false;
-        int cost = expansionManager.GetCurrentCost();
+        int cost = 0;   //tymczasowy koszt, docelowo bêdzie zale¿a³ od odleg³oœci i innych czynników
 
         // 1. Sprawdzenie stanu logicznego
-        if (expansionManager.IsPending(currentTarget))
+        if (expansionManager.IsInProcessOfScouting(currentTarget))
         {
             lblTitle.text = "Teren Odkrywany";
             lblDesc.text = "Ekspedycja w toku.\nTeren stanie siê dostêpny po zakoñczeniu obecnej fali wrogów.";
             lblDesc.style.color = new Color(0.5f, 1f, 0.5f); // Zielonkawy
         }
-        else if (expansionManager.IsRoadBlocked(currentTarget))
+        else if (expansionManager.IsBlockedByRoad(currentTarget))
         {
             lblTitle.text = "Mroczna Œcie¿ka";
             lblDesc.text = "Cienie grasuj¹ce w tym terenie nie pozostawi¹ nikogo przy ¿yciu.\nNajpierw zabezpiecz i odkryj wczeœniejsze odcinki drogi.";
@@ -93,8 +93,8 @@ public class UIExpansionMenu : MonoBehaviour
         else
         {
             // Mo¿na kupiæ
-            lblTitle.text = "Dzicze";
-            lblDesc.text = "Teren gotowy do przejêcia.\nCzy chcesz wys³aæ ekspedycjê?";
+            lblTitle.text = "Ziemia rozrzeczonej mg³y";
+            lblDesc.text = "Œwiat³o naszego miasta rozrzedzi³o mg³e pozwalaj¹c nam na ekspolacje.\nCzy chcesz wys³aæ ekspedycjê?";
             lblDesc.style.color = Color.white;
             isBuyable = true;
         }
@@ -119,6 +119,6 @@ public class UIExpansionMenu : MonoBehaviour
 
     void OnBuyClicked()
     {
-        expansionManager.PurchaseChunk(currentTarget);
+        //Wys³ac ekspedycjê i ukryæ menu
     }
 }

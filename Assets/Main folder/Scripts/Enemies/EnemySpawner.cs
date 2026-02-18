@@ -9,27 +9,27 @@ public class EnemySpawner : MonoBehaviour
     public HexMapGenerator mapGenerator;
     public FogOfWarManager fogManager;
 
-    [Header("Pula Wrogów")]
-    // Lista wszystkich wrogów dostêpnych do losowania (Szkielet, Blob, Arcanist)
+    [Header("Pula Wrogï¿½w")]
+    // Lista wszystkich wrogow dostÄ™pnych do losowania (Szkielet, Blob, Arcanist)
     public List<EnemyData> availableEnemies;
 
     [Header("Fale Fabularne")]
     // Sztywne rozpiski na konkretne dni (np. Boss w dniu 5)
     public List<WaveDefinition> predefinedWaves;
 
-    [Header("Matematyka Fali (Bud¿et Zagro¿enia)")]
-    public float baseBudget = 10f;      // Startowa si³a fali
-    public float budgetPerDay = 5f;     // Ile punktów dochodzi co dzieñ
-    public float budgetExponent = 1.1f; // Mno¿nik trudnoœci (krzywa)
+    [Header("Matematyka Fali (Budï¿½et Zagroï¿½enia)")]
+    public float baseBudget = 4f;      // Startowa siÅ‚a fali
+    public float budgetPerDay = 2f;     // Ile punktÃ³w dochodzi co dzieÅ„
+    public float budgetExponent = 1.1f; // MnoÅ¼nik trudnoÅ›ci (krzywa)
 
-    [Header("Interwa³y Spawnu")]
-    public float nightSpawnInterval = 1.0f; // Szybkoœæ spawnu w nocy (co ile sek)
+    [Header("Interwaï¿½y Spawnu")]
+    public float nightSpawnInterval = 1.0f; // SzybkoÅ›Ä‡ spawnu w nocy (co ile sek)
 
-    [Header("Ambient (Dzieñ)")]
-    public float daySpawnInterval = 10.0f;  // Co ile sek próba spawnu w dzieñ
-    [Range(0, 100)] public int daySpawnChance = 30; // Szansa na spawn w dzieñ
+    [Header("Ambient (Dzieï¿½)")]
+    public float daySpawnInterval = 10.0f;  // Co ile sek prÃ³ba spawnu w dzieÅ„
+    [Range(0, 100)] public int daySpawnChance = 30; // Szansa na spawn w dzieÅ„
 
-    [Header("Balans Œcie¿ek (Wagi)")]
+    [Header("Balans ï¿½cieï¿½ek (Wagi)")]
     public float baseFormulaConst = 10f;
     public float perSpawnerMultiplier = 2.5f;
 
@@ -40,22 +40,22 @@ public class EnemySpawner : MonoBehaviour
         public string name;
         [Range(0, 100)] public float currentSpawnChance;
 
-        public List<Vector3> fullPath;          // Ca³a trasa (Mapa -> Baza)
-        public Vector3 currentSpawnPoint;       // Punkt na granicy mg³y
+        public List<Vector3> fullPath;          // CaÅ‚a trasa (Mapa -> Baza)
+        public Vector3 currentSpawnPoint;       // Punkt na granicy mgï¿½y
         public List<Vector3> currentActivePath; // Odcinek (Spawn -> Baza)
         public float fullLength;
     }
 
     // Listy tras
     private List<SpawnRoute> allPotentialRoutes = new List<SpawnRoute>();
-    [Header("Podgl¹d Aktywnych Tras")]
+    [Header("Podglï¿½d Aktywnych Tras")]
     public List<SpawnRoute> activeRoutes = new List<SpawnRoute>();
 
-    // Kolejka wrogów do zrespienia w bie¿¹cej nocy
+    // Kolejka wrogï¿½w do zrespienia w bieï¿½ï¿½cej nocy
     private Queue<EnemyData> enemiesToSpawnQueue = new Queue<EnemyData>();
     private float spawnTimer = 0f;
 
-    // --- CYKL ¯YCIA ---
+    // --- CYKL ï¿½YCIA ---
 
     void Start()
     {
@@ -71,10 +71,10 @@ public class EnemySpawner : MonoBehaviour
         if (GameManager.Instance != null) GameManager.Instance.OnStateChanged -= HandleStateChanged;
     }
 
-    // Reakcja na zmianê pory dnia
+    // Reakcja na zmianï¿½ pory dnia
     void HandleStateChanged(GameManager.gameStates newState)
     {
-        // Jeœli nadesz³a NOC (InWave), przygotuj kolejkê wrogów
+        // Jeï¿½li nadeszï¿½a NOC (InWave), przygotuj kolejkï¿½ wrogï¿½w
         if (newState == GameManager.gameStates.InWave)
         {
             spawnTimer = 0f;
@@ -88,7 +88,7 @@ public class EnemySpawner : MonoBehaviour
     {
         enemiesToSpawnQueue.Clear();
 
-        // 1. SprawdŸ czy mamy predefiniowan¹ falê na ten dzieñ
+        // 1. Sprawdï¿½ czy mamy predefiniowanï¿½ falï¿½ na ten dzieï¿½
         WaveDefinition scriptedWave = null;
         if (predefinedWaves != null)
         {
@@ -98,11 +98,11 @@ public class EnemySpawner : MonoBehaviour
         if (scriptedWave != null)
         {
             // --- SCENARIUSZ SZTYWNY (PREDEFINIOWANY) ---
-            Debug.Log($"<color=cyan><b>[Spawner] FALA FABULARNA (Dzieñ {day})</b></color>");
+            Debug.Log($"<color=cyan><b>[Spawner] FALA FABULARNA (Dzieï¿½ {day})</b></color>");
             Debug.Log($"<color=cyan>Opis: {scriptedWave.waveMessage}</color>");
 
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.AppendLine("Sk³ad armii:");
+            sb.AppendLine("Skï¿½ad armii:");
 
             int totalCount = 0;
 
@@ -121,7 +121,7 @@ public class EnemySpawner : MonoBehaviour
                     totalCount += group.count;
                 }
             }
-            sb.AppendLine($"RAZEM: {totalCount} przeciwników.");
+            sb.AppendLine($"RAZEM: {totalCount} przeciwnikï¿½w.");
             Debug.Log(sb.ToString());
         }
         else
@@ -133,22 +133,22 @@ public class EnemySpawner : MonoBehaviour
 
     void GenerateMathematicalWave(int day)
     {
-        Debug.Log($"<color=orange><b>[Spawner] FALA MATEMATYCZNA (Dzieñ {day})</b></color>");
+        Debug.Log($"<color=orange><b>[Spawner] FALA MATEMATYCZNA (Dzieï¿½ {day})</b></color>");
 
-        // 1. Obliczenie i logowanie bud¿etu
-        // Wzór: Baza + (Dni * Przyrost) * (Dni ^ Wyk³adnik)
-        float growthFactor = Mathf.Pow(day > 1 ? day : 1, budgetExponent); // oddzielnie dla czytelnoœci
+        // 1. Obliczenie i logowanie budï¿½etu
+        // Wzï¿½r: Baza + (Dni * Przyrost) * (Dni ^ Wykï¿½adnik)
+        float growthFactor = Mathf.Pow(day > 1 ? day : 1, budgetExponent); // oddzielnie dla czytelnoï¿½ci
         float budget = baseBudget + (day * budgetPerDay) * growthFactor;
 
-        Debug.Log($"<b>Obliczanie Bud¿etu Zagro¿enia:</b>\n" +
-                  $"Baza ({baseBudget}) + [Dzieñ ({day}) * Przyrost ({budgetPerDay})] * Mno¿nik ({growthFactor:F2}) = <b>{budget:F1} PKT</b>");
+        Debug.Log($"<b>Obliczanie Budï¿½etu Zagroï¿½enia:</b>\n" +
+                  $"Baza ({baseBudget}) + [Dzieï¿½ ({day}) * Przyrost ({budgetPerDay})] * Mnoï¿½nik ({growthFactor:F2}) = <b>{budget:F1} PKT</b>");
 
         List<EnemyData> waveList = new List<EnemyData>();
 
-        // S³ownik do zliczania co kupiliœmy (tylko do logów)
+        // Sï¿½ownik do zliczania co kupiliï¿½my (tylko do logï¿½w)
         Dictionary<string, int> purchaseSummary = new Dictionary<string, int>();
 
-        // 2. Kupowanie wrogów
+        // 2. Kupowanie wrogï¿½w
         int safetyCounter = 1000;
         float currentBudget = budget;
 
@@ -156,12 +156,12 @@ public class EnemySpawner : MonoBehaviour
         {
             safetyCounter--;
 
-            // ZnajdŸ wrogów, na których nas staæ
+            // Znajdï¿½ wrogï¿½w, na ktï¿½rych nas staï¿½
             var affordableEnemies = availableEnemies.Where(e => e.threatCost <= currentBudget).ToList();
 
             if (affordableEnemies.Count == 0)
             {
-                // Jeœli zosta³o np. 0.5 pkt bud¿etu, a najtañszy wróg kosztuje 1, koñczymy
+                // Jeï¿½li zostaï¿½o np. 0.5 pkt budï¿½etu, a najtaï¿½szy wrï¿½g kosztuje 1, koï¿½czymy
                 break;
             }
 
@@ -178,16 +178,16 @@ public class EnemySpawner : MonoBehaviour
                 purchaseSummary.Add(selected.name, 1);
         }
 
-        // 3. Raport zakupów
+        // 3. Raport zakupï¿½w
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.AppendLine("Zakupione jednostki:");
         foreach (var kvp in purchaseSummary)
         {
-            // ZnajdŸ koszt tego wroga dla info
+            // Znajdï¿½ koszt tego wroga dla info
             int cost = availableEnemies.Find(e => e.name == kvp.Key).threatCost;
             sb.AppendLine($"- {kvp.Key} (Koszt {cost}): {kvp.Value} szt.");
         }
-        sb.AppendLine($"Pozosta³y (niewykorzystany) bud¿et: {currentBudget:F1}");
+        sb.AppendLine($"Pozostaï¿½y (niewykorzystany) budï¿½et: {currentBudget:F1}");
         Debug.Log(sb.ToString());
 
         // 4. Tasowanie i dodawanie do kolejki
@@ -199,29 +199,29 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    // --- G£ÓWNA PÊTLA (COROUTINE) ---
+    // --- Gï¿½ï¿½WNA Pï¿½TLA (COROUTINE) ---
 
     IEnumerator WaitForMapAndSpawn()
     {
-        // Czekamy na inicjalizacjê innych systemów
+        // Czekamy na inicjalizacjï¿½ innych systemï¿½w
         yield return null; yield return null; yield return null;
 
         if (mapGenerator == null || fogManager == null)
         {
-            Debug.LogError("[Spawner] Brak referencji do Mapy lub Mg³y!");
+            Debug.LogError("[Spawner] Brak referencji do Mapy lub Mgï¿½y!");
             yield break;
         }
 
         if (availableEnemies == null || availableEnemies.Count == 0)
         {
-            Debug.LogError("[Spawner] Brak zdefiniowanych wrogów w Available Enemies!");
+            Debug.LogError("[Spawner] Brak zdefiniowanych wrogï¿½w w Available Enemies!");
         }
 
         InitializeRoutes();
 
         while (true)
         {
-            // Spawnowanie mo¿liwe tylko jeœli mamy aktywne trasy
+            // Spawnowanie moï¿½liwe tylko jeï¿½li mamy aktywne trasy
             if (activeRoutes.Count > 0)
             {
                 // A. TRYB NOCNY (FALA)
@@ -242,7 +242,7 @@ public class EnemySpawner : MonoBehaviour
                     {
                         // Kolejka pusta -> Koniec fali
                         GameManager.Instance.EndWave();
-                        Debug.Log("[Spawner] Fala zakoñczona.");
+                        Debug.Log("[Spawner] Fala zakoï¿½czona.");
                     }
                 }
                 // B. TRYB DZIENNY (AMBIENT)
@@ -254,10 +254,10 @@ public class EnemySpawner : MonoBehaviour
                         spawnTimer = 0f;
                         if (Random.Range(0, 100) < daySpawnChance)
                         {
-                            // W dzieñ spawnujemy losowego s³abego wroga (zwiadowcê)
+                            // W dzieï¿½ spawnujemy losowego sï¿½abego wroga (zwiadowcï¿½)
                             if (availableEnemies.Count > 0)
                             {
-                                // Zak³adamy, ¿e pierwszy na liœcie to najs³abszy (np. Szkielet)
+                                // Zakï¿½adamy, ï¿½e pierwszy na liï¿½cie to najsï¿½abszy (np. Szkielet)
                                 // lub losujemy dowolnego
                                 var scout = availableEnemies[Random.Range(0, Mathf.Min(2, availableEnemies.Count))];
                                 SpawnEnemy(scout);
@@ -268,7 +268,7 @@ public class EnemySpawner : MonoBehaviour
                 }
             }
 
-            yield return null; // Czekamy klatkê
+            yield return null; // Czekamy klatkï¿½
         }
     }
 
@@ -279,8 +279,8 @@ public class EnemySpawner : MonoBehaviour
         // 1. Walidacja
         if (activeRoutes.Count == 0 || data.prefab == null) return;
 
-        // 2. Wybór Trasy (Weighted Random)
-        // Losujemy trasê na podstawie % szans wyliczonych w RecalculateActiveRoutes
+        // 2. Wybï¿½r Trasy (Weighted Random)
+        // Losujemy trasï¿½ na podstawie % szans wyliczonych w RecalculateActiveRoutes
         SpawnRoute selectedRoute = null;
         float randomVal = Random.Range(0f, 100f);
         float currentSum = 0f;
@@ -301,8 +301,8 @@ public class EnemySpawner : MonoBehaviour
         // Spawnujemy w 'currentSpawnPoint', czyli na granicy odkrytego terenu
         GameObject newEnemy = Instantiate(data.prefab, selectedRoute.currentSpawnPoint, Quaternion.identity);
 
-        // 4. Pobieranie modyfikatorów z Beacona (Wp³yw ognia na wrogów)
-        float countMod = 1f; // Nieu¿ywane przy pojedynczym spawnie, ale metoda zwraca
+        // 4. Pobieranie modyfikatorï¿½w z Beacona (Wpï¿½yw ognia na wrogï¿½w)
+        float countMod = 1f; // Nieuï¿½ywane przy pojedynczym spawnie, ale metoda zwraca
         float hpMod = 1f;
         float speedMod = 1f;
         float eliteMod = 1f;
@@ -317,8 +317,8 @@ public class EnemySpawner : MonoBehaviour
         if (stats != null)
         {
             // Przekazujemy Dane + Modyfikatory z Beacona
-            // UWAGA: Upewnij siê, ¿e w EnemyStats masz zaktualizowan¹ metodê Initialize
-            // która przyjmuje te floaty!
+            // UWAGA: Upewnij siï¿½, ï¿½e w EnemyStats masz zaktualizowanï¿½ metodï¿½ Initialize
+            // ktï¿½ra przyjmuje te floaty!
             stats.Initialize(data, hpMod, speedMod, eliteMod);
         }
 
@@ -331,7 +331,7 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    // --- LOGIKA TRAS I MG£Y ---
+    // --- LOGIKA TRAS I MGï¿½Y ---
 
     void InitializeRoutes()
     {
@@ -360,7 +360,7 @@ public class EnemySpawner : MonoBehaviour
             allPotentialRoutes.Add(newRoute);
         }
 
-        // Sortujemy malej¹co (Najd³u¿sza = G³ówna)
+        // Sortujemy malejï¿½co (Najdï¿½uï¿½sza = Gï¿½ï¿½wna)
         allPotentialRoutes = allPotentialRoutes.OrderByDescending(r => r.fullLength).ToList();
 
         RecalculateActiveRoutes();
@@ -383,7 +383,7 @@ public class EnemySpawner : MonoBehaviour
 
         foreach (var route in allPotentialRoutes)
         {
-            // Szukamy granicy mg³y na trasie
+            // Szukamy granicy mgï¿½y na trasie
             int foundIndex = -1;
 
             for (int i = 0; i < route.fullPath.Count; i++)

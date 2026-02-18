@@ -5,113 +5,110 @@ public class MapExpansionManager : MonoBehaviour
 {
     [Header("Referencje")]
     public FogOfWarManager fogManager;
-    // ZMIANA: Odwo³ujemy siê do nowego Managera UI
     public UIExpansionMenu uiExpansionMenu;
     public HexMapGenerator mapGenerator;
 
-    [Header("Ekonomia")]
-    public int baseRevealCost = 10;
-    public int costIncrement = 5;
+    public Dictionary<Vector2Int, ChunkStateData> activeChunks = new Dictionary<Vector2Int, ChunkStateData>();
+    public List<ScoutingMission> activeMissions = new List<ScoutingMission>();
+    public List<ExpeditionCenterEntity> playerExpeditionCenter = new List<ExpeditionCenterEntity>();
+    public Dictionary<Vector2Int, Vector2Int> roadDependencies = new Dictionary<Vector2Int, Vector2Int>();
 
-    // (Pola HashSet bez zmian: activeChunks, pendingChunks...)
-    private HashSet<Vector2Int> activeChunks = new HashSet<Vector2Int>();
-    private HashSet<Vector2Int> pendingChunks = new HashSet<Vector2Int>();
-    private int totalChunksBought = 0;
-    private Dictionary<Vector2Int, Vector2Int> roadDependencies;
-
-    // ... (Start, OnDestroy, InitializeStartingChunks - BEZ ZMIAN) ...
-    // ... (Skopiuj ze starego pliku) ...
-
-    private void Start() { if (GameManager.Instance != null) GameManager.Instance.OnStateChanged += HandleStateChanged; }
-    private void OnDestroy() { if (GameManager.Instance != null) GameManager.Instance.OnStateChanged -= HandleStateChanged; }
-    public void InitializeStartingChunks(List<Vector2Int> startingChunks) { activeChunks.Clear(); pendingChunks.Clear(); totalChunksBought = 0; foreach (var chunk in startingChunks) activeChunks.Add(chunk); if (mapGenerator != null) roadDependencies = mapGenerator.GetRoadRevealDependencies(); if (fogManager != null) fogManager.UpdateAllFogVisuals(); }
-
-    // --- LOGIKA DIAGNOSTYCZNA (Nowe metody dla UI) ---
-
-    public bool IsActive(Vector2Int chunk) => activeChunks.Contains(chunk);
-    public bool IsPending(Vector2Int chunk) => pendingChunks.Contains(chunk);
-
-    public bool IsRoadBlocked(Vector2Int chunk)
+    private void Awake()
     {
-        // True jeœli to droga I jej rodzic nie jest aktywny
-        if (roadDependencies == null || !roadDependencies.ContainsKey(chunk)) return false;
-        Vector2Int parent = roadDependencies[chunk];
-        return !activeChunks.Contains(parent);
+        // Upewniamy siê, ¿e kolekcje istniej¹ przed u¿yciem
+        if (activeChunks == null) activeChunks = new Dictionary<Vector2Int, ChunkStateData>();
+        if (activeMissions == null) activeMissions = new List<ScoutingMission>();
+        if (playerExpeditionCenter == null) playerExpeditionCenter = new List<ExpeditionCenterEntity>();
+        if (roadDependencies == null) roadDependencies = new Dictionary<Vector2Int, Vector2Int>();
     }
 
-    public bool IsTooFar(Vector2Int chunk)
+
+    public void Initialize(List<Vector2Int> coords)
     {
-        return !IsNeighborToActiveChunk(chunk);
-    }
+        activeChunks.Clear();
+        activeMissions.Clear();
+        playerExpeditionCenter.Clear();
+        roadDependencies.Clear();
+        roadDependencies = mapGenerator.GetRoadRevealDependencies();
 
-    public bool IsChunkBuyable(Vector2Int chunkCoord)
-    {
-        if (IsActive(chunkCoord) || IsPending(chunkCoord)) return false;
-        if (IsTooFar(chunkCoord)) return false;
-        if (IsRoadBlocked(chunkCoord)) return false;
-        return true;
-    }
 
-    public int GetCurrentCost()
-    {
-        return baseRevealCost + (totalChunksBought * costIncrement);
-    }
-
-    // --- OBS£UGA KLIKNIÊCIA ---
-
-    public void OnFogClicked(Vector2Int chunkCoord)
-    {
-        // Zamiast sprawdzaæ wszystko tutaj i robiæ return,
-        // przekazujemy koordynaty do UI. To UI zdecyduje co wyœwietliæ
-        // na podstawie metod diagnostycznych powy¿ej.
-
-        if (uiExpansionMenu != null)
+        foreach (var coord in coords)
         {
-            Vector3 worldPos = HexGridMath.GetChunkCenterWorld(chunkCoord, mapGenerator.chunkRadius, mapGenerator.hexSize, mapGenerator.padding);
+            activeChunks.Add(coord, new ChunkStateData { state = ChunkState.FullyUnlocked });
+            UnlockNewChunks(coord);
 
-            // Centrujemy kamerê
-            CenterCameraOnChunk(chunkCoord);
-
-            // Otwieramy nowe menu
-            uiExpansionMenu.ShowMenu(chunkCoord, worldPos);
         }
     }
 
-    // Metoda wywo³ywana przez PRZYCISK w nowym UI
-    public void PurchaseChunk(Vector2Int coord)
+    //Funkcja wywo³ywana po klikniêciu na chunk, sprawdza stan chunka i wyœwietla odpowiedni komunikat
+    public void OnFogClicked(Vector2Int coord)
     {
-        // Ostateczne sprawdzenie (security check)
-        if (!IsChunkBuyable(coord)) return;
-
-        int cost = GetCurrentCost();
-        var costDict = new Dictionary<ResourceType, int> { { ResourceType.Gold, cost } };
-
-        if (ResourceManager.Instance.SpendResources(costDict))
+        if (activeChunks.ContainsKey(coord))
         {
-            fogManager.RevealChunk(coord);
-            pendingChunks.Add(coord);
-            totalChunksBought++;
-            fogManager.UpdateAllFogVisuals();
+            ChunkState chunkState = activeChunks[coord].state;
+            switch (chunkState)
+            {
+                case ChunkState.Locked:
+                    Debug.Log("Musisz odkryæ wczeœniejsz¹ drogê");
+                    break;
+                case ChunkState.Unlocked:
+                    Debug.Log("Chunk odkryty. Wymaga zwiadowców do zbadanmia");
+                    break;
+                case ChunkState.Scouting:
+                    Debug.Log("Chunk jest badany przez zwiadowców. Czekaj na zakoñczenie misji");
+                    break;
+            }
 
-            // Zamknij menu po zakupie
-            if (uiExpansionMenu != null) uiExpansionMenu.Hide();
         }
-        else
-        {
-            Debug.Log("Nie staæ Ciê!");
-            // Tu mo¿na dodaæ feedback w UI (np. trzêsienie tekstem ceny)
-        }
+        else Debug.Log("Chunk is too far for now");
     }
 
-    public void ForceAddActiveChunk(Vector2Int coord)
+    //Funkcja sprawdzaj¹ca stan chunka, zwraca czy chunk jest drog¹
+    private ChunkState ValidateChunk(Vector2Int coord)
     {
-        if (!activeChunks.Contains(coord))
-        {
-            activeChunks.Add(coord);
-        }
+        if (!roadDependencies.ContainsKey(coord)) return ChunkState.Unlocked; //  Chunk nie zawieraj¹cy drogi
+        if (activeChunks.ContainsKey(roadDependencies[coord])) return ChunkState.Unlocked; //Chunk jest drog¹ i wczeœniejsza droga jest odblokowan
+        return ChunkState.Locked;   //Chunk jest drog¹ i wczeœniejsza droga jest zablokowana
     }
-    private void HandleStateChanged(GameManager.gameStates newState) { if (newState == GameManager.gameStates.PreparePhase) ActivatePendingChunks(); }
-    private void ActivatePendingChunks() { if (pendingChunks.Count > 0) { foreach (var chunk in pendingChunks) activeChunks.Add(chunk); pendingChunks.Clear(); fogManager.UpdateAllFogVisuals(); } }
-    private bool IsNeighborToActiveChunk(Vector2Int target) { foreach (var neighbor in HexGridMath.GetNeighbors(target)) if (activeChunks.Contains(neighbor)) return true; return false; }
-    private void CenterCameraOnChunk(Vector2Int coord) { Vector3 targetPos = HexGridMath.GetChunkCenterWorld(coord, mapGenerator.chunkRadius, mapGenerator.hexSize, mapGenerator.padding); CameraController cam = Camera.main.GetComponent<CameraController>(); if (cam != null) cam.FocusOnPoint(targetPos); }
+
+    //Funkcja wywo³ywana po zakoñczeniu misji, odblokowuje nowe chunki i aktualizuje UI
+    private void UnlockNewChunks(Vector2Int coord)
+    {
+        foreach (var neighbour in HexGridMath.GetNeighbors(coord))
+        {
+            if (!activeChunks.ContainsKey(neighbour) && mapGenerator.IsChunkInMap(neighbour))
+            {
+                activeChunks.Add(neighbour, new ChunkStateData { state = ValidateChunk(neighbour) });
+                
+
+            }
+        }
+        fogManager.RevealChunk(coord);
+    }
+
+    public bool IsInProcessOfScouting(Vector2Int coord)
+    {
+        return activeMissions.Exists(m => m.targetChunk == coord);
+    }
+    public bool IsBlockedByRoad(Vector2Int coord)
+    {
+        if (!roadDependencies.ContainsKey(coord)) return false;
+        Vector2Int previousRoad = roadDependencies[coord];
+        ChunkState previousRoadState = activeChunks[previousRoad].state;
+        return !(activeChunks.ContainsKey(roadDependencies[coord]) && (previousRoadState == ChunkState.MilitaryOnly || previousRoadState == ChunkState.FullyUnlocked));
+    }
+    public bool IsTooFar(Vector2Int coord)
+    {
+        return !activeChunks.ContainsKey(coord);
+    }
+
+    public bool IsChunkBuyable(Vector2Int coord)
+    {
+        if (!activeChunks.ContainsKey(coord)) return false; // Chunk poza map¹
+        ChunkState state = activeChunks[coord].state;
+        return state == ChunkState.Unlocked;
+    }
+
+
+
 }

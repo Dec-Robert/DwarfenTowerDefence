@@ -45,7 +45,6 @@ public class FogOfWarManager : MonoBehaviour
             {
                 if (showDebugLogs)
                     Debug.Log($"[Fog Debug] Trafiono obiekt: <b>{hit.transform.name}</b> (Rodzic: {hit.transform.parent?.name})");
-
                 // Sprawdzamy czy trafiliœmy w mg³ê
                 foreach (var kvp in activeFogChunks)
                 {
@@ -135,5 +134,5 @@ public class FogOfWarManager : MonoBehaviour
     }
 
     public bool IsChunkRevealed(Vector2Int coord) { return !activeFogChunks.ContainsKey(coord); }
-    public void ClearFog() { foreach (var kvp in activeFogChunks) if (kvp.Value != null) Destroy(kvp.Value); activeFogChunks.Clear(); for (int i = transform.childCount - 1; i >= 0; i--) DestroyImmediate(transform.GetChild(i).gameObject); }
+    private void ClearFog() { foreach (var kvp in activeFogChunks) if (kvp.Value != null) Destroy(kvp.Value); activeFogChunks.Clear(); for (int i = transform.childCount - 1; i >= 0; i--) DestroyImmediate(transform.GetChild(i).gameObject); }
 }
