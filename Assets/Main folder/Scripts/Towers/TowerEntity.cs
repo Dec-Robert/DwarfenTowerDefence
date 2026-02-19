@@ -1,200 +1,172 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// WieÅ¼a obronna. Dziedziczy z BuildingEntity.
+///
+/// Nie zna BeaconEntity â€“ zamiast tego odpytuje GlobalModifierRegistry
+/// o aktualne mnoÅ¼niki statystyk.
+/// </summary>
 public class TowerEntity : BuildingEntity
 {
     [Header("Referencje")]
-    public TowerController controller; // Fizyczna wie¿a strzelaj¹ca
+    public TowerController controller;
 
     [Header("Status Bojowy")]
-    public bool isCombatActive = false; // Czy wie¿a mo¿e strzelaæ?
-    public bool hasAmmo = false;        // Czy op³acono upkeep na noc?
-    private bool firedShotsTonight = false; // Czy oddano strza³ w nocy?
+    public bool isCombatActive    = false;
+    public bool hasAmmo           = false;
+    private bool firedShotsTonight = false;
 
-    // Zmienne do przechowywania kosztu z ostatniej nocy (¿eby wiedzieæ ile zwróciæ)
-    private Dictionary<ResourceType, float> paidUpkeepCache = new Dictionary<ResourceType, float>();
+    private Dictionary<ResourceType, float> paidUpkeepCache =
+        new Dictionary<ResourceType, float>();
 
-    // Godziny specjalne dla wie¿
     private const int NIGHT_START_HOUR = 20;
-    private const int NIGHT_END_HOUR = 6;
+    private const int NIGHT_END_HOUR   = 6;
 
-    private void Start()
+    // =========================================================================
+    // Cykl Å¼ycia
+    // =========================================================================
+
+    protected override void Start()
     {
         if (controller == null) controller = GetComponent<TowerController>();
 
+        base.Start(); // WywoÅ‚uje Initialize(data) i subskrybuje eventy
+
         if (TimeCycleManager.Instance != null)
         {
-            TimeCycleManager.Instance.OnHourTick += HandleTowerLogic;
-            TimeCycleManager.Instance.OnDayChanged += HandleDayReset;
+            TimeCycleManager.Instance.OnHourTick  += HandleTowerLogic;
+            TimeCycleManager.Instance.OnDayChanged += HandleTowerDayReset;
         }
 
-        // Pierwsze przeliczenie
         RecalculateStats();
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
+
         if (TimeCycleManager.Instance != null)
         {
-            TimeCycleManager.Instance.OnHourTick -= HandleTowerLogic;
-            TimeCycleManager.Instance.OnDayChanged -= HandleDayReset;
+            TimeCycleManager.Instance.OnHourTick   -= HandleTowerLogic;
+            TimeCycleManager.Instance.OnDayChanged -= HandleTowerDayReset;
         }
     }
 
-    // --- LOGIKA CZASOWA ---
+    // WieÅ¼a nie ma godzinowej logiki produkcji
+    protected override void HandleHourlyProduction(int currentHour) { }
+
+    // =========================================================================
+    // Logika czasowa
+    // =========================================================================
 
     private void HandleTowerLogic(int hour)
     {
-        // 1. Obs³uga Amunicji (Pocz¹tek Nocy)
-        if (hour == NIGHT_START_HOUR)
-        {
-            TryPayAmmoCost();
-        }
+        if (hour == NIGHT_START_HOUR) TryPayAmmoCost();
+        if (hour == NIGHT_END_HOUR)   ProcessAmmoRefund();
 
-        // 2. Obs³uga Zwrotu (Koniec Nocy / Œwit)
-        if (hour == NIGHT_END_HOUR)
-        {
-            ProcessAmmoRefund();
-        }
-
-        // 3. Aktualizacja statystyk i pracowników
-        // (Base class obs³uguje blokowanie pracowników w HandleHourlyProduction, 
-        // ale wie¿e nie produkuj¹, wiêc musimy wywo³aæ logikê zmian rêcznie lub bazowaæ na tym co jest)
-        // Dla uproszczenia: Wie¿a aktualizuje swoj¹ skutecznoœæ co godzinê
         RecalculateStats();
     }
 
-    private void HandleDayReset(int day)
+    private void HandleTowerDayReset(int day)
     {
-        // Reset flagi strzelania na nowy dzieñ
         firedShotsTonight = false;
-
-        // Wywo³ujemy reset zmêczenia z klasy bazowej
-        // (Musimy to zrobiæ rêcznie, bo BuildingEntity robi to w swoim OnDayChanged, 
-        // a my chcemy mieæ pewnoœæ kolejnoœci lub po prostu polegamy na dziedziczeniu jeœli metoda jest wirtualna)
-        // W Twoim BuildingEntity HandleDayReset jest prywatne, wiêc:
-        // Zalecam zmieniæ w BuildingEntity: protected virtual void HandleDayReset
-        // Jeœli nie, to kod w BuildingEntity i tak siê wykona, bo on te¿ subskrybuje event.
+        // Resetowanie zmÄ™czenia pracownikÃ³w obsÅ‚uguje base przez HandleDayReset
     }
 
-    // --- LOGIKA AMUNICJI ---
+    // =========================================================================
+    // Logika amunicji
+    // =========================================================================
 
-    void TryPayAmmoCost()
+    private void TryPayAmmoCost()
     {
-        // Pobieramy koszt utrzymania (zdefiniowany w BuildingData jako upkeep)
-        Dictionary<ResourceType, float> upkeepCost = GetCurrentUpkeep();
+        var upkeepCost = GetCurrentUpkeep();
 
         if (ResourceManager.Instance.SpendResources(upkeepCost))
         {
-            hasAmmo = true;
-            paidUpkeepCache = new Dictionary<ResourceType, float>(upkeepCost); // Kopia dla zwrotu
-            Debug.Log($"[Tower] {name} za³adowana na noc.");
+            hasAmmo        = true;
+            paidUpkeepCache = new Dictionary<ResourceType, float>(upkeepCost);
+            Debug.Log($"[Tower] {name} zaÅ‚adowana na noc.");
         }
         else
         {
             hasAmmo = false;
             paidUpkeepCache.Clear();
-            Debug.LogWarning($"[Tower] {name} BRAK AMUNICJI! Wy³¹czona na noc.");
+            Debug.LogWarning($"[Tower] {name} BRAK AMUNICJI!");
         }
     }
 
-    void ProcessAmmoRefund()
+    private void ProcessAmmoRefund()
     {
-        // Jeœli mieliœmy amunicjê, ale nie strzelaliœmy -> Zwrot 50%
         if (hasAmmo && !firedShotsTonight && paidUpkeepCache.Count > 0)
         {
             foreach (var kvp in paidUpkeepCache)
             {
-                int refundAmount = Mathf.CeilToInt(kvp.Value * 0.5f); // Zaokr¹glamy w górê
-                if (refundAmount > 0)
-                {
-                    ResourceManager.Instance.AddResource(kvp.Key, refundAmount);
-                }
+                int refund = Mathf.CeilToInt(kvp.Value * 0.5f);
+                if (refund > 0) ResourceManager.Instance.AddResource(kvp.Key, refund);
             }
-            Debug.Log($"[Tower] {name} - Noc spokojna. Zwrot 50% amunicji.");
+            Debug.Log($"[Tower] {name} â€“ noc spokojna, zwrot 50% amunicji.");
         }
 
-        // Reset amunicji na dzieñ (w dzieñ wie¿e mog¹ strzelaæ "za darmo" lub wymagaj¹ nowej logiki)
-        // Zak³adamy, ¿e w dzieñ jest bezpiecznie, wiêc hasAmmo = true (trening) lub false (oszczêdzanie).
-        // W Twoim designie fale s¹ w nocy, wiêc w dzieñ ammo nie jest krytyczne.
-        hasAmmo = false; // Wymaga ponownego op³acenia kolejnej nocy
+        hasAmmo = false;
     }
 
-    // Wywo³ywane przez TowerController gdy padnie strza³
-    public void RegisterShot()
-    {
-        firedShotsTonight = true;
-    }
+    /// <summary>WywoÅ‚ywane przez TowerController gdy pada strzaÅ‚.</summary>
+    public void RegisterShot() => firedShotsTonight = true;
 
-    // --- LOGIKA STATYSTYK ---
+    // =========================================================================
+    // Przeliczanie statystyk
+    // =========================================================================
 
     public void RecalculateStats()
     {
-        // 1. SprawdŸ pracowników (tylko ci na zmianie, nie exhausted)
-        List<Citizen> activeCrew = GetAssignedCitizens().FindAll(c => c.workState != WorkState.Exhausted);
+        // 1. Aktywna zaÅ‚oga
+        var activeCrew = GetAssignedCitizens()
+            .FindAll(c => c.workState != WorkState.Exhausted);
         int crewCount = activeCrew.Count;
 
-        // 2. Bazowe mno¿niki
-        float efficiency = 0f;
+        // 2. WydajnoÅ›Ä‡ bazowa od liczby zaÅ‚ogi
+        float efficiency = crewCount == 0 ? 0f
+                         : crewCount == 1 ? 0.7f
+                         : 1.0f;
 
-        if (crewCount == 0) efficiency = 0f;       // Brak ludzi = nie dzia³a
-        else if (crewCount == 1) efficiency = 0.7f; // 1 osoba = 70%
-        else efficiency = 1.0f;                    // 2+ osoby = 100%
-
-        // 3. Bonusy Rasowe
-        float rangeBonus = 1.0f;
-        float damageBonus = 1.0f;
-        float fireRateBonus = 1.0f;
+        // 3. Rasowe bonusy zaÅ‚ogi (flat, per pracownik)
+        float rangeBonusFlat    = 0f;
+        float damageBonusFlat   = 0f;
+        float fireRateBonusFlat = 0f;
 
         foreach (var worker in activeCrew)
         {
-            if (worker.race == Race.Elves) rangeBonus += 0.1f;       // Elf = +10% zasiêgu
-            if (worker.race == Race.Dwarves) damageBonus += 0.1f;    // Krasnolud = +10% dmg
-            if (worker.race == Race.Humans) fireRateBonus += 0.1f;   // Cz³owiek = +10% speed
+            if (worker.race == Race.Elves)   rangeBonusFlat    += 0.1f;
+            if (worker.race == Race.Dwarves) damageBonusFlat   += 0.1f;
+            if (worker.race == Race.Humans)  fireRateBonusFlat += 0.1f;
         }
 
-        // 3,5. Bonusy z Beaconu
-        if (BeaconEntity.Instance != null)
-        {
-            rangeBonus *= BeaconEntity.Instance.GetTowerRangeMultiplier();
-            damageBonus *= BeaconEntity.Instance.GetTowerDamageMultiplier();
-        }
+        // 4. Globalne mnoÅ¼niki z rejestru (Beacon, badania, buffy itd.)
+        var registry = GlobalModifierRegistry.Instance;
 
-        // 4. Decyzja czy dzia³a
-        // Wie¿a dzia³a jeœli: Ma ludzi ORAZ (Jest dzieñ LUB (Jest noc i ma amunicje))
-        bool isNight = TimeCycleManager.Instance.currentHour >= NIGHT_START_HOUR || TimeCycleManager.Instance.currentHour < NIGHT_END_HOUR;
+        float rangeMulti    = (1f + rangeBonusFlat)    * (registry != null ? registry.GetMultiplier(TowerStatType.Range,    this) : 1f);
+        float damageMulti   = (1f + damageBonusFlat)   * (registry != null ? registry.GetMultiplier(TowerStatType.Damage,   this) : 1f);
+        float fireRateMulti = (1f + fireRateBonusFlat) * (registry != null ? registry.GetMultiplier(TowerStatType.FireRate, this) : 1f);
 
-        // W dzieñ dzia³a (chyba ¿e chcesz inaczej), w nocy wymaga Ammo
-        if (isNight && !hasAmmo)
-        {
-            isCombatActive = false;
-        }
-        else
-        {
-            isCombatActive = (crewCount > 0);
-        }
+        // 5. Czy wieÅ¼a jest aktywna bojowo?
+        bool isNight = TimeCycleManager.Instance.currentHour >= NIGHT_START_HOUR
+                    || TimeCycleManager.Instance.currentHour <  NIGHT_END_HOUR;
 
-        // 5. Przekazanie danych do kontrolera
-        if (controller != null)
-        {
-            controller.UpdateCombatStats(efficiency, rangeBonus, damageBonus, fireRateBonus, isCombatActive);
-        }
+        isCombatActive = crewCount > 0 && (!isNight || hasAmmo);
 
-
+        // 6. Przekazanie do kontrolera
+        controller?.UpdateCombatStats(efficiency, rangeMulti, damageMulti, fireRateMulti, isCombatActive);
     }
+
+    // =========================================================================
+    // Nadpisanie zarzÄ…dzania pracownikami (przelicz statystyki po zmianie)
+    // =========================================================================
 
     public override bool TryAddWorker(Race race)
     {
-        // 1. Dodaj pracownika (wywo³a te¿ UI Refresh z klasy bazowej)
         bool success = base.TryAddWorker(race);
-
-        // 2. Jeœli siê uda³o, przelicz statystyki walki
-        if (success)
-        {
-            RecalculateStats();
-            if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
-        }
-
+        if (success) RecalculateStats();
         return success;
     }
 
@@ -202,6 +174,5 @@ public class TowerEntity : BuildingEntity
     {
         base.RemoveWorker(race);
         RecalculateStats();
-        if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
     }
 }

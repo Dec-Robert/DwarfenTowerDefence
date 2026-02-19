@@ -72,8 +72,8 @@ public class BuildingProductionComponent
         // Pobranie paliwa i produkcja
         fuelComponent.ConsumeFuelForHour(upkeep, efficiency);
 
-        float beaconBonus = BeaconEntity.Instance != null
-            ? BeaconEntity.Instance.GetGlobalProductionMultiplier()
+        float beaconBonus = GlobalModifierRegistry.Instance != null
+            ? GlobalModifierRegistry.Instance.GetGlobalProductionMultiplier()
             : 1f;
 
         var production = GetCurrentProduction();

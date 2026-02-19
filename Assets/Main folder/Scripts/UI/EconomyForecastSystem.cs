@@ -21,7 +21,7 @@ public static class EconomyForecastSystem
             // 1. Domy (Housing) - Specyficzna logika
             if (building is HousingEntity house)
             {
-                // Produkcja (np. Z³oto od mieszkañców)
+                // Produkcja (np. Zï¿½oto od mieszkaï¿½cï¿½w)
                 if (house.housingData.productionPerResident != null)
                 {
                     foreach (var prod in house.housingData.productionPerResident)
@@ -32,7 +32,7 @@ public static class EconomyForecastSystem
                 }
 
                 // Konsumpcja (Jedzenie)
-                // (Sumujemy bazê i per capita)
+                // (Sumujemy bazï¿½ i per capita)
                 if (house.housingData.baseDailyUpkeep != null)
                     foreach (var cost in house.housingData.baseDailyUpkeep)
                         if (cost.type == type) data.dailyConsumption += cost.amount;
@@ -41,7 +41,7 @@ public static class EconomyForecastSystem
                     foreach (var cost in house.housingData.upkeepPerResident)
                         if (cost.type == type) data.dailyConsumption += cost.amount * house.residents.Count;
 
-                continue; // Domy obs³u¿one, idziemy do nastêpnego
+                continue; // Domy obsï¿½uï¿½one, idziemy do nastï¿½pnego
             }
 
             // 2. Beacon - Specyficzna logika
@@ -49,16 +49,16 @@ public static class EconomyForecastSystem
             {
                 if (type == ResourceType.Coal)
                 {
-                    // Beacon zu¿ywa tyle, ile gracz ustawi³ suwakiem (lub ile potrzeba do spalania)
+                    // Beacon zuï¿½ywa tyle, ile gracz ustawiï¿½ suwakiem (lub ile potrzeba do spalania)
                     // Dla prognozy bierzemy ustawienie suwaka (planowane wydatki)
                     data.dailyConsumption += beacon.dailyCoalInput;
                 }
                 continue;
             }
 
-            // 3. Budynki Ekonomiczne i Wie¿e (Standard)
+            // 3. Budynki Ekonomiczne i Wieï¿½e (Standard)
 
-            // Obliczamy efektywnoœæ (Ludzie)
+            // Obliczamy efektywnoï¿½ï¿½ (Ludzie)
             int workers = building.GetAssignedCitizens().FindAll(c => c.workState != WorkState.Exhausted).Count;
             float efficiency = 0f;
             if (workers > 0)
@@ -66,32 +66,31 @@ public static class EconomyForecastSystem
                 efficiency = 1.0f + ((workers - 1) * 0.25f); // 25% za kolejnego
             }
 
-            // Uwzglêdniamy Beacon Bonus dla produkcji
+            // Uwzglï¿½dniamy Beacon Bonus dla produkcji
             float beaconBonus = 1f;
-            if (BeaconEntity.Instance != null) beaconBonus = BeaconEntity.Instance.GetGlobalProductionMultiplier();
 
-            // Ile zmian aktywnych? (Uproszczenie: zak³adamy, ¿e obsadzone zmiany pracuj¹)
-            // Lepsze przybli¿enie: ile godzin w dobie budynek pracuje?
-            // currentShiftLength * iloœæ_obsadzonych_zmian? 
-            // Dla uproszczenia prognozy: bierzemy produkcjê na cykl * iloœæ aktywnych zmian.
-            // Zak³adamy, ¿e jeœli s¹ pracownicy, to pracuj¹.
+            // Ile zmian aktywnych? (Uproszczenie: zakï¿½adamy, ï¿½e obsadzone zmiany pracujï¿½)
+            // Lepsze przybliï¿½enie: ile godzin w dobie budynek pracuje?
+            // currentShiftLength * iloï¿½ï¿½_obsadzonych_zmian? 
+            // Dla uproszczenia prognozy: bierzemy produkcjï¿½ na cykl * iloï¿½ï¿½ aktywnych zmian.
+            // Zakï¿½adamy, ï¿½e jeï¿½li sï¿½ pracownicy, to pracujï¿½.
 
             // Produkcja
-            var prodDict = building.GetCurrentProduction(); // To ju¿ uwzglêdnia teren!
+            var prodDict = building.GetCurrentProduction(); // To juï¿½ uwzglï¿½dnia teren!
             if (prodDict.ContainsKey(type))
             {
-                // Produkcja na zmianê * Iloœæ zmian * Efektywnoœæ * Beacon
-                // (Tutaj zak³adamy 1 zmianê na dzieñ dla uproszczenia wyœwietlania, 
-                // lub mno¿ymy przez maxShifts jeœli s¹ obsadzone)
-                // Przyjmijmy bezpiecznie: to co wylicza GetCurrentProduction to "Baza na zmianê".
+                // Produkcja na zmianï¿½ * Iloï¿½ï¿½ zmian * Efektywnoï¿½ï¿½ * Beacon
+                // (Tutaj zakï¿½adamy 1 zmianï¿½ na dzieï¿½ dla uproszczenia wyï¿½wietlania, 
+                // lub mnoï¿½ymy przez maxShifts jeï¿½li sï¿½ obsadzone)
+                // Przyjmijmy bezpiecznie: to co wylicza GetCurrentProduction to "Baza na zmianï¿½".
 
-                // Jeœli budynek ma pracowników -> generuje.
+                // Jeï¿½li budynek ma pracownikï¿½w -> generuje.
                 if (workers > 0)
                 {
-                    // Uproszczona prognoza: (ProdukcjaNaZmianê) * (LiczbaZmianObsadzonych)
-                    // Zak³adamy ¿e jak s¹ ludzie to pracuj¹ na wszystkich dostêpnych zmianach?
-                    // W Twoim kodzie pracownicy s¹ wspólni dla zmian.
-                    // Wiêc: ProdukcjaDienna = ProdNaZmiane * IloœæZmian * Efektywnoœæ
+                    // Uproszczona prognoza: (ProdukcjaNaZmianï¿½) * (LiczbaZmianObsadzonych)
+                    // Zakï¿½adamy ï¿½e jak sï¿½ ludzie to pracujï¿½ na wszystkich dostï¿½pnych zmianach?
+                    // W Twoim kodzie pracownicy sï¿½ wspï¿½lni dla zmian.
+                    // Wiï¿½c: ProdukcjaDienna = ProdNaZmiane * Iloï¿½ï¿½Zmian * Efektywnoï¿½ï¿½
 
                     float totalProd = (prodDict[type] * efficiency * beaconBonus) * building.getMaxShifts();
                     data.dailyProduction += totalProd;
@@ -102,16 +101,16 @@ public static class EconomyForecastSystem
             var costDict = building.GetCurrentUpkeep();
             if (costDict.ContainsKey(type))
             {
-                // Dla wie¿: Amunicja jest pobierana raz na noc (upkeepPerCycle).
+                // Dla wieï¿½: Amunicja jest pobierana raz na noc (upkeepPerCycle).
                 if (building is TowerEntity)
                 {
-                    // Wie¿a pobiera raz na dobê
+                    // Wieï¿½a pobiera raz na dobï¿½
                     data.dailyConsumption += costDict[type];
                 }
                 else
                 {
-                    // Budynki eko pobieraj¹ paliwo co godzinê pracy.
-                    // Suma na dzieñ = KosztNaZmiane * IloœæZmian * Efektywnoœæ
+                    // Budynki eko pobierajï¿½ paliwo co godzinï¿½ pracy.
+                    // Suma na dzieï¿½ = KosztNaZmiane * Iloï¿½ï¿½Zmian * Efektywnoï¿½ï¿½
                     if (workers > 0)
                     {
                         float totalCost = (costDict[type] * efficiency) * building.getMaxShifts();
