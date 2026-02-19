@@ -1,11 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// Typy budynków dla ³atwiejszej identyfikacji
+// Typy budynkÃ³w dla Å‚atwiejszej identyfikacji
 public enum BuildingType
 {
     Economic,   // Tartak, Kopalnia (Produkcja)
-    Defense,    // Wie¿a (Obrona)
+    Defense,    // WieÅ¼a (Obrona)
     Utility,    // Domy, Magazyny
     Unique      // Kapitol, Beacon
 }
@@ -13,26 +13,26 @@ public enum BuildingType
 [CreateAssetMenu(fileName = "NewBuilding", menuName = "City Builder/Building Data")]
 public class BuildingData : ScriptableObject
 {
-    [Header("G³ówne Informacje")]
+    [Header("GÅ‚Ã³wne Informacje")]
     public string buildingName;
     [TextArea] public string description;
     public Sprite icon;
     public BuildingType type;
 
     [Header("Ekonomia Produkcji")]
-    [Tooltip("Ile ka¿dy DODATKOWY pracownik zwiêksza zu¿ycie/produkcjê wzglêdem bazy. 0.25 = 25%")]
+    [Tooltip("Ile kaÅ¼dy DODATKOWY pracownik zwiÄ™ksza zuÅ¼ycie/produkcjÄ™ wzglÄ™dem bazy. 0.25 = 25%")]
     public float workerScalingFactor = 0.25f;
 
     [Header("Wymagania Terenu")]
     public List<HexFeatureType> allowedTerrain;
-    public bool requiresOccupiedSpace = false; // Czy wymaga np. Lasu (który technicznie zajmuje heks)
+    public bool requiresOccupiedSpace = false; // Czy wymaga np. Lasu (ktï¿½ry technicznie zajmuje heks)
 
     [Header("Ekonomia (Koszt i Produkcja Bazowa)")]
     public List<ResourceCost> constructionCost;
     public List<ResourceCost> productionPerCycle; // Co produkuje (np. Wood: 5)
-    public List<ResourceCost> upkeepPerCycle;     // Co zu¿ywa (np. Food: 1)
+    public List<ResourceCost> upkeepPerCycle;     // Co zuÅ¼ywa (np. Food: 1)
 
-    [Header("System Ulepszeñ")]
+    [Header("System Ulepszeï¿½")]
 
     public List<BuildingUpgradeSO> tier1Upgrades;
 
@@ -45,8 +45,8 @@ public class BuildingData : ScriptableObject
     // Dodaj te pola do klasy BuildingData:
 
     [Header("Pracownicy (Baza)")]
-    public int baseShifts = 1;         // Domyœlnie 1 zmiana
-    public int baseWorkersPerShift = 1; // Domyœlnie 1 pracownik
+    public int baseShifts = 1;         // Domyï¿½lnie 1 zmiana
+    public int baseWorkersPerShift = 1; // Domyï¿½lnie 1 pracownik
     // Struktura pomocnicza do edytora
     [System.Serializable]
     public struct ResourceCost
@@ -55,7 +55,7 @@ public class BuildingData : ScriptableObject
         public float amount;
     }
 
-    // Pomocnicza metoda do konwersji listy na s³ownik (dla ResourceManagera)
+    // Pomocnicza metoda do konwersji listy na sï¿½ownik (dla ResourceManagera)
     public Dictionary<ResourceType, float> GetCostDictionary()
     {
         Dictionary<ResourceType, float> dict = new Dictionary<ResourceType, float>();

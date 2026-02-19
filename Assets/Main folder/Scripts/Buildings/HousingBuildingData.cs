@@ -10,11 +10,11 @@ public class HousingBuildingData : BuildingData
     public int maxResidents = 5;
     public int initialResidents = 2;
 
-    [Header("Formu³a Wzrostu")]
+    [Header("Formuï¿½a Wzrostu")]
     public float growthDifficultyMultiplier = 2.0f;
     public int baseGrowthTicks = 1;
 
-    [Header("Produkcja Pasywna (Na mieszkañca)")]
+    [Header("Produkcja Pasywna (Na mieszkaï¿½ca)")]
     public List<ResourceCost> productionPerResident;
 
     [Header("Koszty Utrzymania (Baza + Per Pop)")]
@@ -38,7 +38,7 @@ public class HousingBuildingData : BuildingData
 }
 
 // =========================================================
-//            TUTAJ ZACZYNA SIÊ KOD EDYTORA
+//            TUTAJ ZACZYNA SIÄ™ KOD EDYTORA
 // =========================================================
 
 #if UNITY_EDITOR
@@ -51,13 +51,13 @@ public class HousingBuildingDataEditor : Editor
         // Aktualizacja obiektu
         serializedObject.Update();
 
-        // 1. Rysujemy nag³ówek i podstawowe pola z BuildingData (Te które chcemy)
+        // 1. Rysujemy nagÅ‚Ã³wek i podstawowe pola z BuildingData (Te ktÃ³re chcemy)
         EditorGUILayout.LabelField("Base Building Info", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(serializedObject.FindProperty("buildingName"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("description"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("icon"));
 
-        // Typ jest ustawiany automatycznie w OnValidate, wiêc mo¿na go wyœwietliæ jako ReadOnly lub ukryæ
+        // Typ jest ustawiany automatycznie w OnValidate, wiï¿½c moï¿½na go wyï¿½wietliï¿½ jako ReadOnly lub ukryï¿½
         GUI.enabled = false;
         EditorGUILayout.PropertyField(serializedObject.FindProperty("type"));
         GUI.enabled = true;
@@ -73,14 +73,14 @@ public class HousingBuildingDataEditor : Editor
         // - workerScalingFactor
         // - baseShifts
         // - baseWorkersPerShift
-        // Bo domy ich nie u¿ywaj¹!
+        // Bo domy ich nie uï¿½ywajï¿½!
 
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("--- HOUSING SPECIFICS ---", EditorStyles.boldLabel);
 
         // 2. Rysujemy wszystkie pola specyficzne dla HousingBuildingData
-        // U¿ywamy iteratora, ¿eby nie wpisywaæ ka¿dego rêcznie, 
-        // zaczynaj¹c od pierwszego pola unikalnego dla tej klasy.
+        // Uï¿½ywamy iteratora, ï¿½eby nie wpisywaï¿½ kaï¿½dego rï¿½cznie, 
+        // zaczynajï¿½c od pierwszego pola unikalnego dla tej klasy.
 
         var property = serializedObject.GetIterator();
 
@@ -89,9 +89,9 @@ public class HousingBuildingDataEditor : Editor
 
         while (property.NextVisible(false))
         {
-            // Rysujemy tylko te w³aœciwoœci, które nale¿¹ do HousingBuildingData, a nie do klasy bazowej
-            // Sprawdzamy to po nazwach, których NIE chcemy, lub rysujemy wszystko co zosta³o
-            // Najproœciej: Rysujemy konkretne pola, które zdefiniowa³eœ w HousingBuildingData
+            // Rysujemy tylko te wï¿½aï¿½ciwoï¿½ci, ktï¿½re naleï¿½ï¿½ do HousingBuildingData, a nie do klasy bazowej
+            // Sprawdzamy to po nazwach, ktï¿½rych NIE chcemy, lub rysujemy wszystko co zostaï¿½o
+            // Najproï¿½ciej: Rysujemy konkretne pola, ktï¿½re zdefiniowaï¿½eï¿½ w HousingBuildingData
 
             if (property.name == "housingRace" ||
                 property.name == "maxResidents" ||

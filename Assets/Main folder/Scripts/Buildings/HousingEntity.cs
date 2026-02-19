@@ -1,208 +1,248 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// Budynek mieszkalny. Dziedziczy po BuildingEntity wyłącznie po to,
+/// by żyć na mapie i mieć dane bazowe – NIE używa komponentów
+/// Worker / Fuel / Production (nie ma zmian, pracowników ani paliwa).
+///
+/// Własna logika: pasywna produkcja per mieszkaniec + wzrost populacji,
+/// odpalane raz dziennie przez OnDayChanged.
+/// </summary>
 public class HousingEntity : BuildingEntity
 {
     // Rzutowanie danych na typ Housing
     public HousingBuildingData housingData => data as HousingBuildingData;
 
-    [Header("Status Mieszka�c�w")]
+    [Header("Status Mieszkańców")]
     public List<Citizen> residents = new List<Citizen>();
 
-    // Postęp wzrostu (punkty/dni)
     public int currentGrowthProgress = 0;
 
-    private void Start()
+    // =========================================================================
+    // Cykl życia
+    // =========================================================================
+
+    protected override void OnEnable()
     {
-        // Domy dzia�aj� TYLKO w cyklu dobowym (nie godzinowym)
-        if (TimeCycleManager.Instance != null)
-        {
-            TimeCycleManager.Instance.OnDayChanged += HandleMorningRoutine;
-        }
+        base.OnEnable(); // Rejestracja w AllBuildings
     }
 
-    private void OnDestroy()
+    protected override void OnDisable()
     {
-        if (TimeCycleManager.Instance != null)
-        {
-            TimeCycleManager.Instance.OnDayChanged -= HandleMorningRoutine;
-        }
+        base.OnDisable();
     }
 
-    public override void Initialize(BuildingData _data)
+    // Start() z BuildingEntity wywoła Initialize(data) – tego chcemy.
+    // Nie nadpisujemy Start() – zamiast tego nadpisujemy Initialize().
+
+    // =========================================================================
+    // Inicjalizacja
+    // =========================================================================
+
+    public override void Initialize(BuildingData buildingData)
     {
-        base.Initialize(_data);
+        // Tworzy komponenty (Workers, Fuel, Production itd.),
+        // ale dla domu nie będą używane – to dopuszczalne,
+        // koszt ich stworzenia jest pomijalny.
+        base.Initialize(buildingData);
 
         if (housingData == null)
         {
-            Debug.LogError("Z�e dane przypisane do HousingEntity!");
+            Debug.LogError($"[HousingEntity] Złe dane przypisane do {name}!");
             return;
         }
 
-        // Spawn startowych mieszka�c�w
+        // Spawn startowych mieszkańców
         for (int i = 0; i < housingData.initialResidents; i++)
         {
-            if (residents.Count < housingData.maxResidents)
-            {
-                Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
-                residents.Add(newC);
-            }
+            if (residents.Count >= housingData.maxResidents) break;
+
+            Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
+            residents.Add(newC);
         }
+
+        // Subskrybujemy własny handler poranny (base.Initialize już podpiął OnHourTick i OnDayChanged,
+        // ale HandleHourlyProduction jest nadpisana jako pusta – patrz niżej)
+        if (TimeCycleManager.Instance != null)
+            TimeCycleManager.Instance.OnDayChanged += HandleMorningRoutine;
     }
 
-    // --- NADPISANIE LOGIKI GODZINOWEJ ---
-    // Zapobiegamy wywo�aniu logiki zmianowej z BuildingEntity dla dom�w
+    protected override void OnDestroy()  // 'new' żeby nie ukryć base.OnDestroy przypadkowo
+    {
+        base.OnDestroy(); // Odpina OnHourTick / OnDayChanged z base + zwalnia Terrain
+
+        if (TimeCycleManager.Instance != null)
+            TimeCycleManager.Instance.OnDayChanged -= HandleMorningRoutine;
+    }
+
+    // =========================================================================
+    // Nadpisanie logiki godzinowej – domy jej nie mają
+    // =========================================================================
+
     protected override void HandleHourlyProduction(int currentHour)
     {
-        // Domy nie maj� logiki godzinowej
+        // Intentionally empty – domy działają tylko w cyklu dobowym.
     }
 
-    // --- G��WNA LOGIKA PORANNA (06:00) ---
+    // =========================================================================
+    // Główna logika poranna
+    // =========================================================================
+
     private void HandleMorningRoutine(int day)
     {
-        Dictionary<ResourceType, float> logChanges = new Dictionary<ResourceType, float>();
+        var logChanges = new Dictionary<ResourceType, float>();
 
-        // A. Produkcja Pasywna (Na mieszka�ca)
-        if (housingData.productionPerResident != null && housingData.productionPerResident.Count > 0)
-        {
-            foreach (var prod in housingData.productionPerResident)
-            {
-                float totalAmount = prod.amount * residents.Count;
-                if (totalAmount > 0)
-                {
-                    ResourceManager.Instance.AddResource(prod.type, totalAmount);
-                    if (FloatingTextManager.Instance != null)
-                        FloatingTextManager.Instance.ShowGain(transform.position, prod.type.ToString(), Mathf.FloorToInt(totalAmount));
-                }
-            }
-        }
+        // A. Produkcja pasywna (na mieszkańca)
+        ProducePerResident(logChanges);
 
         // B. Utrzymanie (Survival Cost)
         Dictionary<ResourceType, float> survivalCost = CalculateSurvivalCost();
         bool survivalPaid = ResourceManager.Instance.SpendResources(survivalCost);
 
-        if (survivalPaid && FloatingTextManager.Instance != null)
-        {
-            foreach (var cost in survivalCost)
-            {
-                if (cost.Value >= 1.0f)
-                    FloatingTextManager.Instance.ShowLoss(transform.position, cost.Key.ToString(), Mathf.FloorToInt(cost.Value));
-            }
-        }
+        ShowLossFeedback(survivalCost, survivalPaid);
 
-        // C. Logika Wzrostu
+        // C. Logika wzrostu
         if (!survivalPaid)
         {
-            Debug.Log($"<color=red>G��d w {name}! Populacja stagnuje/maleje.</color>");
+            Debug.Log($"<color=red>Głód w {name}! Populacja stagnuje.</color>");
             if (currentGrowthProgress > 0) currentGrowthProgress--;
         }
         else
         {
-            if (residents.Count < housingData.maxResidents)
-            {
-                Dictionary<ResourceType, float> growthCost = CalculateGrowthCost();
-
-                if (ResourceManager.Instance.SpendResources(growthCost))
-                {
-                    currentGrowthProgress++;
-                    CheckForNewResident();
-                }
-            }
+            TryGrow();
         }
 
+        // Logowanie do ResourceLogger
         foreach (var cost in survivalCost)
-        {
-            if (logChanges.ContainsKey(cost.Key)) logChanges[cost.Key] -= cost.Value;
-            else logChanges.Add(cost.Key, -cost.Value);
-        }
-        if (UIBuildingInspector.Instance != null) UIBuildingInspector.Instance.RefreshContent();
+            AddToDict(logChanges, cost.Key, -cost.Value);
 
         if (logChanges.Count > 0 && ResourceLogger.Instance != null)
-        {
             ResourceLogger.Instance.LogTransaction($"Bilans Poranny: {data.buildingName}", logChanges);
-        }
+
+        RefreshUI();
     }
 
-    void CheckForNewResident()
-    {
-        int requiredTicks = CalculateRequiredGrowthTicks();
+    // =========================================================================
+    // Pomocnicze metody logiki mieszkaniowej
+    // =========================================================================
 
-        if (currentGrowthProgress >= requiredTicks)
+    private void ProducePerResident(Dictionary<ResourceType, float> logChanges)
+    {
+        if (housingData.productionPerResident == null) return;
+
+        foreach (var prod in housingData.productionPerResident)
         {
-            Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
-            residents.Add(newC);
-            currentGrowthProgress = 0;
+            float totalAmount = prod.amount * residents.Count;
+            if (totalAmount <= 0f) continue;
+
+            ResourceManager.Instance.AddResource(prod.type, totalAmount);
+            AddToDict(logChanges, prod.type, totalAmount);
+
+            if (FloatingTextManager.Instance != null)
+                FloatingTextManager.Instance.ShowGain(
+                    transform.position, prod.type.ToString(), Mathf.FloorToInt(totalAmount));
         }
     }
 
-    // --- MATEMATYKA ---
-
-    public int CalculateRequiredGrowthTicks()
+    private void ShowLossFeedback(Dictionary<ResourceType, float> costs, bool paid)
     {
-        float val = housingData.baseGrowthTicks + (residents.Count * housingData.growthDifficultyMultiplier);
-        return Mathf.FloorToInt(val);
+        if (!paid || FloatingTextManager.Instance == null) return;
+
+        foreach (var cost in costs)
+        {
+            if (cost.Value >= 1f)
+                FloatingTextManager.Instance.ShowLoss(
+                    transform.position, cost.Key.ToString(), Mathf.FloorToInt(cost.Value));
+        }
     }
 
-    Dictionary<ResourceType, float> CalculateSurvivalCost()
+    private void TryGrow()
     {
-        Dictionary<ResourceType, float> total = new Dictionary<ResourceType, float>();
-        foreach (var c in housingData.baseDailyUpkeep) AddToDict(total, c.type, c.amount);
-        foreach (var c in housingData.upkeepPerResident) AddToDict(total, c.type, c.amount * residents.Count);
+        if (residents.Count >= housingData.maxResidents) return;
+
+        var growthCost = CalculateGrowthCost();
+        if (!ResourceManager.Instance.SpendResources(growthCost)) return;
+
+        currentGrowthProgress++;
+        CheckForNewResident();
+    }
+
+    private void CheckForNewResident()
+    {
+        int required = CalculateRequiredGrowthTicks();
+        if (currentGrowthProgress < required) return;
+
+        Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
+        residents.Add(newC);
+        currentGrowthProgress = 0;
+    }
+
+    // =========================================================================
+    // Matematyka
+    // =========================================================================
+
+    public int CalculateRequiredGrowthTicks() =>
+        Mathf.FloorToInt(housingData.baseGrowthTicks + residents.Count * housingData.growthDifficultyMultiplier);
+
+    private Dictionary<ResourceType, float> CalculateSurvivalCost()
+    {
+        var total = new Dictionary<ResourceType, float>();
+        foreach (var c in housingData.baseDailyUpkeep)         AddToDict(total, c.type, c.amount);
+        foreach (var c in housingData.upkeepPerResident)       AddToDict(total, c.type, c.amount * residents.Count);
         return total;
     }
 
-    Dictionary<ResourceType, float> CalculateGrowthCost()
+    private Dictionary<ResourceType, float> CalculateGrowthCost()
     {
-        Dictionary<ResourceType, float> total = new Dictionary<ResourceType, float>();
-        foreach (var c in housingData.growthSurplusCost) AddToDict(total, c.type, c.amount);
+        var total = new Dictionary<ResourceType, float>();
+        foreach (var c in housingData.growthSurplusCost)       AddToDict(total, c.type, c.amount);
         return total;
     }
 
-    void AddToDict(Dictionary<ResourceType, float> d, ResourceType t, float a)
+    private void AddToDict(Dictionary<ResourceType, float> d, ResourceType t, float a)
     {
         if (d.ContainsKey(t)) d[t] += a; else d.Add(t, a);
     }
 
-    // --- API DLA UI (NAPRAWIONE) ---
+    private void RefreshUI()
+    {
+        if (UIBuildingInspector.Instance != null)
+            UIBuildingInspector.Instance.RefreshContent();
+    }
 
-    // Zwraca post�p od 0.0 do 1.0 dla paska
+    // =========================================================================
+    // API dla UI
+    // =========================================================================
+
     public float GetGrowthProgress()
     {
         if (residents.Count >= housingData.maxResidents) return 1f;
-
         int required = CalculateRequiredGrowthTicks();
-        if (required == 0) return 1f; // Zabezpieczenie dzielenia przez zero
-
-        return (float)currentGrowthProgress / required;
+        return required == 0 ? 1f : (float)currentGrowthProgress / required;
     }
 
-    // Zwraca ile dni (tick�w) zosta�o do narodzin
     public int GetDaysRemaining()
     {
         if (residents.Count >= housingData.maxResidents) return 0;
-
-        int required = CalculateRequiredGrowthTicks();
-        return Mathf.Max(0, required - currentGrowthProgress);
+        return Mathf.Max(0, CalculateRequiredGrowthTicks() - currentGrowthProgress);
     }
 
     public float GetProjectedUpkeep()
     {
-        float total = 0;
-        foreach (var cost in housingData.baseDailyUpkeep) total += cost.amount;
-        foreach (var cost in housingData.upkeepPerResident) total += cost.amount * residents.Count;
+        float total = 0f;
+        foreach (var cost in housingData.baseDailyUpkeep)    total += cost.amount;
+        foreach (var cost in housingData.upkeepPerResident)  total += cost.amount * residents.Count;
         return total;
     }
 
     public string GetGrowthStatus()
     {
-        if (residents.Count >= housingData.maxResidents) return "PE�NY";
+        if (residents.Count >= housingData.maxResidents) return "PEŁNY";
 
-        Dictionary<ResourceType, float> cost = CalculateSurvivalCost();
-        foreach (var kvp in cost)
-        {
-            if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value)) return "BRAK ZASOB�W";
-        }
+        foreach (var kvp in CalculateSurvivalCost())
+            if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value)) return "BRAK ZASOBÓW";
 
-        return "ROSN�CY";
+        return "ROSNĄCY";
     }
 }
