@@ -4,8 +4,8 @@ using System.Collections.Generic;
 public abstract class ProjectileBase : MonoBehaviour
 {
     protected float damage;
-    protected float armourPiercing; // Wartoœæ od 0 do 100, reprezentuj¹ca procent obra¿eñ ignoruj¹cych pancerz
-    protected float magicPiercing;  // Wartoœæ od 0 do 100, reprezentuj¹ca procent obra¿eñ ignoruj¹cych odpornoœæ magiczn¹
+    protected float armourPiercing;     // WartoÅ›ci procentowa przebicia pancerze 0-100%
+    protected float magicPiercing;      // WartoÅ›ci procentowa przebicia pancerze 0-100%
     protected float criticalMultiplier;
     protected bool isCritical;
 
@@ -13,7 +13,7 @@ public abstract class ProjectileBase : MonoBehaviour
     protected DamageType damageType;
     protected List<TowerEffectSO> effects;
 
-    // Wspólna metoda inicjalizacji dla wszystkich pocisków
+    // WspÃ³lna metoda inicjalizacji statystyk
     public virtual void Initialize(float _damage, DamageType _type, List<TowerEffectSO> _effects, bool _isCritical, float _criticalMultiplier, float _critChance = 0f)
     {
         damage = _damage;
@@ -23,19 +23,16 @@ public abstract class ProjectileBase : MonoBehaviour
         criticalMultiplier = _criticalMultiplier;
     }
 
-
+    public abstract void Launch(Transform target, Vector3 targetPos, Transform firingPoint = null);
+    
     protected void ApplyDamageAndEffects(EnemyStats enemy)
     {
         if (enemy == null) return;
-
-        enemy.TakeDamage(damage, damageType, armourPiercing,magicPiercing, isCritical, criticalMultiplier);
+        enemy.TakeDamage(damage, damageType, armourPiercing, magicPiercing, isCritical, criticalMultiplier);
 
         if (effects != null)
         {
-            foreach (var effect in effects)
-            {
-                effect.ApplyEffect(enemy);
-            }
+            foreach (var effect in effects) effect.ApplyEffect(enemy);
         }
     }
 }

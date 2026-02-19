@@ -6,15 +6,15 @@ public class HousingEntity : BuildingEntity
     // Rzutowanie danych na typ Housing
     public HousingBuildingData housingData => data as HousingBuildingData;
 
-    [Header("Status Mieszkañców")]
+    [Header("Status Mieszkaï¿½cï¿½w")]
     public List<Citizen> residents = new List<Citizen>();
 
-    // Postêp wzrostu (punkty/dni)
+    // PostÄ™p wzrostu (punkty/dni)
     public int currentGrowthProgress = 0;
 
     private void Start()
     {
-        // Domy dzia³aj¹ TYLKO w cyklu dobowym (nie godzinowym)
+        // Domy dziaï¿½ajï¿½ TYLKO w cyklu dobowym (nie godzinowym)
         if (TimeCycleManager.Instance != null)
         {
             TimeCycleManager.Instance.OnDayChanged += HandleMorningRoutine;
@@ -35,11 +35,11 @@ public class HousingEntity : BuildingEntity
 
         if (housingData == null)
         {
-            Debug.LogError("Z³e dane przypisane do HousingEntity!");
+            Debug.LogError("Zï¿½e dane przypisane do HousingEntity!");
             return;
         }
 
-        // Spawn startowych mieszkañców
+        // Spawn startowych mieszkaï¿½cï¿½w
         for (int i = 0; i < housingData.initialResidents; i++)
         {
             if (residents.Count < housingData.maxResidents)
@@ -51,18 +51,18 @@ public class HousingEntity : BuildingEntity
     }
 
     // --- NADPISANIE LOGIKI GODZINOWEJ ---
-    // Zapobiegamy wywo³aniu logiki zmianowej z BuildingEntity dla domów
+    // Zapobiegamy wywoï¿½aniu logiki zmianowej z BuildingEntity dla domï¿½w
     protected override void HandleHourlyProduction(int currentHour)
     {
-        // Domy nie maj¹ logiki godzinowej
+        // Domy nie majï¿½ logiki godzinowej
     }
 
-    // --- G£ÓWNA LOGIKA PORANNA (06:00) ---
+    // --- Gï¿½ï¿½WNA LOGIKA PORANNA (06:00) ---
     private void HandleMorningRoutine(int day)
     {
         Dictionary<ResourceType, float> logChanges = new Dictionary<ResourceType, float>();
 
-        // A. Produkcja Pasywna (Na mieszkañca)
+        // A. Produkcja Pasywna (Na mieszkaï¿½ca)
         if (housingData.productionPerResident != null && housingData.productionPerResident.Count > 0)
         {
             foreach (var prod in housingData.productionPerResident)
@@ -93,7 +93,7 @@ public class HousingEntity : BuildingEntity
         // C. Logika Wzrostu
         if (!survivalPaid)
         {
-            Debug.Log($"<color=red>G³ód w {name}! Populacja stagnuje/maleje.</color>");
+            Debug.Log($"<color=red>Gï¿½ï¿½d w {name}! Populacja stagnuje/maleje.</color>");
             if (currentGrowthProgress > 0) currentGrowthProgress--;
         }
         else
@@ -165,7 +165,7 @@ public class HousingEntity : BuildingEntity
 
     // --- API DLA UI (NAPRAWIONE) ---
 
-    // Zwraca postêp od 0.0 do 1.0 dla paska
+    // Zwraca postï¿½p od 0.0 do 1.0 dla paska
     public float GetGrowthProgress()
     {
         if (residents.Count >= housingData.maxResidents) return 1f;
@@ -176,7 +176,7 @@ public class HousingEntity : BuildingEntity
         return (float)currentGrowthProgress / required;
     }
 
-    // Zwraca ile dni (ticków) zosta³o do narodzin
+    // Zwraca ile dni (tickï¿½w) zostaï¿½o do narodzin
     public int GetDaysRemaining()
     {
         if (residents.Count >= housingData.maxResidents) return 0;
@@ -195,14 +195,14 @@ public class HousingEntity : BuildingEntity
 
     public string GetGrowthStatus()
     {
-        if (residents.Count >= housingData.maxResidents) return "PE£NY";
+        if (residents.Count >= housingData.maxResidents) return "PEï¿½NY";
 
         Dictionary<ResourceType, float> cost = CalculateSurvivalCost();
         foreach (var kvp in cost)
         {
-            if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value)) return "BRAK ZASOBÓW";
+            if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value)) return "BRAK ZASOBï¿½W";
         }
 
-        return "ROSN¥CY";
+        return "ROSNï¿½CY";
     }
 }

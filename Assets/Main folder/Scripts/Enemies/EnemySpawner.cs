@@ -17,20 +17,20 @@ public class EnemySpawner : MonoBehaviour
     // Sztywne rozpiski na konkretne dni (np. Boss w dniu 5)
     public List<WaveDefinition> predefinedWaves;
 
-    [Header("Matematyka Fali (Bud�et Zagro�enia)")]
+    [Header("Matematyka Fali (Budzet Zagro�enia)")]
     public float baseBudget = 4f;      // Startowa siła fali
     public float budgetPerDay = 2f;     // Ile punktów dochodzi co dzień
     public float budgetExponent = 1.1f; // Mnożnik trudności (krzywa)
 
-    [Header("Interwa�y Spawnu")]
+    [Header("Interwały Spawnu")]
     public float nightSpawnInterval = 1.0f; // Szybkość spawnu w nocy (co ile sek)
 
-    [Header("Ambient (Dzie�)")]
+    [Header("Ambient (Dzień)")]
     public float daySpawnInterval = 10.0f;  // Co ile sek próba spawnu w dzień
     [Range(0, 100)] public int daySpawnChance = 30; // Szansa na spawn w dzień
 
-    [Header("Balans �cie�ek (Wagi)")]
-    public float baseFormulaConst = 10f;
+    [Header("Balans ścieżek (Wagi)")]
+    public float baseFormulaConst = 3f;
     public float perSpawnerMultiplier = 2.5f;
 
     // Klasa pomocnicza trasy
@@ -41,7 +41,7 @@ public class EnemySpawner : MonoBehaviour
         [Range(0, 100)] public float currentSpawnChance;
 
         public List<Vector3> fullPath;          // Cała trasa (Mapa -> Baza)
-        public Vector3 currentSpawnPoint;       // Punkt na granicy mg�y
+        public Vector3 currentSpawnPoint;       // Punkt na granicy mgay
         public List<Vector3> currentActivePath; // Odcinek (Spawn -> Baza)
         public float fullLength;
     }
@@ -53,9 +53,9 @@ public class EnemySpawner : MonoBehaviour
 
     // Kolejka wrog�w do zrespienia w bie��cej nocy
     private Queue<EnemyData> enemiesToSpawnQueue = new Queue<EnemyData>();
-    private float spawnTimer = 0f;
+    private float spawnTimer;
 
-    // --- CYKL �YCIA ---
+    // --- CYKL ŻYCIA ---
 
     void Start()
     {
@@ -254,7 +254,7 @@ public class EnemySpawner : MonoBehaviour
                         spawnTimer = 0f;
                         if (Random.Range(0, 100) < daySpawnChance)
                         {
-                            // W dzie� spawnujemy losowego s�abego wroga (zwiadowc�)
+                            // W dzień spawnujemy losowego s�abego wroga (zwiadowc�)
                             if (availableEnemies.Count > 0)
                             {
                                 // Zak�adamy, �e pierwszy na li�cie to najs�abszy (np. Szkielet)
@@ -301,8 +301,8 @@ public class EnemySpawner : MonoBehaviour
         // Spawnujemy w 'currentSpawnPoint', czyli na granicy odkrytego terenu
         GameObject newEnemy = Instantiate(data.prefab, selectedRoute.currentSpawnPoint, Quaternion.identity);
 
-        // 4. Pobieranie modyfikator�w z Beacona (Wp�yw ognia na wrog�w)
-        float countMod = 1f; // Nieu�ywane przy pojedynczym spawnie, ale metoda zwraca
+        // 4. Pobieranie modyfikatorow z Beacona (Wpływ ognia na wrogow)
+        float countMod = 1f; // Nieużywane przy pojedynczym spawnie, ale metoda zwraca
         float hpMod = 1f;
         float speedMod = 1f;
         float eliteMod = 1f;

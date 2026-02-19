@@ -1,14 +1,16 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class SimpleBullet : ProjectileBase
+public class SimpleProjectile : ProjectileBase
 {
     private Transform target;
-    private float speed = 20f;
+    [SerializeField] private float speed = 20f; 
 
-    public void Seek(Transform _target)
+    public override void Launch(Transform _target, Vector3 _targetPos, Transform _firingPoint = null)
     {
         target = _target;
+        if (target == null) Destroy(gameObject); 
+
     }
 
     void Update()
@@ -34,10 +36,7 @@ public class SimpleBullet : ProjectileBase
     void HitTarget()
     {
         EnemyStats enemy = target.GetComponent<EnemyStats>();
-        if (enemy != null)
-        {
-            ApplyDamageAndEffects(enemy);
-        }
+        if (enemy != null) ApplyDamageAndEffects(enemy);
         Destroy(gameObject);
     }
 }

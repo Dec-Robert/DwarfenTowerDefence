@@ -3,119 +3,85 @@ using UnityEngine;
 
 public class FragmentedProjectile : ProjectileBase
 {
-    [Header("Ustawienia Gar≥acza")]
-    public GameObject shardPrefab;      // Prefab ma≥ego od≥amka
-    public int extraShards = 4;         // IloúÊ dodatkowych od≥amkÛw
-    public float spreadRadius = 3.0f;   // Rozrzut wokÛ≥ celu
-    public string targetTag = "Enemy";  // Tag do szukania wrogÛw
+    [Header("Ustawienia Gar≈Çacza")]
+    public GameObject shardPrefab;      
+    public int extraShards = 4;         
+    public float spreadRadius = 3.0f;   
+    public string targetTag = "Enemy"; 
 
-    // Metoda wywo≥ywana przez TowerController
-    public void LaunchAt(Transform mainTarget)
+    // Metoda wywoÔøΩywana przez TowerController
+    public override void Launch(Transform mainTarget, Vector3 fallbackPos, Transform firingPoint = null)
     {
-        // Walidacja
         if (shardPrefab == null)
         {
-            Debug.LogError($"[FragmentedProjectile] BRAK PREFABU OD£AMKA w obiekcie {name}!");
             Destroy(gameObject);
             return;
         }
 
-        // --- 1. GL”WNY CEL ---
-        // Strzelamy w cel, w ktÛry celowa≥a wieøa
+        // 1. G≈Å√ìWNY CEL
         if (mainTarget != null)
         {
             SpawnShard(mainTarget);
         }
         else
         {
-            // Jeúli cel zginπ≥ w u≥amku sekundy przed strza≥em, strzel w ziemiÍ tam gdzie celowaliúmy
-            // (transform.forward to kierunek lufy)
-            Vector3 estimatedHitPos = transform.position + transform.forward * 5f; // strza≥ przed siebie
-            SpawnShardToGround(estimatedHitPos);
+            SpawnShardToGround(fallbackPos);
         }
 
-        // --- 2. SZUKANIE DODATKOWYCH CEL”W ---
+        // 2. SZUKANIE DODATKOWYCH CEL√ìW
         List<Transform> potentialTargets = new List<Transform>();
-
-        // Punkt centralny poszukiwaÒ (cel lub lufa, jeúli cel zniknπ≥)
-        Vector3 searchCenter = mainTarget != null ? mainTarget.position : (transform.position + transform.forward * 5f);
+        Vector3 searchCenter = mainTarget != null ? mainTarget.position : fallbackPos;
 
         Collider[] hits = Physics.OverlapSphere(searchCenter, spreadRadius);
         foreach (var hit in hits)
         {
             if (hit.CompareTag(targetTag))
             {
-                // Nie celujemy drugi raz w g≥Ûwnego wroga
                 if (mainTarget != null && hit.transform == mainTarget) continue;
-
-                if (hit.GetComponent<EnemyStats>() != null)
-                {
-                    potentialTargets.Add(hit.transform);
-                }
+                if (hit.GetComponent<EnemyStats>() != null) potentialTargets.Add(hit.transform);
             }
         }
 
-        // --- 3. STRZELANIE OD£AMKAMI ---
+        // 3. STRZELANIE OD≈ÅAMKAMI
         for (int i = 0; i < extraShards; i++)
         {
             if (potentialTargets.Count > 0)
             {
-                // A) Mamy wroga - losujemy i strzelamy
                 int randomIndex = Random.Range(0, potentialTargets.Count);
                 Transform target = potentialTargets[randomIndex];
-
                 SpawnShard(target);
-
-                // Usuwamy z listy, øeby nie trafiÊ go 2 razy (chyba øe chcesz shotgun w jednego)
                 potentialTargets.RemoveAt(randomIndex);
             }
             else
             {
-                // B) Brak wrogÛw - strzelamy w losowy punkt na ziemi (efekt rozrzutu)
                 SpawnShardToGround(searchCenter);
             }
         }
 
-        // Pocisk-Matka (Manager) wykona≥ zadanie - niszczymy go natychmiast
-        // Shardy sπ juø niezaleønymi obiektami
         Destroy(gameObject);
     }
 
     void SpawnShard(Transform target)
     {
-        // Tworzymy od≥amek dok≥adnie w miejscu lufy (tam gdzie jest ten skrypt)
         GameObject shardObj = Instantiate(shardPrefab, transform.position, Quaternion.identity);
-
-        // DEBUG: Rysujemy liniÍ w edytorze, øeby widzieÊ gdzie leci
-        Debug.DrawLine(transform.position, target.position, Color.yellow, 0.5f);
-
-        SimpleBullet bullet = shardObj.GetComponent<SimpleBullet>();
+        ProjectileBase bullet = shardObj.GetComponent<ProjectileBase>(); 
+        
         if (bullet != null)
         {
-            // Przekazujemy dane, ktÛre ten skrypt (ProjectileBase) otrzyma≥ w Initialize
-            // Zak≥adam, øe w ProjectileBase masz protected zmienne: damage, damageType, effects
-            bullet.Initialize(damage, damageType, effects,isCritical,criticalMultiplier);
-            bullet.Seek(target);
-        }
-        else
-        {
-            Debug.LogError("Prefab od≥amka nie ma komponentu SimpleBullet!");
+            bullet.Initialize(damage, damageType, effects, isCritical, criticalMultiplier);
+            bullet.Launch(target, target.position, null);
         }
     }
 
     void SpawnShardToGround(Vector3 centerPoint)
     {
-        // Losujemy punkt na p≥aszczyünie XZ wokÛ≥ celu
         Vector2 randomCircle = Random.insideUnitCircle * spreadRadius;
         Vector3 groundPos = centerPoint + new Vector3(randomCircle.x, 0, randomCircle.y);
-
-        // Tworzymy pusty obiekt jako cel, øeby SimpleBullet mia≥ w co lecieÊ
+        
         GameObject dummyTarget = new GameObject("Dummy_Miss_Target");
         dummyTarget.transform.position = groundPos;
-
+        
         SpawnShard(dummyTarget.transform);
-
-        // Niszczymy cel po 2 sekundach (pocisk powinien dolecieÊ szybciej)
         Destroy(dummyTarget, 2.0f);
     }
 }

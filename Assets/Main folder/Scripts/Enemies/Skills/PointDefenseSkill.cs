@@ -17,14 +17,14 @@ public class PointDefenseSkill : EnemySkill
             return;
         }
 
-        // Szukamy pocisków w pobli¿u
-        // Zak³adamy, ¿e pociski s¹ na warstwie "Projectile" lub maj¹ tag "Bullet"
-        // U¿yjemy OverlapSphere
+        // Szukamy pociskï¿½w w pobliï¿½u
+        // Zakï¿½adamy, ï¿½e pociski sï¿½ na warstwie "Projectile" lub majï¿½ tag "Bullet"
+        // Uï¿½yjemy OverlapSphere
         Collider[] hits = Physics.OverlapSphere(transform.position, range);
 
         foreach (var hit in hits)
         {
-            SimpleBullet bullet = hit.GetComponent<SimpleBullet>();
+            ProjectileBase bullet = hit.GetComponent<ProjectileBase>();
             if (bullet != null)
             {
                 // Zestrzelenie!
@@ -32,7 +32,7 @@ public class PointDefenseSkill : EnemySkill
                 timer = cooldown;
 
                 if (zapEffect) Instantiate(zapEffect, hit.transform.position, Quaternion.identity);
-                Debug.Log($"{name} (Arcanist) zniszczy³ pocisk!");
+                Debug.Log($"{name} (Arcanist) zniszczyï¿½ pocisk!");
 
                 return; // Zestrzelamy tylko jeden na raz
             }

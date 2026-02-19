@@ -8,12 +8,9 @@ public class TowerController : MonoBehaviour
     public Transform firePoint;
     public Transform partToRotate;
     public float turnSpeed = 10f;
-
-    [Header("Ustawienia Celowania")]
-    [Tooltip("Dopuszczalny b³¹d k¹ta (w stopniach).")]
     public float shootAngleMargin = 10f;
-
-    [Header("Wizualizacja Zasiêgu")]
+    
+    [Header("Wizualizacja Zasiï¿½gu")]
     public GameObject rangeIndicatorPrefab;
     private GameObject rangeIndicatorInstance;
 
@@ -22,7 +19,6 @@ public class TowerController : MonoBehaviour
     [SerializeField] private float currentRange;
     [SerializeField] private float currentDamage;
     [SerializeField] private float currentFireRate;
-
     [SerializeField] private float criticalChance;
     [SerializeField] private float criticalMultiplier;
 
@@ -58,7 +54,7 @@ public class TowerController : MonoBehaviour
             currentDamage = towerData.baseDamage * damageMod * efficiency;
             currentFireRate = towerData.fireRate * fireRateMod * efficiency;
 
-            // Aktualizacja wizualizacji zasiêgu (skalowanie w czasie rzeczywistym)
+            // Aktualizacja wizualizacji zasiï¿½gu (skalowanie w czasie rzeczywistym)
             if (rangeIndicatorInstance != null && rangeIndicatorInstance.activeSelf)
             {
                 float scale = currentRange * 2f;
@@ -67,7 +63,7 @@ public class TowerController : MonoBehaviour
         }
     }
 
-    // --- METODA PRZYWRÓCONA: POKAZYWANIE ZASIÊGU ---
+    // --- METODA PRZYWRï¿½CONA: POKAZYWANIE ZASIï¿½GU ---
     public void ShowRangeIndicator(bool show)
     {
         if (show)
@@ -129,7 +125,7 @@ public class TowerController : MonoBehaviour
         // 1. Obracanie
         LockOnTarget();
 
-        // 2. Sprawdzanie k¹ta
+        // 2. Sprawdzanie kï¿½ta
         CheckIfAimed();
 
         // 3. Strzelanie
@@ -183,37 +179,41 @@ public class TowerController : MonoBehaviour
         TowerData tData = towerData as TowerData;
         if (tData == null || tData.bulletPrefab == null) return;
 
+        // Ustalenie pozycji startowej
         Vector3 spawnPos = (firePoint != null) ? firePoint.position : transform.position;
+        Quaternion spawnRot = (firePoint != null) ? firePoint.rotation : 
+            (partToRotate != null ? partToRotate.rotation : transform.rotation);
 
-        // Strza³ w kierunku lufy (firePoint) lub obracanej czêœci
-        Quaternion spawnRot = firePoint != null ? firePoint.rotation : partToRotate.rotation;
-
+        // Instancja
         GameObject bulletGO = Instantiate(tData.bulletPrefab, spawnPos, spawnRot);
-
         ProjectileBase projectile = bulletGO.GetComponent<ProjectileBase>();
-
-        bool isCritical = Random.value*100f < tData.criticalChancel;
 
         if (projectile != null)
         {
+            // 1. Obliczenia
+            bool isCritical = Random.value * 100f < tData.criticalChancel;
+            
+            // 2. Inicjalizacja statystyk (Damage, Effecty)
             projectile.Initialize(currentDamage, tData.damageType, tData.effects, isCritical, criticalMultiplier);
 
-            // Jeœli to zwyk³y pocisk, dajemy mu cel. Liniowy poleci sam przed siebie.
-            if (projectile is SimpleBullet simple) simple.Seek(target);
-            if (projectile is HitscanProjectile hitscan) hitscan.LaunchAt(firePoint.position, target);
-            if (projectile is FragmentedProjectile fragmentedProjectile) fragmentedProjectile.LaunchAt(target);
-            if (projectile is GroundProjectile groundProjectile)                
-                if (target != null)
-                {
-                    groundProjectile.Launch(target.position);
-                }
-                else
-                {
-                    // Fallback jeœli cel znikn¹³ (strzel przed siebie)
-                    groundProjectile.Launch(transform.position + transform.forward * 5f);
-                }
+            // 3. Przygotowanie danych do strzaÅ‚u
+            Vector3 targetPos = Vector3.zero;
+            
+            if (target != null)
+            {
+                targetPos = target.position;
+            }
+            else
+            {
+                // Fallback: jeÅ›li cel zniknÄ…Å‚ (jest null), strzelamy w punkt przed lufÄ…
+                // DziÄ™ki temu GroundProjectile nadal poleci w "ostatnie znane miejsce" lub przed siebie
+                targetPos = spawnPos + (spawnRot * Vector3.forward * 5f);
+            }
 
-
+            // 4. ODPALENIE - Polimorfizm w akcji
+            // Nie obchodzi nas czy to SimpleBullet, GroundProjectile czy Hitscan.
+            // KaÅ¼dy pocisk obsÅ‚uÅ¼y te dane po swojemu.
+            projectile.Launch(target, targetPos, firePoint);
         }
 
         if (towerEntity != null) towerEntity.RegisterShot();
@@ -224,7 +224,7 @@ public class TowerController : MonoBehaviour
         Gizmos.color = canShoot ? Color.cyan : Color.red;
         Gizmos.DrawWireSphere(transform.position, currentRange > 0 ? currentRange : (towerData ? towerData.baseRange : 0));
 
-        // Debug promienia strza³u
+        // Debug promienia strzaï¿½u
         if (partToRotate != null)
         {
             Gizmos.color = Color.yellow;
