@@ -40,11 +40,17 @@ public class BuildingEntity : MonoBehaviour
     public int currentTier => Upgrades?.CurrentTier ?? 0;
 
     // -------------------------------------------------------------------------
-    // Globalny rejestr
+    // Globalny rejestr (delegujemy do BuildingRegistry)
     // -------------------------------------------------------------------------
 
-    public static List<BuildingEntity> AllBuildings = new List<BuildingEntity>();
-
+    /// <summary>
+    /// Skrót dla wygody – zamiast BuildingRegistry.Instance.AllBuildings.
+    /// Jeśli rejestr nie istnieje zwraca pustą listę zamiast rzucać wyjątek.
+    /// </summary>
+    public static IReadOnlyList<BuildingEntity> AllBuildings =>
+        BuildingRegistry.Instance != null
+            ? BuildingRegistry.Instance.AllBuildings
+            : System.Array.Empty<BuildingEntity>();
     // -------------------------------------------------------------------------
     // Długość zmiany (obliczana, uwzględnia globalne modyfikatory)
     // -------------------------------------------------------------------------
@@ -55,8 +61,8 @@ public class BuildingEntity : MonoBehaviour
     // Cykl życia Unity
     // =========================================================================
 
-    protected virtual void OnEnable()  => AllBuildings.Add(this);
-    protected virtual void OnDisable() => AllBuildings.Remove(this);
+    protected virtual void OnEnable()  => BuildingRegistry.Instance?.Register(this);
+    protected virtual void OnDisable() => BuildingRegistry.Instance?.Unregister(this);
 
     protected virtual void Start()
     {

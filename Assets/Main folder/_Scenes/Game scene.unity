@@ -1042,6 +1042,63 @@ Transform:
   - {fileID: 1642999815}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &743807534
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 743807536}
+  - component: {fileID: 743807535}
+  - component: {fileID: 743807537}
+  m_Layer: 0
+  m_Name: --Global lists
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &743807535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743807534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b18abcd3c6bba4f45a6ee77713ca8524, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &743807536
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743807534}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -12.719124, y: 31.623655, z: -1.2517542}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &743807537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743807534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91cd518b483e444e8becf01e7c0ea997, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1523,8 +1580,8 @@ MonoBehaviour:
   fogManager: {fileID: 1837610585}
   uiExpansionMenu: {fileID: 548684870}
   mapGenerator: {fileID: 1837610582}
-  baseRevealCost: 10
-  costIncrement: 5
+  activeMissions: []
+  playerExpeditionCenter: []
 --- !u!1 &1871804221
 GameObject:
   m_ObjectHideFlags: 0
@@ -1724,6 +1781,7 @@ SceneRoots:
   - {fileID: 2009381754}
   - {fileID: 330585546}
   - {fileID: 743555804}
+  - {fileID: 743807536}
   - {fileID: 548684867}
   - {fileID: 410087041}
   - {fileID: 832575519}
