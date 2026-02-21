@@ -1,0 +1,250 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Main%20folder/UI/BuildingInspector.uss?fileID=7433441132597879392&amp;guid=e85767294a07a3448b3149e46c962958&amp;type=3#BuildingInspector" />
+    <Style src="project://database/Assets/Main%20folder/UI/GameStyle.uss?fileID=7433441132597879392&amp;guid=fbb7a55e69984804cb377c49a28dc3f7&amp;type=3#GameStyle" />
+
+    <!-- ROOT: pełny ekran, flex-column, justify space-between -->
+    <ui:VisualElement name="Root" picking-mode="Ignore" class="root-container">
+
+        <!-- ═══════════════════════════════════════════════════
+             GÓRNA SEKCJA
+             ═══════════════════════════════════════════════════ -->
+        <ui:VisualElement name="TopSection" style="width: 100%;">
+
+            <!-- Pasek surowców -->
+            <ui:VisualElement name="TopBar" class="top-bar">
+
+                <ui:VisualElement name="HP_Group" class="resource-item">
+                    <ui:VisualElement class="resource-icon" style="background-color: rgb(180,30,30);" picking-mode="Ignore" />
+                    <ui:Label text="20" name="Label_HP" class="resource-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="Gold_Group" class="resource-item">
+                    <ui:VisualElement class="resource-icon icon-gold" picking-mode="Ignore" />
+                    <ui:Label text="100" name="Label_Gold" class="resource-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="Wood_Group" class="resource-item">
+                    <ui:VisualElement class="resource-icon icon-wood" picking-mode="Ignore" />
+                    <ui:Label text="50" name="Label_Wood" class="resource-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="Stone_Group" class="resource-item">
+                    <ui:VisualElement class="resource-icon icon-stone" picking-mode="Ignore" />
+                    <ui:Label text="0" name="Label_Stone" class="resource-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="Food_Group" class="resource-item">
+                    <ui:VisualElement class="resource-icon icon-food" picking-mode="Ignore" />
+                    <ui:Label text="20" name="Label_Food" class="resource-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="Coal_Group" class="resource-item">
+                    <ui:VisualElement class="resource-icon icon-coal" picking-mode="Ignore" />
+                    <ui:Label text="0" name="Label_Coal" class="resource-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="Iron_Group" class="resource-item">
+                    <ui:VisualElement class="resource-icon icon-iron" picking-mode="Ignore" />
+                    <ui:Label text="0" name="Label_Iron" class="resource-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+
+                <ui:Label text="Dzień 1  |  06:00" name="Label_Time"
+                    class="resource-text time-text" picking-mode="Ignore" />
+
+                <ui:VisualElement name="Pop_Group" class="resource-item"
+                    style="min-width: 140px; padding-right: 8px;">
+                    <ui:VisualElement class="resource-icon" style="background-color: rgb(0,140,200);" picking-mode="Ignore" />
+                    <ui:Label text="H:0 | E:0 | D:0" name="Label_Pop"
+                        class="resource-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+            <!-- Beacon – segmentowy pasek paliwa -->
+            <ui:VisualElement name="BeaconDisplay" class="beacon-display-wrapper">
+                <ui:VisualElement name="SegmentsBackground" class="beacon-bar-bg">
+                    <ui:VisualElement name="Segment_0" class="beacon-segment" />
+                    <ui:VisualElement name="Segment_1" class="beacon-segment" />
+                    <ui:VisualElement name="Segment_2" class="beacon-segment" />
+                    <ui:VisualElement name="Segment_3" class="beacon-segment" />
+                    <ui:VisualElement name="Segment_4" class="beacon-segment" />
+                    <ui:VisualElement name="Segment_5" class="beacon-segment" />
+                    <ui:VisualElement name="Segment_6" class="beacon-segment" />
+                    <ui:VisualElement name="Segment_7" class="beacon-segment" />
+                    <ui:VisualElement name="Segment_8" class="beacon-segment" />
+                </ui:VisualElement>
+                <ui:Label name="Lbl_FuelInfo" text="Paliwo: 60 / 100" class="beacon-fuel-label" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- ═══════════════════════════════════════════════════
+             ŚRODEK – pole gry (nieinteraktywne)
+             ═══════════════════════════════════════════════════ -->
+        <ui:VisualElement name="CenterSpacer" style="flex-grow: 1;" picking-mode="Ignore" />
+
+        <!-- ═══════════════════════════════════════════════════
+             DOLNY PASEK – jeden ciemny kontener przez całą szerokość
+             Kolejność: [prędkości][sep][BUDUJ][sep][kategorie][sep][karty→]
+             ═══════════════════════════════════════════════════ -->
+        <ui:VisualElement name="BottomContainer" class="bottom-container">
+
+            <!-- 1. Kontrola prędkości -->
+            <ui:VisualElement name="TimeControls" class="time-controls-panel">
+                <ui:Button text="⏸" name="Btn_Pause" class="time-btn" />
+                <ui:Button text="1×" name="Btn_1x"   class="time-btn time-btn-active" />
+                <ui:Button text="2×" name="Btn_2x"   class="time-btn" />
+                <ui:Button text="3×" name="Btn_3x"   class="time-btn" />
+                <ui:Button text="5×" name="Btn_5x"   class="time-btn" />
+            </ui:VisualElement>
+
+            <!-- separator -->
+            <ui:VisualElement class="bottom-divider" />
+
+            <!-- 2. Przycisk BUDUJ / X -->
+            <ui:Button name="Btn_MainBuild" text="BUDUJ" class="main-build-btn" />
+
+            <!-- separator -->
+            <ui:VisualElement class="bottom-divider" />
+
+            <!-- 3. Kategorie (ukryte dopóki menu zamknięte) -->
+            <ui:VisualElement name="CategoryPanel" class="category-panel" style="display: none;">
+                <ui:Button name="Btn_Cat_Production" text="PROD"   class="category-btn" />
+                <ui:Button name="Btn_Cat_Defense"    text="OBRONA" class="category-btn" />
+                <ui:Button name="Btn_Cat_Housing"    text="DOMY"   class="category-btn" />
+            </ui:VisualElement>
+
+            <!-- separator (widoczny tylko gdy kategorie widoczne – C# toggle) -->
+            <ui:VisualElement name="DividerBeforeCards" class="bottom-divider" style="display: none;" />
+
+            <!-- 4. Lista budynków – rośnie by wypełnić resztę -->
+            <ui:VisualElement name="BuildingsListPanel" class="buildings-list-panel" style="display: none;">
+                <ui:ScrollView
+                    mode="Horizontal"
+                    vertical-scroller-visibility="Hidden"
+                    horizontal-scroller-visibility="Auto"
+                    class="buildings-scroll-view">
+                    <ui:VisualElement name="BuildingsContainer" class="buildings-container" />
+                </ui:ScrollView>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- ═══════════════════════════════════════════════════
+             POPUPY (absolutne, wycentrowane)
+             ═══════════════════════════════════════════════════ -->
+
+        <!-- Menu Ekspansji -->
+        <ui:VisualElement name="ExpansionMenu" class="expansion-panel"
+            style="display: none; position: absolute; left: 50%; top: 50%; translate: -50% -50%;">
+            <ui:Label name="Exp_Title" text="Nieznane Ziemie" class="expansion-header" />
+            <ui:Label name="Exp_Description" text="Opis statusu..." class="expansion-text" />
+            <ui:VisualElement style="flex-direction: row; margin-top: 8px; margin-bottom: 8px;">
+                <ui:Label text="Koszt: " style="color: #665540; font-size: 11px;" />
+                <ui:Label name="Exp_CostVal" text="100 G"
+                    style="color: #FFD700; -unity-font-style: bold; font-size: 11px;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+                <ui:Button name="Btn_Exp_Buy"   text="ODKRYJ"  class="expansion-btn-buy"   />
+                <ui:Button name="Btn_Exp_Close" text="ANULUJ"  class="expansion-btn-close" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Inspektor budynku -->
+        <ui:VisualElement name="ScreenOverlay"
+            style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+                   align-items: center; justify-content: center; display: none;">
+            <ui:VisualElement name="TotalContainer" class="total-container" />
+        </ui:VisualElement>
+
+        <!-- Tooltip budynku -->
+        <ui:VisualElement name="Tooltip" class="tooltip-box"
+            style="display: none; position: absolute;">
+            <ui:Label name="TooltipTitle" text="Nazwa Budynku" class="tooltip-header" />
+            <ui:Label name="TooltipBody"  text="Opis..."       class="tooltip-text"   />
+            <ui:Label name="TooltipCost"  text="Koszt: 100 G"  class="tooltip-cost"   />
+        </ui:VisualElement>
+
+        <!-- Tutorial -->
+        <ui:VisualElement name="TutorialPopup" class="tutorial-popup"
+            style="display: none; position: absolute; left: 50%; top: 50%;
+                   translate: -50% -50%; width: 260px;">
+            <ui:Button name="Btn_CloseTutorial" text="✕" class="tutorial-close-btn" />
+            <ui:Label class="tutorial-text"
+                text="Żeby budynek generował surowce lub żeby wieże strzelały potrzebują pracowników.&#10;&#10;Kliknij na budynek aby otworzyć menu.&#10;&#10;Twoi pracownicy pracują tylko podczas zmian." />
+        </ui:VisualElement>
+
+        <!-- Tooltip zasobów -->
+        <ui:VisualElement name="ResourceTooltip" class="resource-tooltip" style="display: none;">
+
+            <ui:Label name="ResTool_Name" text="NAZWA"
+                style="color: #FFD700; -unity-font-style: bold; font-size: 10px;
+                       margin-bottom: 4px; border-bottom-width: 1px;
+                       border-bottom-color: #2A2010; -unity-text-align: middle-center;" />
+
+            <!-- Wariant A: Standardowy -->
+            <ui:VisualElement name="Mode_Standard">
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-bottom: 2px;">
+                    <ui:Label text="Przychód:" style="color: #665540; font-size: 10px;" />
+                    <ui:Label name="ResTool_Gain" text="+0"
+                        style="color: #44FF88; font-size: 10px; -unity-font-style: bold;" />
+                </ui:VisualElement>
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-bottom: 2px;">
+                    <ui:Label text="Wydatki:"  style="color: #665540; font-size: 10px;" />
+                    <ui:Label name="ResTool_Loss" text="-0"
+                        style="color: #FF6666; font-size: 10px; -unity-font-style: bold;" />
+                </ui:VisualElement>
+                <ui:VisualElement style="height: 1px; background-color: #2A2010; margin: 3px 0px;" />
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+                    <ui:Label text="BILANS:"
+                        style="color: #AA8800; -unity-font-style: bold; font-size: 10px;" />
+                    <ui:Label name="ResTool_Net" text="+0"
+                        style="color: #FFD700; -unity-font-style: bold; font-size: 10px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Wariant B: Populacja -->
+            <ui:VisualElement name="Mode_Population" style="display: none;">
+                <ui:VisualElement style="flex-direction: row; justify-content: flex-end; margin-bottom: 2px;">
+                    <ui:Label text="L" style="width: 26px; -unity-text-align: middle-center; color: #4488CC; font-size: 9px; -unity-font-style: bold;" />
+                    <ui:Label text="E" style="width: 26px; -unity-text-align: middle-center; color: #44AA44; font-size: 9px; -unity-font-style: bold;" />
+                    <ui:Label text="K" style="width: 26px; -unity-text-align: middle-center; color: #CC8844; font-size: 9px; -unity-font-style: bold;" />
+                </ui:VisualElement>
+
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; background-color: rgba(0,60,0,0.12); border-radius: 1px; padding: 2px; margin-bottom: 2px;">
+                    <ui:Label text="Wolni" style="color: #557755; font-size: 9px;" />
+                    <ui:VisualElement style="flex-direction: row;">
+                        <ui:Label name="Pop_Idle_H" text="0" style="width: 26px; -unity-text-align: middle-center; color: #999; font-size: 9px;" />
+                        <ui:Label name="Pop_Idle_E" text="0" style="width: 26px; -unity-text-align: middle-center; color: #999; font-size: 9px;" />
+                        <ui:Label name="Pop_Idle_D" text="0" style="width: 26px; -unity-text-align: middle-center; color: #999; font-size: 9px;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <ui:Label text="Zarez." style="color: #445566; font-size: 9px;" />
+                    <ui:VisualElement style="flex-direction: row;">
+                        <ui:Label name="Pop_Assigned_H" text="0" style="width: 26px; -unity-text-align: middle-center; color: #667788; font-size: 9px;" />
+                        <ui:Label name="Pop_Assigned_E" text="0" style="width: 26px; -unity-text-align: middle-center; color: #667788; font-size: 9px;" />
+                        <ui:Label name="Pop_Assigned_D" text="0" style="width: 26px; -unity-text-align: middle-center; color: #667788; font-size: 9px;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; background-color: rgba(0,0,0,0.2); border-radius: 1px; padding: 2px;">
+                    <ui:Label text="Praca" style="color: #664444; font-size: 9px;" />
+                    <ui:VisualElement style="flex-direction: row;">
+                        <ui:Label name="Pop_Work_H" text="0" style="width: 26px; -unity-text-align: middle-center; color: #554433; font-size: 9px;" />
+                        <ui:Label name="Pop_Work_E" text="0" style="width: 26px; -unity-text-align: middle-center; color: #554433; font-size: 9px;" />
+                        <ui:Label name="Pop_Work_D" text="0" style="width: 26px; -unity-text-align: middle-center; color: #554433; font-size: 9px;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+
+    <!-- Warstwa HP wrogów -->
+    <ui:VisualElement name="HealthBarLayer" picking-mode="Ignore"
+        style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;" />
+
+</ui:UXML>

@@ -3,7 +3,7 @@ using UnityEngine;
 public class HyperArmorSkill : EnemySkill
 {
     [Header("Konfiguracja")]
-    public int charges = 3; // Ile strza³ów neguje
+    public int charges = 3; // Ile strzaï¿½ï¿½w neguje
     public GameObject shieldVFX; // Opcjonalnie efekt
 
     public override float OnBeforeDamageCalculation(float incomingDamage, DamageType type)
@@ -11,8 +11,8 @@ public class HyperArmorSkill : EnemySkill
         if (charges > 0)
         {
             charges--;
-            Debug.Log($"{name} zablokowa³ obra¿enia Hiperpancerzem! Pozosta³o: {charges}");
-            // Zwracamy 0 obra¿eñ
+            Debug.Log($"{name} zablokowaÅ‚ obraï¿½enia Hiperpancerzem! Pozostaï¿½o: {charges}");
+            // Zwracamy 0 obraï¿½eï¿½
             return 0f;
         }
         return incomingDamage;

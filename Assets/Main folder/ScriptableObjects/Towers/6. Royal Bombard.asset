@@ -19,6 +19,7 @@ MonoBehaviour:
   workerScalingFactor: 0.25
   allowedTerrain: 0600000001000000030000000500000000000000
   requiresOccupiedSpace: 0
+  requiresFreeElf: 0
   constructionCost:
   - type: 2
     amount: 5

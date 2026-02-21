@@ -3,6 +3,7 @@ using UnityEngine;
 [System.Serializable]
 public class Citizen
 {
+    //
     public string citizenID;
     public Race race;
     public WorkState workState;

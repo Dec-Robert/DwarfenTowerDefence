@@ -15,7 +15,7 @@ public class SaveManager : MonoBehaviour
         else
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // SaveManager ¿yje miêdzy scenami
+            DontDestroyOnLoad(gameObject); // SaveManager Å¼yje miï¿½dzy scenami
         }
 
         savePath = Path.Combine(Application.persistentDataPath, "player_progress.json");
@@ -25,8 +25,8 @@ public class SaveManager : MonoBehaviour
     [ContextMenu("Save Game")]
     public void SaveGame()
     {
-        // 1. Przygotuj dane do zapisu (np. zaktualizuj listê ID z SO)
-        // (Wiêkszoœæ danych aktualizujemy w locie w currentSaveData)
+        // 1. Przygotuj dane do zapisu (np. zaktualizuj listï¿½ ID z SO)
+        // (Wiï¿½kszoï¿½ï¿½ danych aktualizujemy w locie w currentSaveData)
 
         // 2. Konwersja na JSON
         string json = JsonUtility.ToJson(currentSaveData, true);
@@ -47,7 +47,7 @@ public class SaveManager : MonoBehaviour
             // 2. Konwersja z JSON na obiekt
             currentSaveData = JsonUtility.FromJson<SaveData>(json);
 
-            Debug.Log("[SaveManager] Wczytano postêp gracza.");
+            Debug.Log("[SaveManager] Wczytano postï¿½p gracza.");
         }
         else
         {
@@ -62,7 +62,7 @@ public class SaveManager : MonoBehaviour
     {
         foreach (var upgrade in allUpgrades)
         {
-            // Jeœli ID ulepszenia znajduje siê w liœcie zapisanych ID -> odblokuj je w SO
+            // Jeï¿½li ID ulepszenia znajduje siï¿½ w liï¿½cie zapisanych ID -> odblokuj je w SO
             upgrade.isUnlocked = currentSaveData.unlockedUpgradeIDs.Contains(upgrade.id);
         }
     }

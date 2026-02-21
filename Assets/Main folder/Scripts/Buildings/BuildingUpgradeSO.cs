@@ -13,20 +13,20 @@ public class BuildingUpgradeSO : ScriptableObject
     public List<BuildingData.ResourceCost> cost;
 
     [Header("Efekty Statystyczne (Addytywne)")]
-    // Np. jeœli tartak produkuje 5, a tu wpiszemy Wood: 2, to bêdzie produkowa³ 7.
+    // Np. jeï¿½li tartak produkuje 5, a tu wpiszemy Wood: 2, to bï¿½dzie produkowaï¿½ 7.
     public List<BuildingData.ResourceCost> productionBonus;
     public List<BuildingData.ResourceCost> upkeepIncrease;
 
     // Dodaj te pola do klasy BuildingUpgradeSO:
     [Header("Bonusy do Miejsc Pracy")]
     public int extraShifts = 0;          // Np. +1 Zmiana
-    public int extraWorkersPerShift = 0; // Np. +1 Pracownik na zmianê
+    public int extraWorkersPerShift = 0; // Np. +1 Pracownik na zmianï¿½
 
     [Header("Logika Specjalna")]
-    // Np. "AUTO_REPLANT" - ID dla skryptu, ¿eby wiedzia³ co robiæ
+    // Np. "AUTO_REPLANT" - ID dla skryptu, ï¿½eby wiedziaï¿½ co robiï¿½
     public string specialEffectID;
 
     [Header("Drzewko Rozwoju")]
-    // Jakie ulepszenia stan¹ siê dostêpne po wykupieniu tego? (To jest ten Tier + 1)
+    // Jakie ulepszenia stanÄ… siï¿½ dostï¿½pne po wykupieniu tego? (To jest ten Tier + 1)
     public List<BuildingUpgradeSO> nextTierOptions;
 }

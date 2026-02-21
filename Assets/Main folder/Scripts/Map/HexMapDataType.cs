@@ -1,44 +1,44 @@
 ï»¿using UnityEngine;
 using System;
 
-// Typy terenu/obiektów na mapie
+// Typy terenu/obiektï¿½w na mapie
 public enum HexFeatureType
 {
     None,           // Pusta trawa
     Forest,         // Las (wymagany do Tartaku)
-    Mountain,       // Góra (blokuje wizjê, wymagana do Kopalni)
-    Hill,           // Wzgórze (bonus do zasiêgu)
+    Mountain,       // Gï¿½ra (blokuje wizjï¿½, wymagana do Kopalni)
+    Hill,           // Wzgï¿½rze (bonus do zasiï¿½gu)
     Sinkhole,       // Zapadlina (bonus dla Archeologa)
-    FertileSoil,    // ¯yzna gleba (bonus dla Farmy)
+    FertileSoil,    // Å¼yzna gleba (bonus dla Farmy)
     Base,           // Kapitol
     Beacon,         // Beacon of Hope
     Wall            // Mur (generowany na granicy)
 }
 
-// Typy biomów dla Chunków
+// Typy biomï¿½w dla Chunkï¿½w
 public enum BiomeType
 {
-    Plains,     // Domyœlny (Zbalansowany)
-    Forest,     // Du¿o lasów, ma³o gór
-    Mountains,  // Du¿o gór i wzgórz
-    Volcano,    // P³asko (brak os³on)
-    Permafrost  // (Do zdefiniowania póŸniej)
+    Plains,     // Domyï¿½lny (Zbalansowany)
+    Forest,     // Duï¿½o lasï¿½w, maï¿½o gï¿½r
+    Mountains,  // Duï¿½o gï¿½r i wzgï¿½rz
+    Volcano,    // Pï¿½asko (brak osï¿½on)
+    Permafrost  // (Do zdefiniowania pï¿½niej)
 }
 
-// Klasa przechowuj¹ca dane pojedynczego pola
+// Klasa przechowujï¿½ca dane pojedynczego pola
 [Serializable]
 public class HexCellData
 {
-    public Vector2Int chunkCoord;   // W którym chunku jest ten heks
-    public Vector2Int localCoord;   // Koordynaty q,r wewn¹trz chunku
-    public Vector2Int gridCoord;    // Globalne koordynaty (opcjonalne, do ³atwiejszego dostêpu)
+    public Vector2Int chunkCoord;   // W ktï¿½rym chunku jest ten heks
+    public Vector2Int localCoord;   // Koordynaty q,r wewnï¿½trz chunku
+    public Vector2Int gridCoord;    // Globalne koordynaty (opcjonalne, do ï¿½atwiejszego dostï¿½pu)
 
     public HexFeatureType feature = HexFeatureType.None;
-    public int featureLevel = 0;    // Dla Wzgórz (+1 do +5) i Zapadlin (-1 do -5)
+    public int featureLevel = 0;    // Dla Wzgï¿½rz (+1 do +5) i Zapadlin (-1 do -5)
 
     public bool isPath = false;     // Czy to jest droga wroga?
 
     public BuildingData startingBuilding;
-    // Tu bêdziemy trzymaæ budynek, jeœli zostanie zbudowany
+    // Tu bï¿½dziemy trzymaï¿½ budynek, jeï¿½li zostanie zbudowany
     // public Building constructedBuilding; 
 }

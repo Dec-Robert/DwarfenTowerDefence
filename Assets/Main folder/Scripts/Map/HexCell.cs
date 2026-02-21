@@ -11,28 +11,28 @@ public class HexCell : MonoBehaviour
     private Material originalMaterial;
     private bool isHighlighted = false;
 
-    // Highlight - Animacja Wysokoœci
+    // Highlight - Animacja Wysokoï¿½ci
     [Header("Elevation Animation")]
-    public float liftOffset = 0.2f; // O ile podnieœæ heks
-    public float moveSpeed = 10f;   // Prêdkoœæ animacji
+    public float liftOffset = 0.2f; // O ile podnieï¿½ï¿½ heks
+    public float moveSpeed = 10f;   // Prï¿½dkoï¿½ï¿½ animacji
 
-    private float baseHeight; // Pocz¹tkowa wysokoœæ (np. dla Wzgórz to bêdzie > 0)
-    private float targetHeight; // Gdzie chcemy byæ teraz
+    private float baseHeight; // Poczï¿½tkowa wysokoÅ›Ä‡ (np. dla Wzgï¿½rz to bï¿½dzie > 0)
+    private float targetHeight; // Gdzie chcemy byï¿½ teraz
 
     private void Start()
     {
         myRenderer = GetComponentInChildren<Renderer>();
 
-        // Zapamiêtujemy wysokoœæ nadan¹ przez generator mapy (Hill/Sinkhole)
-        // U¿ywamy localPosition, bo heks jest dzieckiem Chunku
+        // Zapamiï¿½tujemy wysokoï¿½ï¿½ nadanï¿½ przez generator mapy (Hill/Sinkhole)
+        // Uï¿½ywamy localPosition, bo heks jest dzieckiem Chunku
         baseHeight = transform.localPosition.y;
         targetHeight = baseHeight;
     }
 
     private void Update()
     {
-        // P³ynna animacja do pozycji docelowej
-        // Sprawdzamy dystans, ¿eby nie liczyæ lerpa w nieskoñczonoœæ
+        // Pï¿½ynna animacja do pozycji docelowej
+        // Sprawdzamy dystans, ï¿½eby nie liczyï¿½ lerpa w nieskoï¿½czonoï¿½ï¿½
         if (Mathf.Abs(transform.localPosition.y - targetHeight) > 0.005f)
         {
             float newY = Mathf.Lerp(transform.localPosition.y, targetHeight, Time.deltaTime * moveSpeed);
@@ -40,7 +40,7 @@ public class HexCell : MonoBehaviour
         }
         else if (transform.localPosition.y != targetHeight)
         {
-            // Doci¹gniêcie do idealnej pozycji
+            // Dociï¿½gniï¿½cie do idealnej pozycji
             transform.localPosition = new Vector3(transform.localPosition.x, targetHeight, transform.localPosition.z);
         }
     }
@@ -51,7 +51,7 @@ public class HexCell : MonoBehaviour
 
         if (state)
         {
-            // W³¹cz podœwietlenie
+            // Wï¿½ï¿½cz podï¿½wietlenie
             if (!isHighlighted)
             {
                 originalMaterial = myRenderer.sharedMaterial;
@@ -59,19 +59,19 @@ public class HexCell : MonoBehaviour
             }
             myRenderer.sharedMaterial = highlightMat;
 
-            // Ustaw cel: w górê
+            // Ustaw cel: w gï¿½rï¿½
             targetHeight = baseHeight + liftOffset;
         }
         else
         {
-            // Wy³¹cz podœwietlenie
+            // Wyï¿½ï¿½cz podï¿½wietlenie
             if (isHighlighted)
             {
                 myRenderer.sharedMaterial = originalMaterial;
                 isHighlighted = false;
             }
 
-            // Ustaw cel: powrót do bazy
+            // Ustaw cel: powrï¿½t do bazy
             targetHeight = baseHeight;
         }
     }

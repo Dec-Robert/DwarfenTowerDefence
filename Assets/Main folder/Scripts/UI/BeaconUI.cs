@@ -11,13 +11,13 @@ public class BeaconUI : MonoBehaviour
     private List<VisualElement> segments = new List<VisualElement>();
     private Label fuelInfoLabel;
 
-    [Header("Kolory Poziomów")]
+    [Header("Kolory Poziomï¿½w")]
     public Color colorLvl1 = new Color(0.05f, 0.05f, 0.2f); // Ciemny
     public Color colorLvl2 = new Color(0.2f, 0.4f, 0.8f);  // Niebieski
-    public Color colorLvl3 = new Color(1f, 1f, 0.8f);      // ¯ó³tawy
-    public Color colorLvl4 = new Color(1f, 0.6f, 0.0f);    // Pomarañcz
+    public Color colorLvl3 = new Color(1f, 1f, 0.8f);      // ï¿½ï¿½/awy
+    public Color colorLvl4 = new Color(1f, 0.6f, 0.0f);    // Pomaraï¿½cz
     public Color colorLvl5 = new Color(1f, 0.2f, 0.0f);    // Czerwony
-    public Color colorInactive = new Color(0.2f, 0.2f, 0.2f, 0.5f); // Szary (t³o)
+    public Color colorInactive = new Color(0.2f, 0.2f, 0.2f, 0.5f); // Szary (tï¿½o)
 
     private IEnumerator Start()
     {
@@ -32,14 +32,14 @@ public class BeaconUI : MonoBehaviour
 
         fuelInfoLabel = root.Q<Label>("Lbl_FuelInfo");
 
-        // 2. OCZEKIWANIE NA SPAWN BEACONA (Naprawa b³êdu)
-        // Czekamy, dopóki Instance jest nullem
+        // 2. OCZEKIWANIE NA SPAWN BEACONA (Naprawa bï¿½ï¿½du)
+        // Czekamy, dopï¿½ki Instance jest nullem
         yield return new WaitUntil(() => BeaconEntity.Instance != null);
 
         // 3. Subskrypcja
         BeaconEntity.Instance.OnBeaconStateChanged += RefreshUI;
 
-        // 4. Pierwsze odœwie¿enie
+        // 4. Pierwsze odï¿½wieï¿½enie
         RefreshUI();
     }
 
@@ -63,7 +63,7 @@ public class BeaconUI : MonoBehaviour
 
         Color activeColor = GetColorForLevel(level);
 
-        // Symetryczne zapalanie pasków (Œrodek to index 4)
+        // Symetryczne zapalanie paskï¿½w (ï¿½rodek to index 4)
         int range = (level - 1);
         int minIdx = 4 - range;
         int maxIdx = 4 + range;

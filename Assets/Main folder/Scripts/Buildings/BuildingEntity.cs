@@ -57,6 +57,9 @@ public class BuildingEntity : MonoBehaviour
 
     public float CurrentShiftLength { get; private set; }
 
+    // Flaga zabezpieczająca przed wielokrotną inicjalizacją
+    private bool isInitialized = false;
+
     // =========================================================================
     // Cykl życia Unity
     // =========================================================================
@@ -66,7 +69,8 @@ public class BuildingEntity : MonoBehaviour
 
     protected virtual void Start()
     {
-        if (data != null) Initialize(data);
+        // Inicjalizuj tylko jeśli jeszcze nie została wywołana
+        if (data != null && !isInitialized) Initialize(data);
     }
 
     protected virtual void OnDestroy()
@@ -81,6 +85,13 @@ public class BuildingEntity : MonoBehaviour
 
     public virtual void Initialize(BuildingData buildingData)
     {
+        // Zabezpieczenie przed wielokrotną inicjalizacją
+        if (isInitialized)
+        {
+            Debug.LogWarning($"[BuildingEntity] {name} już został zainicjalizowany! Pomijam kolejne wywołanie.");
+            return;
+        }
+
         data = buildingData;
 
         CreateComponents();
@@ -90,6 +101,8 @@ public class BuildingEntity : MonoBehaviour
         Fuel.InitialFill();
 
         SubscribeToTime();
+
+        isInitialized = true;
     }
 
     /// <summary>

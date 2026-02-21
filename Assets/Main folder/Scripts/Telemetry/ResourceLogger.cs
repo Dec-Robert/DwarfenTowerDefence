@@ -20,14 +20,15 @@ public class ResourceLogger : MonoBehaviour
     private void Awake()
     {
         // Singleton
+        //
         if (Instance != null && Instance != this) Destroy(gameObject);
         else
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Opcjonalne, jeœli chcesz logowaæ miêdzy scenami
+            DontDestroyOnLoad(gameObject); // Opcjonalne, jeï¿½li chcesz logowaï¿½ miï¿½dzy scenami
         }
 
-        // Ustalenie œcie¿ki (W edytorze: obok folderu Assets, w Buildzie: w danych aplikacji)
+        // Ustalenie ï¿½cieï¿½ki (W edytorze: obok folderu Assets, w Buildzie: w danych aplikacji)
 #if UNITY_EDITOR
         filePath = Path.Combine(Application.dataPath, "../", fileName); // Obok folderu Assets
 #else
@@ -39,12 +40,12 @@ public class ResourceLogger : MonoBehaviour
         {
             try
             {
-                File.WriteAllText(filePath, $"=== ROZPOCZÊCIE GRY: {System.DateTime.Now} ===\n\n");
-                Debug.Log($"[Logger] Plik logów utworzony: {filePath}");
+                File.WriteAllText(filePath, $"=== ROZPOCZï¿½CIE GRY: {System.DateTime.Now} ===\n\n");
+                Debug.Log($"[Logger] Plik logï¿½w utworzony: {filePath}");
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[Logger] B³¹d tworzenia pliku: {e.Message}");
+                Debug.LogError($"[Logger] Bï¿½ï¿½d tworzenia pliku: {e.Message}");
                 enableLogging = false;
             }
 
@@ -72,24 +73,24 @@ public class ResourceLogger : MonoBehaviour
 
     // --- METODY LOGOWANIA ---
 
-    // Automatycznie wywo³ywane przy zmianie dnia
+    // Automatycznie wywoï¿½ywane przy zmianie dnia
     private void LogNewDay(int day)
     {
 
-        Debug.LogWarning($"[Logger] Nowy dzieñ: {day}");
+        Debug.LogWarning($"[Logger] Nowy dzieï¿½: {day}");
         if (!enableLogging) return;
-        AppendToFile($"\n[Dzieñ {day}]\n==========================================\n");
+        AppendToFile($"\n[Dzieï¿½ {day}]\n==========================================\n");
         lastLoggedDay = day;
     }
 
     /// <summary>
-    /// Loguje zestaw zmian surowców pod jednym zdarzeniem.
+    /// Loguje zestaw zmian surowcï¿½w pod jednym zdarzeniem.
     /// </summary>
     public void LogTransaction(string eventName, Dictionary<ResourceType, float> changes)
     {
         if (!enableLogging || changes == null || changes.Count == 0) return;
 
-        // Sprawdzenie czy dzieñ siê zmieni³ (zabezpieczenie)
+        // Sprawdzenie czy dzieï¿½ siï¿½ zmieniï¿½ (zabezpieczenie)
         if (TimeCycleManager.Instance != null && TimeCycleManager.Instance.dayCount != lastLoggedDay)
         {
             LogNewDay(TimeCycleManager.Instance.dayCount);
@@ -98,8 +99,8 @@ public class ResourceLogger : MonoBehaviour
         string time = "00:00";
         if (TimeCycleManager.Instance != null)
         {
-            // Pobieramy sformatowan¹ godzinê
-            // Musimy lekko przerobiæ getter w TimeCycleManager lub sformatowaæ tu rêcznie
+            // Pobieramy sformatowanï¿½ godzinï¿½
+            // Musimy lekko przerobiï¿½ getter w TimeCycleManager lub sformatowaï¿½ tu rï¿½cznie
             float t = TimeCycleManager.Instance.currentTime;
             float m = (t - Mathf.Floor(t)) * 60;
             time = $"{Mathf.FloorToInt(t):00}:{Mathf.FloorToInt(m):00}";
@@ -120,7 +121,7 @@ public class ResourceLogger : MonoBehaviour
         AppendToFile(sb.ToString());
     }
 
-    // Przeci¹¿enie dla pojedynczego surowca (np. drop z wroga)
+    // Przeciï¿½ï¿½enie dla pojedynczego surowca (np. drop z wroga)
     public void LogSingleEvent(string eventName, ResourceType type, float amount)
     {
         var dict = new Dictionary<ResourceType, float> { { type, amount } };
@@ -135,16 +136,16 @@ public class ResourceLogger : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[Logger] B³¹d zapisu: {e.Message}");
+            Debug.LogError($"[Logger] Bï¿½ï¿½d zapisu: {e.Message}");
         }
     }
 
-    [ContextMenu("OTWÓRZ PLIK LOGÓW")]
+    [ContextMenu("OTWï¿½RZ PLIK LOGï¿½W")]
     public void OpenLogFile()
     {
         if (File.Exists(filePath))
         {
-            Application.OpenURL(filePath); // Otwiera w domyœlnym edytorze tekstu
+            Application.OpenURL(filePath); // Otwiera w domyï¿½lnym edytorze tekstu
             Debug.Log($"Otwieranie pliku: {filePath}");
         }
         else

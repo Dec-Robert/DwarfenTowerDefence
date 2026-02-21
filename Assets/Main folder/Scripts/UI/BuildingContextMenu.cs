@@ -8,19 +8,19 @@ public class BuildingContextMenu : MonoBehaviour
 {
     public static BuildingContextMenu Instance;
 
-    [Header("G³ówne Elementy")]
+    [Header("Gï¿½ï¿½wne Elementy")]
     public GameObject panelRoot;
     public TextMeshProUGUI buildingNameText;
     public TextMeshProUGUI productionText;
     public TextMeshProUGUI consumptionText;
     public Image buildingIcon;
 
-    [Header("Sekcja Ulepszeñ")]
+    [Header("Sekcja Ulepszeï¿½")]
     public TextMeshProUGUI tierText;
     public Transform upgradesContainer;
     public GameObject upgradeButtonPrefab;
     public GameObject finishedTextObject;
-
+    //
     [Header("Panel Boczny (Info o Ulepszeniu)")]
     public GameObject sideInfoPanel;
     public TextMeshProUGUI upgradeInfoText;
@@ -58,7 +58,7 @@ public class BuildingContextMenu : MonoBehaviour
         selectedUpgrade = null;
         sideInfoPanel.SetActive(false);
 
-        // Inicjalizacja managerów mieszkañców
+        // Inicjalizacja managerï¿½w mieszkaï¿½cï¿½w
         BuildingCitizenManager.Instance.Setup(entity);
         BuildingCitizenUI.Instance.Setup(entity.getMaxShifts(), entity.getMaxWorkersPerShift());
         BuildingCitizenUI.Instance.Refresh(entity);
@@ -76,7 +76,7 @@ public class BuildingContextMenu : MonoBehaviour
     {
         if (currentTarget == null) return;
 
-        // Nazwa i Tier (+1 dla gracza, ¿eby nie zaczynaæ od 0)
+        // Nazwa i Tier (+1 dla gracza, ï¿½eby nie zaczynaï¿½ od 0)
         buildingNameText.text = $"{currentTarget.data.buildingName} (Poziom {currentTarget.currentTier + 1})";
         if (currentTarget.data.icon) buildingIcon.sprite = currentTarget.data.icon;
 
@@ -84,7 +84,7 @@ public class BuildingContextMenu : MonoBehaviour
         productionText.text = FormatResources(currentTarget.GetCurrentProduction());
         consumptionText.text = FormatResources(currentTarget.GetCurrentUpkeep());
 
-        // Czyszczenie starych przycisków
+        // Czyszczenie starych przyciskï¿½w
         foreach (Transform child in upgradesContainer) Destroy(child.gameObject);
         spawnedButtons.Clear();
 
@@ -110,7 +110,7 @@ public class BuildingContextMenu : MonoBehaviour
         }
     }
 
-    // --- TUTAJ BY£Y G£ÓWNE POPRAWKI ---
+    // --- TUTAJ BYï¿½Y Gï¿½ï¿½WNE POPRAWKI ---
     void OnUpgradeSelected(BuildingUpgradeSO upgrade)
     {
         selectedUpgrade = upgrade;
@@ -120,7 +120,7 @@ public class BuildingContextMenu : MonoBehaviour
 
         StringBuilder sb = new StringBuilder();
 
-        // Tytu³ i opis
+        // Tytuï¿½ i opis
         sb.AppendLine($"<size=120%><b>{upgrade.upgradeName}</b></size>");
         sb.AppendLine($"<i>{upgrade.description}</i>");
         sb.AppendLine(""); // Pusta linia
@@ -131,7 +131,7 @@ public class BuildingContextMenu : MonoBehaviour
 
         foreach (var cost in upgrade.cost)
         {
-            // Jeœli staæ -> Bia³y (lub zielony), jeœli nie -> Czerwony
+            // Jeï¿½li staï¿½ -> Biaï¿½y (lub zielony), jeï¿½li nie -> Czerwony
             bool canAfford = ResourceManager.Instance.CanAfford(cost.type, cost.amount);
             string color = canAfford ? "blue" : "red";
             sb.AppendLine($"<color={color}>- {cost.amount} {cost.type}</color>");
@@ -144,10 +144,10 @@ public class BuildingContextMenu : MonoBehaviour
             sb.AppendLine("<b>Produkcja:</b>");
             foreach (var production in upgrade.productionBonus)
             {
-                // Wiêcej produkcji = Dobrze (Green), Mniej = le (Red)
+                // Wiï¿½cej produkcji = Dobrze (Green), Mniej = ï¿½le (Red)
                 string color = production.amount >= 0 ? "#44FF44" : "red"; // Jasny zielony hex
                 string sign = production.amount > 0 ? "+" : "";
-                // POPRAWKA: U¿ycie zmiennej color w tagu
+                // POPRAWKA: Uï¿½ycie zmiennej color w tagu
                 sb.AppendLine($"<color={color}>{sign}{production.amount} {production.type}</color>");
             }
         }
@@ -158,10 +158,10 @@ public class BuildingContextMenu : MonoBehaviour
             sb.AppendLine("<b>Utrzymanie:</b>");
             foreach (var upkeep in upgrade.upkeepIncrease)
             {
-                // Wiêkszy koszt = le (Red), Mniejszy koszt = Dobrze (Green)
+                // Wiï¿½kszy koszt = ï¿½le (Red), Mniejszy koszt = Dobrze (Green)
                 string color = upkeep.amount > 0 ? "red" : "#44FF44";
                 string sign = upkeep.amount > 0 ? "+" : "";
-                // POPRAWKA: U¿ycie zmiennej color w tagu
+                // POPRAWKA: Uï¿½ycie zmiennej color w tagu
                 sb.AppendLine($"<color={color}>{sign}{upkeep.amount} {upkeep.type}</color>");
             }
         }
@@ -184,7 +184,7 @@ public class BuildingContextMenu : MonoBehaviour
         }
         else
         {
-            Debug.Log("Nie staæ Ciê!");
+            Debug.Log("Nie staï¿½ Ciï¿½!");
         }
     }
 

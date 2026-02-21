@@ -10,7 +10,7 @@ public class PauseMenuController : MonoBehaviour
     [Header("Konfiguracja")]
     public string mainMenuSceneName = "MainMenuScene"; // Nazwa Twojej sceny menu
 
-    // Cache elementów UI
+    // Cache elementï¿½w UI
     private VisualElement rootOverlay;
     private VisualElement mainPanel;
     private VisualElement confirmPanel;
@@ -29,7 +29,7 @@ public class PauseMenuController : MonoBehaviour
     private void OnEnable()
     {
         var root = uiDocument.rootVisualElement;
-
+    //
         rootOverlay = root.Q<VisualElement>("Overlay");
         mainPanel = root.Q<VisualElement>("MainPanel");
         confirmPanel = root.Q<VisualElement>("ConfirmPanel");
@@ -55,15 +55,15 @@ public class PauseMenuController : MonoBehaviour
 
     private void Update()
     {
-        // Obs³uga klawisza ESC
+        // Obsï¿½uga klawisza ESC
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // Jeœli otwarte jest okienko potwierdzenia -> cofnij do menu pauzy
+            // Jeï¿½li otwarte jest okienko potwierdzenia -> cofnij do menu pauzy
             if (isPaused && confirmPanel.style.display == DisplayStyle.Flex)
             {
                 HideExitConfirmation();
             }
-            // W przeciwnym razie prze³¹cz pauzê
+            // W przeciwnym razie przeï¿½ï¿½cz pauzï¿½
             else
             {
                 TogglePause();
@@ -78,19 +78,19 @@ public class PauseMenuController : MonoBehaviour
         if (isPaused)
         {
             // --- PAUZA ---
-            previousTimeScale = Time.timeScale; // Zapamiêtaj prêdkoœæ
+            previousTimeScale = Time.timeScale; // Zapamiï¿½taj prï¿½dkoï¿½ï¿½
             Time.timeScale = 0f; // Zatrzymaj czas
 
-            rootOverlay.style.display = DisplayStyle.Flex; // Poka¿ menu
-            mainPanel.style.display = DisplayStyle.Flex;   // Poka¿ przyciski
+            rootOverlay.style.display = DisplayStyle.Flex; // Pokaï¿½ menu
+            mainPanel.style.display = DisplayStyle.Flex;   // Pokaï¿½ przyciski
             confirmPanel.style.display = DisplayStyle.None; // Ukryj potwierdzenie
         }
         else
         {
             // --- WZNOWIENIE ---
-            Time.timeScale = previousTimeScale; // Przywróæ prêdkoœæ (lub ustaw 1f)
+            Time.timeScale = previousTimeScale; // Przywrï¿½ï¿½ prï¿½dkoï¿½ï¿½ (lub ustaw 1f)
 
-            // Jeœli poprzednio by³a pauza (0), to przywróæ 1
+            // Jeï¿½li poprzednio byï¿½a pauza (0), to przywrï¿½ï¿½ 1
             if (previousTimeScale == 0) Time.timeScale = 1f;
 
             rootOverlay.style.display = DisplayStyle.None;
@@ -99,7 +99,7 @@ public class PauseMenuController : MonoBehaviour
 
     void GoToMainMenu()
     {
-        // Wa¿ne: Przywróæ czas przed zmian¹ sceny!
+        // Waï¿½ne: Przywrï¿½ï¿½ czas przed zmianï¿½ sceny!
         Time.timeScale = 1f;
         SceneManager.LoadScene(mainMenuSceneName);
     }

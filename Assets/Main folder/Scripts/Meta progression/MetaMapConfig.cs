@@ -10,8 +10,8 @@ public class MetaMapConfig : ScriptableObject
     [Header("Chunki Ekspansji (Odblokowywanie terenu)")]
     public List<ExpansionChunkLink> expansions;
 
-    [Header("Modyfikatory Terenu (Nak³adki)")]
-    // To definiuje zmiany na istniej¹cych chunkach (np. wiêcej lasu na -1,0)
+    [Header("Modyfikatory Terenu (Nakï¿½adki)")]
+    // To definiuje zmiany na istniejï¿½cych chunkach (np. wiï¿½cej lasu na -1,0)
     public List<ChunkModifierLink> globalModifiers;
 
     [System.Serializable]
@@ -25,8 +25,8 @@ public class MetaMapConfig : ScriptableObject
     [System.Serializable]
     public struct ChunkModifierLink
     {
-        public string name; // Dla czytelnoœci w edytorze
-        public Vector2Int targetChunk;        // Na którym chunku to na³o¿yæ (np. -1, 0)
+        public string name; // Dla czytelnoï¿½ci w edytorze
+        public Vector2Int targetChunk;        // Na ktÃ³rym chunku to naï¿½oï¿½yï¿½ (np. -1, 0)
         public MetaUpgradeSO requiredUpgrade; // Jakie ulepszenie to aktywuje
         public ChunkLayoutSO modifierLayout;  // Co zmieniamy (zawiera tylko heksy do zmiany)
     }

@@ -3,19 +3,19 @@ using UnityEngine;
 public class DayNightCycle : MonoBehaviour
 {
     [Header("Referencje")]
-    public Light sunLight; // Twoje g³ówne œwiat³o Directional Light
+    public Light sunLight; // Twoje gï¿½ï¿½wne ï¿½wiatï¿½o Directional Light
 
     [Header("Ustawienia Obrotu")]
-    // O której godzinie s³oñce wschodzi (k¹t 0)? Domyœlnie 6:00
+    // O ktï¿½rej godzinie sï¿½oï¿½ce wschodzi (kï¿½t 0)? Domyï¿½lnie 6:00
     public float sunriseHour = 6f;
 
-    // Opcjonalnie: K¹t padania cienia (oœ Y)
+    // Opcjonalnie: Kï¿½t padania cienia (oï¿½ Y)
     public float sunYRotation = -30f;
 
-    [Header("Wygl¹d Œwiata")]
-    public Gradient sunColor; // Kolor s³oñca w zale¿noœci od pory dnia
-    public Gradient skyColor; // Kolor nieba/ambientu (¿eby cienie nie by³y czarne)
-    public AnimationCurve sunIntensity; // Jasnoœæ s³oñca (0 = noc, 1 = po³udnie)
+    [Header("Wyglï¿½d ï¿½wiata")]
+    public Gradient sunColor; // Kolor sï¿½oï¿½ca w zaleï¿½noï¿½ci od pory dnia
+    public Gradient skyColor; // Kolor nieba/ambientu (ï¿½eby cienie nie byï¿½y czarne)
+    public AnimationCurve sunIntensity; // Jasnoï¿½ï¿½ sï¿½oï¿½ca (0 = noc, 1 = poï¿½udnie)
 
     private void Start()
     {
@@ -24,7 +24,7 @@ public class DayNightCycle : MonoBehaviour
             sunLight = GetComponent<Light>();
         }
     }
-
+    //
     private void Update()
     {
         if (TimeCycleManager.Instance == null) return;
@@ -33,26 +33,26 @@ public class DayNightCycle : MonoBehaviour
         float currentTime = TimeCycleManager.Instance.currentTime;
 
         // 2. Obliczamy procent dnia (0.0 do 1.0)
-        // 0.0 = Pó³noc (00:00), 0.5 = Po³udnie (12:00)
+        // 0.0 = Pï¿½noc (00:00), 0.5 = Poï¿½udnie (12:00)
         float timePercent = currentTime / 24f;
 
-        // 3. Obracanie S³oñca
-        // Chcemy, ¿eby o sunriseHour (np. 6:00) s³oñce by³o na horyzoncie (0 stopni)
+        // 3. Obracanie Sï¿½oï¿½ca
+        // Chcemy, ï¿½eby o sunriseHour (np. 6:00) sï¿½oï¿½ce byï¿½o na horyzoncie (0 stopni)
         // 24h = 360 stopni.
-        // Wzór: (Time - Sunrise) * 15 stopni/h
+        // Wzï¿½r: (Time - Sunrise) * 15 stopni/h
         float sunAngle = (currentTime - sunriseHour) * 15f;
 
-        // Ustawiamy rotacjê. Oœ X to wysokoœæ s³oñca. Oœ Y to kierunek cienia.
+        // Ustawiamy rotacjï¿½. Oï¿½ X to wysokoï¿½ï¿½ sï¿½oï¿½ca. Oï¿½ Y to kierunek cienia.
         sunLight.transform.rotation = Quaternion.Euler(sunAngle, sunYRotation, 0);
 
-        // 4. Zmiana Kolorów i Jasnoœci
-        // Evaluate bierze wartoœæ 0-1, wiêc u¿ywamy timePercent
+        // 4. Zmiana Kolorï¿½w i Jasnoï¿½ci
+        // Evaluate bierze wartoï¿½ï¿½ 0-1, wiï¿½c uï¿½ywamy timePercent
 
         sunLight.color = sunColor.Evaluate(timePercent);
         sunLight.intensity = sunIntensity.Evaluate(timePercent);
 
-        // 5. Zmiana Ambientu (Œwiat³a otoczenia)
-        // To wa¿ne, ¿eby w nocy nie by³o idealnie czarno w cieniach
+        // 5. Zmiana Ambientu (ï¿½wiatï¿½a otoczenia)
+        // To waï¿½ne, ï¿½eby w nocy nie byï¿½o idealnie czarno w cieniach
         RenderSettings.ambientLight = skyColor.Evaluate(timePercent);
     }
 }

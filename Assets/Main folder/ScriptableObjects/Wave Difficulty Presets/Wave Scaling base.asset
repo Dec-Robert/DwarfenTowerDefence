@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7033209f3cbb4d92a00ffb2335362c40, type: 3}
+  m_Name: Wave Scaling base
+  m_EditorClassIdentifier: 
+  era1MaxWave: 20
+  era1EnemyCount: 5
+  era2MaxWave: 40
+  era2EnemyCount: 10
+  era3MaxWave: 55
+  era3EnemyCount: 15
+  era4MaxWave: 70
+  era4EnemyCount: 20
+  blockSize: 5
+  paletteMainCount: 5
+  paletteSupportCount: 3
+  supportSpawnChance: 0.25
+  baseWaveValue: 3
+  diffStandard: 1
+  diffSpike: 1.5
+  diffCooldown: 0.8
+  earlyPhaseMultiplier: 0.35
+  rampPhaseMultiplier: 0.65
+  normalPhaseStartWave: 21
+  spikeInterval: 15
+  hpExponentialBase: 1.04
+  hpMaxMultiplier: 800
+  armorGrowthRate: 12
+  armorHardCap: 95
+  magicResistGrowthRate: 10
+  magicResistHardCap: 95
+  dodgeGrowthRate: 5
+  dodgeHardCap: 65
+  speedGrowthPerWave: 0.005
+  speedMaxMultiplier: 2
+  echoBreachThreshold: 0.25
+  echoResponseDelay: 4
+  echoPriorityBudgetShare: 0.35
+  echoThreatDuration: 8

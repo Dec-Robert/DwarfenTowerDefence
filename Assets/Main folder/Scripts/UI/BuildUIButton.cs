@@ -13,10 +13,10 @@ public class BuildUIButton : MonoBehaviour
     public TextMeshProUGUI costText;
     public Image iconImage;
     public Button btn;
-
+    //
     void Start()
     {
-        // Jeœli dane zosta³y przypisane rêcznie w Unity, konfigurujemy przycisk na starcie
+        // Jeï¿½li dane zostaï¿½y przypisane rï¿½cznie w Unity, konfigurujemy przycisk na starcie
         if (myBuildingData != null)
         {
             Setup(myBuildingData);
@@ -25,7 +25,7 @@ public class BuildUIButton : MonoBehaviour
         iconImage = GetComponent<Image>();
     }
 
-    // Metoda publiczna - w razie gdybyœ kiedyœ chcia³ jednak generowaæ przyciski automatycznie
+    // Metoda publiczna - w razie gdybyï¿½ kiedyï¿½ chciaï¿½ jednak generowaï¿½ przyciski automatycznie
     public void Setup(BuildingData data)
     {
         myBuildingData = data;
@@ -43,7 +43,7 @@ public class BuildUIButton : MonoBehaviour
                 foreach (var cost in myBuildingData.constructionCost)
                 {
                     // Np. 100 G
-                    // Mo¿esz tu dodaæ logikê skracania liter (Gold -> G, Wood -> W)
+                    // Moï¿½esz tu dodaï¿½ logikï¿½ skracania liter (Gold -> G, Wood -> W)
                     string shortName = cost.type.ToString().Substring(0, 1);
                     sb.AppendLine($"{cost.amount}{shortName}");
                 }
@@ -65,7 +65,7 @@ public class BuildUIButton : MonoBehaviour
 
     void Update()
     {
-        // Sprawdzanie czy staæ gracza (co klatkê)
+        // Sprawdzanie czy staï¿½ gracza (co klatkï¿½)
         if (ResourceManager.Instance != null && myBuildingData != null)
         {
             bool canAfford = true;
@@ -78,10 +78,10 @@ public class BuildUIButton : MonoBehaviour
                 }
             }
 
-            // Zamiast tylko wy³¹czaæ, mo¿emy np. zmieniaæ kolor na czerwony
+            // Zamiast tylko wyï¿½ï¿½czaï¿½, moï¿½emy np. zmieniaï¿½ kolor na czerwony
             btn.interactable = canAfford;
 
-            // Opcjonalnie: Zmiana koloru tekstu kosztu, jeœli nie staæ
+            // Opcjonalnie: Zmiana koloru tekstu kosztu, jeï¿½li nie staï¿½
             if (costText != null)
                 costText.color = canAfford ? Color.white : Color.red;
         }

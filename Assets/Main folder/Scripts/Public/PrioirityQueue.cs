@@ -9,8 +9,8 @@ public class PriorityQueue<T>
     public void Enqueue(T item, int priority)
     {
         elements.Add(new KeyValuePair<T, int>(item, priority));
-        // Sortujemy listê tak, aby element z najmniejszym priorytetem (kosztem) by³ pierwszy.
-        // To prosta implementacja dla celów edukacyjnych.
+        // Sortujemy listÄ™ tak, aby element z najmniejszym priorytetem (kosztem) byï¿½ pierwszy.
+        // To prosta implementacja dla celï¿½w edukacyjnych.
         elements.Sort((x, y) => x.Value.CompareTo(y.Value));
     }
 

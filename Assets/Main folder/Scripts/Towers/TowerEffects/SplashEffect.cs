@@ -9,6 +9,6 @@ public class SplashEffect : TowerEffectSO
 
     public override void ApplyEffect(EnemyStats target, float damageMultiplier)
     {
-
+//
     }
 }

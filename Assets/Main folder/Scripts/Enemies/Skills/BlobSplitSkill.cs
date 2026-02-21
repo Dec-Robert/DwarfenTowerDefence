@@ -4,10 +4,10 @@ using System.Collections.Generic;
 public class BlobSplitSkill : EnemySkill
 {
     [Header("Konfiguracja")]
-    public int splitCharges = 1; // Ile razy ta linia mo¿e siê podzieliæ (Blob -> 2 Ma³e -> koniec)
+    public int splitCharges = 1; // Ile razy ta linia moï¿½e siï¿½ podzieliï¿½ (Blob -> 2 Maï¿½e -> koniec)
     public float splitThreshold = 0.5f; // 50% HP
     public float childHpPercent = 0.7f; // 70% HP rodzica
-    public float scaleReduction = 0.7f; // Dzieci s¹ mniejsze
+    public float scaleReduction = 0.7f; // Dzieci sÄ… mniejsze
 
     private bool hasSplit = false;
 
@@ -26,17 +26,17 @@ public class BlobSplitSkill : EnemySkill
     void Split()
     {
         hasSplit = true;
-        Debug.Log($"{name} dzieli siê!");
+        Debug.Log($"{name} dzieli siï¿½!");
 
         // Spawnowanie 2 dzieci
         for (int i = 0; i < 2; i++)
         {
-            // POPRAWKA: Klonujemy stats.gameObject (CA£EGO WROGA), a nie gameObject (tylko skrypt skilla)
+            // POPRAWKA: Klonujemy stats.gameObject (CAï¿½EGO WROGA), a nie gameObject (tylko skrypt skilla)
             GameObject childObj = Instantiate(stats.gameObject, transform.position, transform.rotation);
 
             // Konfiguracja Walkera
             EnemyWalker childWalker = childObj.GetComponent<EnemyWalker>();
-            // Pobieramy walkera rodzica (z tego skryptu mamy do niego referencjê)
+            // Pobieramy walkera rodzica (z tego skryptu mamy do niego referencjï¿½)
 
             if (walker != null && childWalker != null)
             {
@@ -58,7 +58,7 @@ public class BlobSplitSkill : EnemySkill
             // Przesuwamy lekko
             childObj.transform.position += new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
 
-            // Zmniejszamy ³adunek podzia³u u dziecka
+            // Zmniejszamy ï¿½adunek podziaï¿½u u dziecka
             // Szukamy komponentu na dziecku (bo skill jest dzieckiem wroga)
             BlobSplitSkill childSkill = childObj.GetComponentInChildren<BlobSplitSkill>();
             if (childSkill != null)
@@ -66,13 +66,13 @@ public class BlobSplitSkill : EnemySkill
                 childSkill.splitCharges = this.splitCharges - 1;
                 childSkill.hasSplit = false;
 
-                // WA¯NE: Musimy te¿ zaktualizowaæ referencje w nowym skillu, 
-                // bo Instantiate skopiowa³ stare referencje (wskazuj¹ce na martwego rodzica)
+                // WAï¿½NE: Musimy teï¿½ zaktualizowaï¿½ referencje w nowym skillu, 
+                // bo Instantiate skopiowaï¿½ stare referencje (wskazujï¿½ce na martwego rodzica)
                 childSkill.Initialize(childStats);
             }
         }
 
-        // Niszczymy rodzica (ca³ego wroga)
+        // Niszczymy rodzica (caï¿½ego wroga)
         Destroy(stats.gameObject);
     }
 }

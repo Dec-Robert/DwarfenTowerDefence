@@ -1,11 +1,12 @@
 using UnityEngine;
-using System; // Potrzebne do iterowania po Enumach
+using System;
+using System.Collections.Generic;
 
 public class DebugCheatManager : MonoBehaviour
 {
     void Update()
     {
-        // F1 - Zabij wszystkich wrog�w
+        // F1 - Zabij wszystkich wrogów
         if (Input.GetKeyDown(KeyCode.F1))
         {
             KillAllEnemies();
@@ -16,36 +17,160 @@ public class DebugCheatManager : MonoBehaviour
         {
             AddAllResources();
         }
+
+        // F3 + I - Odblokuj WSZYSTKIE pola (Locked, Unlocked, Scouting)
+        if (Input.GetKeyDown(KeyCode.F3) && Input.GetKey(KeyCode.I))
+        {
+            CheatUnlockAll();
+            return; // zapobiega wywołaniu samego F3 w tej samej klatce
+        }
+
+        // F3 - Odblokuj tylko pola w stanie Scouting lub Unlocked (za darmo)
+        if (Input.GetKeyDown(KeyCode.F3))
+        {
+            CheatUnlockScouting();
+        }
     }
+
+    // =========================================================================
+    // F1 – Zabij wrogów
+    // =========================================================================
 
     void KillAllEnemies()
     {
-        // Znajdujemy wszystkich wrog�w na scenie
         EnemyStats[] allEnemies = FindObjectsOfType<EnemyStats>();
 
         foreach (var enemy in allEnemies)
         {
             if (enemy != null)
-            {
-                // Zadajemy obra�enia "niesko�czone", �eby na pewno zgin��
-                // U�ywamy DamageType.Physical (lub dowolnego innego), system i tak to przetworzy
-                enemy.TakeDamage(999999f, DamageType.Physical,100,100,true,1000);
-            }
+                enemy.TakeDamage(999999f, DamageType.Physical, 100, 100, true, 1000);
         }
 
-        Debug.Log($"<color=red>[DEBUG] Zabito {allEnemies.Length} wrog�w.</color>");
+        Debug.Log($"<color=red>[DEBUG] Zabito {allEnemies.Length} wrogów.</color>");
     }
+
+    // =========================================================================
+    // F2 – Dodaj surowce
+    // =========================================================================
 
     void AddAllResources()
     {
         if (ResourceManager.Instance == null) return;
 
-        // Iterujemy po wszystkich typach surowc�w z Enuma ResourceType
         foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
-        {
             ResourceManager.Instance.AddResource(type, 200);
+
+        Debug.Log("<color=green>[DEBUG] Dodano po 200 sztuk każdego surowca.</color>");
+    }
+
+    // =========================================================================
+    // F3 – Odblokuj pola w stanie Scouting i Unlocked
+    // =========================================================================
+
+    /// <summary>
+    /// Natychmiastowo kończy wszystkie aktywne misje zwiadowcze (Scouting)
+    /// oraz odkrywa za darmo wszystkie pola w stanie Unlocked.
+    /// Pola Locked pozostają bez zmian.
+    /// </summary>
+    void CheatUnlockScouting()
+    {
+        var expansion = FindObjectOfType<MapExpansionManager>();
+        if (expansion == null)
+        {
+            Debug.LogWarning("[DEBUG] Brak MapExpansionManager na scenie.");
+            return;
         }
 
-        Debug.Log("<color=green>[DEBUG] Dodano po 200 sztuk ka�dego surowca.</color>");
+        var fogManager = expansion.fogManager;
+        int count = 0;
+
+        // Kopia – będziemy modyfikować słownik pośrednio przez CompleteMission
+        var chunksCopy = new List<KeyValuePair<Vector2Int, ChunkStateData>>(expansion.activeChunks);
+
+        foreach (var kvp in chunksCopy)
+        {
+            var coord = kvp.Key;
+            var data  = kvp.Value;
+
+            // Pola w trakcie scoutingu – zakończ misję natychmiastowo
+            if (data.state == ChunkState.Scouting)
+            {
+                ForceCompleteChunk(expansion, fogManager, coord, data);
+                count++;
+            }
+            // Pola gotowe do scoutingu (Unlocked) – odblokuj za darmo
+            else if (data.state == ChunkState.Unlocked)
+            {
+                ForceCompleteChunk(expansion, fogManager, coord, data);
+                count++;
+            }
+        }
+
+        // Anuluj aktywne misje (zwiadowcy wracają, centra zwalniają się)
+        foreach (var mission in new List<ScoutingMission>(expansion.activeMissions))
+            mission.sourceCenter?.OnMissionComplete(mission);
+        expansion.activeMissions.Clear();
+
+        Debug.Log($"<color=cyan>[DEBUG F3] Odblokowano {count} pól (Scouting + Unlocked).</color>");
+        expansion.uiExpansionMenu?.Hide();
+    }
+
+    // =========================================================================
+    // F3 + I – Odblokuj WSZYSTKIE pola (w tym Locked)
+    // =========================================================================
+
+    /// <summary>
+    /// Natychmiastowo ustawia wszystkie znane chunki (w tym Locked) na FullyUnlocked
+    /// i odkrywa mgłę nad nimi.
+    /// </summary>
+    void CheatUnlockAll()
+    {
+        var expansion = FindObjectOfType<MapExpansionManager>();
+        if (expansion == null)
+        {
+            Debug.LogWarning("[DEBUG] Brak MapExpansionManager na scenie.");
+            return;
+        }
+
+        var fogManager = expansion.fogManager;
+        int count = 0;
+
+        var chunksCopy = new List<KeyValuePair<Vector2Int, ChunkStateData>>(expansion.activeChunks);
+
+        foreach (var kvp in chunksCopy)
+        {
+            var coord = kvp.Key;
+            var data  = kvp.Value;
+
+            if (data.state == ChunkState.FullyUnlocked) continue; // już odblokowane
+
+            ForceCompleteChunk(expansion, fogManager, coord, data);
+            count++;
+        }
+
+        // Anuluj aktywne misje
+        foreach (var mission in new List<ScoutingMission>(expansion.activeMissions))
+            mission.sourceCenter?.OnMissionComplete(mission);
+        expansion.activeMissions.Clear();
+
+        Debug.Log($"<color=magenta>[DEBUG F3+I] Odblokowano {count} pól (wszystkie stany).</color>");
+        expansion.uiExpansionMenu?.Hide();
+    }
+
+    // =========================================================================
+    // Pomocnicza – wymusza FullyUnlocked na konkretnym chunku
+    // =========================================================================
+
+    private void ForceCompleteChunk(MapExpansionManager expansion,
+                                    FogOfWarManager fogManager,
+                                    Vector2Int coord,
+                                    ChunkStateData data)
+    {
+        data.state                    = ChunkState.FullyUnlocked;
+        data.settlementDaysRemaining  = 0;
+        data.discoveredOnDay          = GameManager.Instance?.waveNumber ?? 0;
+
+        fogManager?.RevealChunk(coord);
+        expansion.uiExpansionMenu?.OnChunkFullyUnlocked(coord);
     }
 }

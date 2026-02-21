@@ -15,7 +15,7 @@ public class CitizenManager : MonoBehaviour
         if (Instance != null && Instance != this) Destroy(this.gameObject);
         else Instance = this;
     }
-
+    //
     void Start()
     {
         if (debugMode)
@@ -32,16 +32,16 @@ public class CitizenManager : MonoBehaviour
             }
 
             // --- POPRAWKA 1: Powiadom ResourceManager o debugowych ludziach ---
-            // Musimy to zrobiæ, ¿eby UI odœwie¿y³o siê na starcie
+            // Musimy to zrobiï¿½, ï¿½eby UI odï¿½wieï¿½yï¿½o siï¿½ na starcie
             if (ResourceManager.Instance != null)
             {
-                // Dodajemy ich "wirtualnie" do banku zasobów, co wywo³a odœwie¿enie UI
+                // Dodajemy ich "wirtualnie" do banku zasobï¿½w, co wywoï¿½a odï¿½wieï¿½enie UI
                 ResourceManager.Instance.AddResource(ResourceType.Population, citizens.Count);
             }
         }
     }
 
-    // --- POPRAWKA 2: Metoda do tworzenia nowych ludzi (dla Domów) ---
+    // --- POPRAWKA 2: Metoda do tworzenia nowych ludzi (dla Domï¿½w) ---
     public Citizen SpawnNewCitizen(Race race, HousingEntity home)
     {
         Citizen newCitizen = new Citizen();
@@ -50,18 +50,18 @@ public class CitizenManager : MonoBehaviour
 
         citizens.Add(newCitizen);
 
-        // KLUCZOWE: Mówimy systemowi ekonomii, ¿e przyby³ cz³owiek.
-        // To wywo³a event OnResourceChanged, który zaktualizuje UI na H:X | E:Y | D:Z
+        // KLUCZOWE: Mï¿½wimy systemowi ekonomii, ï¿½e przybyï¿½ czï¿½owiek.
+        // To wywoï¿½a event OnResourceChanged, ktï¿½ry zaktualizuje UI na H:X | E:Y | D:Z
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.AddResource(ResourceType.Population, 1);
         }
 
-        Debug.Log($"Narodzi³ siê nowy {race} w {home.name}");
+        Debug.Log($"Narodziï¿½ siï¿½ nowy {race} w {home.name}");
         return newCitizen;
     }
 
-    // Metoda pomocnicza dla budynków (szukanie pracownika)
+    // Metoda pomocnicza dla budynkï¿½w (szukanie pracownika)
     public Citizen FindAndAssignCitizen(Race race, BuildingEntity workplace)
     {
         Citizen availableCitizen = citizens.Find(c => c.race == race && c.workState == WorkState.Idle);
@@ -80,10 +80,10 @@ public class CitizenManager : MonoBehaviour
         return citizens.Count(c => c.race == race);
     }
 
-    // Metoda pomocnicza do zliczania (przyjmuje jeden lub wiêcej stanów)
+    // Metoda pomocnicza do zliczania (przyjmuje jeden lub wiï¿½cej stanï¿½w)
     public int GetCountByState(Race race, params WorkState[] states)
     {
-        // U¿ywamy System.Linq
+        // Uï¿½ywamy System.Linq
         return citizens.Count(c => c.race == race && System.Array.Exists(states, state => state == c.workState));
     }
 }

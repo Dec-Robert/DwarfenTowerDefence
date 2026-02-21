@@ -21,24 +21,24 @@ public class TutorialController : MonoBehaviour
         // KROK 1: Sterowanie (NOWY)
         tutorialSteps.Add(
             "Witaj w grze!\n\n" +
-            "Sterowanie kamer¹:\n" +
-            "• [W, A, S, D] - Poruszanie siê po mapie\n" +
-            "• [Q] i [E] - Zmiana wysokoœci (Zoom)\n\n" +
-            "U¿yj lewego przycisku myszy, aby wchodziæ w interakcjê z budynkami i mg³¹."
+            "Sterowanie kamerï¿½:\n" +
+            "ï¿½ [W, A, S, D] - Poruszanie siï¿½ po mapie\n" +
+            "ï¿½ [Q] i [E] - Zmiana wysokoï¿½ci (Zoom)\n\n" +
+            "Uï¿½yj lewego przycisku myszy, aby wchodziï¿½ w interakcjï¿½ z budynkami i mgï¿½ï¿½."
         );
 
-        // KROK 2: Pracownicy (Przesuniêty)
+        // KROK 2: Pracownicy (Przesuniï¿½ty)
         tutorialSteps.Add(
-            "¯eby budynek generowa³ surowce lub ¿eby wie¿e strzela³y potrzebuj¹ pracowników.\n\n" +
-            "Kliknij na budynek aby otworzyæ menu.\n\n" +
-            "Twoi pracownicy pracuj¹ tylko podczas zmian."
+            "ï¿½eby budynek generowaï¿½ surowce lub ï¿½eby wieï¿½e strzelaï¿½y potrzebujï¿½ pracownikï¿½w.\n\n" +
+            "Kliknij na budynek aby otworzyï¿½ menu.\n\n" +
+            "Twoi pracownicy pracujï¿½ tylko podczas zmian."
         );
-
-        // KROK 3: Beacon (Przesuniêty)
+//
+        // KROK 3: Beacon (Przesuniï¿½ty)
         tutorialSteps.Add(
-            "Pamiêtaj, ¿eby poziom ognia latarni nie spad³ poni¿ej 3 poziomu!\n\n" +
-            "Ka¿dy poziom poni¿ej wzmacnia twoich wrogów, ale wrogowie z odmêtów przynosz¹ wtedy wiêcej skarbów.\n\n" +
-            "Jeœli masz wystarczaj¹co wêgla, mo¿esz rozœwietliæ latarniê do wy¿szych poziomów – wtedy wrogowie stan¹ siê s³absi, a twoi ludzie bêd¹ pracowaæ wydajniej."
+            "Pamiï¿½taj, ï¿½eby poziom ognia latarni nie spadï¿½ poniï¿½ej 3 poziomu!\n\n" +
+            "Kaï¿½dy poziom poniï¿½ej wzmacnia twoich wrogï¿½w, ale wrogowie z odmï¿½tï¿½w przynoszï¿½ wtedy wiï¿½cej skarbï¿½w.\n\n" +
+            "Jeï¿½li masz wystarczajï¿½co wï¿½gla, moï¿½esz rozï¿½wietliï¿½ latarniï¿½ do wyï¿½szych poziomï¿½w ï¿½ wtedy wrogowie stanï¿½ siï¿½ sï¿½absi, a twoi ludzie bï¿½dï¿½ pracowaï¿½ wydajniej."
         );
     }
 
@@ -49,9 +49,9 @@ public class TutorialController : MonoBehaviour
         popup = root.Q<VisualElement>("TutorialPopup");
         closeBtn = root.Q<Button>("Btn_CloseTutorial");
 
-        // Musimy znaleŸæ Label, ¿eby zmieniaæ jego tekst. 
-        // W poprzednim UXML nie daliœmy mu nazwy, wiêc szukamy po klasie lub typie.
-        // Jeœli masz nazwê w UXML, u¿yj jej. Jeœli nie, to zadzia³a:
+        // Musimy znaleï¿½ï¿½ Label, ï¿½eby zmieniaï¿½ jego tekst. 
+        // W poprzednim UXML nie daliï¿½my mu nazwy, wiï¿½c szukamy po klasie lub typie.
+        // Jeï¿½li masz nazwï¿½ w UXML, uï¿½yj jej. Jeï¿½li nie, to zadziaï¿½a:
         contentLabel = popup.Q<Label>(className: "tutorial-text");
 
         if (closeBtn != null)
@@ -59,7 +59,7 @@ public class TutorialController : MonoBehaviour
             closeBtn.clicked += NextStepOrClose;
         }
 
-        // Poka¿ pierwszy krok na starcie
+        // Pokaï¿½ pierwszy krok na starcie
         ShowStep(0);
     }
 
@@ -69,8 +69,8 @@ public class TutorialController : MonoBehaviour
         {
             contentLabel.text = tutorialSteps[index];
 
-            // Opcjonalnie: Mo¿emy zmieniæ tekst przycisku na "Dalej" (jeœli to nie jest ostatni krok)
-            // Ale "X" te¿ jest ok (jako "zamknij tê wiadomoœæ")
+            // Opcjonalnie: Moï¿½emy zmieniï¿½ tekst przycisku na "Dalej" (jeï¿½li to nie jest ostatni krok)
+            // Ale "X" teï¿½ jest ok (jako "zamknij tï¿½ wiadomoï¿½ï¿½")
         }
     }
 
@@ -80,7 +80,7 @@ public class TutorialController : MonoBehaviour
 
         if (currentStepIndex < tutorialSteps.Count)
         {
-            // Mamy kolejn¹ stronê -> wyœwietl j¹
+            // Mamy kolejnï¿½ stronï¿½ -> wyï¿½wietl jï¿½
             ShowStep(currentStepIndex);
         }
         else

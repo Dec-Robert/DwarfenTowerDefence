@@ -11,8 +11,8 @@ public abstract class EnemySkill : MonoBehaviour
         walker = _stats.GetComponent<EnemyWalker>();
     }
 
-    // Hooki (Metody wirtualne), które wywo³a EnemyStats
+    // Hooki (Metody wirtualne), ktï¿½re wywoï¿½a EnemyStats
     public virtual void OnDamageTaken(float amount, float currentHp) { }
     public virtual float OnBeforeDamageCalculation(float incomingDamage, DamageType type) { return incomingDamage; }
-    public virtual void OnDeath() { }
+    public virtual void OnDeath() { } //
 }

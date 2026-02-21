@@ -3,12 +3,12 @@ using UnityEngine;
 public enum ResourceType
 {
     /*
-    Wszystkie dostêpne wykorzystania syrowców:
+    Wszystkie dostï¿½pne wykorzystania syrowcï¿½w:
 
-    Budowa wie¿/budynków, 
-    Ulepszenie budynków, 
+    Budowa wieï¿½/budynkï¿½w, 
+    Ulepszenie budynkï¿½w, 
     Odkrywanie terenu, 
-    Utrzymanie budynków,
+    Utrzymanie budynkï¿½w,
     Meta-game upgrades
     */
 
@@ -32,9 +32,9 @@ public enum Race
 public enum WorkState
 {
     Idle,       //Nie pracuje   
-    Assigned,   //Przydzielony do pracy, czeka na rozpoczêcie pracy, mozna nim poruszaæ miêdzy budynkami
+    Assigned,   //Przydzielony do pracy, czeka na rozpoczï¿½cie pracy, mozna nim poruszaï¿½ miï¿½dzy budynkami
     Working,    //Pracuje zablokowany do konca zmiany
-    Exhausted   //Zmêczony po zmianie
+    Exhausted   //Zmï¿½czony po zmianie
 }
 
 public enum DayPhase
@@ -45,9 +45,9 @@ public enum DayPhase
 
 public enum DamageType
 {
-    Physical, // Zwyk³e wie¿e (£ucznik, Armata)
-    Magic,    // Wie¿e magiczne (Lód, Ogieñ)
-    True      // Typ obra¿eñ osi¹galny tylko dziêki niektórym run¹S
+    Physical, // Zwykï¿½e wieï¿½e (ï¿½ucznik, Armata)
+    Magic,    // Wieï¿½e magiczne (Lï¿½d, Ogieï¿½)
+    True      // Typ obraï¿½eï¿½ osiï¿½galny tylko dziï¿½ki niektï¿½rym runï¿½S
 }
 
 public enum EnemyRank
@@ -63,7 +63,7 @@ public struct TerrainBonusRule
     [Tooltip("Jaki teren daje bonus? (np. Forest dla Tartaku)")]
     public HexFeatureType requiredFeature;
 
-    [Tooltip("Zasiêg poszukiwania (1 = tylko s¹siedzi)")]
+    [Tooltip("Zasiï¿½g poszukiwania (1 = tylko sï¿½siedzi)")]
     public int range;
 
     [Header("Matematyka")]
@@ -72,31 +72,6 @@ public struct TerrainBonusRule
     public float minBonus;          // np. 0.1
 
     // --- NOWE POLE ---
-    [Tooltip("Jednorazowy bonus do produkcji, jeœli budynek stoi BEZPOŒREDNIO na tym terenie.")]
+    [Tooltip("Jednorazowy bonus do produkcji, jeï¿½li budynek stoi BEZPOï¿½REDNIO na tym terenie.")]
     public float onTopProductionBonus;
-}
-
-public enum ChunkState
-{
-    Locked,       // Zablokowany, nie mo¿na nic robiæ, maj¹ to drogi i niodkryte jeszcze chunki
-    Unlocked,     // Odblokowany, mo¿na wys³aæ zwiadowcê, ale nie mo¿na budowaæ
-    Scouting,     // W trakcie odkrywania 
-    MilitaryOnly, // Mo¿na wie¿e, nie mo¿na ekonomii (chyba ¿e minie czas)
-    FullyUnlocked // Mo¿na wszystko
-}
-
-[System.Serializable]
-public class ScoutingMission
-{
-    public Vector2Int targetChunk;
-    public ExpeditionCenterEntity assignedCenter; // Sk¹d wyszed³ zwiadowca
-    public int daysRemaining;
-    public int totalDuration;
-}
-
-[System.Serializable]
-public class ChunkStateData
-{
-    public ChunkState state;
-    public int economyUnlockTimer; // Ile dni do samoistnego odblokowania (jeœli Posterunek nie jest wymagany, ale pisa³eœ o odczekaniu 1-7 dni)
 }

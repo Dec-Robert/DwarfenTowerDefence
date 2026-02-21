@@ -14,10 +14,10 @@ public class ResourceManager : MonoBehaviour
     }
     public List<ResourceStartAmount> startingResources;
 
-    // S³ownik teraz przechowuje float
+    // SÅ‚ownik teraz przechowuje float
     private Dictionary<ResourceType, float> resourceBank = new Dictionary<ResourceType, float>();
 
-    // Event przesy³a teraz float
+    // Event przesyï¿½a teraz float
     public event Action<ResourceType, float> OnResourceChanged;
 
     private void Awake()
@@ -55,7 +55,7 @@ public class ResourceManager : MonoBehaviour
 
         resourceBank[type] += amount;
 
-        // POPRAWKA: Zaokr¹glenie do 4 miejsc po przecinku, aby usun¹æ "œmieci" (0.00001)
+        // POPRAWKA: Zaokrï¿½glenie do 4 miejsc po przecinku, aby usunï¿½ï¿½ "ï¿½mieci" (0.00001)
         resourceBank[type] = (float)Math.Round(resourceBank[type], 4);
 
         OnResourceChanged?.Invoke(type, resourceBank[type]);
@@ -63,15 +63,15 @@ public class ResourceManager : MonoBehaviour
 
     public bool SpendResource(ResourceType type, float amount)
     {
-        // Sprawdzamy z ma³ym marginesem b³êdu
+        // Sprawdzamy z maï¿½ym marginesem bï¿½ï¿½du
         if (resourceBank[type] >= amount - 0.0001f)
         {
             resourceBank[type] -= amount;
 
-            // POPRAWKA: Zaokr¹glenie wyniku
+            // POPRAWKA: Zaokrï¿½glenie wyniku
             resourceBank[type] = (float)Math.Round(resourceBank[type], 4);
 
-            // Zabezpieczenie, ¿eby nie spad³o poni¿ej absolutnego zera przez b³¹d float
+            // Zabezpieczenie, ï¿½eby nie spadï¿½o poniï¿½ej absolutnego zera przez bï¿½ï¿½d float
             if (resourceBank[type] < 0) resourceBank[type] = 0;
 
             OnResourceChanged?.Invoke(type, resourceBank[type]);
@@ -80,7 +80,7 @@ public class ResourceManager : MonoBehaviour
         return false;
     }
 
-    // Wersja dla s³ownika (transakcja atomowa)
+    // Wersja dla sï¿½ownika (transakcja atomowa)
     public bool SpendResources(Dictionary<ResourceType, float> resourcesToSpend)
     {
         if (resourcesToSpend == null || resourcesToSpend.Count == 0) return true;
@@ -103,7 +103,7 @@ public class ResourceManager : MonoBehaviour
         return true;
     }
 
-    // Przeci¹¿enie dla int (kompatybilnoœæ wsteczna z kodem który u¿ywa int)
+    // Przeciï¿½ï¿½enie dla int (kompatybilnoï¿½ï¿½ wsteczna z kodem ktï¿½ry uï¿½ywa int)
     public bool SpendResources(Dictionary<ResourceType, int> resourcesToSpend)
     {
         // Konwersja w locie
@@ -114,7 +114,7 @@ public class ResourceManager : MonoBehaviour
 
     public bool CanAfford(ResourceType type, float amount)
     {
-        return resourceBank.ContainsKey(type) && resourceBank[type] >= amount - 0.001f; // Ma³y margines b³êdu float
+        return resourceBank.ContainsKey(type) && resourceBank[type] >= amount - 0.001f; // Maï¿½y margines bï¿½ï¿½du float
     }
 
     public void UpdateAllUI()

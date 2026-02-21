@@ -25,15 +25,21 @@ public class BuildingData : ScriptableObject
 
     [Header("Wymagania Terenu")]
     public List<HexFeatureType> allowedTerrain;
-    public bool requiresOccupiedSpace = false; // Czy wymaga np. Lasu (kt�ry technicznie zajmuje heks)
+    public bool requiresOccupiedSpace = false;
+
+    [Header("Wymagania Specjalne")]
+    [Tooltip("Czy budowa wymaga wolnego elfa? (np. Centrum Ekspedycyjne)")]
+    public bool requiresFreeElf = false;
+
+    [Tooltip("Czy to jest Posterunek? Posterunek może być budowany na MilitaryOnly (tak jak wieże).")]
+    public bool isOutpost = false;
 
     [Header("Ekonomia (Koszt i Produkcja Bazowa)")]
     public List<ResourceCost> constructionCost;
-    public List<ResourceCost> productionPerCycle; // Co produkuje (np. Wood: 5)
-    public List<ResourceCost> upkeepPerCycle;     // Co zużywa (np. Food: 1)
+    public List<ResourceCost> productionPerCycle;
+    public List<ResourceCost> upkeepPerCycle;
 
-    [Header("System Ulepsze�")]
-
+    [Header("System Ulepszeń")]
     public List<BuildingUpgradeSO> tier1Upgrades;
 
     [Header("Prefab")]
@@ -42,12 +48,10 @@ public class BuildingData : ScriptableObject
     [Header("Zasady Produkcji Terenowej")]
     public TerrainBonusRule bonusRule;
 
-    // Dodaj te pola do klasy BuildingData:
-
     [Header("Pracownicy (Baza)")]
-    public int baseShifts = 1;         // Domy�lnie 1 zmiana
-    public int baseWorkersPerShift = 1; // Domy�lnie 1 pracownik
-    // Struktura pomocnicza do edytora
+    public int baseShifts = 1;
+    public int baseWorkersPerShift = 1;
+
     [System.Serializable]
     public struct ResourceCost
     {
@@ -55,7 +59,6 @@ public class BuildingData : ScriptableObject
         public float amount;
     }
 
-    // Pomocnicza metoda do konwersji listy na s�ownik (dla ResourceManagera)
     public Dictionary<ResourceType, float> GetCostDictionary()
     {
         Dictionary<ResourceType, float> dict = new Dictionary<ResourceType, float>();
@@ -66,7 +69,4 @@ public class BuildingData : ScriptableObject
         }
         return dict;
     }
-
-
-
 }

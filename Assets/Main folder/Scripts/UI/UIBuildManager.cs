@@ -9,7 +9,7 @@ public class UIBuildManager : MonoBehaviour
     public UIDocument uiDocument;
 
     [Header("Baza Danych")]
-    // Jedna du¿a lista, któr¹ posortujemy w Start
+    // Jedna duï¿½a lista, ktï¿½rï¿½ posortujemy w Start
     public List<BuildingData> allBuildingsDatabase;
 
     // Listy posortowane
@@ -33,13 +33,13 @@ public class UIBuildManager : MonoBehaviour
     private bool isMenuOpen = false;
 
     private void Start()
-    {
-        // 1. Sortowanie budynków
+    {//
+        // 1. Sortowanie budynkï¿½w
         SortBuildings();
 
         var root = uiDocument.rootVisualElement;
 
-        // 2. ZnajdŸ elementy interfejsu (z nowego GameHUD.uxml)
+        // 2. Znajdï¿½ elementy interfejsu (z nowego GameHUD.uxml)
         btnMainBuild = root.Q<Button>("Btn_MainBuild");
         categoryPanel = root.Q<VisualElement>("CategoryPanel");
         buildingsListPanel = root.Q<VisualElement>("BuildingsListPanel");
@@ -92,10 +92,10 @@ public class UIBuildManager : MonoBehaviour
         if (isMenuOpen)
         {
             categoryPanel.style.display = DisplayStyle.Flex;
-            btnMainBuild.text = "X"; // Zmieñ na Zamknij
+            btnMainBuild.text = "X"; // Zmieï¿½ na Zamknij
             btnMainBuild.AddToClassList("build-menu-btn-cancel");
 
-            // Domyœlnie otwórz pierwsz¹ kategoriê (Produkcja)
+            // Domyï¿½lnie otwï¿½rz pierwszï¿½ kategoriï¿½ (Produkcja)
             ShowCategory(productionBuildings, btnCatProd);
         }
         else
@@ -122,10 +122,10 @@ public class UIBuildManager : MonoBehaviour
 
     void ShowCategory(List<BuildingData> buildings, Button activeBtn)
     {
-        // Poka¿ panel listy
+        // Pokaï¿½ panel listy
         if (buildingsListPanel != null) buildingsListPanel.style.display = DisplayStyle.Flex;
 
-        // Reset stylów przycisków kategorii
+        // Reset stylï¿½w przyciskï¿½w kategorii
         if (btnCatProd != null) btnCatProd.RemoveFromClassList("category-btn-active");
         if (btnCatDef != null) btnCatDef.RemoveFromClassList("category-btn-active");
         if (btnCatHouse != null) btnCatHouse.RemoveFromClassList("category-btn-active");
@@ -161,7 +161,7 @@ public class UIBuildManager : MonoBehaviour
             nameLbl.style.whiteSpace = WhiteSpace.Normal;
             btn.Add(nameLbl);
 
-            // KLIKNIÊCIE -> Wybierz budynek
+            // KLIKNIï¿½CIE -> Wybierz budynek
             btn.clicked += () => {
                 if (InteractionManager.Instance != null)
                     InteractionManager.Instance.SelectBuildingToBuild(data);
@@ -215,7 +215,7 @@ public class UIBuildManager : MonoBehaviour
         StringBuilder bodySb = new StringBuilder();
         StringBuilder costSb = new StringBuilder();
 
-        // 1. KOSZT BUDOWY (Wspólny dla wszystkich)
+        // 1. KOSZT BUDOWY (Wspï¿½lny dla wszystkich)
         costSb.Append("<b>Koszt Budowy:</b>\n");
         if (data.constructionCost != null && data.constructionCost.Count > 0)
         {
@@ -233,18 +233,18 @@ public class UIBuildManager : MonoBehaviour
         }
         tooltipCost.text = costSb.ToString();
 
-        // 2. SZCZEGÓ£OWY OPIS ZALE¯NY OD TYPU BUDYNKU
+        // 2. SZCZEGÓ£OWY OPIS ZALEï¿½NY OD TYPU BUDYNKU
         switch (data.type)
         {
             // --- A) OBRONA ---
             case BuildingType.Defense:
-                // Rzutujemy dane, ¿eby dostaæ siê do statystyk wie¿y
+                // Rzutujemy dane, ï¿½eby dostaï¿½ siï¿½ do statystyk wieï¿½y
                 if (data is TowerData tower)
                 {
-                    bodySb.AppendLine("<b>Typ:</b> Wie¿a Obronna");
-                    bodySb.AppendLine($"<b>Obra¿enia:</b> {tower.baseDamage}");
-                    bodySb.AppendLine($"<b>Zasiêg:</b> {tower.baseRange}");
-                    bodySb.AppendLine($"<b>Szybkoœæ:</b> {tower.fireRate}/s");
+                    bodySb.AppendLine("<b>Typ:</b> Wieï¿½a Obronna");
+                    bodySb.AppendLine($"<b>Obraï¿½enia:</b> {tower.baseDamage}");
+                    bodySb.AppendLine($"<b>Zasiï¿½g:</b> {tower.baseRange}");
+                    bodySb.AppendLine($"<b>Szybkoï¿½ï¿½:</b> {tower.fireRate}/s");
 
                     // KOSZT AMUNICJI (czyli upkeepPerCycle)
                     if (tower.upkeepPerCycle != null && tower.upkeepPerCycle.Count > 0)
@@ -258,7 +258,7 @@ public class UIBuildManager : MonoBehaviour
 
             // --- B) MIESZKANIA ---
             case BuildingType.Utility:
-                // Zak³adamy, ¿e Utility to Mieszkania
+                // Zakï¿½adamy, ï¿½e Utility to Mieszkania
                 if (data is HousingBuildingData house)
                 {
                     bodySb.AppendLine("<b>Typ:</b> Budynek Mieszkalny");
@@ -274,7 +274,7 @@ public class UIBuildManager : MonoBehaviour
                     }
                     if (house.upkeepPerResident != null && house.upkeepPerResident.Count > 0)
                     {
-                        bodySb.Append("\n<b>Utrzymanie Mieszkañca (dziennie):</b>\n");
+                        bodySb.Append("\n<b>Utrzymanie Mieszkaï¿½ca (dziennie):</b>\n");
                         foreach (var upkeep in house.upkeepPerResident)
                             bodySb.AppendLine($"- {upkeep.amount:F2} {upkeep.type}");
                     }
@@ -287,21 +287,21 @@ public class UIBuildManager : MonoBehaviour
                 }
                 break;
 
-            // --- C) PRODUKCJA (Domyœlnie) ---
+            // --- C) PRODUKCJA (Domyï¿½lnie) ---
             case BuildingType.Economic:
             default:
                 bodySb.AppendLine("<b>Typ:</b> Budynek Ekonomiczny");
 
                 if (data.productionPerCycle != null && data.productionPerCycle.Count > 0)
                 {
-                    bodySb.Append("\n<b>Produkcja (na zmianê):</b>\n");
+                    bodySb.Append("\n<b>Produkcja (na zmianï¿½):</b>\n");
                     foreach (var prod in data.productionPerCycle)
                         bodySb.AppendLine($"+ {prod.amount} {prod.type}");
                 }
 
                 if (data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0)
                 {
-                    bodySb.Append("\n<b>Utrzymanie (na zmianê):</b>\n");
+                    bodySb.Append("\n<b>Utrzymanie (na zmianï¿½):</b>\n");
                     foreach (var upkeep in data.upkeepPerCycle)
                         bodySb.AppendLine($"- {upkeep.amount} {upkeep.type}");
                 }
@@ -314,7 +314,7 @@ public class UIBuildManager : MonoBehaviour
                 break;
         }
 
-        // Dodanie ogólnego opisu, jeœli istnieje
+        // Dodanie ogï¿½lnego opisu, jeï¿½li istnieje
         if (!string.IsNullOrEmpty(data.description))
         {
             bodySb.AppendLine($"\n<i>{data.description}</i>");

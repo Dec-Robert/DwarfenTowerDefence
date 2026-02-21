@@ -15,7 +15,7 @@ public class UIManager : MonoBehaviour
     [Header("UI Toolkit References")]
     public UIDocument uiDocument;
 
-    // Cache elementów
+    // Cache elementï¿½w
     private Label labelHP, labelGold, labelWood, labelStone, labelFood, labelPop, labelTime, labelIron, labelCoal;
 
     private void OnEnable()
@@ -38,7 +38,7 @@ public class UIManager : MonoBehaviour
         SetupTimeButton(root, "Btn_2x", 2f);
         SetupTimeButton(root, "Btn_3x", 3f);
         SetupTimeButton(root, "Btn_5x", 5f);
-    }
+    }//
 
     private void SetupTimeButton(VisualElement root, string btnName, float speed)
     {
@@ -69,12 +69,12 @@ public class UIManager : MonoBehaviour
             if (labelTime != null)
                 labelTime.text = TimeCycleManager.Instance.GetFormattedTime();
 
-            // --- OBS£UGA KLAWISZY (NOWOŒÆ) ---
+            // --- OBSï¿½UGA KLAWISZY (NOWOï¿½ï¿½) ---
             HandleInput();
         }
     }
 
-    // Nowa metoda do obs³ugi skrótów klawiszowych
+    // Nowa metoda do obsï¿½ugi skrï¿½tï¿½w klawiszowych
     void HandleInput()
     {
         // Spacja - Toggle Pause

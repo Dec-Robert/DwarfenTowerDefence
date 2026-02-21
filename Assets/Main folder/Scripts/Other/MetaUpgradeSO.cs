@@ -14,4 +14,5 @@ public class MetaUpgradeSO : ScriptableObject
 
     [Header("Wymagania")]
     public List<MetaUpgradeSO> prerequisites;
+    //
 }

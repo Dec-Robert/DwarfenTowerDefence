@@ -4,7 +4,7 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "NewEnemy", menuName = "Tower Defense/Enemy Data")]
 public class EnemyData : ScriptableObject
 {
-    [Header("Wygl¹d")]
+    [Header("Wyglï¿½d")]
     public GameObject prefab;
 
     [Header("Balans Fali")]
@@ -26,6 +26,6 @@ public class EnemyData : ScriptableObject
     public float eliteHpMultiplier = 2.0f;
     public float eliteSpeedMultiplier = 1.3f;
 
-    [Header("Umiejêtnoœci")]
+    [Header("Umiejï¿½tnoï¿½ci")]
     public List<GameObject> skillPrefabs;
 }

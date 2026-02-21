@@ -4,20 +4,20 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "Wave_Day_X", menuName = "Tower Defense/Predefined Wave")]
 public class WaveDefinition : ScriptableObject
 {
-    public int dayNumber;       // Dzieñ, w którym ta fala wyst¹pi
+    public int dayNumber;       // Dzieï¿½, w ktï¿½rym ta fala wystï¿½pi
     public string waveMessage;  // Komunikat dla gracza (np. "Boss nadchodzi!")
 
     [System.Serializable]
     public struct WaveEntry
     {
-        public EnemyData enemy; // Jaki wróg
+        public EnemyData enemy; // Jaki wrï¿½g
         public int count;       // Ile sztuk
     }
 
-    [Header("Sk³ad Fali")]
+    [Header("Skï¿½ad Fali")]
     // Lista grup, np.:
-    // 1. 20 Szkieletów
+    // 1. 20 SzkieletÃ³w
     // 2. 1 Blob
-    // 3. 10 Arcanistów
+    // 3. 10 Arcanistï¿½w
     public List<WaveEntry> enemies;
 }

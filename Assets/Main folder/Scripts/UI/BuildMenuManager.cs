@@ -1,25 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
-
+//
 public class BuildMenuManager : MonoBehaviour
 {
     [Header("Menu Ekonomii")]
-    public GameObject economyMenuPanel; // Panel z list¹ budynków (Tartak, Kopalnia...)
-    public Button openEconomyButton;    // Przycisk "Buduj" (M³otek?)
-    public Button closeEconomyButton;   // Przycisk "X" wewn¹trz panelu
+    public GameObject economyMenuPanel; // Panel z listï¿½ budynkï¿½w (Tartak, Kopalnia...)
+    public Button openEconomyButton;    // Przycisk "Buduj" (Mï¿½otek?)
+    public Button closeEconomyButton;   // Przycisk "X" wewnï¿½trz panelu
 
-    [Header("Menu Wie¿")]
-    public GameObject towersPanel;      // Panel z wie¿ami (zawsze widoczny)
+    [Header("Menu Wieï¿½")]
+    public GameObject towersPanel;      // Panel z wieï¿½ami (zawsze widoczny)
 
     private bool isEconomyOpen = false;
 
     void Start()
     {
-        // Na start ukrywamy menu ekonomii, pokazujemy wie¿e
+        // Na start ukrywamy menu ekonomii, pokazujemy wieï¿½e
         if (economyMenuPanel != null) economyMenuPanel.SetActive(false);
         if (towersPanel != null) towersPanel.SetActive(true);
 
-        // Podpiêcie przycisków
+        // Podpiï¿½cie przyciskï¿½w
         if (openEconomyButton != null)
             openEconomyButton.onClick.AddListener(ToggleEconomyMenu);
 
@@ -39,10 +39,10 @@ public class BuildMenuManager : MonoBehaviour
         economyMenuPanel.SetActive(false);
     }
 
-    // Opcjonalnie: Zamknij menu, jeœli klikniemy w budynek (¿eby ods³oniæ widok)
-    // Mo¿esz to wywo³aæ z BuildUIButton
+    // Opcjonalnie: Zamknij menu, jeï¿½li klikniemy w budynek (ï¿½eby odsï¿½oniï¿½ widok)
+    // Moï¿½esz to wywoï¿½aï¿½ z BuildUIButton
     public void OnBuildingSelected()
     {
-        // CloseEconomyMenu(); // Odkomentuj, jeœli chcesz zamykaæ menu po wyborze
+        // CloseEconomyMenu(); // Odkomentuj, jeï¿½li chcesz zamykaï¿½ menu po wyborze
     }
 }

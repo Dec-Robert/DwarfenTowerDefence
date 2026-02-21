@@ -1,105 +1,223 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/Main%20folder/UI/BuildingInspector.uss?fileID=7433441132597879392&amp;guid=e85767294a07a3448b3149e46c962958&amp;type=3#BuildingInspector" />
-    <ui:VisualElement name="TotalContainer" class="total-container" style="display: none;">
+
+    <!-- Pełnoekranowy overlay centrujący -->
+    <ui:VisualElement name="ScreenOverlay" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center; display: none;">
+
+        <ui:VisualElement name="TotalContainer" class="total-container">
+
+        <!-- ═══════════════════════════════════════════════════
+             LEWY PANEL – Szczegóły Ulepszenia
+             ═══════════════════════════════════════════════════ -->
         <ui:VisualElement name="UpgradeDetailsPanel" class="details-panel" style="display: none;">
-            <ui:Label name="Det_Title" text="Nazwa Ulepszenia" style="color: rgb(255, 215, 0); -unity-font-style: bold; margin-bottom: 5px; font-size: 14px;" />
-            <ui:Label name="Det_Desc" text="Opis co to robi..." style="color: rgb(204, 204, 204); font-size: 11px; white-space: normal; margin-bottom: 10px;" />
-            <ui:Label name="Det_Effects" text="Efekty..." style="color: rgb(255, 255, 255); font-size: 11px; margin-bottom: 5px;" />
-            <ui:Label name="Det_Cost" text="Koszt..." style="color: rgb(255, 170, 170); font-size: 11px; -unity-font-style: bold; margin-bottom: 10px;" />
-            <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-top: auto;">
-                <ui:Button name="Btn_ConfirmBuy" text="KUP" style="background-color: rgb(76, 175, 80); color: white; flex-grow: 1; margin-right: 5px;" />
-                <ui:Button name="Btn_CancelBuy" text="ANULUJ" style="background-color: rgb(244, 67, 54); color: white; flex-grow: 1;" />
+            <ui:Label name="Det_Title" class="det-title" text="Nazwa Ulepszenia" />
+            <ui:Label name="Det_Desc"  class="det-desc"  text="Opis co to robi..." />
+            <ui:Label name="Det_Effects" class="det-effects" text="Efekty..." />
+            <ui:Label name="Det_Cost"    class="det-cost"    text="Koszt: ..." />
+            <ui:VisualElement class="det-btn-row">
+                <ui:Button name="Btn_ConfirmBuy" text="KUP"    class="btn-confirm-buy" />
+                <ui:Button name="Btn_CancelBuy"  text="ANULUJ" class="btn-cancel-buy"  />
             </ui:VisualElement>
         </ui:VisualElement>
+
+        <!-- ═══════════════════════════════════════════════════
+             PRAWY PANEL – Główny Inspektor
+             ═══════════════════════════════════════════════════ -->
         <ui:VisualElement name="InspectorRoot" class="inspector-window">
-            <ui:Button name="Btn_Close" text="X" class="close-btn" />
-            <ui:Label name="Lbl_Name" text="Budynek" class="inspector-header" />
-            <ui:VisualElement name="BeaconControlSection" style="display: none; background-color: rgba(60, 30, 0, 0.8); padding: 10px; border-radius: 5px; margin-bottom: 15px; border-width: 1px; border-color: rgb(255, 136, 0);">
-                <ui:Label text="ZARZĄDZANIE PALIWEM" style="color: rgb(255, 187, 0); -unity-font-style: bold; margin-bottom: 5px; -unity-text-align: middle-center; font-size: 12px;" />
-                <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: center;">
-                    <ui:Label text="Dzienny Wsad:" style="color: rgb(221, 221, 221); font-size: 11px; margin-right: 5px;" />
-                    <ui:SliderInt name="Slider_CoalInput" low-value="0" high-value="20" style="flex-grow: 1;" />
-                    <ui:Label name="Lbl_CoalInputVal" text="0" style="color: white; font-size: 12px; -unity-font-style: bold; width: 30px; -unity-text-align: middle-right;" />
-                </ui:VisualElement>
-                <ui:Label text="Węgiel jest pobierany automatycznie o świcie." style="color: rgb(170, 170, 170); font-size: 9px; margin-top: 5px; white-space: normal; -unity-text-align: middle-center;" />
+
+            <!-- Belka tytułu -->
+            <ui:VisualElement class="inspector-titlebar">
+                <ui:Label name="Lbl_TierBadge" class="inspector-tier-badge" text="TIER I" />
+                <ui:Label name="Lbl_Name" class="inspector-header" text="Budynek" />
+                <ui:Button name="Btn_Close" text="✕" class="close-btn" />
             </ui:VisualElement>
 
-            <ui:VisualElement name="HousingSection" style="display: none; background-color: rgba(0, 40, 0, 0.3); padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-                <ui:Label text="STATYSTYKI MIESZKALNE" style="color: #44FF44; -unity-font-style: bold; margin-bottom: 5px; -unity-text-align: middle-center;" />
+            <!-- Treść inspektora -->
+            <ui:VisualElement class="inspector-body">
 
-                <!-- Pasek Progresu Narodzin -->
-                <ui:VisualElement style="margin-bottom: 10px;">
-                    <ui:Label text="Postęp narodzin:" style="color: #DDD; font-size: 10px;" />
-                    <ui:VisualElement name="BirthBarContainer" style="height: 12px; background-color: #222; border-radius: 4px; overflow: hidden; border-width: 1px; border-color: #444;">
-                        <ui:VisualElement name="BirthBarFill" style="width: 0%; height: 100%; background-color: #4CAF50;" />
+                <!-- ───────────────────────────────────────────
+                     BEACON – Zarządzanie Paliwem
+                     ─────────────────────────────────────────── -->
+                <ui:VisualElement name="BeaconControlSection" class="beacon-section" style="display: none;">
+                    <ui:Label text="⚙ ZARZĄDZANIE PALIWEM" class="beacon-section-header" />
+
+                    <ui:Label text="Dzienny wsad węgla:" class="beacon-slider-label" />
+                    <ui:VisualElement class="beacon-slider-row">
+                        <ui:Label text="0" class="beacon-slider-min-label" />
+                        <ui:SliderInt name="Slider_CoalInput" low-value="0" high-value="20" class="beacon-slider" />
+                        <ui:Label name="Lbl_CoalInputVal" text="0" class="beacon-slider-value" />
                     </ui:VisualElement>
-                    <ui:Label name="Lbl_BirthDays" text="Pozostało: 2 dni" style="color: #AAA; font-size: 9px; -unity-text-align: middle-right;" />
-                </ui:VisualElement>
 
-                <!-- Kapsułki Zakwaterowania -->
-                <ui:Label text="Mieszkańcy:" style="color: #DDD; font-size: 10px; margin-bottom: 2px;" />
-                <ui:VisualElement name="ResidentCapsules" style="flex-direction: row; justify-content: center; margin-bottom: 10px;" />
-
-                <!-- Szczegółowa Konsumpcja -->
-                <ui:VisualElement style="background-color: rgba(0,0,0,0.2); padding: 5px; border-radius: 3px;">
-                    <ui:Label name="Lbl_HouseBase" text="Koszt bazowy: 1 Food" style="color: #CCC; font-size: 10px;" />
-                    <ui:Label name="Lbl_HouseMaintenance" text="Utrzymanie: 0.5 Food" style="color: #CCC; font-size: 10px;" />
-                    <ui:Label name="Lbl_HouseTotal" text="SUMA (06:00): 1.5 Food" style="color: #FFF; -unity-font-style: bold; font-size: 11px; margin-top: 3px; border-top-width: 1px; border-top-color: #444;" />
-                </ui:VisualElement>
-
-                <!-- Modyfikatory i Status -->
-                <ui:VisualElement style="margin-top: 5px; flex-direction: row; justify-content: space-between;">
-                    <ui:Label name="Lbl_GrowthMod" text="Mod: +10%" style="color: #FFFF44; font-size: 10px;" />
-                    <ui:Label name="Lbl_HouseStatus" text="Status: Rosnący" style="color: #44FF44; font-size: 10px; -unity-font-style: italic;" />
-                </ui:VisualElement>
-            </ui:VisualElement>
-
-            <ui:VisualElement name="StatsContainer" style="display: none;">
-                <ui:Label name="Lbl_Production" text="Produkcja..." style="color: rgb(136, 255, 136); font-size: 11px; white-space: normal;" />
-                <ui:Label name="Lbl_Upkeep" text="Utrzymanie..." style="color: rgb(255, 136, 136); font-size: 11px; white-space: normal;" />
-            </ui:VisualElement>
-            <ui:VisualElement name="BudgetSection" style="margin-bottom: 10px; background-color: rgba(0, 0, 0, 0.2); padding: 5px; border-radius: 4px;">
-                <ui:Label text="ZAPAS OPERACYJNY" style="color: #DDD; font-size: 10px; -unity-font-style: bold; margin-bottom: 3px;" />
-                <ui:VisualElement name="BudgetContainer" />
-            </ui:VisualElement>
-            <ui:VisualElement name="CombatStatsContainer" style="display: none; margin-bottom: 10px; background-color: rgba(0, 0, 0, 0.3); padding: 5px; border-radius: 4px;">
-                <ui:Label name="Lbl_Damage" text="Obrażenia: 10" style="color: rgb(255, 68, 68); font-size: 12px; -unity-font-style: bold;" />
-                <ui:Label name="Lbl_Range" text="Zasięg: 5" style="color: rgb(68, 255, 255); font-size: 12px;" />
-                <ui:Label name="Lbl_FireRate" text="Szybkość: 1.0/s" style="color: rgb(255, 255, 68); font-size: 12px;" />
-            </ui:VisualElement>
-            <ui:VisualElement name="WorkerSection" class="worker-section">
-                <ui:Label text="PRACOWNICY" style="color: rgb(221, 221, 221); -unity-font-style: bold; margin-bottom: 5px;" />
-                <ui:VisualElement name="ShiftsContainer" />
-                <ui:VisualElement class="worker-controls">
-                    <ui:VisualElement style="align-items: center;">
-                        <ui:Label text="L" style="color: white; font-size: 10px;" />
-                        <ui:VisualElement style="flex-direction: row;">
-                            <ui:Button name="Btn_AddHuman" text="+" class="worker-btn btn-add" />
-                            <ui:Button name="Btn_RemHuman" text="-" class="worker-btn btn-remove" />
+                    <ui:VisualElement class="beacon-fuel-bar-container">
+                        <ui:Label text="POZIOM PALIWA" class="beacon-fuel-bar-label" />
+                        <ui:VisualElement name="FuelBarBg" class="beacon-fuel-bar-bg">
+                            <ui:VisualElement name="FuelBarFill" class="beacon-fuel-bar-fill" style="width: 60%;">
+                                <ui:VisualElement class="beacon-fuel-bar-fill-top" />
+                            </ui:VisualElement>
+                            <ui:Label name="Lbl_FuelBarText" text="🔥 60 / 100" class="beacon-fuel-bar-text" />
                         </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:VisualElement style="align-items: center;">
-                        <ui:Label text="E" style="color: white; font-size: 10px;" />
-                        <ui:VisualElement style="flex-direction: row;">
-                            <ui:Button name="Btn_AddElf" text="+" class="worker-btn btn-add" />
-                            <ui:Button name="Btn_RemElf" text="-" class="worker-btn btn-remove" />
+
+                    <ui:Label text="Węgiel jest pobierany automatycznie o świcie." class="beacon-hint" />
+                </ui:VisualElement>
+
+                <!-- ───────────────────────────────────────────
+                     HOUSING – Statystyki Mieszkalne
+                     ─────────────────────────────────────────── -->
+                <ui:VisualElement name="HousingSection" class="housing-section" style="display: none;">
+                    <ui:Label text="⌂ STATYSTYKI MIESZKALNE" class="housing-section-header" />
+
+                    <ui:Label text="Postęp narodzin:" class="birth-bar-label" />
+                    <ui:VisualElement name="BirthBarContainer" class="birth-bar-bg">
+                        <ui:VisualElement name="BirthBarFill" class="birth-bar-fill" style="width: 0%;">
+                            <ui:VisualElement class="birth-bar-fill-shine" />
                         </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:VisualElement style="align-items: center;">
-                        <ui:Label text="K" style="color: white; font-size: 10px;" />
-                        <ui:VisualElement style="flex-direction: row;">
-                            <ui:Button name="Btn_AddDwarf" text="+" class="worker-btn btn-add" />
-                            <ui:Button name="Btn_RemDwarf" text="-" class="worker-btn btn-remove" />
+                    <ui:Label name="Lbl_BirthDays" text="Pozostało: 2 dni" class="birth-days-remaining" />
+
+                    <ui:Label text="Mieszkańcy:" class="residents-label" />
+                    <ui:VisualElement name="ResidentCapsules" class="resident-capsules-row" />
+
+                    <ui:VisualElement class="housing-costs-table">
+                        <ui:VisualElement class="housing-cost-row">
+                            <ui:Label name="Lbl_HouseBase" class="housing-cost-label" text="Koszt bazowy" />
+                            <ui:Label class="housing-cost-value" text="1 Food" />
                         </ui:VisualElement>
+                        <ui:VisualElement class="housing-cost-row">
+                            <ui:Label name="Lbl_HouseMaintenance" class="housing-cost-label" text="Utrzymanie" />
+                            <ui:Label class="housing-cost-value" text="0.5 Food" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="housing-cost-separator" />
+                        <ui:VisualElement class="housing-cost-row">
+                            <ui:Label name="Lbl_HouseTotal" class="housing-cost-total-label" text="SUMA (06:00)" />
+                            <ui:Label class="housing-cost-total-value" text="1.5 Food" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="housing-status-row">
+                        <ui:Label name="Lbl_GrowthMod"   class="housing-growth-mod" text="Mod: +10%" />
+                        <ui:Label name="Lbl_HouseStatus"  class="housing-status"     text="Status: Rosnący" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:Label name="Lbl_WorkerCounts" text="H:0 | E:0 | D:0" style="color: rgb(170, 170, 170); font-size: 10px; margin-top: 5px; -unity-text-align: middle-center;" />
+
+                <!-- ───────────────────────────────────────────
+                     EXPEDITION CENTER – Centrum Ekspedycyjne
+                     ─────────────────────────────────────────── -->
+                <ui:VisualElement name="ExpeditionCenterSection" class="expedition-section" style="display: none;">
+
+                    <ui:Label text="🧭 CENTRUM EKSPEDYCYJNE" class="expedition-section-header" />
+
+                    <!-- Status Elfa -->
+                    <ui:VisualElement class="expedition-elf-row">
+                        <ui:VisualElement name="Exp_ElfStatusDot" class="expedition-elf-dot" />
+                        <ui:Label name="Exp_ElfStatusLabel" text="Sprawdzam elfa..." class="expedition-elf-label" />
+                    </ui:VisualElement>
+
+                    <!-- Separator -->
+                    <ui:VisualElement class="expedition-separator" />
+
+                    <!-- Status Misji -->
+                    <ui:Label text="AKTYWNA MISJA" class="expedition-subsection-header" />
+                    <ui:Label name="Exp_MissionStatusLabel" text="Brak aktywnej misji" class="expedition-mission-label" />
+
+                    <!-- Pasek postępu misji -->
+                    <ui:VisualElement name="Exp_ProgressBg" class="expedition-progress-bg" style="display: none;">
+                        <ui:VisualElement name="Exp_ProgressFill" class="expedition-progress-fill" style="width: 0%;">
+                            <ui:VisualElement class="expedition-progress-shine" />
+                        </ui:VisualElement>
+                        <ui:Label name="Exp_ProgressLabel" text="Postęp: 0%" class="expedition-progress-label" />
+                    </ui:VisualElement>
+
+                </ui:VisualElement>
+
+                <!-- ───────────────────────────────────────────
+                     STATS – Produkcja / Utrzymanie
+                     ─────────────────────────────────────────── -->
+                <ui:VisualElement name="StatsContainer" class="stats-container" style="display: none;">
+                    <ui:Label name="Lbl_Production" class="stat-production" text="Produkcja..." />
+                    <ui:Label name="Lbl_Upkeep"     class="stat-upkeep"     text="Utrzymanie..." />
+                </ui:VisualElement>
+
+                <!-- ───────────────────────────────────────────
+                     BUDGET – Zapas Operacyjny
+                     ─────────────────────────────────────────── -->
+                <ui:VisualElement name="BudgetSection" class="budget-section">
+                    <ui:Label text="ZAPAS OPERACYJNY" class="section-header" />
+                    <ui:VisualElement name="BudgetContainer" />
+                </ui:VisualElement>
+
+                <!-- ───────────────────────────────────────────
+                     COMBAT STATS – Wieże (3 bloki)
+                     ─────────────────────────────────────────── -->
+                <ui:VisualElement name="CombatStatsContainer" class="combat-section" style="display: none;">
+                    <ui:VisualElement class="combat-stat-block">
+                        <ui:Label name="Lbl_Damage"   class="combat-stat-value-damage" text="10" />
+                        <ui:Label text="OBRAŻENIA" class="combat-stat-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="combat-stat-divider" />
+                    <ui:VisualElement class="combat-stat-block">
+                        <ui:Label name="Lbl_Range"    class="combat-stat-value-range"  text="5.0" />
+                        <ui:Label text="ZASIĘG" class="combat-stat-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="combat-stat-divider" />
+                    <ui:VisualElement class="combat-stat-block">
+                        <ui:Label name="Lbl_FireRate" class="combat-stat-value-rate"   text="1.0/s" />
+                        <ui:Label text="PRĘDKOŚĆ" class="combat-stat-label" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- ───────────────────────────────────────────
+                     WORKERS – Pracownicy
+                     ─────────────────────────────────────────── -->
+                <ui:VisualElement name="WorkerSection" class="worker-section">
+                    <ui:Label text="PRACOWNICY" class="section-header" />
+
+                    <ui:VisualElement name="ShiftsContainer" />
+
+                    <ui:VisualElement class="worker-controls">
+                        <ui:VisualElement class="race-tile race-tile-human">
+                            <ui:Label text="L" class="race-tile-label-human" />
+                            <ui:VisualElement class="race-btn-row">
+                                <ui:Button name="Btn_AddHuman" text="+" class="worker-btn btn-add" />
+                                <ui:Button name="Btn_RemHuman" text="−" class="worker-btn btn-remove" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="race-tile race-tile-elf">
+                            <ui:Label text="E" class="race-tile-label-elf" />
+                            <ui:VisualElement class="race-btn-row">
+                                <ui:Button name="Btn_AddElf" text="+" class="worker-btn btn-add" />
+                                <ui:Button name="Btn_RemElf" text="−" class="worker-btn btn-remove" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="race-tile race-tile-dwarf">
+                            <ui:Label text="K" class="race-tile-label-dwarf" />
+                            <ui:VisualElement class="race-btn-row">
+                                <ui:Button name="Btn_AddDwarf" text="+" class="worker-btn btn-add" />
+                                <ui:Button name="Btn_RemDwarf" text="−" class="worker-btn btn-remove" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:Label name="Lbl_WorkerCounts" text="H: 0  |  E: 0  |  K: 0" class="worker-counts" />
+                </ui:VisualElement>
+
+                <!-- ───────────────────────────────────────────
+                     UPGRADES – Ulepszenia
+                     ─────────────────────────────────────────── -->
+                <ui:VisualElement name="UpgradeSection" class="upgrade-section">
+                    <ui:Label text="DOSTĘPNE ULEPSZENIA" class="section-header" />
+                    <ui:VisualElement name="UpgradesList" />
+                </ui:VisualElement>
+
+                <!-- ZBURZ -->
+                <ui:Button name="Btn_Destroy" text="⚠  ZBURZ BUDYNEK" class="btn-destroy" />
+
             </ui:VisualElement>
-            <ui:VisualElement name="UpgradeSection" class="upgrade-section">
-                <ui:Label text="DOSTĘPNE ULEPSZENIA" style="color: rgb(255, 215, 0); font-size: 12px; margin-bottom: 5px;" />
-                <ui:VisualElement name="UpgradesList" />
-            </ui:VisualElement>
-            <ui:Button name="Btn_Destroy" text="ZBURZ BUDYNEK" style="background-color: rgb(136, 0, 0); color: white; margin-top: 20px;" />
         </ui:VisualElement>
-    </ui:VisualElement>
+
+        </ui:VisualElement><!-- TotalContainer -->
+
+    </ui:VisualElement><!-- ScreenOverlay -->
 </ui:UXML>

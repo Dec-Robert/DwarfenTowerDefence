@@ -3,7 +3,7 @@ using TMPro;
 
 public class FloatingText : MonoBehaviour
 {
-    public TextMeshPro textMesh; // U¿ywamy wersji 3D (World Space), nie UI!
+    public TextMeshPro textMesh; // Uï¿½ywamy wersji 3D (World Space), nie UI!
 
     [Header("Animacja")]
     public float moveSpeed = 2f;
@@ -22,27 +22,27 @@ public class FloatingText : MonoBehaviour
         startColor = color;
         timer = lifeTime;
 
-        // Opcjonalnie: Zawsze zwrócony do kamery
+        // Opcjonalnie: Zawsze zwrï¿½cony do kamery
         transform.rotation = Camera.main.transform.rotation; 
-        // (Ale w rzucie izometrycznym wystarczy ustawiæ rotacjê w prefabie raz)
+        // (Ale w rzucie izometrycznym wystarczy ustawiï¿½ rotacjï¿½ w prefabie raz)
     }
-
+//
     void Update()
     {
-        // 1. Ruch w górê
+        // 1. Ruch w gï¿½rï¿½
         transform.Translate(Vector3.up * moveSpeed * Time.deltaTime);
 
         // 2. Odliczanie czasu
         timer -= Time.deltaTime;
 
-        // 3. Zanikanie (Fade out) pod koniec ¿ycia
+        // 3. Zanikanie (Fade out) pod koniec ï¿½ycia
         if (timer < 0.5f) // Ostatnie 0.5 sekundy
         {
             float alpha = textMesh.color.a - (fadeSpeed * Time.deltaTime);
             textMesh.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
         }
 
-        // 4. Œmieræ
+        // 4. ï¿½mierï¿½
         if (timer <= 0)
         {
             Destroy(gameObject);

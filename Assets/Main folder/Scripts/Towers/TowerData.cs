@@ -5,22 +5,22 @@ using System.Collections.Generic;
 public class TowerData : BuildingData
 {
     [Header("Statystyki Bojowe")]
-    public float baseRange;                 // Zasiêg ataku w jednostkach gry 2 zapewnia, ¿e wie¿a mo¿e atakowaæ tylko na tym samym heksie, ka¿de kolejne +3/4 jednostki zwiêksza zasiêg o 1 heks
+    public float baseRange;                 // Zasiï¿½g ataku w jednostkach gry 2 zapewnia, ï¿½e wieï¿½a moï¿½e atakowaï¿½ tylko na tym samym heksie, kaï¿½de kolejne +3/4 jednostki zwiï¿½ksza zasiï¿½g o 1 heks
     public float baseDamage;
-    public float fireRate;                  // Strza³y na sekundê
+    public float fireRate;                  // Strzaï¿½y na sekundï¿½
 
-    public float criticalChancel;           // Wartoœæ procentowa, np. 20 = 20% daje 20% szansy na trafienie krytyczne
-    public float criticalDamageMultiplier;  // Wartoœæ procentowa, np. 2 = 200% obra¿eñ przy trafieniu krytycznym
-    public float armorPenetration;          // Wartoœæ procentowa, np. 20 = 20% penetracji pancerza
-    public float magicPenetration;          // Wartoœæ procentowa, np. 20 = 20% penetracji odpornoœci magicznej
+    public float criticalChancel;           // Wartoï¿½ï¿½ procentowa, np. 20 = 20% daje 20% szansy na trafienie krytyczne
+    public float criticalDamageMultiplier;  // Wartoï¿½ï¿½ procentowa, np. 2 = 200% obraï¿½eï¿½ przy trafieniu krytycznym
+    public float armorPenetration;          // Wartoï¿½ï¿½ procentowa, np. 20 = 20% penetracji pancerza
+    public float magicPenetration;          // Wartoï¿½ï¿½ procentowa, np. 20 = 20% penetracji odpornoï¿½ci magicznej
 
 
     private BuildingType type;              // Bazowy typ wiez, zawsze ustawiany na Defense w OnValidate()
-    public DamageType damageType;           // Typ obra¿eñ, np. Physical, Magic, True
+    public DamageType damageType;           // Typ obraï¿½eï¿½, np. Physical, Magic, True
 
-
+    //
     [Header("Efekty Specjalne")]
-    // Lista efektów, np. [SlowEffect, PoisonEffect]
+    // Lista efektï¿½w, np. [SlowEffect, PoisonEffect]
     public List<TowerEffectSO> effects;
 
     public GameObject bulletPrefab;

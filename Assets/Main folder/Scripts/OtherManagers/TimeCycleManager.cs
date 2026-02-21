@@ -9,14 +9,14 @@ public class TimeCycleManager : MonoBehaviour
     [Header("Konfiguracja Czasu")]
     public float realSecondsPerHour = 20.0f;
 
-    [Tooltip("Ile razy wolniej p³ynie czas w NOCY (np. 3 = noc jest 3x d³u¿sza).")]
-    public float nightSlowdownFactor = 3.0f; // <--- NOWOŒÆ
+    [Tooltip("Ile razy wolniej pï¿½ynie czas w NOCY (np. 3 = noc jest 3x dï¿½uï¿½sza).")]
+    public float nightSlowdownFactor = 3.0f; // <--- NOWOï¿½ï¿½
 
     [Header("Cykl Dnia i Nocy")]
     public int dayStartHour = 6;
     public int nightStartHour = 20;
 
-    [Header("Podgl¹d")]
+    [Header("PodglÄ…d")]
     [Range(0, 24)] public float currentTime = 5.0f;
     public int currentHour = 5;
     public int dayCount = 1;
@@ -24,7 +24,7 @@ public class TimeCycleManager : MonoBehaviour
     [Header("UI")]
     public TextMeshProUGUI timeDisplay;
 
-    // Zmienna do zapamiêtania prêdkoœci przed pauz¹ (domyœlnie 1x)
+    // Zmienna do zapamiï¿½tania prï¿½dkoï¿½ci przed pauzï¿½ (domyï¿½lnie 1x)
     private float storedSpeed = 1f;
 
     public event Action<int> OnHourTick;
@@ -39,7 +39,7 @@ public class TimeCycleManager : MonoBehaviour
     private void Start()
     {
         // Gra startuje zapauzowana, ale storedSpeed ustawiamy na 1,
-        // ¿eby po wciœniêciu spacji gra ruszy³a 1x, a nie zosta³a na 0.
+        // ï¿½eby po wciï¿½niï¿½ciu spacji gra ruszyï¿½a 1x, a nie zostaï¿½a na 0.
         storedSpeed = 1f;
         Time.timeScale = 0f;
     }
@@ -49,17 +49,17 @@ public class TimeCycleManager : MonoBehaviour
         // 1. Sprawdzamy czy jest noc (20:00 - 06:00)
         bool isNight = (currentHour >= nightStartHour) || (currentHour < dayStartHour);
 
-        // 2. Obliczamy aktualn¹ d³ugoœæ godziny
-        // Jeœli noc -> mno¿ymy czas trwania godziny razy faktor (np. 20s * 3 = 60s za godzinê)
+        // 2. Obliczamy aktualnï¿½ dï¿½ugoï¿½ï¿½ godziny
+        // Jeï¿½li noc -> mnoï¿½ymy czas trwania godziny razy faktor (np. 20s * 3 = 60s za godzinï¿½)
         float currentSecondsPerHour = isNight ? (realSecondsPerHour * nightSlowdownFactor) : realSecondsPerHour;
 
         // 3. Dodajemy czas
-        // (Time.deltaTime uwzglêdnia przyciski prêdkoœci 1x, 2x, 5x, wiêc to nadal dzia³a)
+        // (Time.deltaTime uwzglï¿½dnia przyciski prï¿½dkoï¿½ci 1x, 2x, 5x, wiï¿½c to nadal dziaï¿½a)
         currentTime += Time.deltaTime / currentSecondsPerHour;
 
         UpdateUI();
 
-        // 4. Wybijanie pe³nych godzin
+        // 4. Wybijanie peï¿½nych godzin
         if (currentTime >= currentHour + 1)
         {
             currentHour++;
@@ -88,34 +88,34 @@ public class TimeCycleManager : MonoBehaviour
         }
         else if (hour == dayStartHour)
         {
-            Debug.Log($"<color=yellow>Godzina {hour}:00! Œwit.</color>");
+            Debug.Log($"<color=yellow>Godzina {hour}:00! ï¿½wit.</color>");
         }
     }
 
-    // --- ZMIENIONA METODA USTAWIANIA PRÊDKOŒCI ---
+    // --- ZMIENIONA METODA USTAWIANIA PRï¿½DKOï¿½CI ---
     public void SetTimeSpeed(float scale)
     {
         Time.timeScale = scale;
 
-        // Jeœli ustawiamy prêdkoœæ wiêksz¹ od 0, zapamiêtujemy j¹ jako "ostatni¹ dobr¹"
+        // Jeï¿½li ustawiamy prï¿½dkoï¿½ï¿½ wiï¿½kszï¿½ od 0, zapamiï¿½tujemy jï¿½ jako "ostatniï¿½ dobrï¿½"
         if (scale > 0)
         {
             storedSpeed = scale;
         }
     }
 
-    // --- NOWA METODA: PRZE£¥CZANIE PAUZY (Dla Spacji) ---
+    // --- NOWA METODA: PRZEï¿½ï¿½CZANIE PAUZY (Dla Spacji) ---
     public void TogglePause()
     {
         if (Time.timeScale == 0f)
         {
-            // Wznów (wróæ do zapamiêtanej)
+            // Wznï¿½w (wrï¿½ï¿½ do zapamiï¿½tanej)
             Time.timeScale = storedSpeed;
         }
         else
         {
-            // Zapauzuj (storedSpeed zaktualizowa³o siê automatycznie w SetTimeSpeed lub jest aktualne)
-            // Ale dla pewnoœci mo¿emy zapisaæ obecn¹ przed zerowaniem
+            // Zapauzuj (storedSpeed zaktualizowaï¿½o siï¿½ automatycznie w SetTimeSpeed lub jest aktualne)
+            // Ale dla pewnoï¿½ci moï¿½emy zapisaï¿½ obecnï¿½ przed zerowaniem
             storedSpeed = Time.timeScale;
             Time.timeScale = 0f;
         }
@@ -133,6 +133,6 @@ public class TimeCycleManager : MonoBehaviour
     public string GetFormattedTime()
     {
         float minutes = (currentTime - Mathf.Floor(currentTime)) * 60;
-        return $"Dzieñ {dayCount} | {Mathf.FloorToInt(currentTime):00}:{Mathf.FloorToInt(minutes):00}";
+        return $"Dzieï¿½ {dayCount} | {Mathf.FloorToInt(currentTime):00}:{Mathf.FloorToInt(minutes):00}";
     }
 }

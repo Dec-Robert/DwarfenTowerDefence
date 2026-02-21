@@ -22,10 +22,10 @@ public class ChunkLayoutSO : ScriptableObject
 {
     public PredefinedChunkType type;
 
-    [Header("Uk³ad Heksów")]
+    [Header("UkÅ‚ad Heksï¿½w")]
     public List<HexOverride> hexes;
 
     [Header("Punkt BRAMY (Tylko dla StartingCenter)")]
-    [Tooltip("Koordynaty heksa na krawêdzi chunku, do którego ma doprowadziæ droga ze œwiata.")]
+    [Tooltip("Koordynaty heksa na krawï¿½dzi chunku, do ktï¿½rego ma doprowadziï¿½ droga ze ï¿½wiata.")]
     public Vector2Int roadConnectionEdge;
 }

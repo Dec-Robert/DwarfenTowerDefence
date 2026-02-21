@@ -26,14 +26,14 @@ public class ExpansionUI : MonoBehaviour
     {
         uiPanel.SetActive(false);
         buyButton.onClick.AddListener(OnBuyClicked);
-
-        // Obs³uga przycisku zamkniêcia
+    //
+        // Obsï¿½uga przycisku zamkniï¿½cia
         if (closeButton != null)
         {
             closeButton.onClick.AddListener(Hide);
         }
 
-        // ZnajdŸ kontroler kamery
+        // Znajdï¿½ kontroler kamery
         camController = Camera.main.GetComponent<CameraController>();
     }
 
@@ -55,7 +55,7 @@ public class ExpansionUI : MonoBehaviour
         onConfirmAction = onBuy;
         targetWorldPos = worldPos;
 
-        costText.text = $"Odkryj Teren\nKoszt: {goldCost} Z³ota";
+        costText.text = $"Odkryj Teren\nKoszt: {goldCost} Zï¿½ota";
 
         uiPanel.transform.position = Camera.main.WorldToScreenPoint(targetWorldPos);
         uiPanel.SetActive(true);
@@ -66,7 +66,7 @@ public class ExpansionUI : MonoBehaviour
             buyButton.interactable = ResourceManager.Instance.GetResourceAmount(ResourceType.Gold) >= goldCost;
         }
 
-        // ZABLOKUJ KAMERÊ
+        // ZABLOKUJ KAMERï¿½
         if (camController != null) camController.isInputLocked = true;
     }
 
@@ -77,7 +77,7 @@ public class ExpansionUI : MonoBehaviour
 
         if (camController != null) camController.isInputLocked = false;
 
-        // POWIADOM O ZAMKNIÊCIU
+        // POWIADOM O ZAMKNIï¿½CIU
         OnPanelClosed?.Invoke();
     }
 

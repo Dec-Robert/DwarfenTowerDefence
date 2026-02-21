@@ -10,6 +10,6 @@ public class PoisonEffect : TowerEffectSO
     public override void ApplyEffect(EnemyStats target, float damageMultiplier)
     {
         // target.ApplyPoison(damagePerTick, ticks, interval);
-        Debug.Log("Wróg zatruty!");
+        Debug.Log("Wrog zatruty!");
     }
 }

@@ -19,7 +19,7 @@ public class WorkerSlotUI : MonoBehaviour
         }
         else
         {
-            // Zmiana koloru w zale¿noœci od stanu
+            // Zmiana koloru w zaleï¿½noï¿½ci od stanu
             switch (citizen.workState)
             {
                 case WorkState.Assigned:
@@ -32,13 +32,13 @@ public class WorkerSlotUI : MonoBehaviour
                     slotImage.color = Color.red;   // Wyczerpany
                     break;
                 case WorkState.Idle:
-                    // Teoretycznie nie powinno siê zdarzyæ w budynku, ale dla bezpieczeñstwa:
+                    // Teoretycznie nie powinno siï¿½ zdarzyï¿½ w budynku, ale dla bezpieczeï¿½stwa:
                     slotImage.color = Color.gray;
                     break;
                 default:
                     slotImage.color = Color.white;
                     break;
-            }
+            }//
         }
     }
 }

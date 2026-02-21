@@ -9,14 +9,14 @@ public class CityStatsManager : MonoBehaviour
     public int globalBonusWorkersPerShift = 0;
     public int globalShiftLengthModifier = 0; 
 
-
+    //
     private void Awake()
     {
         if (Instance != null && Instance != this) Destroy(gameObject);
         else Instance = this;
     }
 
-    // Metody do modyfikacji przez Meta Progresjê
+    // Metody do modyfikacji przez Meta Progresjï¿½
     public void AddGlobalShift(int amount) => globalBonusShifts += amount;
     public void AddGlobalWorkerSlot(int amount) => globalBonusWorkersPerShift += amount;
 }

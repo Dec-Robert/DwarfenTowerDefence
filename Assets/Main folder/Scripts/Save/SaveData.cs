@@ -5,6 +5,6 @@ using System.Collections.Generic;
 public class SaveData
 {
     public float totalArtifacts;
-    // Zapisujemy tylko listê ID odblokowanych ulepszeñ
+    // Zapisujemy tylko listÄ™ ID odblokowanych ulepszeï¿½
     public List<string> unlockedUpgradeIDs = new List<string>();
 }

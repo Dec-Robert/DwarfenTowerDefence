@@ -9,12 +9,12 @@ public class EnemyHealthBar : MonoBehaviour
     public StyleSheet styleSheet; // Przypisz HealthBar.uss
 
     [Header("Ustawienia")]
-    public Vector3 offset = new Vector3(0, 2.5f, 0); // Wysokoœæ nad g³ow¹ wroga
+    public Vector3 offset = new Vector3(0, 2.5f, 0); // Wysokoï¿½ï¿½ nad gï¿½owï¿½ wroga
 
     // Elementy UI
     private VisualElement healthBarContainer;
     private List<VisualElement> fillElements = new List<VisualElement>();
-    private VisualElement parentLayer; // Warstwa w g³ównym HUD
+    private VisualElement parentLayer; // Warstwa w gï¿½ï¿½wnym HUD
 
     // Cache
     private Camera mainCam;
@@ -25,8 +25,8 @@ public class EnemyHealthBar : MonoBehaviour
     private void Start()
     {
         mainCam = Camera.main;
-
-        // 1. ZnajdŸ g³ówny HUD
+    //
+        // 1. Znajdï¿½ gï¿½ï¿½wny HUD
         if (UIManager.Instance == null || UIManager.Instance.uiDocument == null)
         {
             // Debug.LogWarning("Brak UIManagera lub UIDocument! Pasek zdrowia nie powstanie.");
@@ -46,9 +46,9 @@ public class EnemyHealthBar : MonoBehaviour
         if (stats != null)
         {
             stats.OnHealthChanged += UpdateHealthBar;
-            // Wymuœ pierwsze odœwie¿enie (jeœli wróg ju¿ ma HP)
+            // Wymuï¿½ pierwsze odï¿½wieï¿½enie (jeï¿½li wrï¿½g juï¿½ ma HP)
             UpdateHealthBar(stats.GetMaxHealth(), stats.GetMaxHealth());
-            // ^ U¿yj gettera lub publicznego pola, tu zak³adam ¿e startuje z max
+            // ^ Uï¿½yj gettera lub publicznego pola, tu zakï¿½adam ï¿½e startuje z max
         }
     }
 
@@ -56,7 +56,7 @@ public class EnemyHealthBar : MonoBehaviour
     {
         if (stats != null) stats.OnHealthChanged -= UpdateHealthBar;
 
-        // WA¯NE: Usuñ pasek z ekranu gdy wróg ginie!
+        // WAï¿½NE: Usuï¿½ pasek z ekranu gdy wrï¿½g ginie!
         if (healthBarContainer != null && healthBarContainer.parent != null)
         {
             healthBarContainer.parent.Remove(healthBarContainer);
@@ -71,7 +71,7 @@ public class EnemyHealthBar : MonoBehaviour
         Vector3 worldPos = transform.position + offset;
         Vector3 screenPos = mainCam.WorldToScreenPoint(worldPos);
 
-        // Jeœli wróg jest za kamer¹ -> ukryj
+        // Jeï¿½li wrï¿½g jest za kamerï¿½ -> ukryj
         if (screenPos.z < 0)
         {
             healthBarContainer.style.display = DisplayStyle.None;
@@ -81,16 +81,16 @@ public class EnemyHealthBar : MonoBehaviour
         healthBarContainer.style.display = DisplayStyle.Flex;
         healthBarContainer.style.visibility = Visibility.Visible;
 
-        // Przeliczenie wspó³rzêdnych (UI Toolkit ma (0,0) w lewym górnym rogu)
-        // Musimy te¿ odj¹æ po³owê szerokoœci paska, ¿eby by³ wyœrodkowany
-        float panelHeight = parentLayer.layout.height; // Wysokoœæ ekranu w jednostkach UI
+        // Przeliczenie wspï¿½rzï¿½dnych (UI Toolkit ma (0,0) w lewym gï¿½rnym rogu)
+        // Musimy teï¿½ odjï¿½ï¿½ poï¿½owï¿½ szerokoï¿½ci paska, ï¿½eby byï¿½ wyï¿½rodkowany
+        float panelHeight = parentLayer.layout.height; // Wysokoï¿½ï¿½ ekranu w jednostkach UI
         if (float.IsNaN(panelHeight)) panelHeight = Screen.height; // Fallback
 
-        // Centrowanie: (Szerokoœæ paska z USS to 60px)
+        // Centrowanie: (Szerokoï¿½ï¿½ paska z USS to 60px)
         float centeredX = screenPos.x - 30;
         float invertedY = Screen.height - screenPos.y;
 
-        // Dostosowanie do skali Panel Settings (RuntimePanelUtils to pomocne narzêdzie)
+        // Dostosowanie do skali Panel Settings (RuntimePanelUtils to pomocne narzï¿½dzie)
         // Ale przy prostym setupie Overlay to wystarczy:
         healthBarContainer.style.left = centeredX;
         healthBarContainer.style.top = invertedY;
@@ -106,7 +106,7 @@ public class EnemyHealthBar : MonoBehaviour
             RebuildBar(maxHp);
         }
 
-        // Aktualizacja wype³nienia
+        // Aktualizacja wypeï¿½nienia
         float remainingHp = currentHp;
         for (int i = 0; i < fillElements.Count; i++)
         {
@@ -131,12 +131,12 @@ public class EnemyHealthBar : MonoBehaviour
 
     void RebuildBar(float maxHp)
     {
-        // Usuñ stary jeœli istnieje (reset)
+        // Usuï¿½ stary jeï¿½li istnieje (reset)
         if (healthBarContainer != null) healthBarContainer.parent.Remove(healthBarContainer);
 
         cachedMaxHp = maxHp;
 
-        // Logika kolorów
+        // Logika kolorï¿½w
         if (maxHp < 500) { hpPerSegment = 100; colorClass = "color-red"; }
         else if (maxHp < 1250) { hpPerSegment = 250; colorClass = "color-blue"; }
         else if (maxHp < 5000) { hpPerSegment = 1000; colorClass = "color-green"; }
@@ -151,14 +151,14 @@ public class EnemyHealthBar : MonoBehaviour
         healthBarContainer = new VisualElement();
         healthBarContainer.AddToClassList("bar-container");
 
-        // Dodanie stylów (jeœli asset jest przypisany)
+        // Dodanie stylï¿½w (jeï¿½li asset jest przypisany)
         if (styleSheet != null) healthBarContainer.styleSheets.Add(styleSheet);
 
-        // Dodanie do g³ównego HUD
+        // Dodanie do gï¿½ï¿½wnego HUD
         parentLayer.Add(healthBarContainer);
         fillElements.Clear();
 
-        // Tworzenie segmentów
+        // Tworzenie segmentï¿½w
         for (int i = 0; i < segments; i++)
         {
             VisualElement seg = new VisualElement();

@@ -11,12 +11,12 @@ public class HexMapVisualizer : MonoBehaviour
     public GameObject prefabMountain;
     public GameObject prefabFertile;
 
-    // --- NOWOŒÆ: Prefaby Specjalne ---
-    [Header("Prefaby Budynków Specjalnych")]
+    // --- NOWOï¿½ï¿½: Prefaby Specjalne ---
+    [Header("Prefaby Budynkï¿½w Specjalnych")]
     public GameObject prefabBase;   // Kapitol
     public GameObject prefabBeacon; // Beacon of Hope
 
-    [Header("Materia³y Specjalne")]
+    [Header("Materiaï¿½y Specjalne")]
     public Material matPath;
     public Material matForest;
     public Material matMountain;
@@ -26,12 +26,12 @@ public class HexMapVisualizer : MonoBehaviour
     public Material matBase;
     public Material matBeacon;
 
-    [Header("Materia³ Domyœlny")]
+    [Header("MateriaÅ‚ DomyÅ›lny")]
     public Material matDefaultGrass;
 
     private Transform mapHolder;
 
-    // S³ownik przechowuj¹cy fizyczne obiekty chunków
+    // Sï¿½ownik przechowujï¿½cy fizyczne obiekty chunkï¿½w
     private Dictionary<Vector2Int, GameObject> chunkGameObjects = new Dictionary<Vector2Int, GameObject>();
 
     private Dictionary<Vector2Int, Dictionary<Vector2Int, HexCell>> visualHexGrid = new Dictionary<Vector2Int, Dictionary<Vector2Int, HexCell>>();
@@ -56,7 +56,7 @@ public class HexMapVisualizer : MonoBehaviour
             float hexSize,
             float padding)
     {
-        ClearMap(); // Czyœci stare obiekty i s³owniki (visualHexGrid i chunkGameObjects)
+        ClearMap(); // Czyï¿½ci stare obiekty i sï¿½owniki (visualHexGrid i chunkGameObjects)
 
         if (mapHolder == null)
         {
@@ -71,7 +71,7 @@ public class HexMapVisualizer : MonoBehaviour
             string biomeName = "Unknown";
             Material chunkBaseMat = matDefaultGrass;
 
-            // Ustalanie biomu i materia³u dla chunku
+            // Ustalanie biomu i materiaï¿½u dla chunku
             if (chunkBiomes != null && chunkBiomes.ContainsKey(chunkCoord))
             {
                 BiomeType biome = chunkBiomes[chunkCoord];
@@ -86,10 +86,10 @@ public class HexMapVisualizer : MonoBehaviour
             chunkObj.transform.parent = mapHolder;
             chunkObj.transform.position = centerWorld;
 
-            // Rejestracja w s³owniku GameObjectów (dla Fog of War)
+            // Rejestracja w sï¿½owniku GameObjectï¿½w (dla Fog of War)
             chunkGameObjects.Add(chunkCoord, chunkObj);
 
-            // --- NOWOŒÆ: Inicjalizacja s³ownika heksów dla tego chunku ---
+            // --- NOWOï¿½ï¿½: Inicjalizacja sï¿½ownika heksï¿½w dla tego chunku ---
             if (!visualHexGrid.ContainsKey(chunkCoord))
             {
                 visualHexGrid[chunkCoord] = new Dictionary<Vector2Int, HexCell>();
@@ -105,7 +105,7 @@ public class HexMapVisualizer : MonoBehaviour
 
                     Vector3 basePos = centerWorld + HexGridMath.AxialToWorld(local.x, local.y, hexSize, padding);
 
-                    // Modyfikacja wysokoœci dla specjalnych terenów
+                    // Modyfikacja wysokoï¿½ci dla specjalnych terenï¿½w
                     float heightOffset = 0f;
                     if (cellData.feature == HexFeatureType.Hill) heightOffset = cellData.featureLevel * 0.1f;
                     else if (cellData.feature == HexFeatureType.Sinkhole) heightOffset = cellData.featureLevel * 0.1f;
@@ -121,15 +121,15 @@ public class HexMapVisualizer : MonoBehaviour
                     cellComponent.chunkCoord = chunkCoord;
                     cellComponent.localCoord = local;
 
-                    // --- NOWOŒÆ: Rejestracja heksa w szybkim s³owniku ---
-                    // Dziêki temu InteractionManager mo¿e go znaleŸæ w czasie O(1)
+                    // --- NOWOï¿½ï¿½: Rejestracja heksa w szybkim sï¿½owniku ---
+                    // Dziï¿½ki temu InteractionManager moï¿½e go znaleï¿½ï¿½ w czasie O(1)
                     visualHexGrid[chunkCoord].Add(local, cellComponent);
                     // ----------------------------------------------------
 
-                    // Nak³adanie wizualiów terenu (Trawa, Las, Góry)
+                    // Nakï¿½adanie wizualiï¿½w terenu (Trawa, Las, Gï¿½ry)
                     ApplyVisualsToHex(hex, cellData, chunkBaseMat);
 
-                    // Budowanie predefiniowanych budynków
+                    // Budowanie predefiniowanych budynkï¿½w
                     if (cellData.startingBuilding != null)
                     {
                         SpawnPredefinedBuilding(hex, cellData.startingBuilding);
@@ -204,7 +204,7 @@ public class HexMapVisualizer : MonoBehaviour
                     nameSuffix = " [BEACON]";
                     if (prefabBeacon != null)
                     {
-                        // Instancjujemy Prefab (który ma skrypt BeaconEntity!)
+                        // Instancjujemy Prefab (ktï¿½ry ma skrypt BeaconEntity!)
                         SpawnProp(hexObj, prefabBeacon);
                     }
                     else
@@ -225,15 +225,15 @@ public class HexMapVisualizer : MonoBehaviour
         GameObject prop = Instantiate(prefab, parentHex.transform);
         prop.transform.localPosition = Vector3.zero;
 
-        // Dla budynków wa¿nych (Beacon/Base) lepiej nie losowaæ rotacji, ¿eby sta³y prosto
-        // Ale dla lasów/gór losowa rotacja jest OK.
-        // Mo¿emy to prosto rozró¿niæ lub zostawiæ losowo dla klimatu.
+        // Dla budynkï¿½w waï¿½nych (Beacon/Base) lepiej nie losowaï¿½ rotacji, ï¿½eby staï¿½y prosto
+        // Ale dla lasï¿½w/gï¿½r losowa rotacja jest OK.
+        // Moï¿½emy to prosto rozrï¿½niï¿½ lub zostawiï¿½ losowo dla klimatu.
         prop.transform.localRotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
     }
 
     public void ClearMap()
     {
-        visualHexGrid.Clear(); // <--- WA¯NE: Czyœcimy referencje
+        visualHexGrid.Clear(); // <--- WAï¿½NE: Czyï¿½cimy referencje
         chunkGameObjects.Clear();
         if (mapHolder != null) DestroyImmediate(mapHolder.gameObject);
         while (transform.childCount > 0) DestroyImmediate(transform.GetChild(0).gameObject);
@@ -244,16 +244,16 @@ public class HexMapVisualizer : MonoBehaviour
         if (buildingData.prefab == null) return;
 
         // 1. CZYSZCZENIE TERENU
-        // ApplyVisualsToHex mog³o dodaæ drzewka lub ska³y jako dzieci heksa.
-        // Musimy je usun¹æ, ¿eby budynek nie przenika³ siê z lasem.
-        // Robimy listê tymczasow¹, bo nie mo¿na usuwaæ obiektów podczas iteracji po transform.
+        // ApplyVisualsToHex mogï¿½o dodaï¿½ drzewka lub skaï¿½y jako dzieci heksa.
+        // Musimy je usunï¿½ï¿½, ï¿½eby budynek nie przenikaï¿½ siï¿½ z lasem.
+        // Robimy listï¿½ tymczasowï¿½, bo nie moï¿½na usuwaï¿½ obiektï¿½w podczas iteracji po transform.
         List<GameObject> childrenToDestroy = new List<GameObject>();
         foreach (Transform child in hexObj.transform)
         {
             childrenToDestroy.Add(child.gameObject);
         }
 
-        // Niszczymy dekoracje (u¿ywamy DestroyImmediate, bo to dzieje siê w trakcie generowania)
+        // Niszczymy dekoracje (uï¿½ywamy DestroyImmediate, bo to dzieje siï¿½ w trakcie generowania)
         foreach (var child in childrenToDestroy)
         {
             DestroyImmediate(child);
@@ -265,7 +265,7 @@ public class HexMapVisualizer : MonoBehaviour
 
         // 3. INICJALIZACJA LOGIKI
 
-        // A. Jeœli to wie¿a - przeka¿ dane do kontrolera
+        // A. Jeï¿½li to wieï¿½a - przekaï¿½ dane do kontrolera
         if (buildingData is TowerData towerData)
         {
             var controller = buildingObj.GetComponent<TowerController>();
@@ -275,19 +275,19 @@ public class HexMapVisualizer : MonoBehaviour
             }
         }
 
-        // B. Inicjalizacja BuildingEntity (Logika ekonomii/pracowników)
+        // B. Inicjalizacja BuildingEntity (Logika ekonomii/pracownikï¿½w)
         var entity = buildingObj.GetComponent<BuildingEntity>();
 
-        // Jeœli prefab nie ma skryptu (np. prosty model), dodajemy go
+        // Jeï¿½li prefab nie ma skryptu (np. prosty model), dodajemy go
         if (entity == null)
         {
-            // Sprawdzamy typ, ¿eby dodaæ odpowiedni skrypt (np. TowerEntity dla wie¿)
+            // Sprawdzamy typ, ï¿½eby dodaï¿½ odpowiedni skrypt (np. TowerEntity dla wieï¿½)
             if (buildingData is TowerData) entity = buildingObj.AddComponent<TowerEntity>();
             else if (buildingData is HousingBuildingData) entity = buildingObj.AddComponent<HousingEntity>();
             else entity = buildingObj.AddComponent<BuildingEntity>();
         }
 
-        // Wymuszamy startow¹ inicjalizacjê
+        // Wymuszamy startowï¿½ inicjalizacjï¿½
         entity.Initialize(buildingData);
     }
 

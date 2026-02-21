@@ -13,7 +13,7 @@ public class TowerController : MonoBehaviour
     [Header("Wizualizacja Zasi�gu")]
     public GameObject rangeIndicatorPrefab;
     private GameObject rangeIndicatorInstance;
-
+    //
     [Header("Status (Read Only)")]
     [SerializeField] private bool canShoot = false;
     [SerializeField] private float currentRange;

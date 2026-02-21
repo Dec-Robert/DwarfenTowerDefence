@@ -17,9 +17,10 @@ public class InteractionManager : MonoBehaviour
     public static InteractionManager Instance { get; private set; }
 
     [Header("Referencje")]
-    public HexMapGenerator mapGenerator;
-    public UIDocument      uiDocument;
-    public LayerMask       hexLayer;
+    public HexMapGenerator       mapGenerator;
+    public MapExpansionManager   expansionManager;
+    public UIDocument            uiDocument;
+    public LayerMask             hexLayer;
 
     [Header("Widmo")]
     public Material    ghostValidMat;

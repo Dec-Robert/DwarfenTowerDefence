@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class BuildingCitizenManager : MonoBehaviour
 {
     public static BuildingCitizenManager Instance;
-
+    //
     [Header("Przyciski dodawania")]
     public Button addElf;
     public Button addDwarf;
@@ -17,7 +17,7 @@ public class BuildingCitizenManager : MonoBehaviour
     public Button removeDwarf;
     public Button removeHuman;
 
-    [Header("Wyœwietlanie iloœæ")]
+    [Header("Wyï¿½wietlanie iloï¿½ï¿½")]
     public TextMeshProUGUI elfCountText;
     public TextMeshProUGUI dwarfCountText;
     public TextMeshProUGUI humanCountText;
@@ -58,7 +58,7 @@ public class BuildingCitizenManager : MonoBehaviour
             targetBuilding.TryAddWorker(race);
             RefreshUI();
 
-            Debug.Log($"Próba dodania rasy {race}  z budynku {targetBuilding.name}");
+            Debug.Log($"Prï¿½ba dodania rasy {race}  z budynku {targetBuilding.name}");
         }
     }
 
@@ -69,7 +69,7 @@ public class BuildingCitizenManager : MonoBehaviour
             targetBuilding.RemoveWorker(race);
             RefreshUI();
 
-            Debug.Log($"Próba usuniêcia rasy {race} z budynku {targetBuilding.name}");
+            Debug.Log($"Prï¿½ba usuniï¿½cia rasy {race} z budynku {targetBuilding.name}");
         }
     }
 
@@ -77,7 +77,7 @@ public class BuildingCitizenManager : MonoBehaviour
     {
         if (targetBuilding == null) return;
 
-        // Aktualizacja liczników
+        // Aktualizacja licznikï¿½w
         elfCountText.text = targetBuilding.GetWorkerCount(Race.Elves).ToString();
         dwarfCountText.text = targetBuilding.GetWorkerCount(Race.Dwarves).ToString();
         humanCountText.text = targetBuilding.GetWorkerCount(Race.Humans).ToString();

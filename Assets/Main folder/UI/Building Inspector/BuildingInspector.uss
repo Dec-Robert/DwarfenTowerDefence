@@ -1,177 +1,757 @@
+/* ============================================================
+   BUILDING INSPECTOR ‚Äì "MROCZNA TWIERDZA"
+   Paleta: czer≈Ñ/grafit + z≈Çoto + akcenty sekcji
+   ============================================================ */
 
-/* NAG£”WEK */
+/* --- ZMIENNE (symulacja przez klasy bazowe) --- */
+
+/* === LAYOUT G≈Å√ìWNY === */
+
+.total-container {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.inspector-window {
+    width: 300px;
+    background-color: rgba(12, 10, 8, 0.97);
+    border-radius: 2px;
+    border-color: #8B6914;
+    border-width: 2px;
+    border-top-width: 4px;
+    border-top-color: #FFD700;
+    padding: 0px;
+    overflow: hidden;
+}
+
+/* G√≥rna belka tytu≈Çu */
+.inspector-titlebar {
+    background-color: rgba(30, 22, 5, 1);
+    padding: 10px 15px 8px 15px;
+    border-bottom-width: 1px;
+    border-bottom-color: #5A4500;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .inspector-header {
-    font-size: 20px;
+    font-size: 14px;
     -unity-font-style: bold;
     color: #FFD700;
-    margin-bottom: 10px;
-    border-bottom-width: 1px;
-    border-bottom-color: #555;
+    -unity-text-align: middle-left;
+    flex-grow: 1;
+    letter-spacing: 1px;
 }
 
-/* SEKCJA PRACOWNIK”W */
-.worker-section {
-    margin-top: 10px;
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.shift-row {
-    flex-direction: row;
-    margin-bottom: 5px;
-    align-items: center;
-}
-
-.shift-label {
-    width: 60px;
-    color: #AAA;
-    font-size: 12px;
-}
-
-/* SLOT PRACOWNIKA (Kwadrat) */
-.worker-slot {
-    width: 25px;
-    height: 25px;
-    margin-right: 5px;
+.inspector-tier-badge {
+    font-size: 9px;
+    color: #AA8800;
+    -unity-font-style: bold;
+    margin-right: 6px;
     border-width: 1px;
-    border-color: #444;
-    border-radius: 3px;
-    background-color: white; /* Domyúlnie pusty */
+    border-color: #5A4500;
+    border-radius: 2px;
+    padding: 2px 4px;
+    background-color: rgba(30, 22, 5, 1);
 }
 
-/* KOLORY STAN”W (Uøyjemy ich w C#) */
-.slot-empty { background-color: #FFFFFF; }
-.slot-assigned { background-color: #00FF00; } /* Zielony */
-.slot-working { background-color: #000000; } /* Czarny */
-.slot-exhausted { background-color: #FF0000; } /* Czerwony */
-
-/* PRZYCISKI KONTROLI PRACOWNIK”W */
-.worker-controls {
-    flex-direction: row;
-    justify-content: space-around;
-    margin-top: 5px;
+.inspector-body {
+    padding: 12px 15px 15px 15px;
 }
 
-.worker-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 10px;
-    border-radius: 4px;
-}
-
-.btn-add { background-color: #4CAF50; color: white; }
-.btn-remove { background-color: #F44336; color: white; }
-
-/* SEKCJA ULEPSZE— */
-.upgrade-section {
-    margin-top: 15px;
-    border-top-width: 1px;
-    border-top-color: #555;
-    padding-top: 10px;
-}
-
-.upgrade-btn {
-    height: 40px;
-    margin-bottom: 5px;
-    background-color: #555;
-    color: white;
-    flex-direction: row;
-    align-items: center;
-}
-
-.upgrade-btn:hover { background-color: #777; }
-
-/* PRZYCISK ZAMKNI CIA */
+/* Przycisk zamkniƒôcia */
 .close-btn {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 25px;
-    height: 25px;
+    top: 8px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
+    background-color: #660000;
+    color: #FFB0B0;
+    border-radius: 1px;
+    border-width: 1px;
+    border-color: #990000;
+    font-size: 11px;
+    -unity-font-style: bold;
+    padding: 0px;
+}
+
+.close-btn:hover {
     background-color: #CC0000;
     color: white;
-    border-radius: 12px;
 }
 
-    /* NOWE: Kontener ca≥oúci (trzyma lewy i prawy panel) */
-.total-container {
-    position: absolute;
-    right: 20px;
-    top: 80px;
-    flex-direction: row; /* Uk≥ada dzieci w poziomie */
-    align-items: flex-start; /* WyrÛwnuje do gÛry */
+/* === SEPARATOR === */
+.section-divider {
+    height: 1px;
+    background-color: #2A2010;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-/* NOWE: Panel SzczegÛ≥Ûw (Lewy) */
-.details-panel {
-    width: 200px;
-    background-color: rgba(20, 20, 20, 0.95);
-    border-radius: 10px;
-    border-color: #AA0; /* Z≥ota ramka */
+/* === SEKCJA ‚Äì nag≈Ç√≥wek ka≈ºdej sekcji === */
+.section-header {
+    font-size: 10px;
+    -unity-font-style: bold;
+    color: #7A6020;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    -unity-text-align: middle-left;
+}
+
+/* ============================================================
+   BEACON ‚Äì ZARZƒÑDZANIE PALIWEM
+   ============================================================ */
+
+.beacon-section {
+    background-color: rgba(25, 12, 0, 0.9);
     border-width: 1px;
-    padding: 10px;
-    margin-right: 10px; /* OdstÍp od g≥Ûwnego okna */
-    min-height: 150px;
+    border-color: #8B4500;
+    border-radius: 2px;
+    padding: 12px;
+    margin-bottom: 10px;
 }
 
-/* ZMIANA: G≥Ûwne okno (Prawy) - usuwamy pozycjonowanie absolutne, bo teraz jest w kontenerze */
-.inspector-window {    
-    width: 350px;
-    background-color: rgba(30, 30, 30, 0.95);
-    border-radius: 10px;
-    border-color: #666;
-    border-width: 2px;
-    padding: 15px;
+.beacon-section-header {
+    font-size: 10px;
+    -unity-font-style: bold;
+    color: #FF8800;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    -unity-text-align: middle-center;
 }
 
-/* Kapsu≥ka mieszkaÒca */
-.res-capsule {
+/* Suwak wƒôgla */
+.beacon-slider-label {
+    color: #CCC;
+    font-size: 11px;
+    -unity-text-align: middle-center;
+    margin-bottom: 6px;
+}
+
+.beacon-slider-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    padding: 0px 10px;
+}
+
+.beacon-slider {
+    flex-grow: 1;
+    margin: 0px 8px;
+}
+
+.beacon-slider-value {
+    color: #FFD700;
+    font-size: 13px;
+    -unity-font-style: bold;
+    width: 30px;
+    -unity-text-align: middle-right;
+}
+
+.beacon-slider-min-label {
+    color: #666;
+    font-size: 10px;
     width: 14px;
-    height: 14px;
-    margin: 2px;
-    border-radius: 7px; 
+    -unity-text-align: middle-left;
+}
+
+/* Pasek paliwa */
+.beacon-fuel-bar-container {
+    margin: 0px 4px;
+}
+
+.beacon-fuel-bar-label {
+    color: #AA7700;
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+
+.beacon-fuel-bar-bg {
+    height: 28px;
+    background-color: #0D0700;
+    border-radius: 2px;
     border-width: 1px;
-    border-color: #222;
+    border-color: #5A3000;
+    overflow: hidden;
+    margin-bottom: 2px;
+}
+
+.beacon-fuel-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #CC5500;
+    border-radius: 2px;
+}
+
+.beacon-fuel-bar-fill-top {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 40%;
+    background-color: rgba(255, 200, 0, 0.25);
+    border-radius: 2px;
+}
+
+.beacon-fuel-bar-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -unity-text-align: middle-center;
+    color: white;
+    font-size: 12px;
+    -unity-font-style: bold;
+}
+
+.beacon-hint {
+    color: #554030;
+    font-size: 9px;
+    -unity-text-align: middle-center;
+    margin-top: 6px;
+    white-space: normal;
+}
+
+/* ============================================================
+   HOUSING ‚Äì STATYSTYKI MIESZKALNE
+   ============================================================ */
+
+.housing-section {
+    background-color: rgba(5, 20, 5, 0.85);
+    border-width: 1px;
+    border-color: #1A4A1A;
+    border-radius: 2px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.housing-section-header {
+    font-size: 10px;
+    -unity-font-style: bold;
+    color: #44CC44;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    -unity-text-align: middle-center;
+}
+
+/* Pasek narodzin */
+.birth-bar-label {
+    color: #888;
+    font-size: 10px;
+    margin-bottom: 3px;
+}
+
+.birth-bar-bg {
+    height: 16px;
+    background-color: #0A0F0A;
+    border-radius: 1px;
+    border-width: 2px;
+    border-color: #1A4A1A;
+    overflow: hidden;
+    margin-bottom: 2px;
+}
+
+.birth-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #2A7A2A;
+    border-radius: 1px;
+}
+
+.birth-bar-fill-shine {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 50%;
+    background-color: rgba(100, 255, 100, 0.15);
+}
+
+.birth-days-remaining {
+    color: #557755;
+    font-size: 9px;
+    -unity-text-align: middle-right;
+    margin-bottom: 8px;
+}
+
+/* Kapsu≈Çki mieszka≈Ñc√≥w (tarcze) */
+.residents-label {
+    color: #888;
+    font-size: 10px;
+    margin-bottom: 5px;
+}
+
+.resident-capsules-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.res-capsule {
+    width: 18px;
+    height: 22px;
+    margin: 2px;
+    border-radius: 9px 9px 3px 3px;
+    border-width: 1px;
+    border-color: #1A3A1A;
 }
 
 .res-capsule-occupied {
-    background-color: #4CAF50; /* Zielony - ktoú mieszka */
-    border-color: #8F8;
+    background-color: #2A7A2A;
+    border-color: #44CC44;
 }
 
 .res-capsule-empty {
-    background-color: #333; /* Szary - wolne miejsce */
+    background-color: #111A11;
+    border-color: #1A3A1A;
 }
 
-/* Pasek t≥a */
-.budget-bar-bg {
-    height: 14px;
-    background-color: #222;
-    border-radius: 3px;
-    margin-bottom: 4px;
+/* Tabela koszt√≥w */
+.housing-costs-table {
+    background-color: rgba(0, 0, 0, 0.35);
     border-width: 1px;
-    border-color: #444;
-    justify-content: center; /* Øeby tekst by≥ na úrodku */
+    border-color: #1A3A1A;
+    border-radius: 2px;
+    padding: 6px 8px;
 }
 
-/* Wype≥nienie paska */
+.housing-cost-row {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+
+.housing-cost-separator {
+    height: 1px;
+    background-color: #1A3A1A;
+    margin: 4px 0px;
+}
+
+.housing-cost-label {
+    color: #778877;
+    font-size: 10px;
+}
+
+.housing-cost-value {
+    color: #AACCAA;
+    font-size: 10px;
+    -unity-font-style: bold;
+}
+
+.housing-cost-total-label {
+    color: #CCEECC;
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
+.housing-cost-total-value {
+    color: #44FF44;
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
+.housing-status-row {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+.housing-growth-mod {
+    color: #FFFF44;
+    font-size: 10px;
+}
+
+.housing-status {
+    color: #44FF44;
+    font-size: 10px;
+    -unity-font-style: italic;
+}
+
+/* ============================================================
+   STATS (Produkcja / Utrzymanie)
+   ============================================================ */
+
+.stats-container {
+    margin-bottom: 8px;
+}
+
+.stat-production {
+    color: #88FF88;
+    font-size: 11px;
+    white-space: normal;
+    margin-bottom: 3px;
+}
+
+.stat-upkeep {
+    color: #FF8888;
+    font-size: 11px;
+    white-space: normal;
+}
+
+/* ============================================================
+   BUDGET ‚Äì ZAPAS OPERACYJNY
+   ============================================================ */
+
+.budget-section {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-width: 1px;
+    border-color: #2A2010;
+    border-radius: 2px;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.budget-bar-bg {
+    height: 16px;
+    background-color: #0A0A08;
+    border-radius: 2px;
+    border-width: 1px;
+    border-color: #333220;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
 .budget-bar-fill {
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
-    background-color: #FFD700; /* Z≥oty domyúlnie, moøna zmieniaÊ kodem */
+    background-color: #AA8800;
     border-radius: 2px;
 }
 
-/* Tekst na pasku (np. "15 / 60 Gold") */
+.budget-bar-fill-high { background-color: #4A9A4A; }
+.budget-bar-fill-mid  { background-color: #9A7A20; }
+.budget-bar-fill-low  { background-color: #8A2020; }
+
 .budget-bar-text {
     position: absolute;
     width: 100%;
+    height: 100%;
     -unity-text-align: middle-center;
     color: white;
     font-size: 9px;
     -unity-font-style: bold;
-    text-shadow: 1px 1px 0px black;
+}
+
+/* ============================================================
+   COMBAT STATS ‚Äì WIE≈ªE
+   ============================================================ */
+
+.combat-section {
+    background-color: rgba(15, 5, 5, 0.85);
+    border-width: 1px;
+    border-color: #4A1010;
+    border-radius: 2px;
+    padding: 10px 8px;
+    margin-bottom: 10px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.combat-stat-block {
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.combat-stat-value-damage { color: #FF4444; font-size: 8px; -unity-font-style: bold; -unity-text-align: middle-center; }
+.combat-stat-value-range  { color: #44FFFF; font-size: 8px; -unity-font-style: bold; -unity-text-align: middle-center; }
+.combat-stat-value-rate   { color: #FFFF44; font-size: 8px; -unity-font-style: bold; -unity-text-align: middle-center; }
+
+.combat-stat-label {
+    color: #665555;
+    font-size: 8px;
+    letter-spacing: 1px;
+    -unity-text-align: middle-center;
+}
+
+.combat-stat-divider {
+    width: 1px;
+    height: 30px;
+    background-color: #2A1010;
+    margin: 0px 6px;
+}
+
+/* ============================================================
+   WORKER SECTION ‚Äì PRACOWNICY
+   ============================================================ */
+
+.worker-section {
+    background-color: rgba(8, 8, 15, 0.85);
+    border-width: 1px;
+    border-color: #1A1A3A;
+    border-radius: 2px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Wiersz zmiany */
+.shift-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.shift-label {
+    width: 68px;
+    color: #445;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.shift-slots-container {
+    flex-direction: row;
+}
+
+/* Slot pracownika ‚Äì romb (obr√≥cony kwadrat) */
+.worker-slot {
+    width: 22px;
+    height: 22px;
+    margin-right: 4px;
+    border-width: 1px;
+    border-color: #222244;
+    border-radius: 0px;
+    rotate: 45deg;
+    background-color: #111122;
+}
+
+.slot-empty    { background-color: #111122; border-color: #222244; }
+.slot-assigned { background-color: #1A3A1A; border-color: #44AA44; }
+.slot-working  { background-color: #0A0A2A; border-color: #4444AA; }
+.slot-exhausted{ background-color: #2A0A0A; border-color: #AA2222; }
+
+/* Kontrolki ras */
+.worker-controls {
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    margin-top: 10px;
+    border-top-width: 1px;
+    border-top-color: #1A1A3A;
+    padding-top: 10px;
+}
+
+/* Kafelek rasy */
+.race-tile {
+    align-items: center;
+    justify-content: center;
+    width: 82px;
+    margin: 0px 4px;
+    background-color: rgba(0,0,0,0.4);
+    border-radius: 2px;
+    border-width: 1px;
+    padding: 8px 4px;
+}
+
+.race-tile-human  { border-color: #1A3A6A; }
+.race-tile-elf    { border-color: #1A4A1A; }
+.race-tile-dwarf  { border-color: #4A2A0A; }
+
+.race-tile-label-human { color: #4488CC; font-size: 10px; -unity-font-style: bold; margin-bottom: 4px; -unity-text-align: middle-center; }
+.race-tile-label-elf   { color: #44AA44; font-size: 10px; -unity-font-style: bold; margin-bottom: 4px; -unity-text-align: middle-center; }
+.race-tile-label-dwarf { color: #CC8844; font-size: 10px; -unity-font-style: bold; margin-bottom: 4px; -unity-text-align: middle-center; }
+
+.race-btn-row {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.worker-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    -unity-font-style: bold;
+    border-radius: 1px;
+    padding: 0px;
+}
+
+.btn-add    { background-color: #1A4A1A; color: #88FF88; border-color: #2A6A2A; border-width: 1px; }
+.btn-remove { background-color: #4A1A1A; color: #FF8888; border-color: #6A2A2A; border-width: 1px; }
+
+.btn-add:hover    { background-color: #2A6A2A; }
+.btn-remove:hover { background-color: #6A2A2A; }
+
+.worker-counts {
+    color: #334;
+    font-size: 10px;
+    margin-top: 8px;
+    -unity-text-align: middle-center;
+    letter-spacing: 2px;
+}
+
+/* ============================================================
+   UPGRADE SECTION ‚Äì ULEPSZENIA (Karty z lewym paskiem)
+   ============================================================ */
+
+.upgrade-section {
+    border-top-width: 1px;
+    border-top-color: #2A2010;
+    padding-top: 10px;
+}
+
+/* Karta ulepszenia */
+.upgrade-card {
+    flex-direction: row;
+    margin-bottom: 5px;
+    background-color: rgba(15, 12, 5, 0.9);
+    border-width: 1px;
+    border-color: #2A2010;
+    border-radius: 1px;
+    height: 44px;
+    overflow: hidden;
+}
+
+.upgrade-card:hover {
+    background-color: rgba(30, 24, 8, 0.95);
+    border-color: #5A4520;
+}
+
+/* Lewy pasek koloru (tier) */
+.upgrade-card-stripe {
+    width: 4px;
+    margin-right: 8px;
+}
+
+.upgrade-stripe-1 { background-color: #555555; } /* Tier 1 ‚Äì szary   */
+.upgrade-stripe-2 { background-color: #AA8800; } /* Tier 2 ‚Äì z≈Çoty   */
+.upgrade-stripe-3 { background-color: #6A00AA; } /* Tier 3 ‚Äì fiolet  */
+
+.upgrade-card-content {
+    flex-grow: 1;
+    justify-content: center;
+    padding-right: 8px;
+}
+
+.upgrade-card-name {
+    color: #DDC880;
+    font-size: 12px;
+    -unity-font-style: bold;
+}
+
+.upgrade-card-hint {
+    color: #665540;
+    font-size: 9px;
+}
+
+.upgrade-card-cost {
+    justify-content: center;
+    align-items: flex-end;
+    padding-right: 8px;
+    min-width: 60px;
+}
+
+.upgrade-cost-value {
+    color: #FF8888;
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
+/* Panel szczeg√≥≈Ç√≥w ulepszenia (lewy panel) */
+.details-panel {
+    width: 210px;
+    background-color: rgba(10, 8, 3, 0.98);
+    border-radius: 1px;
+    border-color: #8B6914;
+    border-width: 1px;
+    border-top-width: 3px;
+    border-top-color: #FFD700;
+    padding: 12px;
+    margin-right: 8px;
+    min-height: 160px;
+}
+
+.det-title {
+    color: #FFD700;
+    -unity-font-style: bold;
+    font-size: 13px;
+    margin-bottom: 6px;
+    border-bottom-width: 1px;
+    border-bottom-color: #2A2010;
+    padding-bottom: 4px;
+}
+
+.det-desc {
+    color: #998860;
+    font-size: 10px;
+    white-space: normal;
+    margin-bottom: 8px;
+}
+
+.det-effects {
+    color: #88CC88;
+    font-size: 10px;
+    margin-bottom: 4px;
+    white-space: normal;
+}
+
+.det-cost {
+    color: #FF8888;
+    font-size: 10px;
+    -unity-font-style: bold;
+    margin-bottom: 10px;
+}
+
+.det-btn-row {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: auto;
+}
+
+.btn-confirm-buy {
+    background-color: #1A5A1A;
+    color: #88FF88;
+    border-color: #2A7A2A;
+    border-width: 1px;
+    flex-grow: 1;
+    margin-right: 4px;
+    font-size: 11px;
+    -unity-font-style: bold;
+    height: 32px;
+    border-radius: 1px;
+}
+
+.btn-confirm-buy:hover { background-color: #2A7A2A; }
+
+.btn-cancel-buy {
+    background-color: #5A1A1A;
+    color: #FF8888;
+    border-color: #7A2A2A;
+    border-width: 1px;
+    flex-grow: 1;
+    font-size: 11px;
+    height: 32px;
+    border-radius: 1px;
+}
+
+.btn-cancel-buy:hover { background-color: #7A2A2A; }
+
+/* ============================================================
+   PRZYCISK ZBURZ
+   ============================================================ */
+
+.btn-destroy {
+    background-color: rgba(60, 0, 0, 0.8);
+    color: #CC4444;
+    border-width: 1px;
+    border-color: #440000;
+    border-radius: 1px;
+    margin-top: 12px;
+    height: 32px;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.btn-destroy:hover {
+    background-color: rgba(100, 0, 0, 0.9);
+    color: #FF6666;
 }

@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    [Header("Prêdkoœci")]
+    [Header("Prï¿½dkoï¿½ci")]
     public float moveSpeed = 20f;
     public float zoomSpeed = 10f;
     public float smoothing = 5f;
-
+    //
     [Header("Granice (Ograniczenia)")]
     public float minHeight = 5f;
     public float maxHeight = 25f;
@@ -38,31 +38,31 @@ public class CameraController : MonoBehaviour
 
         // --- ZMIANA LOGIKI RUCHU ---
 
-        // 1. Pobieramy kierunek, w którym patrzy kamera
+        // 1. Pobieramy kierunek, w ktï¿½rym patrzy kamera
         Vector3 cameraForward = transform.forward;
         Vector3 cameraRight = transform.right;
 
-        // 2. "Sp³aszczamy" te wektory, ¿eby ignorowa³y pochylenie kamery w dó³ (oœ Y)
-        // Chcemy poruszaæ siê tylko po p³aszczyŸnie mapy (X i Z)
+        // 2. "Spï¿½aszczamy" te wektory, ï¿½eby ignorowaï¿½y pochylenie kamery w dï¿½ (oï¿½ Y)
+        // Chcemy poruszaï¿½ siï¿½ tylko po pï¿½aszczyï¿½nie mapy (X i Z)
         cameraForward.y = 0;
         cameraRight.y = 0;
 
-        // 3. Normalizujemy, ¿eby mia³y d³ugoœæ 1 (po sp³aszczeniu mog³a siê zmieniæ)
+        // 3. Normalizujemy, ï¿½eby miaï¿½y dï¿½ugoï¿½ï¿½ 1 (po spï¿½aszczeniu mogï¿½a siï¿½ zmieniï¿½)
         cameraForward.Normalize();
         cameraRight.Normalize();
 
         // 4. Tworzymy wektor ruchu relatywny do kamery
-        // W * PrzódKamery + D * PrawoKamery
+        // W * Przï¿½dKamery + D * PrawoKamery
         Vector3 direction = (cameraForward * zInput + cameraRight * xInput).normalized;
         // ---------------------------
 
         if (direction.magnitude >= 0.1f)
         {
-            // U¿ywamy unscaledDeltaTime dla p³ynnoœci przy zmianie prêdkoœci gry
+            // Uï¿½ywamy unscaledDeltaTime dla pï¿½ynnoï¿½ci przy zmianie prï¿½dkoï¿½ci gry
             targetPosition += direction * moveSpeed * Time.unscaledDeltaTime;
         }
 
-        // Obs³uga wysokoœci (Zoom)
+        // Obsï¿½uga wysokoï¿½ci (Zoom)
         float heightInput = 0f;
         if (Input.GetKey(KeyCode.Q)) heightInput = -1f;
         if (Input.GetKey(KeyCode.E)) heightInput = 1f;
@@ -87,13 +87,13 @@ public class CameraController : MonoBehaviour
     {
         targetPosition = new Vector3(worldPoint.x, targetPosition.y, worldPoint.z);
 
-        // Obliczamy offset Z, ¿eby zachowaæ kamerê w odpowiedniej odleg³oœci od punktu
-        // bior¹c pod uwagê jej aktualny k¹t nachylenia (Pitch/X-Rotation)
+        // Obliczamy offset Z, ï¿½eby zachowaï¿½ kamerï¿½ w odpowiedniej odlegï¿½oï¿½ci od punktu
+        // biorï¿½c pod uwagï¿½ jej aktualny kï¿½t nachylenia (Pitch/X-Rotation)
         float currentAngleX = transform.eulerAngles.x;
 
-        // Matematyka: tan(k¹t) = przeciwprostok¹tna (Y) / przyprostok¹tna (Z)
-        // Zatem: Z = Y / tan(k¹t)
-        // Uwaga: Jeœli k¹t jest bliski 90 (patrzy pionowo w dó³), tan d¹¿y do nieskoñczonoœci, co jest OK (offset Z bliski 0)
+        // Matematyka: tan(kï¿½t) = przeciwprostokï¿½tna (Y) / przyprostokï¿½tna (Z)
+        // Zatem: Z = Y / tan(kï¿½t)
+        // Uwaga: Jeï¿½li kï¿½t jest bliski 90 (patrzy pionowo w dï¿½), tan dï¿½ï¿½y do nieskoï¿½czonoï¿½ci, co jest OK (offset Z bliski 0)
 
         if (currentAngleX > 5f && currentAngleX < 89f)
         {
@@ -101,7 +101,7 @@ public class CameraController : MonoBehaviour
             targetPosition.z -= zOffset;
         }
 
-        // Ponowne na³o¿enie limitów
+        // Ponowne naï¿½oï¿½enie limitï¿½w
         targetPosition.x = Mathf.Clamp(targetPosition.x, -mapLimit.x, mapLimit.x);
         targetPosition.z = Mathf.Clamp(targetPosition.z, -mapLimit.y, mapLimit.y);
     }

@@ -10,7 +10,7 @@ public class BuildingCitizenUI : MonoBehaviour
     public GameObject shiftPrefab;
     public GameObject workerPrefab;
 
-    // Lista przechowuj¹ca aktywne sloty UI
+    // Lista przechowujï¿½ca aktywne sloty UI/
     private List<WorkerSlotUI> allSlots = new List<WorkerSlotUI>();
 
     private void Awake()
@@ -20,10 +20,10 @@ public class BuildingCitizenUI : MonoBehaviour
 
     public void Setup(int shiftNumber, int workersPerShift)
     {
-        // 1. WA¯NE: Czyœcimy listê referencji, bo stare obiekty zaraz zostan¹ zniszczone
+        // 1. WAï¿½NE: Czyï¿½cimy listï¿½ referencji, bo stare obiekty zaraz zostanï¿½ zniszczone
         allSlots.Clear();
 
-        // 2. Czyœcimy wizualnie stare obiekty z panelu
+        // 2. Czyï¿½cimy wizualnie stare obiekty z panelu
         foreach (Transform child in shiftPanel.transform)
         {
             Destroy(child.gameObject);
@@ -34,12 +34,12 @@ public class BuildingCitizenUI : MonoBehaviour
         {
             GameObject shift = Instantiate(shiftPrefab, shiftPanel.transform);
 
-            // Zak³adamy, ¿e prefab zmiany ma kontener na sloty
-            // Jeœli nie ma dziecka o tej nazwie, u¿ywamy samego obiektu zmiany
+            // Zakï¿½adamy, ï¿½e prefab zmiany ma kontener na sloty
+            // Jeï¿½li nie ma dziecka o tej nazwie, uï¿½ywamy samego obiektu zmiany
             Transform workerContainer = shift.transform.Find("Background for slots");
             if (workerContainer == null) workerContainer = shift.transform;
 
-            // Czyœcimy œmieci z prefabu (jeœli s¹)
+            // Czyï¿½cimy ï¿½mieci z prefabu (jeï¿½li sï¿½)
             foreach (Transform child in workerContainer)
             {
                 Destroy(child.gameObject);
@@ -53,7 +53,7 @@ public class BuildingCitizenUI : MonoBehaviour
                 if (workerUI != null)
                 {
                     allSlots.Add(workerUI);
-                    // Domyœlnie ustawiamy na pusty (bia³y), Refresh zaraz to nadpisze danymi
+                    // Domyï¿½lnie ustawiamy na pusty (biaï¿½y), Refresh zaraz to nadpisze danymi
                     workerUI.UpdateSlot(null);
                 }
             }
@@ -66,10 +66,10 @@ public class BuildingCitizenUI : MonoBehaviour
 
         List<Citizen> workers = building.GetAssignedCitizens();
 
-        // Pêtla po wszystkich slotach UI
+        // Pï¿½tla po wszystkich slotach UI
         for (int i = 0; i < allSlots.Count; i++)
         {
-            // Dodatkowe zabezpieczenie: jeœli slot zosta³ zniszczony, pomiñ go
+            // Dodatkowe zabezpieczenie: jeï¿½li slot zostaï¿½ zniszczony, pomiï¿½ go
             if (allSlots[i] == null) continue;
 
             if (i < workers.Count)

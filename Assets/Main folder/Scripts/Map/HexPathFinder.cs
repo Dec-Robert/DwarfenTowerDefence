@@ -11,8 +11,8 @@ public class HexPathfinder
         this.chunkRadius = chunkRadius;
     }
 
-    // --- POPRAWIONY A* DLA CHUNKÓW (Global) ---
-    // Teraz przyjmuje listê dostêpnych chunków (validChunks) i mapê kosztów (costs)
+    // --- POPRAWIONY A* DLA CHUNKÃ“W (Global) ---
+    // Teraz przyjmuje listï¿½ dostï¿½pnych chunkï¿½w (validChunks) i mapï¿½ kosztï¿½w (costs)
     public List<Vector2Int> FindChunkPath(
         Vector2Int startChunk,
         Vector2Int goalChunk,
@@ -25,7 +25,7 @@ public class HexPathfinder
 
         while (openSet.Count > 0)
         {
-            // Wybieramy wêze³ o najni¿szym koszcie fScore (g + h)
+            // Wybieramy wï¿½zeï¿½ o najniï¿½szym koszcie fScore (g + h)
             Vector2Int current = openSet.OrderBy(x =>
                 (gScore.ContainsKey(x) ? gScore[x] : int.MaxValue) + HexGridMath.GetDistance(x, goalChunk)
             ).First();
@@ -39,10 +39,10 @@ public class HexPathfinder
                 // 1. POPRAWKA: Sprawdzamy, czy chunk faktycznie istnieje na mapie
                 if (!validChunks.Contains(neighbor)) continue;
 
-                // Blokada bazy (chyba ¿e to cel)
+                // Blokada bazy (chyba ï¿½e to cel)
                 if (neighbor == Vector2Int.zero && goalChunk != Vector2Int.zero) continue;
 
-                // 2. POPRAWKA: Dodajemy koszt chunku (¿eby wymusiæ zakrêcanie)
+                // 2. POPRAWKA: Dodajemy koszt chunku (ï¿½eby wymusiï¿½ zakrï¿½canie)
                 int moveCost = (chunkCosts != null && chunkCosts.ContainsKey(neighbor)) ? chunkCosts[neighbor] : 1;
 
                 int tentativeG = gScore[current] + moveCost;
@@ -55,10 +55,10 @@ public class HexPathfinder
                 }
             }
         }
-        return new List<Vector2Int>(); // Brak œcie¿ki
+        return new List<Vector2Int>(); // Brak ï¿½cieï¿½ki
     }
 
-    // --- A* DLA HEKSÓW (Local) ---
+    // --- A* DLA HEKSï¿½W (Local) ---
     public List<Vector2Int> FindLocalPath(Vector2Int start, Vector2Int goal, Dictionary<Vector2Int, int> costMap)
     {
         var openSet = new List<Vector2Int> { start };

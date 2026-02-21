@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     public int waveNumber { get; private set; }
 
     // ZDARZENIA 
-    // USUNIÊTO: OnGoldChanged (teraz nas³uchujemy ResourceManager.OnResourceChanged w UI)
+    // USUNIÄ™TO: OnGoldChanged (teraz nasï¿½uchujemy ResourceManager.OnResourceChanged w UI)
     public event Action<int> OnHealthChanged;
     public event Action OnGameOver;
     public event Action<gameStates> OnStateChanged;
@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
 
         // Inicjalizacja
         mainGateHP = startingHp;
-        // USUNIÊTO: gold = startingGold;
+        // USUNIï¿½TO: gold = startingGold;
 
         currentGameState = gameStates.PreparePhase;
         waveNumber = 1;
@@ -48,18 +48,18 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // Odœwie¿amy UI tylko dla zdrowia (surowce odœwie¿a ResourceManager w swoim Start)
+        // Odï¿½wieï¿½amy UI tylko dla zdrowia (surowce odï¿½wieï¿½a ResourceManager w swoim Start)
         OnHealthChanged?.Invoke(mainGateHP);
     }
 
-    // USUNIÊTO: Metodê ModifyGold(int amount)
+    // USUNIï¿½TO: Metodï¿½ ModifyGold(int amount)
 
     // Metoda do zmiany HP
     public void ModifyBaseHealth(int amount)
     {
         mainGateHP += amount;
 
-        Debug.Log($"¯ycie bazy zmienione o: {amount}. Aktualne: {mainGateHP}");
+        Debug.Log($"ï¿½ycie bazy zmienione o: {amount}. Aktualne: {mainGateHP}");
 
         OnHealthChanged?.Invoke(mainGateHP);
 
@@ -75,11 +75,11 @@ public class GameManager : MonoBehaviour
         Debug.Log("KONIEC GRY!");
         OnGameOver?.Invoke(); // To uruchomi ekran
 
-        // Opcjonalnie tutaj, ale GameOverController robi to lepiej (bo obs³uguje UI)
+        // Opcjonalnie tutaj, ale GameOverController robi to lepiej (bo obsï¿½uguje UI)
         // Time.timeScale = 0f; 
     }
 
-    // ZARZ¥DZANIE STANAMI
+    // ZARZï¿½DZANIE STANAMI
 
     public void StartWave()
     {

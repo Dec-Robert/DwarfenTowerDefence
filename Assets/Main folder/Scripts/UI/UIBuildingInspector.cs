@@ -6,10 +6,6 @@ using System.Text;
 /// Cienki koordynator inspektora budynku.
 /// Jedyna odpowiedzialność: wybrać właściwe panele dla danego typu budynku
 /// i przekazać im aktualny cel do odświeżenia.
-///
-/// Cała logika wizualna mieszka w dedykowanych panelach:
-///   BeaconInspectorPanel, HousingInspectorPanel, TowerInspectorPanel,
-///   WorkerInspectorPanel, UpgradeInspectorPanel, BudgetInspectorPanel.
 /// </summary>
 public class UIBuildingInspector : MonoBehaviour
 {
@@ -19,18 +15,18 @@ public class UIBuildingInspector : MonoBehaviour
     public UIDocument uiDocument;
 
     // -------------------------------------------------------------------------
-    // Elementy UI (pobierane w OnEnable)
+    // Elementy UI
     // -------------------------------------------------------------------------
 
     private VisualElement totalContainer;
     private VisualElement mainInspector;
     private VisualElement upgradeDetailsPanel;
 
-    private Label lblName;
+    private Label  lblName;
     private Button btnClose;
     private Button btnDestroy;
 
-    // Sekcje – widoczność przełączana przez koordynatora
+    // Sekcje
     private VisualElement workerSection;
     private VisualElement statsContainer;
     private VisualElement combatStatsContainer;
@@ -38,6 +34,7 @@ public class UIBuildingInspector : MonoBehaviour
     private VisualElement housingSection;
     private VisualElement upgradeSection;
     private VisualElement budgetSection;
+    private VisualElement expeditionCenterSection;   // ← nowe
 
     private Label lblProd;
     private Label lblUpkeep;
@@ -46,12 +43,13 @@ public class UIBuildingInspector : MonoBehaviour
     // Panele logiczne
     // -------------------------------------------------------------------------
 
-    private BeaconInspectorPanel  beaconPanel;
-    private HousingInspectorPanel housingPanel;
-    private TowerInspectorPanel   towerPanel;
-    private WorkerInspectorPanel  workerPanel;
-    private UpgradeInspectorPanel upgradePanel;
-    private BudgetInspectorPanel  budgetPanel;
+    private BeaconInspectorPanel           beaconPanel;
+    private HousingInspectorPanel          housingPanel;
+    private TowerInspectorPanel            towerPanel;
+    private WorkerInspectorPanel           workerPanel;
+    private UpgradeInspectorPanel          upgradePanel;
+    private BudgetInspectorPanel           budgetPanel;
+    private ExpeditionCenterInspectorPanel expeditionPanel;  // ← nowe
 
     // -------------------------------------------------------------------------
     // Stan
@@ -69,33 +67,29 @@ public class UIBuildingInspector : MonoBehaviour
     {
         var uiRoot = uiDocument.rootVisualElement;
 
-        // Kontenery
-        totalContainer       = uiRoot.Q<VisualElement>("TotalContainer");
-        mainInspector        = uiRoot.Q<VisualElement>("InspectorRoot");
-        upgradeDetailsPanel  = uiRoot.Q<VisualElement>("UpgradeDetailsPanel");
+        totalContainer      = uiRoot.Q<VisualElement>("ScreenOverlay");
+        mainInspector       = uiRoot.Q<VisualElement>("InspectorRoot");
+        upgradeDetailsPanel = uiRoot.Q<VisualElement>("UpgradeDetailsPanel");
 
-        // Główne elementy
         lblName    = mainInspector.Q<Label>("Lbl_Name");
         btnClose   = mainInspector.Q<Button>("Btn_Close");
         btnDestroy = mainInspector.Q<Button>("Btn_Destroy");
 
-        // Sekcje
-        workerSection        = mainInspector.Q<VisualElement>("WorkerSection");
-        statsContainer       = mainInspector.Q<VisualElement>("StatsContainer");
-        combatStatsContainer = mainInspector.Q<VisualElement>("CombatStatsContainer");
-        beaconControlSection = mainInspector.Q<VisualElement>("BeaconControlSection");
-        housingSection       = mainInspector.Q<VisualElement>("HousingSection");
-        upgradeSection       = mainInspector.Q<VisualElement>("UpgradeSection");
-        budgetSection        = mainInspector.Q<VisualElement>("BudgetSection");
+        workerSection           = mainInspector.Q<VisualElement>("WorkerSection");
+        statsContainer          = mainInspector.Q<VisualElement>("StatsContainer");
+        combatStatsContainer    = mainInspector.Q<VisualElement>("CombatStatsContainer");
+        beaconControlSection    = mainInspector.Q<VisualElement>("BeaconControlSection");
+        housingSection          = mainInspector.Q<VisualElement>("HousingSection");
+        upgradeSection          = mainInspector.Q<VisualElement>("UpgradeSection");
+        budgetSection           = mainInspector.Q<VisualElement>("BudgetSection");
+        expeditionCenterSection = mainInspector.Q<VisualElement>("ExpeditionCenterSection");  // ← nowe
 
         lblProd   = mainInspector.Q<Label>("Lbl_Production");
         lblUpkeep = mainInspector.Q<Label>("Lbl_Upkeep");
 
-        // Przyciski globalne
         btnClose.clicked   += Hide;
         btnDestroy.clicked += OnDestroyClicked;
 
-        // Tworzenie paneli
         CreatePanels(mainInspector);
     }
 
@@ -106,7 +100,7 @@ public class UIBuildingInspector : MonoBehaviour
     }
 
     // =========================================================================
-    // Tworzenie paneli (okablowanie UI → logika)
+    // Tworzenie paneli
     // =========================================================================
 
     private void CreatePanels(VisualElement mi)
@@ -157,6 +151,9 @@ public class UIBuildingInspector : MonoBehaviour
         budgetPanel = new BudgetInspectorPanel(
             budgetSection,
             mi.Q<VisualElement>("BudgetContainer"));
+
+        // ── Nowy panel Centrum Ekspedycyjnego ─────────────────────────────────
+        expeditionPanel = new ExpeditionCenterInspectorPanel(expeditionCenterSection);
     }
 
     // =========================================================================
@@ -188,18 +185,33 @@ public class UIBuildingInspector : MonoBehaviour
     }
 
     // =========================================================================
-    // Routing – jedyne miejsce gdzie sprawdzamy typ budynku
+    // Routing
     // =========================================================================
 
     private void RouteToPanel()
     {
         switch (currentTarget)
         {
+            // ── Centrum Ekspedycyjne ─────────────────────────────────────────
+            case ExpeditionCenterEntity expCenter:
+                expeditionCenterSection.style.display = DisplayStyle.Flex;
+                expeditionPanel.Refresh(expCenter);
+
+                // Ulepszenia (jeśli zdefiniowane w BuildingData)
+                if (expCenter.data.tier1Upgrades != null && expCenter.data.tier1Upgrades.Count > 0)
+                {
+                    upgradeSection.style.display = DisplayStyle.Flex;
+                    upgradePanel.Refresh(expCenter);
+                }
+                break;
+
+            // ── Latarnia ─────────────────────────────────────────────────────
             case BeaconEntity beacon:
                 beaconPanel.Show();
                 beaconPanel.Refresh(beacon);
                 break;
 
+            // ── Dom mieszkalny ───────────────────────────────────────────────
             case HousingEntity house:
                 housingPanel.Show();
                 housingPanel.Refresh(house);
@@ -207,14 +219,16 @@ public class UIBuildingInspector : MonoBehaviour
                 upgradePanel.Refresh(house);
                 break;
 
+            // ── Wieża ─────────────────────────────────────────────────────────
             case TowerEntity tower:
-                workerSection.style.display = DisplayStyle.Flex;
-                workerPanel.Refresh(tower);
+                workerSection.style.display      = DisplayStyle.Flex;
                 combatStatsContainer.style.display = DisplayStyle.Flex;
+                workerPanel.Refresh(tower);
                 towerPanel.Refresh(tower);
                 break;
 
-            default: // Budynek ekonomiczny
+            // ── Budynek ekonomiczny (domyślny) ────────────────────────────────
+            default:
                 workerSection.style.display  = DisplayStyle.Flex;
                 statsContainer.style.display = DisplayStyle.Flex;
                 upgradeSection.style.display = DisplayStyle.Flex;
@@ -224,8 +238,8 @@ public class UIBuildingInspector : MonoBehaviour
                 upgradePanel.Refresh(currentTarget);
                 budgetPanel.Refresh(currentTarget);
 
-                if (lblProd   != null) lblProd.text   = "Produkcja (zmiana): "   + FormatResourcesPerShift(currentTarget.GetCurrentProduction());
-                if (lblUpkeep != null) lblUpkeep.text = "Utrzymanie (zmiana): "  + FormatResourcesPerShift(currentTarget.GetCurrentUpkeep());
+                if (lblProd   != null) lblProd.text   = "Produkcja (zmiana): "  + FormatResourcesPerShift(currentTarget.GetCurrentProduction());
+                if (lblUpkeep != null) lblUpkeep.text = "Utrzymanie (zmiana): " + FormatResourcesPerShift(currentTarget.GetCurrentUpkeep());
                 break;
         }
     }
@@ -236,7 +250,10 @@ public class UIBuildingInspector : MonoBehaviour
 
     private void RefreshHeader()
     {
-        bool isSpecial = currentTarget is TowerEntity || currentTarget is BeaconEntity;
+        bool isSpecial = currentTarget is TowerEntity
+                      || currentTarget is BeaconEntity
+                      || currentTarget is ExpeditionCenterEntity;
+
         string tierInfo = isSpecial ? "" : $"(Tier {currentTarget.currentTier + 1})";
         if (lblName != null) lblName.text = $"{currentTarget.data.buildingName} {tierInfo}";
 
@@ -250,15 +267,16 @@ public class UIBuildingInspector : MonoBehaviour
 
     private void HideAllSections()
     {
-        void Hide(VisualElement el) { if (el != null) el.style.display = DisplayStyle.None; }
+        void HideEl(VisualElement el) { if (el != null) el.style.display = DisplayStyle.None; }
 
-        Hide(statsContainer);
-        Hide(combatStatsContainer);
-        Hide(upgradeSection);
-        Hide(beaconControlSection);
-        Hide(housingSection);
-        Hide(workerSection);
-        Hide(budgetSection);
+        HideEl(statsContainer);
+        HideEl(combatStatsContainer);
+        HideEl(upgradeSection);
+        HideEl(beaconControlSection);
+        HideEl(housingSection);
+        HideEl(workerSection);
+        HideEl(budgetSection);
+        HideEl(expeditionCenterSection);
     }
 
     private void OnDestroyClicked()

@@ -28,7 +28,7 @@ public class GameOverController : MonoBehaviour
 
         // Na start ukrywamy
         root.style.display = DisplayStyle.None;
-    }
+    }//
 
     private void Start()
     {
@@ -51,7 +51,7 @@ public class GameOverController : MonoBehaviour
         // 1. Zatrzymujemy czas
         Time.timeScale = 0f;
 
-        // 2. Pobieramy dane (Dzieñ)
+        // 2. Pobieramy dane (Dzieï¿½)
         int days = 0;
         if (TimeCycleManager.Instance != null)
         {
@@ -61,10 +61,10 @@ public class GameOverController : MonoBehaviour
         // 3. Ustawiamy tekst
         if (statsLabel != null)
         {
-            statsLabel.text = $"Twoja osada przetrwa³a {days} dni.\n\nLepsze jutro nigdy nie nadesz³o.";
+            statsLabel.text = $"Twoja osada przetrwaï¿½a {days} dni.\n\nLepsze jutro nigdy nie nadeszï¿½o.";
         }
 
-        // 4. Pokazujemy ekran (Pamiêtaj o Sort Order w Unity!)
+        // 4. Pokazujemy ekran (Pamiï¿½taj o Sort Order w Unity!)
         root.style.display = DisplayStyle.Flex;
 
         float earned = ResourceManager.Instance.GetResourceAmount(ResourceType.Artifacts);
@@ -81,13 +81,13 @@ public class GameOverController : MonoBehaviour
 
     void RestartGame()
     {
-        Time.timeScale = 1f; // Wa¿ne: Odblokuj czas przed reloadem!
+        Time.timeScale = 1f; // Waï¿½ne: Odblokuj czas przed reloadem!
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void GoToMenu()
     {
-        Time.timeScale = 1f; // Wa¿ne: Odblokuj czas!
+        Time.timeScale = 1f; // Waï¿½ne: Odblokuj czas!
         SceneManager.LoadScene(mainMenuSceneName);
     }
 }

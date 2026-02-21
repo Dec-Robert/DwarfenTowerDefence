@@ -20,7 +20,7 @@ public static class EconomyForecastSystem
 
             // 1. Domy (Housing) - Specyficzna logika
             if (building is HousingEntity house)
-            {
+            {//
                 // Produkcja (np. Z�oto od mieszka�c�w)
                 if (house.housingData.productionPerResident != null)
                 {

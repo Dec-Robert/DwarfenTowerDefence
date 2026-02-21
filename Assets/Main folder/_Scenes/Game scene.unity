@@ -768,9 +768,9 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -853,6 +853,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 369f426513641834ba565adcaee3b114, type: 2}
   - {fileID: 11400000, guid: 8047b4339a3a974419c111f42dd04632, type: 2}
   - {fileID: 11400000, guid: 2f35943f5da640b44968e098eec878f6, type: 2}
+  - {fileID: 11400000, guid: 029572c96a95626488e314d1a18f1f8c, type: 2}
+  - {fileID: 11400000, guid: 0c9c752673ac15c45ae68bf730811379, type: 2}
 --- !u!114 &548684869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1194,15 +1196,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapGenerator: {fileID: 1837610582}
   fogManager: {fileID: 1837610585}
+  waveConfig: {fileID: 11400000, guid: 8f80e59d19b6b7f409fe05da66a1c109, type: 2}
   availableEnemies:
   - {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
   - {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
   - {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
   predefinedWaves:
   - {fileID: 11400000, guid: 0f7f43213ef54a34f88709c518929875, type: 2}
-  baseBudget: 10
-  budgetPerDay: 5
-  budgetExponent: 1.1
   nightSpawnInterval: 1
   daySpawnInterval: 10
   daySpawnChance: 30
@@ -1492,6 +1492,7 @@ MonoBehaviour:
     hillChance: 0
     sinkholeChance: 40
     fertileSoilChance: 0
+  specialChunkTypes: []
   baseRoadEndLocal: {x: 4, y: -2}
   internalSettings:
     highwayWeight: 20
@@ -1559,10 +1560,13 @@ MonoBehaviour:
   expansionManager: {fileID: 1837610586}
   mapVisualizer: {fileID: 1837610584}
   defaultFogMaterial: {fileID: 2100000, guid: ecf964584f2921a42a52d9d4bc81e15f, type: 2}
-  ableToBuyFogMaterial: {fileID: 2100000, guid: 69087ab46eb2d144499180d014dba817, type: 2}
+  unlockedFogMaterial: {fileID: 2100000, guid: bd1d809bd81bd1549a9811c50a52b701, type: 2}
+  militaryFogMaterial: {fileID: 2100000, guid: d9b8120594697c24e968d0dd2918c202, type: 2}
   fogPrefab: {fileID: 3870602923655417153, guid: 3ace50b7f41b02447ba50c08e65fdf93, type: 3}
   fogHeightOffset: 0
   fogHeightScale: 1
+  militaryFogHeightScale: 0.08
+  militaryFogYOffset: 0
   showDebugLogs: 1
   debugClickToReveal: 0
 --- !u!114 &1837610586
@@ -1578,8 +1582,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fogManager: {fileID: 1837610585}
-  uiExpansionMenu: {fileID: 548684870}
   mapGenerator: {fileID: 1837610582}
+  uiExpansionMenu: {fileID: 548684870}
+  costConfig: {fileID: 11400000, guid: 24ff8894efa87934d9a2249b4c485395, type: 2}
   activeMissions: []
   playerExpeditionCenter: []
 --- !u!1 &1871804221
@@ -1627,6 +1632,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapGenerator: {fileID: 1837610582}
+  expansionManager: {fileID: 0}
   uiDocument: {fileID: 97194934}
   hexLayer:
     serializedVersion: 2
@@ -1634,7 +1640,6 @@ MonoBehaviour:
   ghostValidMat: {fileID: 2100000, guid: bad59c9ef0df2c74eb377dd8d0be1c78, type: 2}
   ghostInvalidMat: {fileID: 2100000, guid: 647248bedb5017b4a86b83de3d46a10b, type: 2}
   rangeVisualizerPrefab: {fileID: 66276893048416449, guid: 46d23b10a158dfb4fb030960fb034997, type: 3}
-  selectedBuilding: {fileID: 0}
   resourceHighlightMat: {fileID: 2100000, guid: 26da7d67a911ba04ea40392c2719aad7, type: 2}
 --- !u!1 &1998564235
 GameObject:

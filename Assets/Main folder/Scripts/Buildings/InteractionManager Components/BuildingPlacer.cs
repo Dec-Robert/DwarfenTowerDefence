@@ -18,16 +18,19 @@ public class BuildingPlacer
     // API Publiczne
     // =========================================================================
 
-    /// <summary>Sprawdza czy można postawić budynek na danym heksie.</summary>
+    /// <summary>Sprawdza czy można postawić budynek na danym heksie (teren + stan chunku).</summary>
     public bool IsPlacementValid(HexCell cell, BuildingData data)
     {
         if (!mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return false;
 
         HexCellData cellData = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
 
-        if (cellData.isPath)                                          return false;
-        if (!data.allowedTerrain.Contains(cellData.feature))         return false;
-        if (cell.GetComponentInChildren<BuildingEntity>() != null)   return false;
+        if (cellData.isPath)                                        return false;
+        if (!data.allowedTerrain.Contains(cellData.feature))       return false;
+        if (cell.GetComponentInChildren<BuildingEntity>() != null) return false;
+
+        // Walidacja stanu chunku
+        if (!IsChunkStateValidForBuilding(cell.chunkCoord, data)) return false;
 
         return true;
     }
@@ -40,6 +43,21 @@ public class BuildingPlacer
     {
         if (!IsPlacementValid(cell, data)) return false;
 
+        // ── Wymaganie: wolny elf ───────────────────────────────────────────────
+        if (data.requiresFreeElf)
+        {
+            bool hasFreeElf = CitizenManager.Instance != null &&
+                              CitizenManager.Instance.citizens.Exists(
+                                  c => c.race == Race.Elves && c.workState == WorkState.Idle);
+
+            if (!hasFreeElf)
+            {
+                Debug.Log("<color=orange>Brak wolnego elfa! Centrum Ekspedycyjne wymaga przypisanego elfa do budowy.</color>");
+                return false;
+            }
+        }
+
+        // ── Koszt surowców ─────────────────────────────────────────────────────
         var costs = data.GetCostDictionary();
         if (!ResourceManager.Instance.SpendResources(costs))
         {
@@ -52,24 +70,65 @@ public class BuildingPlacer
     }
 
     // =========================================================================
+    // Walidacja stanu chunku
+    // =========================================================================
+
+    private bool IsChunkStateValidForBuilding(Vector2Int chunkCoord, BuildingData data)
+    {
+        var expansion = MapExpansionManager.Instance;
+
+        if (expansion == null)
+        {
+            // Brak managera ekspansji – tryb edytora lub debug, pozwól budować
+            return true;
+        }
+
+        if (!expansion.activeChunks.TryGetValue(chunkCoord, out var chunkData))
+        {
+            Debug.Log("<color=orange>Ten teren nie jest jeszcze w zasięgu ekspansji!</color>");
+            return false;
+        }
+
+        switch (chunkData.state)
+        {
+            case ChunkState.Locked:
+            case ChunkState.Unlocked:
+            case ChunkState.Scouting:
+                Debug.Log("<color=orange>Ten teren nie jest jeszcze odkryty!</color>");
+                return false;
+
+            case ChunkState.MilitaryOnly:
+                // Dozwolone tylko wieże (Defense) i posterunek
+                if (data.type != BuildingType.Defense && !data.isOutpost)
+                {
+                    Debug.Log("<color=orange>Na tym terenie można budować tylko wieże obronne i Posterunek!</color>");
+                    return false;
+                }
+                return true;
+
+            case ChunkState.FullyUnlocked:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    // =========================================================================
     // Prywatne
     // =========================================================================
 
     private void PerformBuild(HexCell cell, BuildingData data)
     {
-        // Usuń dekoracje terenu z heksa
         foreach (Transform child in cell.transform)
             Object.Destroy(child.gameObject);
 
-        // Postaw budynek
         GameObject newObj = Object.Instantiate(data.prefab, cell.transform.position, Quaternion.identity);
         newObj.transform.parent = cell.transform;
 
-        // Inicjalizacja encji
         var entity = newObj.GetComponent<BuildingEntity>() ?? newObj.AddComponent<BuildingEntity>();
         entity.Initialize(data);
 
-        // Konfiguracja kontrolera wieży jeśli potrzeba
         if (data is TowerData towerData)
         {
             var controller = newObj.GetComponent<TowerController>();
@@ -83,15 +142,12 @@ public class BuildingPlacer
     {
         if (HexMapVisualizer.Instance == null) return;
 
-        var neighbors = HexGridMath.GetNeighbors(centerCell.localCoord);
-
-        foreach (var nCoord in neighbors)
+        foreach (var nCoord in HexGridMath.GetNeighbors(centerCell.localCoord))
         {
             HexCell neighborHex = HexMapVisualizer.Instance.GetHexCell(centerCell.chunkCoord, nCoord);
             if (neighborHex == null) continue;
 
-            var neighborBuilding = neighborHex.GetComponentInChildren<BuildingEntity>();
-            neighborBuilding?.ForceRescan();
+            neighborHex.GetComponentInChildren<BuildingEntity>()?.ForceRescan();
         }
     }
 }

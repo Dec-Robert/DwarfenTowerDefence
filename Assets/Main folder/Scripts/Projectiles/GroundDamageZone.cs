@@ -8,15 +8,15 @@ public class GroundDamageZone : MonoBehaviour
     [SerializeField] private DamageType damageType;
     [SerializeField] private List<TowerEffectSO> effects;
 
-    [SerializeField] private float armourPiercing; // Wartoœæ od 0 do 100, reprezentuj¹ca procent obra¿eñ ignoruj¹cych pancerz
-    [SerializeField] private float magicPiercing;  // Wartoœæ od 0 do 100, reprezentuj¹ca procent obra¿eñ ignoruj¹cych odpornoœæ magiczn¹
+    [SerializeField] private float armourPiercing; // WartoÅ›Ä‡ od 0 do 100, reprezentujï¿½ca procent obraï¿½eï¿½ ignorujï¿½cych pancerz
+    [SerializeField] private float magicPiercing;  // Wartoï¿½ï¿½ od 0 do 100, reprezentujï¿½ca procent obraï¿½eï¿½ ignorujï¿½cych odpornoï¿½ï¿½ magicznï¿½
     [SerializeField] private float criticalMultiplier;
     [SerializeField] private float criticalChance;
 
     [SerializeField] private float tickInterval;
     [SerializeField] private float duration;
 
-    // Lista wrogów aktualnie stoj¹cych w strefie
+    // Lista wrogï¿½w aktualnie stojï¿½cych w strefie
     private List<EnemyStats> enemiesInZone = new List<EnemyStats>();
     private float tickTimer = 0f;
 
@@ -38,7 +38,7 @@ public class GroundDamageZone : MonoBehaviour
 
     void Update()
     {
-        // Odliczanie do ticka (np. co 1 sekundê)
+        // Odliczanie do ticka (np. co 1 sekundï¿½)
         tickTimer += Time.deltaTime;
 
         if (tickTimer >= tickInterval)
@@ -50,16 +50,16 @@ public class GroundDamageZone : MonoBehaviour
 
     void ApplyDamageToAll()
     {
-        // Czyœcimy listê z "nulli" (wrogów, którzy zginêli w miêdzyczasie)
+        // Czyï¿½cimy listï¿½ z "nulli" (wrogï¿½w, ktï¿½rzy zginï¿½li w miï¿½dzyczasie)
         enemiesInZone.RemoveAll(x => x == null);
 
         foreach (var enemy in enemiesInZone)
         {
             bool isCritical = Random.value < criticalChance / 100f;
-            // Zadajemy obra¿enia
+            // Zadajemy obraï¿½enia
             enemy.TakeDamage(damage, damageType,armourPiercing,magicPiercing,isCritical,criticalMultiplier);
 
-            // Nak³adamy efekty (np. spowolnienie, podpalenie)
+            // Nakï¿½adamy efekty (np. spowolnienie, podpalenie)
             if (effects != null)
             {
                 foreach (var effect in effects) effect.ApplyEffect(enemy);
@@ -67,7 +67,7 @@ public class GroundDamageZone : MonoBehaviour
         }
     }
 
-    // --- DETEKCJA WROGÓW ---
+    // --- DETEKCJA WROGï¿½W ---
 
     private void OnTriggerEnter(Collider other)
     {

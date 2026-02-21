@@ -61,6 +61,7 @@ public class HousingEntity : BuildingEntity
             Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
             residents.Add(newC);
         }
+        Debug.Log($"[{name}] Zainicjalizowano {housingData.housingRace} dom z {residents.Count} mieszkańcami (powinno być {housingData.initialResidents})");
 
         // Subskrybujemy własny handler poranny (base.Initialize już podpiął OnHourTick i OnDayChanged,
         // ale HandleHourlyProduction jest nadpisana jako pusta – patrz niżej)

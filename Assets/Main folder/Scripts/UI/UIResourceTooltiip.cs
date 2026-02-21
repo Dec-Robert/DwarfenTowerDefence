@@ -11,7 +11,7 @@ public class UIResourceTooltip : MonoBehaviour
     private VisualElement topBar;
     private VisualElement tooltip;
 
-    // Kontenery trybów
+    // Kontenery trybï¿½w
     private VisualElement modeStandard;
     private VisualElement modePopulation;
 
@@ -35,7 +35,7 @@ public class UIResourceTooltip : MonoBehaviour
     };
 
     private void OnEnable()
-    {
+    {//
         if (uiDocument == null) return;
         root = uiDocument.rootVisualElement;
         topBar = root.Q<VisualElement>("TopBar");
@@ -61,12 +61,12 @@ public class UIResourceTooltip : MonoBehaviour
         pAssignedE = tooltip.Q<Label>("Pop_Assigned_E");
         pAssignedD = tooltip.Q<Label>("Pop_Assigned_D");
 
-        // Populacja - Pracuj¹cy
+        // Populacja - Pracujï¿½cy
         pWorkH = tooltip.Q<Label>("Pop_Work_H");
         pWorkE = tooltip.Q<Label>("Pop_Work_E");
         pWorkD = tooltip.Q<Label>("Pop_Work_D");
 
-        // Rejestracja eventów
+        // Rejestracja eventï¿½w
         foreach (var mapping in resourceMap)
         {
             var element = root.Q<VisualElement>(mapping.Key);
@@ -111,7 +111,7 @@ public class UIResourceTooltip : MonoBehaviour
 
         // Pozycjonowanie
         float xPos = targetElement.layout.x;
-        // Korekta dla populacji (jest po prawej, wiêc tooltip móg³by wyjœæ za ekran)
+        // Korekta dla populacji (jest po prawej, wiï¿½c tooltip mï¿½gï¿½by wyjï¿½ï¿½ za ekran)
         if (type == ResourceType.Population) xPos -= 50;
 
         tooltip.style.left = xPos;
@@ -134,7 +134,7 @@ public class UIResourceTooltip : MonoBehaviour
         pAssignedE.text = CitizenManager.Instance.GetCountByState(Race.Elves, WorkState.Assigned).ToString();
         pAssignedD.text = CitizenManager.Instance.GetCountByState(Race.Dwarves, WorkState.Assigned).ToString();
 
-        // Pracuj¹cy (Working + Exhausted, bo Exhausted te¿ s¹ "w pracy" do koñca dnia, tylko nieefektywni)
+        // Pracujï¿½cy (Working + Exhausted, bo Exhausted teï¿½ sï¿½ "w pracy" do koï¿½ca dnia, tylko nieefektywni)
         pWorkH.text = CitizenManager.Instance.GetCountByState(Race.Humans, WorkState.Working, WorkState.Exhausted).ToString();
         pWorkE.text = CitizenManager.Instance.GetCountByState(Race.Elves, WorkState.Working, WorkState.Exhausted).ToString();
         pWorkD.text = CitizenManager.Instance.GetCountByState(Race.Dwarves, WorkState.Working, WorkState.Exhausted).ToString();
