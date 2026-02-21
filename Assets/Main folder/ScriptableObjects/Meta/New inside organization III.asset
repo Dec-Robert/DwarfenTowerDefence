@@ -17,6 +17,10 @@ MonoBehaviour:
   description: "Domy mog\u0105 wi\u0119c 1 populacje max wi\u0119cej\r\n"
   icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
   cost: 400
-  isUnlocked: 0
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 2bbf4843cf84fae48838a08f6118af02, type: 2}
+  effectType: 34
+  effectValue: 3
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

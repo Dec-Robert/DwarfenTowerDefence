@@ -20,3 +20,7 @@ MonoBehaviour:
   isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}
+  effectType: 21
+  effectValue: 1
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

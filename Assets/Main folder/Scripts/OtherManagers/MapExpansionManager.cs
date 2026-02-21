@@ -42,6 +42,16 @@ public class MapExpansionManager : MonoBehaviour
            = new Dictionary<Vector2Int, Vector2Int>();
 
     // =========================================================================
+    // EVENTY – subskrybowane przez ChunkWallManager
+    // =========================================================================
+
+    /// <summary>Wywoływany gdy chunk staje się FullyUnlocked (z dowolnego powodu).</summary>
+    public event System.Action<Vector2Int> OnChunkBecameFullyUnlocked;
+
+    /// <summary>Wywoływany raz po zakończeniu Initialize() – przekazuje startowe FullyUnlocked chunki.</summary>
+    public event System.Action<List<Vector2Int>> OnMapInitialized;
+
+    // =========================================================================
     // INICJALIZACJA
     // =========================================================================
 
@@ -97,6 +107,9 @@ public class MapExpansionManager : MonoBehaviour
         // PRZEBIEG 2: Teraz bezpiecznie odblokuj sasiadow.
         foreach (var coord in startCoords)
             UnlockNeighbors(coord, roadChunks);
+
+        // Powiadom systemy wizualne (np. ChunkWallManager) o zakończeniu inicjalizacji
+        OnMapInitialized?.Invoke(startCoords);
     }
 
     // =========================================================================
@@ -146,6 +159,7 @@ public class MapExpansionManager : MonoBehaviour
                 fogManager?.UpdateChunkFogState(kvp.Key, ChunkState.FullyUnlocked);
                 Debug.Log($"[Expansion] {kvp.Key} w pełni zasiedlony.");
                 uiExpansionMenu?.OnChunkFullyUnlocked(kvp.Key);
+                OnChunkBecameFullyUnlocked?.Invoke(kvp.Key);
             }
         }
     }
@@ -273,6 +287,7 @@ public class MapExpansionManager : MonoBehaviour
             fogManager?.UpdateChunkFogState(coord, ChunkState.FullyUnlocked);
             Debug.Log($"[Expansion] Posterunek odblokował {coord} natychmiastowo.");
             uiExpansionMenu?.OnChunkFullyUnlocked(coord);
+            OnChunkBecameFullyUnlocked?.Invoke(coord);
         }
     }
 

@@ -19,5 +19,8 @@ MonoBehaviour:
   cost: 250
   isUnlocked: 1
   prerequisites:
-  - {fileID: 11400000, guid: de08ea098ed151140bfb063dd378349b, type: 2}
-  - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}
+  - {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

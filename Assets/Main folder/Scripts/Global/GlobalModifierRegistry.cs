@@ -6,10 +6,44 @@ using UnityEngine;
 /// </summary>
 public enum TowerStatType
 {
+    // ── Wieże ─────────────────────────────────────────────────────────────────
     Range,
     Damage,
     FireRate,
-    GlobalProduction  // Dla budynków ekonomicznych (Beacon)
+
+    // ── Produkcja globalna ────────────────────────────────────────────────────
+    GlobalProduction,
+
+    // ── Budynki ───────────────────────────────────────────────────────────────
+    /// <summary>Mnożnik produkcji budynku bez żadnego pracownika.</summary>
+    BuildingPassiveEfficiency,
+
+    /// <summary>Dodatkowy % produkcji za każdego przypisanego pracownika.</summary>
+    BuildingWorkerEfficiencyBonus,
+
+    /// <summary>Mnożnik wzmacniający bonus terenowy budynku (las, góry itd.).</summary>
+    BuildingTerrainBonusMultiplier,
+
+    // ── Wrogowie / fale ───────────────────────────────────────────────────────
+    /// <summary>Dodatkowa szansa procentowa na spawn elity (flat bonus).</summary>
+    EliteChanceBoost,
+
+    /// <summary>Kara na pancerz wrogów którzy przeżyli do dnia (mnożnik redukcji).</summary>
+    EnemySurvivorPenaltyArmor,
+
+    /// <summary>Kara na prędkość wrogów którzy przeżyli do dnia.</summary>
+    EnemySurvivorPenaltySpeed,
+
+    /// <summary>Kara na dodge wrogów którzy przeżyli do dnia.</summary>
+    EnemySurvivorPenaltyDodge,
+
+    // ── Wieże — nocna kara za brak amunicji ──────────────────────────────────
+    /// <summary>Mnożnik statystyk wieży bez amunicji nocą (np. 0.5 = 50%).</summary>
+    TowerNoAmmoNightPenalty,
+
+    // ── Eksploracja ───────────────────────────────────────────────────────────
+    /// <summary>Procentowa redukcja kosztu odkrywania terenu.</summary>
+    ExpansionCostReduction,
 }
 
 /// <summary>
@@ -181,6 +215,37 @@ public class GlobalModifierRegistry : MonoBehaviour
         foreach (var mod in modifiers)
         {
             if (mod.stat != TowerStatType.GlobalProduction) continue;
+            if (mod.scope != ModifierScope.Global) continue;
+            result *= mod.multiplier;
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Skrót – zwraca globalny flat bonus dla danej statystyki (scope=Global).
+    /// Używane przez systemy budynków i wrogów które nie są TowerEntity.
+    /// </summary>
+    public float GetGlobalFlat(TowerStatType stat)
+    {
+        float result = 0f;
+        foreach (var mod in modifiers)
+        {
+            if (mod.stat  != stat)                 continue;
+            if (mod.scope != ModifierScope.Global) continue;
+            result += mod.flat;
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Skrót – zwraca globalny mnożnik dla danej statystyki (scope=Global).
+    /// </summary>
+    public float GetGlobalMultiplier(TowerStatType stat)
+    {
+        float result = 1f;
+        foreach (var mod in modifiers)
+        {
+            if (mod.stat  != stat)                 continue;
             if (mod.scope != ModifierScope.Global) continue;
             result *= mod.multiplier;
         }

@@ -26,3 +26,8 @@ MonoBehaviour:
   prerequisites:
   - {fileID: 11400000, guid: 3fa944e695acfbb4b8fc81ac67db91c8, type: 2}
   - {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
+  - {fileID: 0}
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

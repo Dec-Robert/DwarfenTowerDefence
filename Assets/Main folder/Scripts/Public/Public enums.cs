@@ -57,6 +57,123 @@ public enum EnemyRank
     Boss
 }
 
+/// <summary>
+/// Tryb systemu murów — kontrolowany przez MetaUpgrade.
+/// Disabled     → brak murów (domyślnie przed zakupem)
+/// Solution1    → tylko chunki startowe otoczone murem (tani upgrade, wczesna gra)
+/// Solution2    → żywa linia frontu z bramami (drogi upgrade, późna gra)
+/// </summary>
+public enum WallSystemMode
+{
+    Disabled,
+    Solution1_BaseOnly,
+    Solution2_FrontLine
+}
+
+/// <summary>
+/// Wszystkie możliwe efekty meta-ulepszeń.
+/// Każdy MetaUpgradeSO ma jeden MetaEffectType.
+///
+/// ── Surowce startowe ────────────────────────────────
+/// StartingGold / Wood / Stone / Iron / Coal / Food
+///   effectValue = ile dodać na start sesji
+///
+/// ── Pracownicy i zmiany ─────────────────────────────
+/// BonusShifts / BonusWorkersPerShift
+///   effectValue = ile dodać do globalnego bonusu
+///
+/// ── Produkcja budynków ──────────────────────────────
+/// BuildingPassiveEfficiency
+///   effectValue = mnożnik produkcji bez pracownika (np. 0.1 = 10%)
+/// BuildingWorkerEfficiencyBonus
+///   effectValue = dodatkowy % produkcji za każdego pracownika (np. 0.2 = +20%)
+/// BuildingTerrainBonusMultiplier
+///   effectValue = mnożnik bonusu terenowego (targetBuilding wymagany)
+/// SpecificBuildingUpgradeCostReduction
+///   effectValue = % redukcji kosztu upgradu (targetBuilding wymagany)
+/// HousingStartPopulation
+///   effectValue = ile dodatkowych mieszkańców na start w budynkach mieszkalnych
+///
+/// ── Wrogowie ────────────────────────────────────────
+/// EliteChanceBoost
+///   effectValue = szansa procentowa (+X%) od fali effectValue2
+/// EnemySurvivorPenaltyArmor / EnemySurvivorPenaltySpeed / EnemySurvivorPenaltyDodge
+///   effectValue = kara procentowa (np. 0.3 = -30%) dla wrogów przeżywających do dnia
+///
+/// ── Wieże ───────────────────────────────────────────
+/// TowerNoAmmoNightPenalty
+///   effectValue = mnożnik statystyk bez amunicji nocą (np. 0.5 = 50%)
+///
+/// ── Eksploracja ─────────────────────────────────────
+/// ExpansionCostReduction
+///   effectValue = % redukcji kosztu odkrywania (np. 0.2 = -20%)
+///
+/// ── Miasto i bramy ──────────────────────────────────
+/// CityBaseHealth
+///   effectValue = ile HP dodać do bazowego HP miasta
+/// GateBaseHP
+///   effectValue = ile HP dodać do bazowego HP bram frontowych
+///
+/// ── System murów ────────────────────────────────────
+/// WallSystem_Solution1 / WallSystem_Solution2
+///   effectValue nieużywane
+///
+/// ── Przyszłe / zarezerwowane ────────────────────────
+/// UniqueChunkUnlock
+///   effectValue = ID chunku (do rozbudowy)
+/// Reserved_A / Reserved_B / Reserved_C
+///   Zarezerwowane dla przyszłych mechanik
+/// </summary>
+public enum MetaEffectType
+{
+    None = 0,
+
+    // ── Surowce startowe ──────────────────────────────────────────────────────
+    StartingGold        = 10,
+    StartingWood        = 11,
+    StartingStone       = 12,
+    StartingIron        = 13,
+    StartingCoal        = 14,
+    StartingFood        = 15,
+
+    // ── Pracownicy i zmiany ───────────────────────────────────────────────────
+    BonusShifts              = 20,
+    BonusWorkersPerShift     = 21,
+
+    // ── Produkcja budynków ────────────────────────────────────────────────────
+    BuildingPassiveEfficiency          = 30,
+    BuildingWorkerEfficiencyBonus      = 31,
+    BuildingTerrainBonusMultiplier     = 32,
+    SpecificBuildingUpgradeCostReduction = 33,
+    HousingStartPopulation             = 34,
+
+    // ── Wrogowie ──────────────────────────────────────────────────────────────
+    EliteChanceBoost               = 40,
+    EnemySurvivorPenaltyArmor      = 41,
+    EnemySurvivorPenaltySpeed      = 42,
+    EnemySurvivorPenaltyDodge      = 43,
+
+    // ── Wieże ─────────────────────────────────────────────────────────────────
+    TowerNoAmmoNightPenalty        = 50,
+
+    // ── Eksploracja ───────────────────────────────────────────────────────────
+    ExpansionCostReduction         = 60,
+
+    // ── Miasto i bramy ────────────────────────────────────────────────────────
+    CityBaseHealth                 = 70,
+    GateBaseHP                     = 71,
+
+    // ── System murów ──────────────────────────────────────────────────────────
+    WallSystem_Solution1           = 80,
+    WallSystem_Solution2           = 81,
+
+    // ── Przyszłe / zarezerwowane ──────────────────────────────────────────────
+    UniqueChunkUnlock              = 90,
+    Reserved_A                     = 100,
+    Reserved_B                     = 101,
+    Reserved_C                     = 102,
+}
+
 [System.Serializable]
 public struct TerrainBonusRule
 {

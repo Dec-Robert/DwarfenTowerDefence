@@ -216,7 +216,10 @@ public class EnemySpawner : MonoBehaviour
                     }
                     else
                     {
-                        // Koniec fali – powiadamiamy Echo i GameManager
+                        // Koniec fali – kara dla ocalałych wrogów (meta upgrade)
+                        MetaUpgradeManager.Instance?.ApplySurvivorPenaltiesToAll();
+
+                        // Powiadamiamy Echo i GameManager
                         echoSystem.OnWaveEnded(currentWaveNumber);
                         GameManager.Instance.EndWave();
                     }

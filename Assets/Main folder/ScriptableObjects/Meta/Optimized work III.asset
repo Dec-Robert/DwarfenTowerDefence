@@ -18,6 +18,10 @@ MonoBehaviour:
     budynku"
   icon: {fileID: 21300000, guid: 06ba1e3080665284eafb05f814c59ab7, type: 3}
   cost: 2000
-  isUnlocked: 0
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 6f5c90464f8a20c4dbee08a0f5f671e1, type: 2}
+  effectType: 20
+  effectValue: 1
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

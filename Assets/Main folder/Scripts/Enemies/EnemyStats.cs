@@ -5,8 +5,7 @@ using Random = UnityEngine.Random;
 
 public class EnemyStats : MonoBehaviour
 {
-    [Header("Dane (Tylko podgląd)")]
-    public EnemyData data;
+    [Header("Dane (Tylko podgląd)")] public EnemyData data;
     public EnemyRank rank = EnemyRank.Normal;
 
     [SerializeField] private float currentHealth;
@@ -18,8 +17,7 @@ public class EnemyStats : MonoBehaviour
 
     private List<EnemySkill> skills = new List<EnemySkill>();
 
-    [Header("Wizualizacja")]
-    public Renderer meshRenderer;
+    [Header("Wizualizacja")] public Renderer meshRenderer;
     private Color originalColor;
 
     // EVENT DLA UI
@@ -35,7 +33,7 @@ public class EnemyStats : MonoBehaviour
 
     public void Initialize(EnemyData _data, ScaledEnemyStats scaled)
     {
-        data       = _data;
+        data = _data;
         cachedData = _data;
 
         // Wizualizacja
@@ -46,11 +44,11 @@ public class EnemyStats : MonoBehaviour
         rank = scaled.isElite ? EnemyRank.Elite : EnemyRank.Normal;
 
         // Statystyki z gotowego zestawu
-        maxHealth          = scaled.finalHp;
-        currentHealth      = maxHealth;
-        currentArmor       = scaled.finalArmor;
+        maxHealth = scaled.finalHp;
+        currentHealth = maxHealth;
+        currentArmor = scaled.finalArmor;
         currentMagicResist = scaled.finalMagicResist;
-        currentDodge       = scaled.finalDodge;
+        currentDodge = scaled.finalDodge;
 
         // Prędkość do Walkera
         var walker = GetComponent<EnemyWalker>();
@@ -85,7 +83,8 @@ public class EnemyStats : MonoBehaviour
     // OTRZYMYWANIE OBRAŻEŃ
     // =========================================================================
 
-    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical, float criticalMultiplier)
+    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical,
+        float criticalMultiplier)
     {
         foreach (var skill in skills)
         {
@@ -93,8 +92,9 @@ public class EnemyStats : MonoBehaviour
             if (rawDamage <= 0) return;
         }
 
-        float dodgeRoll   = Random.Range(0f, 100f);
-        float finalDamage = CalculateFinalDamage(type, rawDamage, armourPiercing, magicPiercing, isCritical, criticalMultiplier);
+        float dodgeRoll = Random.Range(0f, 100f);
+        float finalDamage = CalculateFinalDamage(type, rawDamage, armourPiercing, magicPiercing, isCritical,
+            criticalMultiplier);
 
         if (dodgeRoll < currentDodge && !isCritical && type != DamageType.True)
         {
@@ -103,6 +103,7 @@ public class EnemyStats : MonoBehaviour
                 meshRenderer.material.color = Color.yellow;
                 Invoke(nameof(ResetColor), 0.1f);
             }
+
             return;
         }
 
@@ -148,18 +149,18 @@ public class EnemyStats : MonoBehaviour
 
     float CalculateFinalDamage(DamageType type, float raw, float ap, float mp, bool crit, float critMult)
     {
-        float armor = Mathf.Max(0, currentArmor      - ap);
-        float mr    = Mathf.Max(0, currentMagicResist - mp);
+        float armor = Mathf.Max(0, currentArmor - ap);
+        float mr = Mathf.Max(0, currentMagicResist - mp);
 
         switch (type)
         {
             case DamageType.Physical: raw *= (1f - armor / 100f); break;
-            case DamageType.Magic:    raw *= (1f - mr    / 100f); break;
-            case DamageType.True:     break;
+            case DamageType.Magic: raw *= (1f - mr / 100f); break;
+            case DamageType.True: break;
         }
 
         // critMult jako procenty
-        if (crit) raw *= critMult/100;
+        if (crit) raw *= critMult / 100;
 
         return raw;
     }
@@ -169,8 +170,44 @@ public class EnemyStats : MonoBehaviour
 
     public void SetHealthManually(float amount)
     {
-        maxHealth     = amount;
+        maxHealth = amount;
         currentHealth = amount;
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    }
+
+    // =========================================================================
+    // SURVIVOR PENALTY — nakładana przez MetaUpgradeManager na końcu fali
+    // =========================================================================
+
+    /// <summary>
+    /// Flaga: czy ten wróg przeżył do dnia (ustawiana przez EnemySpawner.EndWave).
+    /// </summary>
+    [HideInInspector] public bool isSurvivor = false;
+
+    /// <summary>
+    /// Aplikuje kary za przeżycie do dnia.
+    /// armorPenalty / speedPenalty / dodgePenalty: wartości 0..1 (np. 0.3 = -30%).
+    /// </summary>
+    public void ApplySurvivorPenalty(float armorPenalty, float speedPenalty, float dodgePenalty)
+    {
+        if (isSurvivor) return; // Nie nakładaj kary dwa razy
+
+        isSurvivor = true;
+
+        currentArmor = Mathf.Max(0f, currentArmor * (1f - armorPenalty));
+        currentDodge = Mathf.Max(0f, currentDodge * (1f - dodgePenalty));
+        currentMagicResist = Mathf.Max(0f, currentMagicResist * (1f - armorPenalty)); // pancerz magiczny też
+
+        var walker = GetComponent<EnemyWalker>();
+        if (walker != null)
+            walker.speed = Mathf.Max(0.1f, walker.speed * (1f - speedPenalty));
+
+        // Wizualny sygnał — lekko przyciemniony
+        if (meshRenderer != null)
+            meshRenderer.material.color = Color.Lerp(
+                rank == EnemyRank.Elite ? Color.red : originalColor,
+                Color.grey, 0.4f);
+
+        Debug.Log($"[EnemySurvivor] {gameObject.name} otrzymał kary za przeżycie do dnia.");
     }
 }
