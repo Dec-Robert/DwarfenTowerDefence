@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
   m_Name: Hidden plains I
   m_EditorClassIdentifier: 
-  id: 7
+  id: hidden_plains_i
   upgradeName: Hidden plains I
   description: "Startowy teren jest powi\u0119kszony o jeden chunk."
   icon: {fileID: 21300000, guid: a65a6e5b462c3ea4680b2da4cf9e1fed, type: 3}
   cost: 400
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites: []
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
   m_Name: Front line IIII
   m_EditorClassIdentifier: 
-  id: 6
+  id: front_line_iiii
   upgradeName: Front line IIII
   description: "Bramy pomocnicze mog\u0105 zosta\u0107 ustawione na przepuszczanie
     konkretnego typu przeciwnik\xF3w(normalnych/elitarnych/bos\xF3w)\r\n"
@@ -21,3 +21,7 @@ MonoBehaviour:
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: b17ef3f98dcc7be44b5f07674e04ce71, type: 2}
+  effectType: 71
+  effectValue: 6
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

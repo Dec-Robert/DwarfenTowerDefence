@@ -224,6 +224,15 @@ public class MetaUpgradeManager : MonoBehaviour
                 // HousingEntity odpytuje GetValue() przy Initialize()
                 break;
 
+            // ── Limit mieszkańców ─────────────────────────────────────────────
+            case MetaEffectType.HousingMaxResidents:
+            case MetaEffectType.HousingMaxResidents_Humans:
+            case MetaEffectType.HousingMaxResidents_Elves:
+            case MetaEffectType.HousingMaxResidents_Dwarves:
+                // HousingEntity.GetEffectiveMaxResidents() odpytuje GetValue() w runtime.
+                // Nie musimy tu nic robić — wartość jest już w appliedValues.
+                break;
+
             // ── System murów ──────────────────────────────────────────────────
             case MetaEffectType.WallSystem_Solution1:
                 ChunkWallManager.Instance?.SetMode(WallSystemMode.Solution1_BaseOnly);

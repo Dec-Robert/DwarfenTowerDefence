@@ -147,6 +147,18 @@ public enum MetaEffectType
     SpecificBuildingUpgradeCostReduction = 33,
     HousingStartPopulation             = 34,
 
+    /// <summary>Zwiększa maxResidents dla WSZYSTKICH domów (niezależnie od rasy).</summary>
+    HousingMaxResidents                = 35,
+
+    /// <summary>Zwiększa maxResidents tylko dla domów ludzi (Race.Humans).</summary>
+    HousingMaxResidents_Humans         = 36,
+
+    /// <summary>Zwiększa maxResidents tylko dla domów elfów (Race.Elves).</summary>
+    HousingMaxResidents_Elves          = 37,
+
+    /// <summary>Zwiększa maxResidents tylko dla domów krasnoludów (Race.Dwarves).</summary>
+    HousingMaxResidents_Dwarves        = 38,
+
     // ── Wrogowie ──────────────────────────────────────────────────────────────
     EliteChanceBoost               = 40,
     EnemySurvivorPenaltyArmor      = 41,

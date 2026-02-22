@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: New inside organization II
+  m_Name: Efficent wood choping I
   m_EditorClassIdentifier: 
-  id: new_inside_organization_ii
-  upgradeName: New inside organization II
-  description: "Domy zaczynaj\u0105 z 2 populacjami wi\u0119cej\r\n"
-  icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
-  cost: 300
+  id: efficent_wood_choping_i
+  upgradeName: Efficent wood choping I
+  description: 
+  icon: {fileID: 0}
+  cost: 100
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: 16183f60b74b1994593dc655cc6efd21, type: 2}
-  effectType: 34
-  effectValue: 2
+  - {fileID: 11400000, guid: de08ea098ed151140bfb063dd378349b, type: 2}
+  effectType: 31
+  effectValue: 0.1
   effectValue2: 0
   targetBuilding: {fileID: 0}

@@ -10,17 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: New inside organization III
+  m_Name: Efficent wood choping II - hidden forest
   m_EditorClassIdentifier: 
-  id: 12
-  upgradeName: New inside organization III
-  description: "Domy mog\u0105 wi\u0119c 1 populacje max wi\u0119cej\r\n"
-  icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
-  cost: 400
-  isUnlocked: 1
+  id: efficent_wood_choping_ii_hidden_forest
+  upgradeName: Efficent wood choping II
+  description: Dodatkowy las na polu
+  icon: {fileID: 0}
+  cost: 100
+  isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: 2bbf4843cf84fae48838a08f6118af02, type: 2}
-  effectType: 34
-  effectValue: 3
+  - {fileID: 11400000, guid: 47eaa60aa79ab874b843b8299d58a934, type: 2}
+  - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}
+  effectType: 0
+  effectValue: 0
   effectValue2: 0
   targetBuilding: {fileID: 0}

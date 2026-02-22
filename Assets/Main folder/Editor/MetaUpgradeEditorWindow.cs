@@ -37,8 +37,16 @@ public class MetaUpgradeEditorWindow : EditorWindow
     private static readonly Color COLOR_AVAILABLE   = new Color(0.2f, 0.4f, 0.6f, 1f);
     private static readonly Color COLOR_SELECTED    = new Color(0.8f, 0.7f, 0.1f, 1f);
     private static readonly Color COLOR_NONE_EFFECT = new Color(0.25f, 0.25f, 0.25f, 1f);
-    private static readonly Color COLOR_EDGE        = new Color(0.6f, 0.6f, 0.6f, 1f);
-    private static readonly Color COLOR_EDGE_UNMET  = new Color(0.8f, 0.3f, 0.3f, 1f);
+
+    // Kolory krawędzi — jasne żeby były widoczne na ciemnym tle
+    // MET  = spełnione wymaganie → złota linia
+    // UNMET = niespełnione → czerwona linia
+    private static readonly Color COLOR_EDGE        = new Color(0.95f, 0.85f, 0.3f,  1f);
+    private static readonly Color COLOR_EDGE_UNMET  = new Color(0.95f, 0.25f, 0.25f, 1f);
+
+    // Grubości linii
+    private const float EDGE_THICKNESS_MET   = 3.0f;
+    private const float EDGE_THICKNESS_UNMET = 2.0f;
 
     // =========================================================================
     // STAN
@@ -73,6 +81,9 @@ public class MetaUpgradeEditorWindow : EditorWindow
 
     // Drag
     private UpgradeNode draggingNode;
+
+    // Pozycja w przestrzeni grafu gdzie kliknięto PPM (do spawnu nowego węzła)
+    private Vector2 contextMenuGraphPos;
 
     // =========================================================================
     // MENU
@@ -129,6 +140,55 @@ public class MetaUpgradeEditorWindow : EditorWindow
 
         // Obsługa inputu
         HandleInput(graphRect);
+
+        // ObjectPicker — obsługa "Dodaj istniejący"
+        if (waitingForObjectPicker)
+        {
+            if (Event.current.commandName == "ObjectSelectorUpdated" ||
+                Event.current.commandName == "ObjectSelectorClosed")
+            {
+                var picked = EditorGUIUtility.GetObjectPickerObject() as MetaUpgradeSO;
+                if (picked != null &&
+                    Event.current.commandName == "ObjectSelectorClosed")
+                {
+                    // Sprawdź czy już nie ma w liście
+                    if (targetManager.allUpgrades == null)
+                        targetManager.allUpgrades = new System.Collections.Generic.List<MetaUpgradeSO>();
+
+                    if (!targetManager.allUpgrades.Contains(picked))
+                    {
+                        Undo.RecordObject(targetManager, "Dodaj istniejący MetaUpgrade");
+                        targetManager.allUpgrades.Add(picked);
+                        EditorUtility.SetDirty(targetManager);
+
+                        var node = new UpgradeNode
+                        {
+                            upgrade = picked,
+                            rect    = new Rect(contextMenuGraphPos.x, contextMenuGraphPos.y,
+                                               NODE_WIDTH, NODE_HEIGHT)
+                        };
+                        nodes.Add(node);
+                        if (!string.IsNullOrEmpty(picked.id))
+                            nodeMap[picked.id] = node;
+
+                        selectedNode = node;
+                        EditorGUIUtility.PingObject(picked);
+                    }
+                    else
+                    {
+                        EditorUtility.DisplayDialog("Już dodany",
+                            $"'{picked.upgradeName}' jest już na liście Managera.", "OK");
+                    }
+
+                    waitingForObjectPicker = false;
+                    Repaint();
+                }
+                else if (Event.current.commandName == "ObjectSelectorClosed")
+                {
+                    waitingForObjectPicker = false;
+                }
+            }
+        }
 
         // Repaint podczas przeciągania
         if (draggingNode != null || isPanning)
@@ -279,7 +339,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
                     new Vector3(to.x,   to.y,   0),
                     new Vector3(ctrl1.x, ctrl1.y, 0),
                     new Vector3(ctrl2.x, ctrl2.y, 0),
-                    edgeColor, null, met ? 2f : 1.5f);
+                    edgeColor, null, met ? EDGE_THICKNESS_MET : EDGE_THICKNESS_UNMET);
 
                 // Strzałka
                 DrawArrow(to, (to - ctrl2).normalized, edgeColor);
@@ -543,7 +603,26 @@ public class MetaUpgradeEditorWindow : EditorWindow
                     e.Use();
                 }
             }
-            else if (e.button == 2 || e.button == 1) // PPM/środkowy = pan
+            else if (e.button == 1) // PPM
+            {
+                mouseInGraph = e.mousePosition - new Vector2(0, TOOLBAR_HEIGHT);
+                UpgradeNode nodeUnderMouse = GetNodeAtScreen(mouseInGraph);
+
+                if (nodeUnderMouse != null)
+                {
+                    // PPM na węźle → menu kontekstowe węzła
+                    ShowNodeContextMenu(nodeUnderMouse, e.mousePosition);
+                }
+                else
+                {
+                    // PPM na tle → menu tworzenia / dodawania
+                    // Zapamiętaj pozycję w przestrzeni grafu (do spawnu węzła w tym miejscu)
+                    contextMenuGraphPos = ScreenToGraph(mouseInGraph);
+                    ShowBackgroundContextMenu();
+                }
+                e.Use();
+            }
+            else if (e.button == 2) // środkowy = pan
             {
                 isPanning    = true;
                 lastMousePos = e.mousePosition;
@@ -579,6 +658,251 @@ public class MetaUpgradeEditorWindow : EditorWindow
             isPanning = false;
         }
     }
+
+    // =========================================================================
+    // MENU KONTEKSTOWE
+    // =========================================================================
+
+    /// <summary>
+    /// Menu PPM na pustym tle grafu — tworzenie lub dodawanie upgradu.
+    /// </summary>
+    private void ShowBackgroundContextMenu()
+    {
+        var menu = new GenericMenu();
+
+        menu.AddItem(new GUIContent("Utwórz nowy upgrade"), false, CreateNewUpgrade);
+        menu.AddSeparator("");
+        menu.AddItem(new GUIContent("Dodaj istniejący..."), false, AddExistingUpgrade);
+
+        if (targetManager == null)
+        {
+            menu.AddSeparator("");
+            menu.AddDisabledItem(new GUIContent("⚠ Brak MetaUpgradeManager na scenie"));
+        }
+
+        menu.ShowAsContext();
+    }
+
+    /// <summary>
+    /// Menu PPM na węźle — operacje na konkretnym węźle.
+    /// </summary>
+    private void ShowNodeContextMenu(UpgradeNode node, Vector2 mousePos)
+    {
+        selectedNode = node;
+        var menu = new GenericMenu();
+
+        menu.AddItem(new GUIContent("Pokaż w Project"), false,
+            () => EditorGUIUtility.PingObject(node.upgrade));
+
+        menu.AddItem(new GUIContent("Zaznacz w Inspector"), false,
+            () => Selection.activeObject = node.upgrade);
+
+        menu.AddSeparator("");
+
+        string lockLabel = node.upgrade.isUnlocked ? "Oznacz jako zablokowany" : "Oznacz jako odblokowany";
+        menu.AddItem(new GUIContent(lockLabel), false, () =>
+        {
+            Undo.RecordObject(node.upgrade, lockLabel);
+            node.upgrade.isUnlocked = !node.upgrade.isUnlocked;
+            EditorUtility.SetDirty(node.upgrade);
+            Repaint();
+        });
+
+        menu.AddSeparator("");
+
+        menu.AddItem(new GUIContent("Usuń z listy Managera"), false,
+            () => RemoveNodeFromManager(node));
+
+        menu.AddItem(new GUIContent("Usuń węzeł i plik SO"), false,
+            () => DeleteNodeAndAsset(node));
+
+        menu.ShowAsContext();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Akcje menu tła
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Otwiera okienko z polem nazwy, a po zatwierdzeniu tworzy MetaUpgradeSO
+    /// z tą nazwą, ustawiając automatycznie id i upgradeName.
+    /// </summary>
+    private void CreateNewUpgrade()
+    {
+        if (targetManager == null)
+        {
+            EditorUtility.DisplayDialog("Brak Managera",
+                "Dodaj MetaUpgradeManager do sceny przed tworzeniem upgradów.", "OK");
+            return;
+        }
+
+        // Otwórz dialog z polem nazwy — przekaż callback który faktycznie tworzy asset
+        NewUpgradeNameDialog.Show(enteredName =>
+        {
+            CreateNewUpgradeWithName(enteredName);
+        });
+    }
+
+    /// <summary>
+    /// Faktyczne tworzenie assetu po podaniu nazwy przez użytkownika.
+    /// </summary>
+    private void CreateNewUpgradeWithName(string displayName)
+    {
+        const string SCAN_PATH = "Assets/Main folder/ScriptableObjects/Meta";
+
+        // Upewnij się że folder istnieje
+        if (!AssetDatabase.IsValidFolder(SCAN_PATH))
+        {
+            string parent = "Assets/Main folder/ScriptableObjects";
+            if (!AssetDatabase.IsValidFolder(parent))
+            {
+                EditorUtility.DisplayDialog("Brak Folderu",
+                    $"Folder nie istnieje:\n{SCAN_PATH}\n\nUtwórz go ręcznie w Project window.", "OK");
+                return;
+            }
+            AssetDatabase.CreateFolder(parent, "Meta");
+        }
+
+        // Sanityzuj nazwę pliku (usuń niedozwolone znaki)
+        string sanitized = string.IsNullOrWhiteSpace(displayName) ? "NewMetaUpgrade" : displayName.Trim();
+        foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+            sanitized = sanitized.Replace(c.ToString(), "");
+        if (string.IsNullOrEmpty(sanitized)) sanitized = "NewMetaUpgrade";
+
+        // Zadbaj o unikalność nazwy pliku
+        string fileName = sanitized;
+        int    suffix   = 1;
+        while (AssetDatabase.LoadAssetAtPath<MetaUpgradeSO>($"{SCAN_PATH}/{fileName}.asset") != null)
+        {
+            fileName = $"{sanitized}_{suffix}";
+            suffix++;
+        }
+
+        // Utwórz asset — id i upgradeName wyprowadzone z wpisanej nazwy
+        var newUpgrade = CreateInstance<MetaUpgradeSO>();
+        newUpgrade.upgradeName = displayName.Trim();
+        newUpgrade.id          = MetaUpgradeTools.ToSnakeCasePublic(fileName);
+        newUpgrade.cost        = 100;
+        newUpgrade.effectType  = MetaEffectType.None;
+
+        string assetPath = $"{SCAN_PATH}/{fileName}.asset";
+        AssetDatabase.CreateAsset(newUpgrade, assetPath);
+        AssetDatabase.SaveAssets();
+
+        // Dodaj do managera
+        Undo.RecordObject(targetManager, "Dodaj nowy MetaUpgrade");
+        if (targetManager.allUpgrades == null)
+            targetManager.allUpgrades = new System.Collections.Generic.List<MetaUpgradeSO>();
+        targetManager.allUpgrades.Add(newUpgrade);
+        EditorUtility.SetDirty(targetManager);
+
+        // Dodaj węzeł do grafu w miejscu kliknięcia
+        var node = new UpgradeNode
+        {
+            upgrade = newUpgrade,
+            rect    = new Rect(contextMenuGraphPos.x, contextMenuGraphPos.y, NODE_WIDTH, NODE_HEIGHT)
+        };
+        nodes.Add(node);
+        if (!string.IsNullOrEmpty(newUpgrade.id))
+            nodeMap[newUpgrade.id] = node;
+
+        // Zaznacz nowy węzeł i otwórz panel edycji
+        selectedNode = node;
+
+        EditorGUIUtility.PingObject(newUpgrade);
+        Selection.activeObject = newUpgrade;
+
+        Debug.Log($"[MetaUpgradeGraph] Utworzono nowy upgrade: {assetPath}  (id: {newUpgrade.id})");
+        Repaint();
+    }
+
+    /// <summary>
+    /// Otwiera okno wyboru assetu — pozwala dodać istniejący MetaUpgradeSO
+    /// który nie jest jeszcze w liście managera.
+    /// </summary>
+    private void AddExistingUpgrade()
+    {
+        if (targetManager == null)
+        {
+            EditorUtility.DisplayDialog("Brak Managera",
+                "Dodaj MetaUpgradeManager do sceny przed dodawaniem upgradów.", "OK");
+            return;
+        }
+
+        // Otwórz standardowe okno wyboru assetu Unity
+        // Callback: AddExistingUpgradeCallback
+        EditorGUIUtility.ShowObjectPicker<MetaUpgradeSO>(
+            null, false, "", controlID: 12345);
+
+        // Obsługa callbacku w OnGUI przez nasłuchiwanie na ObjectSelectorClosed
+        waitingForObjectPicker = true;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Akcje menu węzła
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void RemoveNodeFromManager(UpgradeNode node)
+    {
+        if (targetManager == null) return;
+
+        bool confirm = EditorUtility.DisplayDialog(
+            "Usuń z listy",
+            $"Usunąć '{node.upgrade.upgradeName}' z listy MetaUpgradeManager?\n\nPlik SO pozostanie na dysku.",
+            "Usuń", "Anuluj");
+
+        if (!confirm) return;
+
+        Undo.RecordObject(targetManager, "Usuń MetaUpgrade z Managera");
+        targetManager.allUpgrades?.Remove(node.upgrade);
+        EditorUtility.SetDirty(targetManager);
+
+        nodes.Remove(node);
+        if (!string.IsNullOrEmpty(node.upgrade.id))
+            nodeMap.Remove(node.upgrade.id);
+
+        if (selectedNode == node) selectedNode = null;
+        Repaint();
+    }
+
+    private void DeleteNodeAndAsset(UpgradeNode node)
+    {
+        bool confirm = EditorUtility.DisplayDialog(
+            "Usuń plik SO",
+            $"TRWALE usunąć '{node.upgrade.upgradeName}'?\n\n" +
+            $"Plik zostanie usunięty z dysku i z listy Managera.\n" +
+            "Tej operacji nie można cofnąć.",
+            "Usuń trwale", "Anuluj");
+
+        if (!confirm) return;
+
+        // Usuń z managera
+        if (targetManager != null)
+        {
+            Undo.RecordObject(targetManager, "Usuń MetaUpgrade");
+            targetManager.allUpgrades?.Remove(node.upgrade);
+            EditorUtility.SetDirty(targetManager);
+        }
+
+        // Usuń z grafu
+        nodes.Remove(node);
+        if (!string.IsNullOrEmpty(node.upgrade.id))
+            nodeMap.Remove(node.upgrade.id);
+        if (selectedNode == node) selectedNode = null;
+
+        // Usuń asset z dysku
+        string path = AssetDatabase.GetAssetPath(node.upgrade);
+        if (!string.IsNullOrEmpty(path))
+            AssetDatabase.DeleteAsset(path);
+
+        Repaint();
+    }
+
+    // =========================================================================
+    // OBJECT PICKER — obsługa "Dodaj istniejący"
+    // =========================================================================
+
+    private bool waitingForObjectPicker = false;
 
     // =========================================================================
     // DANE I LAYOUT
@@ -692,6 +1016,12 @@ public class MetaUpgradeEditorWindow : EditorWindow
         return graphPos * zoomScale + panOffset;
     }
 
+    /// <summary>Odwrotność GraphToScreen — pozycja ekranowa → przestrzeń grafu.</summary>
+    private Vector2 ScreenToGraph(Vector2 screenPos)
+    {
+        return (screenPos - panOffset) / zoomScale;
+    }
+
     private Rect GraphRectToScreen(Rect graphRect)
     {
         return new Rect(
@@ -734,7 +1064,11 @@ public class MetaUpgradeEditorWindow : EditorWindow
             MetaEffectType.BuildingWorkerEfficiencyBonus   => $"+{v*100:F0}% za prac.",
             MetaEffectType.BuildingTerrainBonusMultiplier  => $"x{v} bonus terenu",
             MetaEffectType.SpecificBuildingUpgradeCostReduction => $"-{v*100:F0}% koszt ulepszenia",
-            MetaEffectType.HousingStartPopulation          => $"+{v} mieszkańców",
+            MetaEffectType.HousingStartPopulation          => $"+{v} mieszkańców (start)",
+            MetaEffectType.HousingMaxResidents              => $"+{v} max pop (wszyscy)",
+            MetaEffectType.HousingMaxResidents_Humans       => $"+{v} max pop (ludzie)",
+            MetaEffectType.HousingMaxResidents_Elves        => $"+{v} max pop (elfy)",
+            MetaEffectType.HousingMaxResidents_Dwarves      => $"+{v} max pop (krasnoludy)",
             MetaEffectType.EliteChanceBoost                => $"+{v*100:F0}% elit (od f.{upgrade.effectValue2})",
             MetaEffectType.EnemySurvivorPenaltyArmor       => $"-{v*100:F0}% pancerz ocalałych",
             MetaEffectType.EnemySurvivorPenaltySpeed       => $"-{v*100:F0}% prędkość ocalałych",
@@ -761,6 +1095,10 @@ public class MetaUpgradeEditorWindow : EditorWindow
         MetaEffectType.BonusShifts
             or MetaEffectType.BonusWorkersPerShift
             or MetaEffectType.HousingStartPopulation
+            or MetaEffectType.HousingMaxResidents
+            or MetaEffectType.HousingMaxResidents_Humans
+            or MetaEffectType.HousingMaxResidents_Elves
+            or MetaEffectType.HousingMaxResidents_Dwarves
             or MetaEffectType.CityBaseHealth
             or MetaEffectType.GateBaseHP       => "Wartość (całkowita)",
         MetaEffectType.BuildingPassiveEfficiency
@@ -775,5 +1113,75 @@ public class MetaUpgradeEditorWindow : EditorWindow
             or MetaEffectType.BuildingTerrainBonusMultiplier => "Mnożnik",
         _                                       => "effectValue"
     };
+}
+
+// =============================================================================
+// DIALOG — wpisywanie nazwy nowego upgradu
+// =============================================================================
+
+/// <summary>
+/// Małe modalne okienko EditorWindow z jednym polem tekstowym.
+/// Po kliknięciu "Utwórz" wywołuje callback z wpisaną nazwą.
+/// Zamknięcie okienka (X) lub "Anuluj" nie wywołuje callbacku.
+/// </summary>
+public class NewUpgradeNameDialog : EditorWindow
+{
+    private string enteredName = "";
+    private System.Action<string> onConfirm;
+    private bool focusSet = false;
+
+    /// <summary>Otwiera dialog. <paramref name="onConfirm"/> wywoływany z wpisaną nazwą po zatwierdzeniu.</summary>
+    public static void Show(System.Action<string> onConfirm)
+    {
+        var dialog = CreateInstance<NewUpgradeNameDialog>();
+        dialog.titleContent = new GUIContent("Nowy Meta Upgrade");
+        dialog.onConfirm    = onConfirm;
+        dialog.minSize      = new Vector2(320, 110);
+        dialog.maxSize      = new Vector2(320, 110);
+        dialog.ShowModal();
+    }
+
+    private void OnGUI()
+    {
+        EditorGUILayout.Space(10);
+        EditorGUILayout.LabelField("Nazwa nowego upgradu:", EditorStyles.boldLabel);
+
+        // Ustaw focus na polu tekstowym przy pierwszym rysowaniu
+        GUI.SetNextControlName("NameField");
+        enteredName = EditorGUILayout.TextField(enteredName);
+
+        if (!focusSet)
+        {
+            EditorGUI.FocusTextInControl("NameField");
+            focusSet = true;
+        }
+
+        EditorGUILayout.Space(6);
+        EditorGUILayout.BeginHorizontal();
+
+        bool confirm = GUILayout.Button("Utwórz", GUILayout.Height(28));
+        bool cancel  = GUILayout.Button("Anuluj",  GUILayout.Height(28));
+
+        EditorGUILayout.EndHorizontal();
+
+        // Enter = potwierdź, Escape = anuluj
+        if (Event.current.type == EventType.KeyDown)
+        {
+            if (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter)
+                confirm = true;
+            else if (Event.current.keyCode == KeyCode.Escape)
+                cancel = true;
+        }
+
+        if (confirm && !string.IsNullOrWhiteSpace(enteredName))
+        {
+            onConfirm?.Invoke(enteredName.Trim());
+            Close();
+        }
+        else if (cancel)
+        {
+            Close();
+        }
+    }
 }
 #endif

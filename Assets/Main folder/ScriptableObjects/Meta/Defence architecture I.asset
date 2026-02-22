@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
   m_Name: Defence architecture I
   m_EditorClassIdentifier: 
-  id: 1
+  id: AS
   upgradeName: Defence architecture I
   description: "Zwi\u0119ksz hp bramy o 5\r\n"
   icon: {fileID: 21300000, guid: 83138ab479ec71d478362992d2aa21a9, type: 3}
   cost: 100
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites: []
+  effectType: 70
+  effectValue: 5
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

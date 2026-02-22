@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
   m_Name: Optimized work I
   m_EditorClassIdentifier: 
-  id: 13
+  id: optimized_work_i
   upgradeName: Optimized work I
   description: "Zwi\u0119ksz max ilo\u015B\u0107 ludzi na zmiania o 1"
   icon: {fileID: 21300000, guid: 06ba1e3080665284eafb05f814c59ab7, type: 3}
   cost: 500
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}
   effectType: 21

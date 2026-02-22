@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
   m_Name: Optimized work III
   m_EditorClassIdentifier: 
-  id: 15
+  id: optimized_work_iii
   upgradeName: Optimized work III
   description: "Zwi\u0119ksz maksymaln\u0105 ilo\u015B\u0107 zmian o 1 dla ka\u017Cdego
     budynku"
   icon: {fileID: 21300000, guid: 06ba1e3080665284eafb05f814c59ab7, type: 3}
   cost: 2000
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 6f5c90464f8a20c4dbee08a0f5f671e1, type: 2}
   effectType: 20

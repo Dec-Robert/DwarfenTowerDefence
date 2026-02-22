@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: New inside organization II
+  m_Name: New inside organization III - Humans
   m_EditorClassIdentifier: 
-  id: new_inside_organization_ii
-  upgradeName: New inside organization II
-  description: "Domy zaczynaj\u0105 z 2 populacjami wi\u0119cej\r\n"
+  id: new_inside_organization_iii_humans
+  upgradeName: New inside organization III - Humans
+  description: "Ludzkie domy maj\u0105 1 populacji wi\u0119cej\r\n"
   icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
-  cost: 300
+  cost: 400
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: 16183f60b74b1994593dc655cc6efd21, type: 2}
-  effectType: 34
-  effectValue: 2
+  - {fileID: 11400000, guid: 2bbf4843cf84fae48838a08f6118af02, type: 2}
+  effectType: 36
+  effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}

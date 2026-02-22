@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
   m_Name: Front line I
   m_EditorClassIdentifier: 
-  id: 3
+  id: front_line_i
   upgradeName: Front line I
   description: "Zwi\u0119ksza \u017Cycie bramy o 10 dodatkowo na zako\u0144czeniu
     ka\u017Cdej drogi pojawia si\u0119 brama kt\xF3ra posiada (zale\u017Cniue od
@@ -22,12 +22,12 @@ MonoBehaviour:
     (przeciwnik z 30%hp zniszczy 2hp bramy pomocniczej), a bossowie (5%*hp bramy))\r\n"
   icon: {fileID: 21300000, guid: be6c839a82e53b6479fc40a0b60ca912, type: 3}
   cost: 800
-  isUnlocked: 1
+  isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 3fa944e695acfbb4b8fc81ac67db91c8, type: 2}
   - {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
   - {fileID: 0}
-  effectType: 0
+  effectType: 81
   effectValue: 0
   effectValue2: 0
   targetBuilding: {fileID: 0}

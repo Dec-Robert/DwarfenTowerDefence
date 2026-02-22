@@ -56,12 +56,11 @@ public class HousingEntity : BuildingEntity
         // Spawn startowych mieszkańców
         for (int i = 0; i < housingData.initialResidents; i++)
         {
-            if (residents.Count >= housingData.maxResidents) break;
+            if (residents.Count >= GetEffectiveMaxResidents()) break;
 
             Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
             residents.Add(newC);
         }
-        Debug.Log($"[{name}] Zainicjalizowano {housingData.housingRace} dom z {residents.Count} mieszkańcami (powinno być {housingData.initialResidents})");
 
         // Subskrybujemy własny handler poranny (base.Initialize już podpiął OnHourTick i OnDayChanged,
         // ale HandleHourlyProduction jest nadpisana jako pusta – patrz niżej)
@@ -160,7 +159,7 @@ public class HousingEntity : BuildingEntity
 
     private void TryGrow()
     {
-        if (residents.Count >= housingData.maxResidents) return;
+        if (residents.Count >= GetEffectiveMaxResidents()) return;
 
         var growthCost = CalculateGrowthCost();
         if (!ResourceManager.Instance.SpendResources(growthCost)) return;
@@ -177,6 +176,41 @@ public class HousingEntity : BuildingEntity
         Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
         residents.Add(newC);
         currentGrowthProgress = 0;
+    }
+
+    // =========================================================================
+    // Efektywny limit mieszkańców (bazowy + meta upgrade)
+    // =========================================================================
+
+    /// <summary>
+    /// Zwraca rzeczywisty limit mieszkańców uwzględniający meta-upgrady.
+    /// Sprawdza bonus ogólny (HousingMaxResidents) oraz bonus per-rasa.
+    /// </summary>
+    public int GetEffectiveMaxResidents()
+    {
+        int bonus = 0;
+
+        if (MetaUpgradeManager.Instance != null)
+        {
+            // Bonus ogólny — działa dla wszystkich domów
+            bonus += Mathf.RoundToInt(
+                MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingMaxResidents));
+
+            // Bonus per rasa — tylko dla pasującego domu
+            MetaEffectType raceEffect = housingData.housingRace switch
+            {
+                Race.Humans  => MetaEffectType.HousingMaxResidents_Humans,
+                Race.Elves   => MetaEffectType.HousingMaxResidents_Elves,
+                Race.Dwarves => MetaEffectType.HousingMaxResidents_Dwarves,
+                _            => MetaEffectType.None
+            };
+
+            if (raceEffect != MetaEffectType.None)
+                bonus += Mathf.RoundToInt(
+                    MetaUpgradeManager.Instance.GetValue(raceEffect));
+        }
+
+        return housingData.maxResidents + bonus;
     }
 
     // =========================================================================
@@ -218,14 +252,14 @@ public class HousingEntity : BuildingEntity
 
     public float GetGrowthProgress()
     {
-        if (residents.Count >= housingData.maxResidents) return 1f;
+        if (residents.Count >= GetEffectiveMaxResidents()) return 1f;
         int required = CalculateRequiredGrowthTicks();
         return required == 0 ? 1f : (float)currentGrowthProgress / required;
     }
 
     public int GetDaysRemaining()
     {
-        if (residents.Count >= housingData.maxResidents) return 0;
+        if (residents.Count >= GetEffectiveMaxResidents()) return 0;
         return Mathf.Max(0, CalculateRequiredGrowthTicks() - currentGrowthProgress);
     }
 
@@ -239,7 +273,7 @@ public class HousingEntity : BuildingEntity
 
     public string GetGrowthStatus()
     {
-        if (residents.Count >= housingData.maxResidents) return "PEŁNY";
+        if (residents.Count >= GetEffectiveMaxResidents()) return "PEŁNY";
 
         foreach (var kvp in CalculateSurvivalCost())
             if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value)) return "BRAK ZASOBÓW";

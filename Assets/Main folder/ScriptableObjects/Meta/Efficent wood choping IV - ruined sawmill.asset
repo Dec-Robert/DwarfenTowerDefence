@@ -10,17 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: New inside organization II
+  m_Name: Efficent wood choping IV - ruined sawmill
   m_EditorClassIdentifier: 
-  id: new_inside_organization_ii
-  upgradeName: New inside organization II
-  description: "Domy zaczynaj\u0105 z 2 populacjami wi\u0119cej\r\n"
-  icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
-  cost: 300
+  id: efficent_wood_choping_iv_ruined_sawmill
+  upgradeName: Efficent wood choping IV
+  description: 
+  icon: {fileID: 0}
+  cost: 100
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: 16183f60b74b1994593dc655cc6efd21, type: 2}
-  effectType: 34
-  effectValue: 2
+  - {fileID: 11400000, guid: 749a7cbc63f829343b9d1e5b7741ec75, type: 2}
+  - {fileID: 11400000, guid: 3fa944e695acfbb4b8fc81ac67db91c8, type: 2}
+  effectType: 0
+  effectValue: 0
   effectValue2: 0
   targetBuilding: {fileID: 0}
