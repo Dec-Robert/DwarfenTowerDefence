@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce34df5ebabdac64997bb41d4ba2cdf0, type: 3}
+  m_Name: RuneSmithTower
+  m_EditorClassIdentifier: 
+  buildingName: 
+  description: 
+  icon: {fileID: 0}
+  type: 0
+  workerScalingFactor: 0.25
+  allowedTerrain: 
+  requiresOccupiedSpace: 0
+  requiresFreeElf: 0
+  isOutpost: 0
+  constructionCost: []
+  productionPerCycle: []
+  upkeepPerCycle: []
+  tier1Upgrades: []
+  prefab: {fileID: 0}
+  bonusRule:
+    requiredFeature: 0
+    range: 0
+    baseBonusPerHex: 0
+    penaltyPerUser: 0
+    minBonus: 0
+    onTopProductionBonus: 0
+  baseShifts: 1
+  baseWorkersPerShift: 1

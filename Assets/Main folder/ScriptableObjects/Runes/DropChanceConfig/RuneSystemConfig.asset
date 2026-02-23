@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd87ba91909749529c387a107a5b46e8, type: 3}
+  m_Name: RuneSystemConfig
+  m_EditorClassIdentifier: 
+  dropChanceNormal: 2
+  dropChanceElite: 100
+  minRunesFromBoss: 2
+  maxRunesFromBoss: 4
+  weightCommon: 60
+  weightUncommon: 20
+  weightRare: 10
+  weightLegendary: 6
+  weightCursed: 4
+  commonRunes:
+  - {fileID: 11400000, guid: 2fbecc97b72aca548b605af44c1d0d0f, type: 2}
+  - {fileID: 11400000, guid: 00556c8606750254c988c6c53ad68bfd, type: 2}
+  - {fileID: 11400000, guid: 8a2dde4cd922c674ab265a363f00380d, type: 2}
+  - {fileID: 11400000, guid: 9101ae50c1dc9da4cbbdc2520159a7a0, type: 2}
+  uncommonRunes:
+  - {fileID: 11400000, guid: 2980662d16309dd40a5e340b8ee76017, type: 2}
+  rareRunes:
+  - {fileID: 11400000, guid: 3aa372a49a0cf3544b77a6434e6255bb, type: 2}
+  legendaryRunes:
+  - {fileID: 11400000, guid: b222dfd2e9d137749a1c9efa72ed9003, type: 2}
+  cursedRunes:
+  - {fileID: 11400000, guid: c6f3e07196df0d047b147c9dc97c7364, type: 2}

@@ -184,6 +184,14 @@ public enum MetaEffectType
     Reserved_A                     = 100,
     Reserved_B                     = 101,
     Reserved_C                     = 102,
+
+    // ── System Run (Drop) ─────────────────────────────────────────────────────
+    RuneDropChance_Uncommon        = 110,
+    RuneDropChance_Rare            = 111,
+    RuneDropChance_Legendary       = 112,
+    RuneDropChance_Cursed          = 113,
+    // Zwiększa maksymalną liczbę wież runicznych, które gracz może wybudować (bazowo 0)
+    RuneTowerLimit                 = 114
 }
 
 [System.Serializable]
@@ -203,4 +211,33 @@ public struct TerrainBonusRule
     // --- NOWE POLE ---
     [Tooltip("Jednorazowy bonus do produkcji, je�li budynek stoi BEZPO�REDNIO na tym terenie.")]
     public float onTopProductionBonus;
+}
+
+
+
+public enum RuneRarity
+{
+    Common,      // Białe
+    Uncommon,    // Zielone
+    Rare,        // Niebieskie
+    Legendary,   // Złote (Ultimate)
+    Cursed       // Czerwone (Potężny buff + losowy debuff)
+}
+
+public enum RuneValueType
+{
+    Flat,        // Wartość stała (np. +1 Zasięgu)
+    Percent      // Wartość procentowa (np. +10% Zasięgu)
+}
+
+// TYLKO te statystyki będą widoczne przy tworzeniu run:
+public enum RuneStatType
+{
+    Range,
+    Damage,
+    FireRate,
+    ArmorPenetration,
+    MagicPenetration,
+    CriticalChance,
+    CriticalDamage
 }

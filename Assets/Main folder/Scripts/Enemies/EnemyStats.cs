@@ -143,6 +143,13 @@ public class EnemyStats : MonoBehaviour
                 ResourceLogger.Instance.LogSingleEvent($"Śmierć Wroga: {data.enemyName}", ResourceType.Artifacts, 1);
         }
 
+        // --- NOWE: Rzut na drop runy przy śmierci wroga ---
+        if (RuneManager.Instance != null)
+        {
+            RuneManager.Instance.RollRuneDrop(this.rank);
+        }
+        // --------------------------------------------------
+
         foreach (var skill in skills) skill.OnDeath();
         Destroy(gameObject);
     }

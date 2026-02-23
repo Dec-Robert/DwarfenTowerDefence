@@ -32,16 +32,58 @@ public class BuildingPlacer
         // Walidacja stanu chunku
         if (!IsChunkStateValidForBuilding(cell.chunkCoord, data)) return false;
 
+        // ── NOWE: SPECJALNA WALIDACJA DLA WIEŻY RUNICZNEJ ─────────────────────
+        if (data.prefab != null && data.prefab.GetComponent<RuneTowerEntity>() != null)
+        {
+            // 1. Sprawdź limit z Meta-Progresji (Bazowo 0)
+            int currentCount = BuildingRegistry.Instance != null ? BuildingRegistry.Instance.GetAllOfType<RuneTowerEntity>().Count : 0;
+            int maxAllowed = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit)) : 0;
+            
+            if (currentCount >= maxAllowed) return false;
+
+            // 2. Sprawdź, czy sąsiaduje z Kuźnią Runiczną
+            bool hasForgeNeighbor = false;
+            if (HexMapVisualizer.Instance != null)
+            {
+                var neighbors = HexGridMath.GetNeighbors(cell.localCoord);
+                foreach (var nCoord in neighbors)
+                {
+                    HexCell neighborCell = HexMapVisualizer.Instance.GetHexCell(cell.chunkCoord, nCoord);
+                    if (neighborCell != null && neighborCell.GetComponentInChildren<RuneForgeEntity>() != null)
+                    {
+                        hasForgeNeighbor = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!hasForgeNeighbor) return false; // Nie pozwala postawić, jeśli nie ma kuźni obok
+        }
+        // ───────────────────────────────────────────────────────────────────────
+
         return true;
     }
-
     /// <summary>
     /// Próbuje pobrać zasoby i postawić budynek.
     /// Zwraca true jeśli budowa się powiodła.
     /// </summary>
     public bool TryBuild(HexCell cell, BuildingData data)
     {
-        if (!IsPlacementValid(cell, data)) return false;
+        if (!IsPlacementValid(cell, data)) 
+        {
+            // Opcjonalny feedback dla gracza klikającego "złe" miejsce pod wieżę runiczną
+            if (data.prefab != null && data.prefab.GetComponent<RuneTowerEntity>() != null)
+            {
+                int currentCount = BuildingRegistry.Instance != null ? BuildingRegistry.Instance.GetAllOfType<RuneTowerEntity>().Count : 0;
+                int maxAllowed = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit)) : 0;
+                
+                if (currentCount >= maxAllowed)
+                    Debug.Log("<color=orange>Osiągnięto limit Wież Runicznych! Zwiększ go w Meta-Progresji.</color>");
+                else
+                    Debug.Log("<color=orange>Wieża Runiczna musi zostać zbudowana tuż obok Kuźni Runicznej!</color>");
+            }
+            return false;
+        }
 
         // ── Wymaganie: wolny elf ───────────────────────────────────────────────
         if (data.requiresFreeElf)

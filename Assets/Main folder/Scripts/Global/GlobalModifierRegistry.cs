@@ -10,6 +10,10 @@ public enum TowerStatType
     Range,
     Damage,
     FireRate,
+    ArmorPenetration,    // <--- DODANE
+    MagicPenetration,    // <--- DODANE
+    CriticalChance,      // <--- DODANE
+    CriticalDamage,      // <--- DODANE
 
     // ── Produkcja globalna ────────────────────────────────────────────────────
     GlobalProduction,
