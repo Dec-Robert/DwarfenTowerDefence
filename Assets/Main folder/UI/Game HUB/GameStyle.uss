@@ -497,6 +497,157 @@
 }
 
 /* ============================================================
+   DOLNY PASEK I MINIMAPA (Lewa strona)
+   ============================================================ */
+
+/* Ozdobna linia na dole */
+.bottom-container {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 12px;
+    background-color: rgba(12, 10, 8, 0.95);
+    border-top-width: 2px;
+    border-top-color: #8B6914;
+}
+
+/* Kontener Mini-mapy i czasu (Lewy Dół) */
+.left-corner-wrapper {
+    position: absolute;
+    bottom: 12px; /* Nad dolną linią */
+    left: 20px;
+    align-items: flex-start;
+}
+
+/* Przyciski Czasu (Nad minimapą) */
+.time-controls-panel {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(12, 10, 8, 0.9);
+    border-width: 1px; border-color: #3A2800; border-bottom-width: 0;
+    border-radius: 4px 4px 0 0;
+    padding: 4px;
+}
+
+.time-btn {
+    width: 35px; height: 30px; margin-right: 2px;
+    background-color: rgba(22, 18, 6, 0.95);
+    border-radius: 2px; border-width: 1px; border-color: #2A2008;
+    color: #776600; font-size: 12px; -unity-font-style: bold;
+}
+.time-btn:hover { background-color: rgba(50, 40, 10, 0.95); color: #FFD700; }
+.time-btn-active { border-bottom-width: 2px; border-bottom-color: #FFD700; color: #FFD700; }
+
+/* Placeholder Mini-Mapy */
+.minimap-placeholder {
+    width: 200px; height: 200px;
+    background-color: rgba(40, 40, 40, 0.9);
+    border-width: 2px; border-color: #8B6914;
+}
+
+/* ============================================================
+   MENU BUDOWANIA (Prawy Dół - Styl Spellforce)
+   ============================================================ */
+
+.build-system-wrapper {
+    position: absolute;
+    bottom: 15px; right: 20px;
+    align-items: flex-end; /* Wyrównanie do prawej */
+    flex-direction: column; /* Guzik na górze, panel pod nim */
+}
+
+/* Okrągły przycisk "Buduj" / "X" */
+.main-build-btn {
+    width: 60px; height: 60px;
+    background-color: rgba(30, 20, 10, 0.95);
+    border-radius: 30px;
+    border-width: 2px; border-color: #FFD700;
+    font-size: 12px; -unity-font-style: bold; color: #FFD700;
+    margin-bottom: 5px; /* Odstęp od panelu */
+    transition:  0.1s;
+}
+.main-build-btn:hover { background-color: #4A3010; scale: 1.1; }
+.main-build-btn-open { background-color: #8B0000; border-color: #FF4444; color: white; font-size: 24px; }
+
+/* Główny kontener otwartego menu (Kategorie po lewej + Siatka po prawej) */
+.build-menu-expanded {
+    flex-direction: row; /* Z lewej kategorie, z prawej siatka */
+    background-color: rgba(15, 12, 10, 0.95);
+    border-radius: 4px; border-width: 2px; border-color: #5A4500;
+    padding: 2px;
+}
+
+/* Pionowy pasek kategorii (Z LEWEJ) */
+.category-panel {
+    flex-direction: column;
+    justify-content: flex-start;
+    background-color: rgba(10, 8, 5, 0.9);
+    border-right-width: 2px; border-right-color: #3A2800;
+    padding: 5px; width: 60px;
+}
+
+.category-btn {
+    width: 45px; height: 45px; margin-bottom: 5px;
+    background-color: #1A1A1A; color: #888;
+    font-size: 9px; -unity-font-style: bold;
+    border-radius: 4px; border-width: 1px; border-color: #333;
+}
+.category-btn:hover { background-color: #333; color: white; border-color: #8B6914; }
+.category-btn-active { background-color: #2A2010; color: #FFD700; border-right-width: 3px; border-right-color: #FFD700; }
+
+/* Panel siatki budynków (Z PRAWEJ) */
+.buildings-list-panel {
+    padding: 10px;
+    width: 320px; /* Stała szerokość okna */
+    height: 250px; /* Wysokość okna, pozwoli na Scrollowanie jeśli potrzeba */
+}
+
+/* Konfiguracja ScrollView, by tworzył Grid */
+.buildings-scroll-view {
+    width: 100%; height: 100%;
+}
+
+.buildings-scroll-view .unity-scroll-view__content-container {
+    flex-direction: row;
+    flex-wrap: wrap; /* Zezwala na zawijanie ikon do kolejnych rzędów */
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+/* Kwadratowy przycisk budynku */
+.generated-build-btn {
+    width: 65px; height: 65px; margin: 4px;
+    background-color: #222; border-width: 1px; border-color: #444;
+    justify-content: flex-end;
+    padding: 0;
+}
+.generated-build-btn:hover { border-color: #FFD700; }
+.generated-btn-label {
+    background-color: rgba(0,0,0,0.85); color: white;
+    font-size: 9px; -unity-text-align: middle-center;
+    padding: 2px 0; white-space: normal;
+}
+
+/* ============================================================
+   TOOLTIPY (FROSTPUNK 2 STYLE)
+   ============================================================ */
+.tooltip-box {
+    background-color: rgba(10, 10, 12, 0.98);
+    border-width: 1px; border-color: #444;
+    border-top-width: 3px; border-top-color: #FFD700;
+    border-radius: 2px;
+    padding: 15px; width: 280px; /* Szerszy dla lepszej czytelności */
+}
+
+.tooltip-header {
+    color: #FFD700; font-size: 14px; -unity-font-style: bold;
+    margin-bottom: 8px; border-bottom-width: 1px; border-bottom-color: #333; padding-bottom: 5px;
+}
+
+.tooltip-text {
+    color: #CCC; font-size: 12px; white-space: normal; line-height: 15px;
+}
+
+/* ============================================================
    IKONY ZASOBÓW
    ============================================================ */
 

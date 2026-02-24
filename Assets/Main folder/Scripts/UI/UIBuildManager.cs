@@ -2,44 +2,47 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 public class UIBuildManager : MonoBehaviour
 {
+    public static UIBuildManager Instance { get; private set; }
+
     [Header("Referencje")]
     public UIDocument uiDocument;
-
-    [Header("Baza Danych")]
-    // Jedna du�a lista, kt�r� posortujemy w Start
     public List<BuildingData> allBuildingsDatabase;
 
     // Listy posortowane
-    private List<BuildingData> productionBuildings = new List<BuildingData>();
-    private List<BuildingData> defenseBuildings = new List<BuildingData>();
-    private List<BuildingData> housingBuildings = new List<BuildingData>();
+    private List<BuildingData> prodBuildings = new List<BuildingData>();
+    private List<BuildingData> defBuildings = new List<BuildingData>();
+    private List<BuildingData> houseBuildings = new List<BuildingData>();
+    private List<BuildingData> utilBuildings = new List<BuildingData>();
+    private List<BuildingData> uniqueBuildings = new List<BuildingData>();
 
     // Elementy UI
     private Button btnMainBuild;
     private VisualElement categoryPanel;
     private VisualElement buildingsListPanel;
     private VisualElement buildingsContainer;
+    private VisualElement expandedMenuContainer;
 
-    private Button btnCatProd, btnCatDef, btnCatHouse;
+
+    private Button btnCatProd, btnCatDef, btnCatHouse, btnCatUtil, btnCatUnique;
 
     // Cache Tooltipa
     private VisualElement tooltipBox;
-    private Label tooltipTitle, tooltipBody, tooltipCost;
+    private Label tooltipTitle, tooltipBody;
 
-    // Stan
     private bool isMenuOpen = false;
 
+    private void Awake() => Instance = this;
+
     private void Start()
-    {//
-        // 1. Sortowanie budynk�w
+    {
         SortBuildings();
 
         var root = uiDocument.rootVisualElement;
 
-        // 2. Znajd� elementy interfejsu (z nowego GameHUD.uxml)
         btnMainBuild = root.Q<Button>("Btn_MainBuild");
         categoryPanel = root.Q<VisualElement>("CategoryPanel");
         buildingsListPanel = root.Q<VisualElement>("BuildingsListPanel");
@@ -48,92 +51,95 @@ public class UIBuildManager : MonoBehaviour
         btnCatProd = root.Q<Button>("Btn_Cat_Production");
         btnCatDef = root.Q<Button>("Btn_Cat_Defense");
         btnCatHouse = root.Q<Button>("Btn_Cat_Housing");
+        btnCatUtil = root.Q<Button>("Btn_Cat_Utility");
+        btnCatUnique = root.Q<Button>("Btn_Cat_Unique");
 
-        // Tooltip
         tooltipBox = root.Q<VisualElement>("Tooltip");
         tooltipTitle = root.Q<Label>("TooltipTitle");
-        tooltipBody = root.Q<Label>("TooltipBody");
-        tooltipCost = root.Q<Label>("TooltipCost");
+        tooltipBody = root.Q<Label>("TooltipBody"); // Połączyliśmy koszt i opis w jedno duże body
+        expandedMenuContainer = root.Q<VisualElement>("ExpandedMenuContainer"); // NOWE
 
-        // 3. Podepnij eventy
-        if (btnMainBuild != null)
-            btnMainBuild.clicked += ToggleMainMenu;
 
-        if (btnCatProd != null) btnCatProd.clicked += () => ShowCategory(productionBuildings, btnCatProd);
-        if (btnCatDef != null) btnCatDef.clicked += () => ShowCategory(defenseBuildings, btnCatDef);
-        if (btnCatHouse != null) btnCatHouse.clicked += () => ShowCategory(housingBuildings, btnCatHouse);
+        if (btnMainBuild != null) btnMainBuild.clicked += ToggleMainMenu;
 
-        // Na start ukryte
+        if (btnCatProd != null) btnCatProd.clicked += () => ShowCategory(prodBuildings, btnCatProd);
+        if (btnCatDef != null) btnCatDef.clicked += () => ShowCategory(defBuildings, btnCatDef);
+        if (btnCatHouse != null) btnCatHouse.clicked += () => ShowCategory(houseBuildings, btnCatHouse);
+        if (btnCatUtil != null) btnCatUtil.clicked += () => ShowCategory(utilBuildings, btnCatUtil);
+        if (btnCatUnique != null) btnCatUnique.clicked += () => ShowCategory(uniqueBuildings, btnCatUnique);
+
         CloseAll();
         HideTooltip();
     }
 
     void SortBuildings()
     {
-        productionBuildings.Clear();
-        defenseBuildings.Clear();
-        housingBuildings.Clear();
+        prodBuildings.Clear(); defBuildings.Clear(); houseBuildings.Clear(); utilBuildings.Clear(); uniqueBuildings.Clear();
 
         foreach (var b in allBuildingsDatabase)
         {
             if (b == null) continue;
-
-            if (b.type == BuildingType.Economic) productionBuildings.Add(b);
-            else if (b.type == BuildingType.Defense) defenseBuildings.Add(b);
-            else if (b.type == BuildingType.Utility) housingBuildings.Add(b);
-            // Unique (Beacon, Kapitol) pomijamy w menu budowania
+            switch (b.type)
+            {
+                case BuildingType.Economic: prodBuildings.Add(b); break;
+                case BuildingType.Defense: defBuildings.Add(b); break;
+                case BuildingType.Housing: houseBuildings.Add(b); break;
+                case BuildingType.Utility: utilBuildings.Add(b); break;
+                case BuildingType.Unique: uniqueBuildings.Add(b); break;
+            }
         }
     }
 
     void ToggleMainMenu()
     {
         isMenuOpen = !isMenuOpen;
-
         if (isMenuOpen)
         {
-            categoryPanel.style.display = DisplayStyle.Flex;
-            btnMainBuild.text = "X"; // Zmie� na Zamknij
-            btnMainBuild.AddToClassList("build-menu-btn-cancel");
-
-            // Domy�lnie otw�rz pierwsz� kategori� (Produkcja)
-            ShowCategory(productionBuildings, btnCatProd);
+            expandedMenuContainer.style.display = DisplayStyle.Flex; // NOWE
+            btnMainBuild.text = "X";
+            btnMainBuild.AddToClassList("main-build-btn-open");
+            ShowCategory(prodBuildings, btnCatProd);
         }
-        else
-        {
-            CloseAll();
-        }
+        else CloseAll();
     }
 
     void CloseAll()
     {
         isMenuOpen = false;
-        if (categoryPanel != null) categoryPanel.style.display = DisplayStyle.None;
-        if (buildingsListPanel != null) buildingsListPanel.style.display = DisplayStyle.None;
+        if (expandedMenuContainer != null) expandedMenuContainer.style.display = DisplayStyle.None; // NOWE
 
         if (btnMainBuild != null)
         {
             btnMainBuild.text = "BUDUJ";
-            btnMainBuild.RemoveFromClassList("build-menu-btn-cancel");
+            btnMainBuild.RemoveFromClassList("main-build-btn-open");
         }
 
-        if (InteractionManager.Instance != null) InteractionManager.Instance.CancelBuilding();
+        InteractionManager.Instance?.CancelBuilding();
         HideTooltip();
     }
 
     void ShowCategory(List<BuildingData> buildings, Button activeBtn)
     {
-        // Poka� panel listy
-        if (buildingsListPanel != null) buildingsListPanel.style.display = DisplayStyle.Flex;
+        // 1. Wymuszenie zawijania (FlexWrap.Wrap) na zawartości ScrollView
+        if (buildingsListPanel != null)
+        {
+            ScrollView scroll = buildingsListPanel.Q<ScrollView>();
+            if (scroll != null)
+            {
+                scroll.contentContainer.style.flexDirection = FlexDirection.Row;
+                scroll.contentContainer.style.flexWrap = Wrap.Wrap;
+                scroll.contentContainer.style.justifyContent = Justify.FlexStart; // Od lewej
+            }
+        }
 
-        // Reset styl�w przycisk�w kategorii
-        if (btnCatProd != null) btnCatProd.RemoveFromClassList("category-btn-active");
-        if (btnCatDef != null) btnCatDef.RemoveFromClassList("category-btn-active");
-        if (btnCatHouse != null) btnCatHouse.RemoveFromClassList("category-btn-active");
+        // --- Reszta twojego oryginalnego kodu w ShowCategory ---
+        btnCatProd?.RemoveFromClassList("category-btn-active");
+        btnCatDef?.RemoveFromClassList("category-btn-active");
+        btnCatHouse?.RemoveFromClassList("category-btn-active");
+        btnCatUtil?.RemoveFromClassList("category-btn-active");
+        btnCatUnique?.RemoveFromClassList("category-btn-active");
 
-        // Aktywuj wybrany
-        if (activeBtn != null) activeBtn.AddToClassList("category-btn-active");
-
-        // Wygeneruj przyciski
+        activeBtn?.AddToClassList("category-btn-active");
         GenerateButtons(buildings);
     }
 
@@ -154,55 +160,39 @@ public class UIBuildManager : MonoBehaviour
             }
 
             Label nameLbl = new Label(data.buildingName);
-            nameLbl.style.fontSize = 9;
-            nameLbl.style.color = Color.white;
-            nameLbl.style.backgroundColor = new Color(0, 0, 0, 0.7f);
-            nameLbl.style.unityTextAlign = TextAnchor.MiddleCenter;
-            nameLbl.style.whiteSpace = WhiteSpace.Normal;
+            nameLbl.AddToClassList("generated-btn-label");
             btn.Add(nameLbl);
 
-            // KLIKNI�CIE -> Wybierz budynek
-            btn.clicked += () => {
-                if (InteractionManager.Instance != null)
-                    InteractionManager.Instance.SelectBuildingToBuild(data);
-            };
-
-            // TOOLTIPY
+            btn.clicked += () => InteractionManager.Instance?.SelectBuildingToBuild(data);
             btn.RegisterCallback<MouseEnterEvent>(evt => ShowTooltip(data, evt));
-            btn.RegisterCallback<MouseMoveEvent>(evt => MoveTooltip(evt));
+            btn.RegisterCallback<MouseMoveEvent>(evt => MoveTooltip(evt.mousePosition));
             btn.RegisterCallback<MouseLeaveEvent>(evt => HideTooltip());
 
             buildingsContainer.Add(btn);
         }
     }
 
-    // --- LOGIKA TOOLTIPA ---
+    // =========================================================================
+    // SYSTEM TOOLTIPÓW (FROSTPUNK 2 / SPELLFORCE STYLE)
+    // =========================================================================
 
     private void ShowTooltip(BuildingData data, MouseEnterEvent evt)
     {
         if (tooltipBox == null) return;
-
         tooltipBox.style.display = DisplayStyle.Flex;
         UpdateTooltipContent(data);
         MoveTooltip(evt.mousePosition);
     }
 
-    private void HideTooltip()
-    {
-        if (tooltipBox != null) tooltipBox.style.display = DisplayStyle.None;
-    }
-
-    private void MoveTooltip(MouseMoveEvent evt)
-    {
-        MoveTooltip(evt.mousePosition);
-    }
+    private void HideTooltip() { if (tooltipBox != null) tooltipBox.style.display = DisplayStyle.None; }
 
     private void MoveTooltip(Vector2 mousePos)
     {
         if (tooltipBox == null) return;
-
-        float offsetX = 15;
-        float offsetY = -tooltipBox.layout.height - 10;
+        
+        // ZWIĘKSZONY OFFSET:
+        float offsetX = 20; // 20 pikseli w prawo od kursora
+        float offsetY = -tooltipBox.layout.height - 20; // 20 pikseli nad kursorem
 
         tooltipBox.style.left = mousePos.x + offsetX;
         tooltipBox.style.top = mousePos.y + offsetY;
@@ -210,116 +200,140 @@ public class UIBuildManager : MonoBehaviour
 
     private void UpdateTooltipContent(BuildingData data)
     {
-        tooltipTitle.text = data.buildingName;
+        tooltipTitle.text = data.buildingName.ToUpper();
+        StringBuilder sb = new StringBuilder();
 
-        StringBuilder bodySb = new StringBuilder();
-        StringBuilder costSb = new StringBuilder();
-
-        // 1. KOSZT BUDOWY (Wsp�lny dla wszystkich)
-        costSb.Append("<b>Koszt Budowy:</b>\n");
+        // --- 1. KOSZT BUDOWY (Wspólne) ---
+        sb.AppendLine("<color=#AAAAAA>KOSZT BUDOWY:</color>");
         if (data.constructionCost != null && data.constructionCost.Count > 0)
         {
             foreach (var cost in data.constructionCost)
             {
-                // Kolorowanie tekstu (zielony/czerwony)
                 bool canAfford = ResourceManager.Instance.CanAfford(cost.type, cost.amount);
-                string colorHex = canAfford ? "#88FF88" : "#FF4444";
-                costSb.AppendLine($"<color={colorHex}>- {cost.amount} {cost.type}</color>");
+                string colorHex = canAfford ? "#FFFFFF" : "#FF4444";
+                sb.AppendLine($"<color={colorHex}> • {cost.amount} {cost.type}</color>");
             }
         }
-        else
-        {
-            costSb.Append("Darmowe");
-        }
-        tooltipCost.text = costSb.ToString();
+        else sb.AppendLine(" <color=#88FF88>Darmowe</color>");
 
-        // 2. SZCZEGӣOWY OPIS ZALE�NY OD TYPU BUDYNKU
+        // --- 2. WYMAGANIA POPULACJI (Wspólne) ---
+        if (data.requiresSpecificCitizen)
+        {
+            sb.AppendLine($"\n<color=#FF8800>WYMAGA (Na stałe): 1x {data.requiredCitizenRace}</color>");
+        }
+
+        sb.AppendLine("<color=#444444>────────────────────────</color>");
+
+        // --- 3. DANE ZALEŻNE OD TYPU (FROSTPUNK STYLE) ---
         switch (data.type)
         {
-            // --- A) OBRONA ---
-            case BuildingType.Defense:
-                // Rzutujemy dane, �eby dosta� si� do statystyk wie�y
-                if (data is TowerData tower)
-                {
-                    bodySb.AppendLine("<b>Typ:</b> Wie�a Obronna");
-                    bodySb.AppendLine($"<b>Obra�enia:</b> {tower.baseDamage}");
-                    bodySb.AppendLine($"<b>Zasi�g:</b> {tower.baseRange}");
-                    bodySb.AppendLine($"<b>Szybko��:</b> {tower.fireRate}/s");
-
-                    // KOSZT AMUNICJI (czyli upkeepPerCycle)
-                    if (tower.upkeepPerCycle != null && tower.upkeepPerCycle.Count > 0)
-                    {
-                        bodySb.Append("\n<b>Koszt Amunicji (na noc):</b>\n");
-                        foreach (var upkeep in tower.upkeepPerCycle)
-                            bodySb.AppendLine($"- {upkeep.amount} {upkeep.type}");
-                    }
-                }
-                break;
-
-            // --- B) MIESZKANIA ---
-            case BuildingType.Utility:
-                // Zak�adamy, �e Utility to Mieszkania
+            case BuildingType.Housing:
                 if (data is HousingBuildingData house)
                 {
-                    bodySb.AppendLine("<b>Typ:</b> Budynek Mieszkalny");
-                    bodySb.AppendLine($"<b>Rasa:</b> {house.housingRace}");
-                    bodySb.AppendLine($"<b>Startowa Populacja:</b> {house.initialResidents}");
-                    bodySb.AppendLine($"<b>Max Populacja:</b> {house.maxResidents}");
-
-                    if (house.baseDailyUpkeep != null && house.baseDailyUpkeep.Count > 0)
-                    {
-                        bodySb.Append("\n<b>Utrzymanie Budynku (dziennie):</b>\n");
-                        foreach (var upkeep in house.baseDailyUpkeep)
-                            bodySb.AppendLine($"- {upkeep.amount} {upkeep.type}");
-                    }
-                    if (house.upkeepPerResident != null && house.upkeepPerResident.Count > 0)
-                    {
-                        bodySb.Append("\n<b>Utrzymanie Mieszka�ca (dziennie):</b>\n");
-                        foreach (var upkeep in house.upkeepPerResident)
-                            bodySb.AppendLine($"- {upkeep.amount:F2} {upkeep.type}");
-                    }
+                    sb.AppendLine($"<color=#AAAAAA>Pojemność:</color> <b>{house.initialResidents} / {house.maxResidents} {house.housingRace}</b>");
+                    
                     if (house.growthSurplusCost != null && house.growthSurplusCost.Count > 0)
                     {
-                        bodySb.Append("\n<b>Koszt Przyrostu (dziennie):</b>\n");
-                        foreach (var upkeep in house.growthSurplusCost)
-                            bodySb.AppendLine($"- {upkeep.amount} {upkeep.type}");
+                        sb.AppendLine("\n<color=#AAAAAA>Koszt przyrostu (na cykl):</color>");
+                        foreach (var cost in house.growthSurplusCost) sb.AppendLine($" <color=#FF8888>-{cost.amount} {cost.type}</color>");
                     }
                 }
                 break;
 
-            // --- C) PRODUKCJA (Domy�lnie) ---
-            case BuildingType.Economic:
-            default:
-                bodySb.AppendLine("<b>Typ:</b> Budynek Ekonomiczny");
+            case BuildingType.Defense:
+                if (data is TowerData tower)
+                {
+                    sb.AppendLine($"<color=#AAAAAA>Obrażenia:</color> <b>{tower.baseDamage}</b>  |  <color=#AAAAAA>Zasięg:</color> <b>{tower.baseRange}</b>");
+                    sb.AppendLine($"<color=#AAAAAA>Szybkość:</color> <b>{tower.fireRate}/s</b>");
+                    
+                    if (tower.armorPenetration > 0 || tower.magicPenetration > 0)
+                        sb.AppendLine($"<color=#AAAAAA>Penetracja:</color> <b>{tower.armorPenetration}% Fiz | {tower.magicPenetration}% Mag</b>");
+                    
+                    if (tower.criticalChancel > 0)
+                        sb.AppendLine($"<color=#AAAAAA>Kryt:</color> <b>{tower.criticalChancel}% szans ({tower.criticalDamageMultiplier}x DMG)</b>");
 
+                    if (tower.upkeepPerCycle != null && tower.upkeepPerCycle.Count > 0)
+                    {
+                        sb.AppendLine("\n<color=#AAAAAA>Amunicja (na noc):</color>");
+                        foreach (var ammo in tower.upkeepPerCycle) sb.AppendLine($" <color=#FF8888>-{ammo.amount} {ammo.type}</color>");
+                    }
+                }
+                break;
+
+            case BuildingType.Economic:
                 if (data.productionPerCycle != null && data.productionPerCycle.Count > 0)
                 {
-                    bodySb.Append("\n<b>Produkcja (na zmian�):</b>\n");
-                    foreach (var prod in data.productionPerCycle)
-                        bodySb.AppendLine($"+ {prod.amount} {prod.type}");
+                    sb.AppendLine("<color=#AAAAAA>Produkcja (zmiana):</color>");
+                    foreach (var prod in data.productionPerCycle) sb.AppendLine($" <color=#88FF88>+{prod.amount} {prod.type}</color>");
                 }
-
                 if (data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0)
                 {
-                    bodySb.Append("\n<b>Utrzymanie (na zmian�):</b>\n");
-                    foreach (var upkeep in data.upkeepPerCycle)
-                        bodySb.AppendLine($"- {upkeep.amount} {upkeep.type}");
+                    sb.AppendLine("<color=#AAAAAA>Zużycie (zmiana):</color>");
+                    foreach (var upkeep in data.upkeepPerCycle) sb.AppendLine($" <color=#FF8888>-{upkeep.amount} {upkeep.type}</color>");
                 }
 
-                if (data.allowedTerrain != null && data.allowedTerrain.Count > 0)
+                // Teren
+                if (data.allowedTerrain != null && data.allowedTerrain.Count == 1 && data.allowedTerrain[0] != HexFeatureType.None)
                 {
-                    bodySb.AppendLine("\n<b>Wymagany Teren:</b>");
-                    bodySb.Append(string.Join(", ", data.allowedTerrain));
+                    sb.AppendLine($"\n<color=#AAAAAA>Wymaga podłoża:</color> <b>{data.allowedTerrain[0]}</b>");
+                }
+                
+                // Bonusy z Terenu
+                if (data.bonusRule.requiredFeature != HexFeatureType.None)
+                {
+                    sb.AppendLine($"\n<color=#AAAAAA>Bonus z terenu:</color> <b>{data.bonusRule.requiredFeature}</b>");
+                    if (data.bonusRule.onTopProductionBonus > 0) 
+                        sb.AppendLine($" <color=#88FF88>+{data.bonusRule.onTopProductionBonus} za postawienie na źródle</color>");
+                    if (data.bonusRule.baseBonusPerHex > 0) 
+                        sb.AppendLine($" <color=#88FF88>+{data.bonusRule.baseBonusPerHex} za każde źródło obok</color>");
+                }
+                break;
+
+            case BuildingType.Utility:
+            case BuildingType.Unique:
+                // SPECJALNE BUDYNKI
+                sb.AppendLine($"<i>{data.description}</i>\n");
+
+                if (data.isOutpost)
+                {
+                    sb.AppendLine("<color=#FFD700>• Odblokowuje pełne budownictwo na chunku.</color>");
+                }
+                else if (data.prefab != null)
+                {
+                    if (data.prefab.GetComponent<ExpeditionCenterEntity>() != null)
+                    {
+                        sb.AppendLine("<color=#44AAFF>• Pozwala wysyłać zwiadowców w Mgłę Wojny.</color>");
+                    }
+                    else if (data.prefab.GetComponent<RuneForgeEntity>() != null)
+                    {
+                        sb.AppendLine("<color=#FFD700>• Pozwala umieszczać Runy w wieżach.</color>");
+                        sb.AppendLine("<color=#AAAAAA>Zinfuzowane wieże w innych kuźniach:</color>");
+                        
+                        var forges = BuildingRegistry.Instance?.GetAllOfType<RuneForgeEntity>();
+                        int count = 0;
+                        if (forges != null)
+                        {
+                            foreach (var f in forges) {
+                                if (f.infusedTowerData != null) {
+                                    sb.AppendLine($" - {f.infusedTowerData.buildingName}");
+                                    count++;
+                                }
+                            }
+                        }
+                        if (count == 0) sb.AppendLine(" - Brak");
+
+                        int limit = Mathf.RoundToInt(MetaUpgradeManager.Instance?.GetValue(MetaEffectType.RuneTowerLimit) ?? 0);
+                        sb.AppendLine($"\n<color=#AAAAAA>Twój limit Wież Runicznych:</color> <b>{limit}</b>");
+                    }
+                    else if (data.prefab.GetComponent<RuneTowerEntity>() != null)
+                    {
+                        sb.AppendLine("<color=#FFD700>• Odblokowuje dodatkowy slot w Kuźni Runicznej.</color>");
+                        sb.AppendLine("<color=#FF4444>• Musi zostać zbudowana w przylegającym Heksie do Kuźni!</color>");
+                    }
                 }
                 break;
         }
 
-        // Dodanie og�lnego opisu, je�li istnieje
-        if (!string.IsNullOrEmpty(data.description))
-        {
-            bodySb.AppendLine($"\n<i>{data.description}</i>");
-        }
-
-        tooltipBody.text = bodySb.ToString();
+        tooltipBody.text = sb.ToString();
     }
 }

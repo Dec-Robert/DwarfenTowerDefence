@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: Efficent wood choping IV - ruined sawmill
+  m_Name: Additional towers IV
   m_EditorClassIdentifier: 
-  id: efficent_wood_choping_iv_ruined_sawmill
-  upgradeName: Efficent wood choping IV
-  description: Zaczynasz z dodatkowym tartakiem.
+  id: additional_towers_iv
+  upgradeName: Additional towers IV
+  description: "Do ku\u017Ani mo\u017Ce zosta\u0107 dobudowa 3 wie\u017Ce runiczne"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: 749a7cbc63f829343b9d1e5b7741ec75, type: 2}
-  effectType: 0
-  effectValue: 0
+  - {fileID: 11400000, guid: f061b99d66df57f46bcc7c168d78b512, type: 2}
+  effectType: 114
+  effectValue: 4
   effectValue2: 0
   targetBuilding: {fileID: 0}

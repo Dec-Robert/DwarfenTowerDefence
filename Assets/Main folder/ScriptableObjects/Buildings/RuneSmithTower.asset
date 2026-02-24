@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce34df5ebabdac64997bb41d4ba2cdf0, type: 3}
   m_Name: RuneSmithTower
   m_EditorClassIdentifier: 
-  buildingName: 
+  buildingName: Rune tower
   description: 
   icon: {fileID: 0}
-  type: 0
-  workerScalingFactor: 0.25
-  allowedTerrain: 
+  type: 2
+  workerScalingFactor: 0
+  allowedTerrain: 000000000100000002000000030000000400000005000000
   requiresOccupiedSpace: 0
   requiresFreeElf: 0
   isOutpost: 0
@@ -25,7 +25,7 @@ MonoBehaviour:
   productionPerCycle: []
   upkeepPerCycle: []
   tier1Upgrades: []
-  prefab: {fileID: 0}
+  prefab: {fileID: 1253841588521944598, guid: e4ebaf1706ba84b46b677476efc21a57, type: 3}
   bonusRule:
     requiredFeature: 0
     range: 0
@@ -33,5 +33,5 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseShifts: 0
+  baseWorkersPerShift: 0

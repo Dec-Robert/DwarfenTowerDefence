@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: New inside organization IV
   m_EditorClassIdentifier: 
   id: new_inside_organization_III_elvs
-  upgradeName: New inside organization III - Elves
+  upgradeName: New inside organization IV
   description: "Domy mog\u0105 mi\u0119c 2 populacje max wi\u0119cej\r\n"
   icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
   cost: 400

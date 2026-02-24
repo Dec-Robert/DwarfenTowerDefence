@@ -12,20 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce34df5ebabdac64997bb41d4ba2cdf0, type: 3}
   m_Name: RuneSmith
   m_EditorClassIdentifier: 
-  buildingName: 
+  buildingName: Rune smith
   description: 
   icon: {fileID: 0}
-  type: 0
-  workerScalingFactor: 0.25
-  allowedTerrain: 
+  type: 2
+  workerScalingFactor: 0
+  allowedTerrain: 000000000100000002000000030000000400000005000000
   requiresOccupiedSpace: 0
-  requiresFreeElf: 0
+  requiresSpecificCitizen: 1
+  requiredCitizenRace: 2
   isOutpost: 0
-  constructionCost: []
+  constructionCost:
+  - type: 0
+    amount: 100
+  - type: 1
+    amount: 80
+  - type: 2
+    amount: 50
+  - type: 7
+    amount: 40
   productionPerCycle: []
   upkeepPerCycle: []
   tier1Upgrades: []
-  prefab: {fileID: 0}
+  prefab: {fileID: 1253841588521944598, guid: 84cdae73d5ef63943aa2dc6ab913954e, type: 3}
   bonusRule:
     requiredFeature: 0
     range: 0
@@ -33,5 +42,5 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseShifts: 0
+  baseWorkersPerShift: 0

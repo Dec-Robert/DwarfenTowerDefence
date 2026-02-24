@@ -85,19 +85,20 @@ public class BuildingPlacer
             return false;
         }
 
-        // ── Wymaganie: wolny elf ───────────────────────────────────────────────
-        if (data.requiresFreeElf)
+        // ── Wymaganie: Wolny Obywatel (Elf dla Centrum / Krasnolud dla Kuźni) ──
+        if (data.requiresSpecificCitizen)
         {
-            bool hasFreeElf = CitizenManager.Instance != null &&
-                              CitizenManager.Instance.citizens.Exists(
-                                  c => c.race == Race.Elves && c.workState == WorkState.Idle);
+            bool hasFreeCitizen = CitizenManager.Instance != null &&
+                                  CitizenManager.Instance.citizens.Exists(
+                                      c => c.race == data.requiredCitizenRace && c.workState == WorkState.Idle);
 
-            if (!hasFreeElf)
+            if (!hasFreeCitizen)
             {
-                Debug.Log("<color=orange>Brak wolnego elfa! Centrum Ekspedycyjne wymaga przypisanego elfa do budowy.</color>");
+                Debug.Log($"<color=orange>Brak wolnego obywatela! Ten budynek wymaga przypisania do niego rasy: {data.requiredCitizenRace}.</color>");
                 return false;
             }
         }
+        // ───────────────────────────────────────────────────────────────────────
 
         // ── Koszt surowców ─────────────────────────────────────────────────────
         var costs = data.GetCostDictionary();

@@ -20,7 +20,15 @@ public class GroundProjectile : ProjectileBase
     private bool launched = false;
 
 
-    public override void Initialize(float _damage, DamageType _type, List<TowerEffectSO> _effects, bool _isCritical, float _criticalMultiplier, float _critChance)
+    public override void Initialize(
+        float _damage, 
+        DamageType _type, 
+        List<TowerEffectSO> _effects, 
+        bool _isCritical, 
+        float _criticalMultiplier, 
+        float _armorPen = 0f,   
+        float _magicPen = 0f,   
+        float _critChance = 0f)
     {
         base.Initialize(_damage, _type, _effects, _isCritical, _criticalMultiplier, _critChance);
         zoneCritChance = _critChance;

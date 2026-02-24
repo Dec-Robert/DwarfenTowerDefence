@@ -10,17 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: Efficent wood choping IV - ruined sawmill
+  m_Name: Burried supplies food
   m_EditorClassIdentifier: 
-  id: efficent_wood_choping_iv_ruined_sawmill
-  upgradeName: Efficent wood choping IV
-  description: Zaczynasz z dodatkowym tartakiem.
+  id: burried_supplies_food
+  upgradeName: Burried supplies food
+  description: 
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: 749a7cbc63f829343b9d1e5b7741ec75, type: 2}
-  effectType: 0
-  effectValue: 0
+  - {fileID: 11400000, guid: 17181d6ea060ba249b0f48ee037af7f6, type: 2}
+  - {fileID: 11400000, guid: b688a76a1c4f86e40ab4e933cefd9b81, type: 2}
+  effectType: 15
+  effectValue: 100
   effectValue2: 0
   targetBuilding: {fileID: 0}

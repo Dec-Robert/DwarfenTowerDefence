@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: Efficent wood choping IV - ruined sawmill
+  m_Name: Efficent Mining IV
   m_EditorClassIdentifier: 
-  id: efficent_wood_choping_iv_ruined_sawmill
-  upgradeName: Efficent wood choping IV
-  description: Zaczynasz z dodatkowym tartakiem.
+  id: efficent_mining_iv
+  upgradeName: Efficent Mining IV
+  description: 
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: 749a7cbc63f829343b9d1e5b7741ec75, type: 2}
+  - {fileID: 11400000, guid: 80ac48c1d1697c1489054b0bbd320f92, type: 2}
   effectType: 0
   effectValue: 0
   effectValue2: 0

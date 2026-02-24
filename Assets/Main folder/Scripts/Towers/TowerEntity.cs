@@ -142,12 +142,24 @@ public class TowerEntity : BuildingEntity
             if (worker.race == Race.Humans)  fireRateBonusFlat += 0.1f;
         }
 
-        // 4. Globalne mnożniki z rejestru (Beacon, badania, buffy itd.)
+        // 4. Globalne mnożniki i flaty z rejestru (Runy, Beacon, Badania)
         var registry = GlobalModifierRegistry.Instance;
 
-        float rangeMulti    = (1f + rangeBonusFlat)    * (registry != null ? registry.GetMultiplier(TowerStatType.Range,    this) : 1f);
-        float damageMulti   = (1f + damageBonusFlat)   * (registry != null ? registry.GetMultiplier(TowerStatType.Damage,   this) : 1f);
+        // Mnożniki (Multipliers)
+        float rangeMulti    = (1f + rangeBonusFlat)    * (registry != null ? registry.GetMultiplier(TowerStatType.Range, this) : 1f);
+        float damageMulti   = (1f + damageBonusFlat)   * (registry != null ? registry.GetMultiplier(TowerStatType.Damage, this) : 1f);
         float fireRateMulti = (1f + fireRateBonusFlat) * (registry != null ? registry.GetMultiplier(TowerStatType.FireRate, this) : 1f);
+
+        // Płaskie wartości (Flat) - TO NAPRAWIA TWOJĄ RUNĘ!
+        float flatRange    = registry != null ? registry.GetFlat(TowerStatType.Range, this) : 0f;
+        float flatDamage   = registry != null ? registry.GetFlat(TowerStatType.Damage, this) : 0f;
+        float flatFireRate = registry != null ? registry.GetFlat(TowerStatType.FireRate, this) : 0f;
+
+        // Nowe statystyki ryniczne (Pobieramy od razu zsumowane wartości Flat)
+        float flatArmorPen = registry != null ? registry.GetFlat(TowerStatType.ArmorPenetration, this) : 0f;
+        float flatMagicPen = registry != null ? registry.GetFlat(TowerStatType.MagicPenetration, this) : 0f;
+        float flatCritChan = registry != null ? registry.GetFlat(TowerStatType.CriticalChance, this) : 0f;
+        float flatCritDmg  = registry != null ? registry.GetFlat(TowerStatType.CriticalDamage, this) : 0f;
 
         // 5. Czy wieża jest aktywna bojowo?
         bool isNight = TimeCycleManager.Instance.currentHour >= NIGHT_START_HOUR
@@ -155,8 +167,14 @@ public class TowerEntity : BuildingEntity
 
         isCombatActive = crewCount > 0 && (!isNight || hasAmmo);
 
-        // 6. Przekazanie do kontrolera
-        controller?.UpdateCombatStats(efficiency, rangeMulti, damageMulti, fireRateMulti, isCombatActive);
+        // 6. Przekazanie DO KONTROLERA (zmieniamy parametry)
+        controller?.UpdateCombatStats(
+            efficiency, 
+            rangeMulti, flatRange, 
+            damageMulti, flatDamage, 
+            fireRateMulti, flatFireRate,
+            flatArmorPen, flatMagicPen, flatCritChan, flatCritDmg,
+            isCombatActive);
     }
 
     // =========================================================================

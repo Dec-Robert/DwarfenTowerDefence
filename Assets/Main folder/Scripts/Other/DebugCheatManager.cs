@@ -22,7 +22,7 @@ public class DebugCheatManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F3) && Input.GetKey(KeyCode.I))
         {
             CheatUnlockAll();
-            return; // zapobiega wywołaniu samego F3 w tej samej klatce
+            return; 
         }
 
         // F3 - Odblokuj tylko pola w stanie Scouting lub Unlocked (za darmo)
@@ -30,6 +30,9 @@ public class DebugCheatManager : MonoBehaviour
         {
             CheatUnlockScouting();
         }
+
+        // --- NOWE: F4 - SYSTEM RUN ---
+        HandleRuneCheats();
     }
 
     // =========================================================================
@@ -157,6 +160,61 @@ public class DebugCheatManager : MonoBehaviour
         expansion.uiExpansionMenu?.Hide();
     }
 
+    // =========================================================================
+    // F4 – Dodawanie Run (Ekwipunek)
+    // =========================================================================
+
+    void HandleRuneCheats()
+    {
+        // Sprawdzamy czy wciśnięto F4
+        if (Input.GetKeyDown(KeyCode.F4))
+        {
+            // Sprawdzamy, czy wciśnięto dodatkowo jakiś modyfikator
+            // (Najwygodniej jest trzymać literę i kliknąć F4)
+            if (Input.GetKey(KeyCode.Y))
+                AddDebugRunes(5, RuneRarity.Common);
+            else if (Input.GetKey(KeyCode.U))
+                AddDebugRunes(5, RuneRarity.Uncommon);
+            else if (Input.GetKey(KeyCode.I))
+                AddDebugRunes(5, RuneRarity.Rare);
+            else if (Input.GetKey(KeyCode.O))
+                AddDebugRunes(5, RuneRarity.Legendary);
+            else if (Input.GetKey(KeyCode.P))
+                AddDebugRunes(5, RuneRarity.Cursed);
+            else
+                AddDebugRunes(5, null); // Samo F4 = całkowicie losowe wg bazowych szans
+        }
+    }
+
+    void AddDebugRunes(int count, RuneRarity? forcedRarity)
+    {
+        if (RuneManager.Instance == null)
+        {
+            Debug.LogWarning("[DEBUG] Brak RuneManager na scenie.");
+            return;
+        }
+
+        int addedCount = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            // Generujemy runę, używając wymuszonej rzadkości (lub null, żeby wylosować z puli)
+            RuneItem newRune = RuneManager.Instance.GenerateRandomRune(forcedRarity);
+            
+            if (newRune != null)
+            {
+                RuneManager.Instance.playerRunes.Add(newRune);
+                addedCount++;
+            }
+        }
+
+        // Powiadamiamy interfejs (np. Menu Kuźni), żeby się odświeżył, jeśli jest otwarty
+        RuneManager.Instance.NotifyInventoryChanged();
+
+        string rarityStr = forcedRarity.HasValue ? forcedRarity.Value.ToString() : "Mieszanych (Losowych)";
+        Debug.Log($"<color=magenta>[DEBUG F4] Wygenerowano i dodano do ekwipunku {addedCount} run typu: {rarityStr}.</color>");
+    }
+    
     // =========================================================================
     // Pomocnicza – wymusza FullyUnlocked na konkretnym chunku
     // =========================================================================

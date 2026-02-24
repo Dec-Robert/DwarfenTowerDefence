@@ -162,6 +162,18 @@ public class UIBuildingInspector : MonoBehaviour
 
     public void ShowInspector(BuildingEntity entity)
     {
+        // --- NOWE: PRZECHWYCENIE KLIKNIĘCIA W KUŹNIĘ ---
+        if (entity is RuneForgeEntity forge )
+        {
+            Hide(); // Zamknij małego inspektora jeśli był otwarty
+            if (UIRuneForgeMenu.Instance != null)
+            {
+                UIRuneForgeMenu.Instance.OpenMenu(forge);
+            }
+            return;
+        }
+        // -----------------------------------------------
+
         currentTarget = entity;
         totalContainer.style.display = DisplayStyle.Flex;
         upgradePanel.CloseDetails();

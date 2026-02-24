@@ -6,6 +6,7 @@ public enum BuildingType
 {
     Economic,   // Tartak, Kopalnia (Produkcja)
     Defense,    // Wieża (Obrona)
+    Housing,    // Domy (Elfy,Krasnoludy ludzie)
     Utility,    // Domy, Magazyny
     Unique      // Kapitol, Beacon
 }
@@ -28,8 +29,9 @@ public class BuildingData : ScriptableObject
     public bool requiresOccupiedSpace = false;
 
     [Header("Wymagania Specjalne")]
-    [Tooltip("Czy budowa wymaga wolnego elfa? (np. Centrum Ekspedycyjne)")]
-    public bool requiresFreeElf = false;
+    [Tooltip("Jeśli zaznaczone, budowa wymaga jednego wolnego obywatela wybranej rasy (zostanie przypisany na stałe).")]
+    public bool requiresSpecificCitizen = false;
+    public Race requiredCitizenRace = Race.Elves;
 
     [Tooltip("Czy to jest Posterunek? Posterunek może być budowany na MilitaryOnly (tak jak wieże).")]
     public bool isOutpost = false;

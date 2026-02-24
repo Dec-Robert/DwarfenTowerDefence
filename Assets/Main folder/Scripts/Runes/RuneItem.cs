@@ -33,13 +33,24 @@ public class RuneItem
     {
         string sign = primaryValue > 0 ? "+" : "";
         string symbol = definition.valueType == RuneValueType.Percent ? "%" : "";
-        return $"{sign}{primaryValue}{symbol} {definition.primaryStat}";
+        
+        // ZMIANA: Formatowanie z jednym miejscem po przecinku (jeśli to Flat) lub bez (jeśli Percent)
+        string valString = definition.valueType == RuneValueType.Percent 
+            ? primaryValue.ToString("0") 
+            : primaryValue.ToString("0.0");
+
+        return $"{sign}{valString}{symbol} {definition.primaryStat}";
     }
 
     public string GetPenaltyText()
     {
         if (!hasPenalty) return "";
         string symbol = penaltyValueType == RuneValueType.Percent ? "%" : "";
-        return $"<color=red>{penaltyValue}{symbol} {penaltyStat}</color>";
+        
+        string valString = penaltyValueType == RuneValueType.Percent 
+            ? penaltyValue.ToString("0") 
+            : penaltyValue.ToString("0.0");
+
+        return $"<color=red>{valString}{symbol} {penaltyStat}</color>";
     }
 }

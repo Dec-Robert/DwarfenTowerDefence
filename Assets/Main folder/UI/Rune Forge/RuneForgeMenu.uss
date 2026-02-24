@@ -1,0 +1,94 @@
+.forge-overlay {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+    background-color: rgba(10, 5, 5, 0.95);
+    align-items: center; justify-content: center;
+}
+
+/* --- EKRAN 1: WYBÓR WIEŻY --- */
+.tower-select-panel {
+    background-color: #1a1a1a;
+    border-color: #ffaa00; border-width: 2px; border-radius: 4px;
+    padding: 20px; width: 600px;
+}
+.tower-grid {
+    flex-direction: row; flex-wrap: wrap; justify-content: center;
+    margin-top: 15px; margin-bottom: 15px;
+}
+.tower-btn {
+    width: 100px; height: 120px; margin: 5px;
+    background-color: #222; border-color: #555; border-width: 1px;
+    align-items: center; justify-content: center;
+}
+.tower-btn:hover { border-color: #ffaa00; background-color: #333; }
+.tower-icon { width: 60px; height: 60px; margin-bottom: 5px; }
+
+/* --- EKRAN 2: GŁÓWNA KUŹNIA --- */
+.forge-main-panel {
+    flex-direction: row; width: 1000px; height: 600px;
+    background-color: #111; border-color: #aa5500; border-width: 2px;
+}
+
+/* Lewy Panel (Przyciski i Info) */
+.forge-left-panel {
+    width: 300px; border-right-color: #552200; border-right-width: 2px;
+    padding: 15px; justify-content: space-between;
+}
+.forge-action-btn {
+    height: 50px; font-size: 16px; -unity-font-style: bold;
+    background-color: #333; color: #ddd; margin-bottom: 10px;
+}
+.forge-action-btn:hover { background-color: #555; }
+.btn-active { background-color: #225588; border-color: #44aaff; border-width: 2px; color: white;}
+
+.rune-info-box {
+    flex-grow: 1; background-color: #0a0a0a; border-color: #333; border-width: 1px;
+    padding: 10px; margin-top: 10px;
+}
+
+/* Prawy Panel (Siatka i Sloty) */
+.forge-right-panel {
+    flex-grow: 1; padding: 15px; justify-content: space-between;
+}
+.inventory-grid {
+    flex-direction: row; flex-wrap: wrap;
+}
+.forge-slots-container {
+    flex-direction: row; justify-content: center;
+    border-top-color: #552200; border-top-width: 2px; padding-top: 15px; height: 120px;
+}
+
+/* Runa UI */
+.rune-slot {
+    width: 80px; height: 80px; margin: 5px;
+    background-color: #1a1a1a; border-width: 2px; border-color: #444;
+    align-items: center; justify-content: center;
+}
+.rune-slot:hover { scale: 1.05; }
+.slot-locked { background-color: #050505; border-color: #111; }
+.rune-selected-for-fusion { border-color: #44aaff; border-width: 3px; }
+
+/* Kolory Rzadkości */
+.rarity-Common { border-color: #FFFFFF; }
+.rarity-Uncommon { border-color: #44FF44; }
+.rarity-Rare { border-color: #44AAFF; }
+.rarity-Legendary { border-color: #FFD700; }
+.rarity-Cursed { border-color: #FF2222; }
+
+/* POPUP */
+.popup-box {
+    position: absolute; width: 400px; padding: 20px;
+    background-color: #222; border-color: #ffaa00; border-width: 2px;
+    align-self: center; top: 30%;
+}
+.popup-row { flex-direction: row; justify-content: space-between; margin-top: 20px; }
+.popup-btn { flex-grow: 1; margin: 0 5px; height: 40px; font-size: 16px; -unity-font-style: bold; }
+
+/* --- WYSZARZENIE RUN (Fuzja/Transmutacja) --- */
+.rune-disabled {
+    opacity: 0.25;
+}
+
+/* Nadpisujemy efekt najechania dla wyszarzonych run, żeby nie powiększały się jak aktywne */
+.rune-disabled:hover {
+    scale: 1;
+}

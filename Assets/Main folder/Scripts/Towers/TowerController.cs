@@ -19,6 +19,8 @@ public class TowerController : MonoBehaviour
     [SerializeField] private float currentRange;
     [SerializeField] private float currentDamage;
     [SerializeField] private float currentFireRate;
+    [SerializeField] private float currentArmorPen;  // DODANE
+    [SerializeField] private float currentMagicPen;  // DODANE
     [SerializeField] private float criticalChance;
     [SerializeField] private float criticalMultiplier;
 
@@ -44,17 +46,34 @@ public class TowerController : MonoBehaviour
         InvokeRepeating("UpdateTarget", 0f, 0.5f);
     }
 
-    public void UpdateCombatStats(float efficiency, float rangeMod, float damageMod, float fireRateMod, bool isActive)
+    public void UpdateCombatStats(
+        float efficiency, 
+        float rangeMulti, float flatRange, 
+        float damageMulti, float flatDamage, 
+        float fireRateMulti, float flatFireRate,
+        float flatArmorPen, float flatMagicPen, float flatCritChan, float flatCritDmg,
+        bool isActive)
     {
         canShoot = isActive;
 
         if (towerData != null)
         {
-            currentRange = towerData.baseRange * rangeMod;
-            currentDamage = towerData.baseDamage * damageMod * efficiency;
-            currentFireRate = towerData.fireRate * fireRateMod * efficiency;
+            // (Baza + Flat) * Mnożnik * Opcjonalna Wydajność Załogi
+            currentRange = (towerData.baseRange + flatRange) * rangeMulti;
+            currentDamage = (towerData.baseDamage + flatDamage) * damageMulti * efficiency;
+            currentFireRate = (towerData.fireRate + flatFireRate) * fireRateMulti * efficiency;
 
-            // Aktualizacja wizualizacji zasi�gu (skalowanie w czasie rzeczywistym)
+            // Nowe statystyki penetracji (tylko Flat dodawany do bazy)
+            currentArmorPen = towerData.armorPenetration + flatArmorPen;
+            currentMagicPen = towerData.magicPenetration + flatMagicPen;
+
+            // Statystyki krytyczne
+            criticalChance = towerData.criticalChancel + flatCritChan;
+            
+            // Dla krytyka mnożnik bazowy (np. 200%) + flat runy (np. +50%) = 250%
+            criticalMultiplier = towerData.criticalDamageMultiplier + flatCritDmg;
+
+            // Aktualizacja wizualizacji zasięgu
             if (rangeIndicatorInstance != null && rangeIndicatorInstance.activeSelf)
             {
                 float scale = currentRange * 2f;
@@ -190,11 +209,12 @@ public class TowerController : MonoBehaviour
 
         if (projectile != null)
         {
-            // 1. Obliczenia
-            bool isCritical = Random.value * 100f < tData.criticalChancel;
+            // 1. Obliczenia Krytyka używając AKTUALNYCH wartości
+            bool isCritical = Random.value * 100f < criticalChance;
             
-            // 2. Inicjalizacja statystyk (Damage, Effecty)
-            projectile.Initialize(currentDamage, tData.damageType, tData.effects, isCritical, criticalMultiplier);
+            // 2. Inicjalizacja statystyk
+            // PRZEKAZUJEMY Armor i Magic Pen do pocisku (za chwilę zaktualizujemy pocisk)
+            projectile.Initialize(currentDamage, tData.damageType, tData.effects, isCritical, criticalMultiplier, currentArmorPen, currentMagicPen);
 
             // 3. Przygotowanie danych do strzału
             Vector3 targetPos = Vector3.zero;

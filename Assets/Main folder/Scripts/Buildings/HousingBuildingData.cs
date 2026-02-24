@@ -33,7 +33,7 @@ public class HousingBuildingData : BuildingData
 
     private void OnValidate()
     {
-        type = BuildingType.Utility;
+        type = BuildingType.Housing; // Zmiana z Utility na Housing
     }
 }
 

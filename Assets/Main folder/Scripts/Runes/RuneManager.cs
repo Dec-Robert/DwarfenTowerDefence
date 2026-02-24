@@ -137,10 +137,11 @@ public class RuneManager : MonoBehaviour
 
     private float FormatValue(float val, RuneValueType type)
     {
-        // Jeśli wartość procentowa - robimy równe liczby całkowite
+        // Jeśli wartość procentowa - zostawiamy równe liczby całkowite (np. 15%)
         if (type == RuneValueType.Percent) return Mathf.Round(val);
-        // Jeśli flat (np. range) - zaokrąglamy do 2 miejsc po przecinku
-        return (float)System.Math.Round(val, 2);
+        
+        // ZMIANA: Jeśli flat (np. Zasięg, Obrażenia) - zaokrąglamy do 1 miejsca po przecinku (np. 9.2)
+        return (float)System.Math.Round(val, 1);
     }
 
     private float GetMetaBonus(MetaEffectType type)
