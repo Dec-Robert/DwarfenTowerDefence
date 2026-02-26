@@ -12,11 +12,9 @@ public class MainMenuController : MonoBehaviour
     public string gameSceneName = "GameScene";
     public string feedbackUrl = "https://forms.google.com/your-form-url";
 
-    [Header("Meta Dane")]
-    public List<MetaUpgradeSO> allMetaUpgrades;
-    public float playerArtifacts = 10; // Tymczasowa waluta gracza (mock)
+    [Header("Meta Dane")] public float playerHope = 0;
 
-    // Cache widoków
+    // Cache widokï¿½w
     private VisualElement menuMain;
     private VisualElement menuPlay;
     private VisualElement menuProgression;
@@ -24,11 +22,12 @@ public class MainMenuController : MonoBehaviour
     private Label lblCurrency;
     private Label lblProgress;
 
+
     private void OnEnable()
     {
         var root = uiDocument.rootVisualElement;
-
-        // 1. ZnajdŸ kontenery
+        playerHope = SaveManager.Instance.currentSaveData.totalHope;
+        // 1. Znajdï¿½ kontenery
         menuMain = root.Q<VisualElement>("Menu_Main");
         menuPlay = root.Q<VisualElement>("Menu_Play");
         menuProgression = root.Q<VisualElement>("Menu_Progression");
@@ -37,7 +36,7 @@ public class MainMenuController : MonoBehaviour
         lblCurrency = root.Q<Label>("Lbl_Currency");
         lblProgress = root.Q<Label>("Lbl_Progress");
 
-        // 2. Podepnij przyciski MENU G£ÓWNEGO
+        // 2. Podepnij przyciski MENU Gï¿½ï¿½WNEGO
         root.Q<Button>("Btn_OpenPlay").clicked += () => SwitchMenu(menuPlay);
         root.Q<Button>("Btn_Settings").clicked += () => Debug.Log("Ustawienia...");
         root.Q<Button>("Btn_Feedback").clicked += () => Application.OpenURL(feedbackUrl);
@@ -50,16 +49,11 @@ public class MainMenuController : MonoBehaviour
 
         // 4. Podepnij przyciski PROGRESJI
         root.Q<Button>("Btn_BackToPlay").clicked += () => SwitchMenu(menuPlay);
-        // Przycisk "Wie¿e" jest tylko ozdob¹ (zablokowany w CSS)
+        // Przycisk "Wieï¿½e" jest tylko ozdobï¿½ (zablokowany w CSS)
 
-        // Na start poka¿ g³ówne
+        // Na start pokaï¿½ gï¿½ï¿½wne
         SwitchMenu(menuMain);
-
-        if (SaveManager.Instance != null)
-        {
-            playerArtifacts = SaveManager.Instance.currentSaveData.totalArtifacts;
-            SaveManager.Instance.SyncUpgradesWithSave(allMetaUpgrades);
-        }
+        
     }
 
     void SwitchMenu(VisualElement targetMenu)
@@ -95,22 +89,24 @@ public class MainMenuController : MonoBehaviour
     void RefreshProgressionUI()
     {
         metaList.Clear();
-        lblCurrency.text = $"Artefakty: {playerArtifacts}";
+        lblCurrency.text = $"Nadzieja: {playerHope}"; 
 
-        // Listy pomocnicze do sortowania
         List<MetaUpgradeSO> availableUpgrades = new List<MetaUpgradeSO>();
         List<MetaUpgradeSO> ownedUpgrades = new List<MetaUpgradeSO>();
 
         int unlockedCount = 0;
 
+        // POBIERAMY LISTÄ˜ Z MANAGERA:
+        var upgradesList = MetaUpgradeManager.Instance != null ? MetaUpgradeManager.Instance.allUpgrades : new List<MetaUpgradeSO>();
+
         // 1. ETAP SEGREGACJI
-        foreach (var upgrade in allMetaUpgrades)
+        foreach (var upgrade in upgradesList)
         {
             // Zliczamy odblokowane
             if (upgrade.isUnlocked)
             {
                 unlockedCount++;
-                ownedUpgrades.Add(upgrade); // Idzie na dó³ listy
+                ownedUpgrades.Add(upgrade); // Idzie na dï¿½ listy
                 continue;
             }
 
@@ -128,17 +124,17 @@ public class MainMenuController : MonoBehaviour
                 }
             }
 
-            // Jeœli wymagania spe³nione -> Idzie na górê listy
+            // Jeï¿½li wymagania speï¿½nione -> Idzie na gï¿½rï¿½ listy
             if (prereqsMet)
             {
                 availableUpgrades.Add(upgrade);
             }
-            // Jeœli wymagania niespe³nione -> W ogóle nie dodajemy (ukryte)
+            // Jeï¿½li wymagania niespeï¿½nione -> W ogï¿½le nie dodajemy (ukryte)
         }
 
-        lblProgress.text = $"Odblokowano: {unlockedCount}/{allMetaUpgrades.Count}";
+        lblProgress.text = $"Odblokowano: {unlockedCount}/{upgradesList.Count}";
 
-        // 2. ETAP £¥CZENIA (Najpierw Dostêpne, potem Posiadane)
+        // 2. ETAP ï¿½ï¿½CZENIA (Najpierw Dostï¿½pne, potem Posiadane)
         List<MetaUpgradeSO> finalDisplayList = new List<MetaUpgradeSO>();
         finalDisplayList.AddRange(availableUpgrades);
         finalDisplayList.AddRange(ownedUpgrades);
@@ -184,7 +180,7 @@ public class MainMenuController : MonoBehaviour
                 Button buyBtn = new Button();
                 buyBtn.AddToClassList("card-buy-btn");
 
-                if (playerArtifacts >= upgrade.cost)
+                if (playerHope >= upgrade.cost)
                 {
                     buyBtn.text = $"{upgrade.cost} Art";
                     buyBtn.clicked += () => BuyUpgrade(upgrade);
@@ -194,7 +190,7 @@ public class MainMenuController : MonoBehaviour
                     buyBtn.text = $"{upgrade.cost} Art";
                     buyBtn.SetEnabled(false);
                     buyBtn.style.color = new Color(1f, 0.5f, 0.5f);
-                    buyBtn.tooltip = "Nie staæ Ciê";
+                    buyBtn.tooltip = "Nie staï¿½ Ciï¿½";
                 }
                 card.Add(buyBtn);
             }
@@ -205,20 +201,22 @@ public class MainMenuController : MonoBehaviour
 
     void BuyUpgrade(MetaUpgradeSO upgrade)
     {
-        if (playerArtifacts >= upgrade.cost)
+        if (playerHope >= upgrade.cost)
         {
-            playerArtifacts -= upgrade.cost;
+            playerHope -= upgrade.cost;
             upgrade.isUnlocked = true;
 
             // --- AKTUALIZACJA ZAPISU ---
-            SaveManager.Instance.currentSaveData.totalArtifacts = playerArtifacts;
-            if (!SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Contains(upgrade.id))
+            if (SaveManager.Instance != null)
             {
-                SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Add(upgrade.id);
+                SaveManager.Instance.currentSaveData.totalHope = (int)playerHope;
+                if (!SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Contains(upgrade.id))
+                {
+                    SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Add(upgrade.id);
+                }
+                SaveManager.Instance.SaveGame(); 
             }
-            SaveManager.Instance.SaveGame(); // Zapisz od razu po zakupie
-                                             // ---------------------------
-
+            
             RefreshProgressionUI();
         }
     }

@@ -17,7 +17,7 @@ public class ResourceManager : MonoBehaviour
     // Słownik teraz przechowuje float
     private Dictionary<ResourceType, float> resourceBank = new Dictionary<ResourceType, float>();
 
-    // Event przesy�a teraz float
+    // Event przesyła teraz float
     public event Action<ResourceType, float> OnResourceChanged;
 
     private void Awake()

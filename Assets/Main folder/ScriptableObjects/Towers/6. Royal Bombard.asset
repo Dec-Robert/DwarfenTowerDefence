@@ -17,9 +17,11 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 1afd990cd1c03164fae2d9c0068fd288, type: 3}
   type: 1
   workerScalingFactor: 0.25
-  allowedTerrain: 0600000001000000030000000500000000000000
+  allowedTerrain: 00000000010000000300000005000000
   requiresOccupiedSpace: 0
-  requiresFreeElf: 0
+  requiresSpecificCitizen: 0
+  requiredCitizenRace: 1
+  isOutpost: 0
   constructionCost:
   - type: 2
     amount: 5

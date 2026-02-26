@@ -48,35 +48,31 @@ public class GameOverController : MonoBehaviour
 
     void ShowGameOver()
     {
-        // 1. Zatrzymujemy czas
         Time.timeScale = 0f;
 
-        // 2. Pobieramy dane (Dzie�)
-        int days = 0;
-        if (TimeCycleManager.Instance != null)
+        int days = TimeCycleManager.Instance != null ? TimeCycleManager.Instance.dayCount : 0;
+
+        // OBLICZAMY NADZIEJĘ
+        int finalHope = 0;
+        if (HopeSessionManager.Instance != null)
         {
-            days = TimeCycleManager.Instance.dayCount;
+            finalHope = HopeSessionManager.Instance.CalculateFinalHope();
         }
 
-        // 3. Ustawiamy tekst
         if (statsLabel != null)
         {
-            statsLabel.text = $"Twoja osada przetrwa�a {days} dni.\n\nLepsze jutro nigdy nie nadesz�o.";
+            // Możesz tu dorobić logikę wyświetlania całej listy zdobytych punktów z earnedHopeList!
+            statsLabel.text = $"Twoja osada przetrwała {days} dni.\nZgromadzono Nadzieję: {finalHope}\n\nLepsze jutro nigdy nie nadeszło.";
         }
 
-        // 4. Pokazujemy ekran (Pami�taj o Sort Order w Unity!)
         root.style.display = DisplayStyle.Flex;
 
-        float earned = ResourceManager.Instance.GetResourceAmount(ResourceType.Artifacts);
-
-        // 2. Dodaj do globalnego banku w SaveManager
+        // ZAPIS DO ZAPISU (Meta-progresja)
         if (SaveManager.Instance != null)
         {
-            SaveManager.Instance.currentSaveData.totalArtifacts += earned;
-            SaveManager.Instance.SaveGame(); // Zapisujemy stan na dysku
+            SaveManager.Instance.currentSaveData.totalHope += finalHope;
+            SaveManager.Instance.SaveGame(); 
         }
-
-        root.style.display = DisplayStyle.Flex;
     }
 
     void RestartGame()

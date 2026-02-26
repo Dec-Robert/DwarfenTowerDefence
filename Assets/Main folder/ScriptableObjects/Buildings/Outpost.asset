@@ -15,11 +15,12 @@ MonoBehaviour:
   buildingName: Outpost
   description: 
   icon: {fileID: 21300000, guid: 201ba8562aef6974ea5f9dc9e3b40ead, type: 3}
-  type: 0
+  type: 3
   workerScalingFactor: 0.25
   allowedTerrain: 0200000003000000040000000500000000000000
   requiresOccupiedSpace: 0
-  requiresFreeElf: 0
+  requiresSpecificCitizen: 0
+  requiredCitizenRace: 1
   isOutpost: 1
   constructionCost:
   - type: 1

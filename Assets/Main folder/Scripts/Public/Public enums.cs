@@ -18,8 +18,8 @@ public enum ResourceType
     Coal,       
     Food,       
     Population, 
-    Artifacts,  
-    Iron        
+    Iron, 
+    Hope
 }
 
 public enum Race

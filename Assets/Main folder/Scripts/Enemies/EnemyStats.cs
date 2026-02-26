@@ -137,10 +137,7 @@ public class EnemyStats : MonoBehaviour
     {
         if (ResourceManager.Instance != null)
         {
-            ResourceManager.Instance.AddResource(ResourceType.Artifacts, 1);
-
-            if (ResourceLogger.Instance != null)
-                ResourceLogger.Instance.LogSingleEvent($"Śmierć Wroga: {data.enemyName}", ResourceType.Artifacts, 1);
+            HopeSessionManager.Instance.OnEnemyKilled(this.rank);
         }
 
         // --- NOWE: Rzut na drop runy przy śmierci wroga ---

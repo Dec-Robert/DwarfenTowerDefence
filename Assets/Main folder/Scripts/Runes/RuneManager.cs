@@ -44,6 +44,7 @@ public class RuneManager : MonoBehaviour
         for (int i = 0; i < runesToDrop; i++)
         {
             RuneItem newRune = GenerateRandomRune();
+            if (HopeSessionManager.Instance != null) HopeSessionManager.Instance.OnRuneObtained(newRune.definition.rarity);
             if (newRune != null)
             {
                 playerRunes.Add(newRune);
@@ -195,6 +196,8 @@ public class RuneManager : MonoBehaviour
         OnInventoryChanged?.Invoke();
 
         Debug.Log($"[RuneManager] Fuzja udana! Otrzymano: {newRune.GetPrimaryText()} ({newRune.definition.rarity})");
+        HopeSessionManager.Instance.OnRuneCrafted();
+        HopeSessionManager.Instance.OnRuneObtained(newRune.definition.rarity);
         return true;
     }
 
@@ -235,6 +238,8 @@ public class RuneManager : MonoBehaviour
             OnInventoryChanged?.Invoke();
 
             Debug.Log($"[RuneManager] Transmutacja udana! Otrzymano: {newRune.definition.runeName} ({newRune.definition.rarity})");
+            HopeSessionManager.Instance.OnRuneCrafted();
+            HopeSessionManager.Instance.OnRuneObtained(newRune.definition.rarity);
             return true;
         }
         return false;

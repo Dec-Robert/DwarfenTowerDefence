@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement; // Wymagane do wykrywania zmiany sceny
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,45 +32,62 @@ public class MetaUpgradeManager : MonoBehaviour
 {
     public static MetaUpgradeManager Instance { get; private set; }
 
-    // =========================================================================
-    // REFERENCJE
-    // =========================================================================
-
     [Header("── Lista Wszystkich Upgradów ────────────")]
-    [Tooltip("Wszystkie MetaUpgradeSO. Kolejność = priorytet nadpisywania (ostatni wygrywa).")]
     public List<MetaUpgradeSO> allUpgrades = new List<MetaUpgradeSO>();
 
-    // =========================================================================
-    // CACHE — wartości efektów po aplikacji
-    // =========================================================================
+    [Header("── Konfiguracja Scen ────────────────────")]
+    [Tooltip("Nazwa sceny, w której manager ma zaaplikować efekty (np. GameScene)")]
+    public string gameSceneName = "GameScene";
 
-    // Słownik: MetaEffectType → float (ostatnia odblokowana wartość)
-    private readonly Dictionary<MetaEffectType, float> appliedValues
-        = new Dictionary<MetaEffectType, float>();
-
-    // Słownik dla efektów budynkowych: (effectType, buildingDataId) → float
-    private readonly Dictionary<(MetaEffectType, string), float> buildingSpecificValues
-        = new Dictionary<(MetaEffectType, string), float>();
+    private readonly Dictionary<MetaEffectType, float> appliedValues = new Dictionary<MetaEffectType, float>();
+    private readonly Dictionary<(MetaEffectType, string), float> buildingSpecificValues = new Dictionary<(MetaEffectType, string), float>();
 
     // =========================================================================
-    // UNITY
+    // UNITY CYKL ŻYCIA
     // =========================================================================
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this) 
+        { 
+            Destroy(gameObject); 
+            return; 
+        }
+        
         Instance = this;
+        DontDestroyOnLoad(gameObject); // Manager przeżywa zmianę sceny!
     }
 
     private void Start()
     {
-        // 1. Synchronizuj isUnlocked z zapisem
+        // Na samym starcie gry (w Main Menu), synchronizujemy stan z SaveManagerem
         if (SaveManager.Instance != null)
+        {
             SaveManager.Instance.SyncUpgradesWithSave(allUpgrades);
+            Debug.Log("[MetaUpgradeManager] Zsynchronizowano upgrady z SaveManagerem.");
+        }
+    }
 
-        // 2. Zbierz i zaaplikuj efekty
-        CollectValues();
-        ApplyAllEffects();
+    private void OnEnable()
+    {
+        // Subskrybujemy event ładowania sceny
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Jeśli załadowana scena to nasza gra, DOPIRERO WTEDY aplikujemy efekty
+        if (scene.name == gameSceneName)
+        {
+            Debug.Log("[MetaUpgradeManager] Wykryto scenę gry. Aplikuję meta-efekty...");
+            CollectValues();
+            ApplyAllEffects();
+        }
     }
 
     // =========================================================================

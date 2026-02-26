@@ -15,7 +15,7 @@ MonoBehaviour:
   buildingName: Expedition center
   description: 
   icon: {fileID: 21300000, guid: 966fcf7d12ef7d743ac842b2d6d43888, type: 3}
-  type: 0
+  type: 3
   workerScalingFactor: 0.25
   allowedTerrain: 000000000100000002000000030000000400000005000000
   requiresOccupiedSpace: 0

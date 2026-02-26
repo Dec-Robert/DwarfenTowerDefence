@@ -15,7 +15,7 @@ MonoBehaviour:
   buildingName: Rune smith
   description: 
   icon: {fileID: 0}
-  type: 2
+  type: 3
   workerScalingFactor: 0
   allowedTerrain: 000000000100000002000000030000000400000005000000
   requiresOccupiedSpace: 0
