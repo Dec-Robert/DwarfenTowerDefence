@@ -1,15 +1,22 @@
 using UnityEngine;
 using Unity.Services.Core;
+using Unity.Services.Core.Environments;
 using Unity.Services.Analytics;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Unity.VisualScripting;
+using Event = UnityEngine.Event;
 
 public class TelemetryManager : MonoBehaviour
 {
     public static TelemetryManager Instance { get; private set; }
 
+    // Zmienne do mierzenia czasu trwania "Runu"
+    private float runStartTime;
+    private bool isRunActive = false;
+
     private async void Awake()
     {
-        // Standardowy Singleton – chcemy, żeby ten skrypt żył od odpalenia menu aż do wyłączenia gry
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -19,7 +26,6 @@ public class TelemetryManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Uruchamiamy proces łączenia z chmurą
         await InitializeUnityServices();
     }
 
@@ -27,20 +33,89 @@ public class TelemetryManager : MonoBehaviour
     {
         try
         {
-            // 1. Inicjalizacja rdzenia usług Unity (wymagane dla każdej usługi UGS)
-            await UnityServices.InitializeAsync();
+            InitializationOptions options = new InitializationOptions();
+            options.SetEnvironmentName("testing"); // Ustawienie na 'testing' zgodnie z Twoimi poprawkami
 
-            // Opcjonalnie: Obsługa zgody na RODO (GDPR/COPPA)
-            // W pełnej wersji gry powinieneś wyświetlić popup z prośbą o zgodę.
-            // Dla naszych celów testowych wymuszamy start zbierania danych:
+            await UnityServices.InitializeAsync(options);
+
+            // Zbieranie podstawowych danych (w tym DAU/MAU, długość włączenia gry, kraj gracza)
             AnalyticsService.Instance.StartDataCollection();
 
-            Debug.Log("<color=green>[TelemetryManager] Unity Analytics pomyślnie zainicjowane i połączone z chmurą!</color>");
+            Debug.Log("<color=green>[TelemetryManager] Unity Analytics zainicjowane (Środowisko: testing)!</color>");
         }
         catch (System.Exception e)
         {
-            // Łapiemy błąd, żeby gra nie "wybuchła", jeśli np. gracz nie ma internetu
-            Debug.LogWarning($"<color=orange>[TelemetryManager] Błąd inicjalizacji Unity Services (brak internetu?): {e.Message}</color>");
+            Debug.LogWarning($"<color=orange>[TelemetryManager] Błąd inicjalizacji: {e.Message}</color>");
+        }
+    }
+
+    // =========================================================================
+    // ETAP 2: ZDARZENIA GRY (CORE LOOP)
+    // =========================================================================
+
+    /// <summary>
+    /// Wywoływane w momencie startu "Runu" (kiedy scena gry się załaduje).
+    /// </summary>
+    public void RecordRunStarted()
+    {
+        runStartTime = Time.unscaledTime; // Używamy unscaled, by pauza w grze nie psuła pomiaru, jeśli tego chcesz
+        isRunActive = true;
+        
+        // Zabezpieczenie przed wysłaniem eventu przed inicjalizacją (bardzo szybki dysk gracza)
+        if (UnityServices.State == ServicesInitializationState.Initialized)
+        {
+            RunStarted runStarted = new RunStarted();
+            AnalyticsService.Instance.RecordEvent(runStarted);
+            AnalyticsService.Instance.Flush(); // Wymusza wysłanie paczki
+            Debug.Log("[Telemetry] Wysłano zdarzenie: run_started");
+        }
+    }
+
+    /// <summary>
+    /// Wywoływane, gdy gracz zginie (Game Over).
+    /// Wysyłamy, ile trwał run, ile dni przeżył i z jakim stanem zasobów skończył.
+    /// </summary>
+    public void RecordRunEnded(int daysSurvived, int finalHopeGathered)
+    {
+        if (!isRunActive) return;
+
+        float runDurationSeconds = Time.unscaledTime - runStartTime;
+        float runDurationMinutes = runDurationSeconds / 60f;
+        isRunActive = false;
+
+        RunEnded runEnded = new RunEnded(daysSurvived,runDurationMinutes,finalHopeGathered);
+
+        if (UnityServices.State == ServicesInitializationState.Initialized)
+        {
+            AnalyticsService.Instance.RecordEvent(runEnded);
+            AnalyticsService.Instance.Flush();
+            Debug.Log($"[Telemetry] Wysłano zdarzenie: run_ended | Dni: {daysSurvived} | Czas: {runDurationMinutes:F1}m");
         }
     }
 }
+
+public class RunEnded : Unity.Services.Analytics.Event
+{
+    public RunEnded(float _daysSurvived, float _durationMinutes, int _hopeGathered) :
+        base(name: "run_ended")
+    {
+        daysSurvived = _daysSurvived;
+        durationMinutes = _durationMinutes;
+        hopeGathered = _hopeGathered;
+    }
+    
+    public float daysSurvived { set{SetParameter("DaysSurvived", value);} }
+    public float durationMinutes { set {SetParameter("DurationMinutes", value); } }
+    public int hopeGathered { set{SetParameter("HopeGathered", value);} }
+
+}
+
+public class RunStarted : Unity.Services.Analytics.Event
+{
+    public RunStarted()
+        : base("run_started")
+    {
+    }
+    
+}
+

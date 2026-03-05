@@ -52,7 +52,6 @@ public class GameOverController : MonoBehaviour
 
         int days = TimeCycleManager.Instance != null ? TimeCycleManager.Instance.dayCount : 0;
 
-        // OBLICZAMY NADZIEJĘ
         int finalHope = 0;
         if (HopeSessionManager.Instance != null)
         {
@@ -61,13 +60,18 @@ public class GameOverController : MonoBehaviour
 
         if (statsLabel != null)
         {
-            // Możesz tu dorobić logikę wyświetlania całej listy zdobytych punktów z earnedHopeList!
             statsLabel.text = $"Twoja osada przetrwała {days} dni.\nZgromadzono Nadzieję: {finalHope}\n\nLepsze jutro nigdy nie nadeszło.";
         }
 
         root.style.display = DisplayStyle.Flex;
 
-        // ZAPIS DO ZAPISU (Meta-progresja)
+        // --- NOWE: Wysyłanie podsumowania do Unity Analytics ---
+        if (TelemetryManager.Instance != null)
+        {
+            TelemetryManager.Instance.RecordRunEnded(days, finalHope);
+        }
+        // ------------------------------------------------------
+
         if (SaveManager.Instance != null)
         {
             SaveManager.Instance.currentSaveData.totalHope += finalHope;

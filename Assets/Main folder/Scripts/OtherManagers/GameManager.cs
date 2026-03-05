@@ -41,8 +41,13 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // Od�wie�amy UI tylko dla zdrowia (surowce od�wie�a ResourceManager w swoim Start)
         OnHealthChanged?.Invoke(mainGateHP);
+
+        // --- NOWE: Informujemy telemetrię o starcie ---
+        if (TelemetryManager.Instance != null)
+        {
+            TelemetryManager.Instance.RecordRunStarted();
+        }
     }
 
     // USUNI�TO: Metod� ModifyGold(int amount)
