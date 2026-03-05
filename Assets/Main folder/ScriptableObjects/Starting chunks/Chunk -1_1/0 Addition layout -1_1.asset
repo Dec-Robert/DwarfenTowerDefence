@@ -13,5 +13,9 @@ MonoBehaviour:
   m_Name: 0 Addition layout -1_1
   m_EditorClassIdentifier: 
   type: 1
-  hexes: []
+  hexes:
+  - localCoord: {x: 1, y: 0}
+    feature: 5
+    featureLevel: 0
+    building: {fileID: 0}
   roadConnectionEdge: {x: 0, y: 0}

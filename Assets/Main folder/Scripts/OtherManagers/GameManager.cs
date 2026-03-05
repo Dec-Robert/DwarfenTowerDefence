@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Ustawienia Startowe")]
-    [SerializeField] private int startingHp = 20;
+    public CityBaseConfigSO cityConfig; // <--- NOWE
 
     public int mainGateHP { get; private set; }
     public int waveNumber { get; private set; }
@@ -29,19 +29,12 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            Instance = this;
-        }
+        if (Instance != null && Instance != this) Destroy(this);
+        else Instance = this;
 
         // Inicjalizacja
-        mainGateHP = startingHp;
-        // USUNI�TO: gold = startingGold;
-
+        mainGateHP = cityConfig != null ? cityConfig.baseCityHP : 20;
+        
         currentGameState = gameStates.PreparePhase;
         waveNumber = 1;
     }

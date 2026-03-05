@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/Main%20folder/UI/Main%20Menu/MainMenu.uss?fileID=7433441132597879392&amp;guid=2651afd0e3d3e5940905648d6bb0beea&amp;type=3#MainMenu" />
     <ui:VisualElement name="Root" class="root-container">
-        <ui:Label text="MOJA GRA STRATEGICZNA" class="game-title" />
+        <ui:Label text="Hearthfall " class="game-title" />
         <ui:VisualElement name="Menu_Main" class="menu-container">
             <ui:Button name="Btn_OpenPlay" text="ROZPOCZNIJ GRĘ" class="menu-btn" />
             <ui:Button name="Btn_Settings" text="USTAWIENIA" class="menu-btn" />

@@ -15,12 +15,12 @@ MonoBehaviour:
   id: efficent_wood_choping_iii
   upgradeName: Efficent wood choping III
   description: Dodaje +5% do produkcji tartaku
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9c366330a3936574b9f20dad49cb0323, type: 3}
   cost: 100
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: fa9a857a46e58964eb72ce3da69c7328, type: 2}
-  effectType: 31
-  effectValue: 0.2
+  effectType: 39
+  effectValue: 0.1
   effectValue2: 0
-  targetBuilding: {fileID: 0}
+  targetBuilding: {fileID: 11400000, guid: 305ea702f61030e4184fd8704c128bcf, type: 2}

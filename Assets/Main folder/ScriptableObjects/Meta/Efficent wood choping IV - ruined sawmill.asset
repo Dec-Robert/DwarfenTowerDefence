@@ -15,9 +15,9 @@ MonoBehaviour:
   id: efficent_wood_choping_iv_ruined_sawmill
   upgradeName: Efficent wood choping IV
   description: Zaczynasz z dodatkowym tartakiem.
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9c366330a3936574b9f20dad49cb0323, type: 3}
   cost: 100
-  isUnlocked: 0
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 749a7cbc63f829343b9d1e5b7741ec75, type: 2}
   effectType: 0

@@ -3,21 +3,16 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Posterunek – specjalny budynek który:
-///   1. Natychmiast odblokowuje pełne budownictwo na chunku (FullyUnlocked)
-///   2. Po 10 dniach oferuje bezpłatną transformację w 1 z 3 budynków mieszkalnych
-///   3. Ulepszenia modyfikują opcje transformacji
-///
-/// Cykl życia:
-///   Postawiony → odlicza dni → po 10 dniach: UI pokazuje wybór → Gracz wybiera → Destroy + Spawn
+///   1. Dziedziczy po BuildingEntity (automatyczna inicjalizacja przez BuildingPlacer)
+///   2. Natychmiast odblokowuje pełne budownictwo na chunku (FullyUnlocked)
+///   3. Po 10 dniach oferuje bezpłatną transformację w 1 z 3 budynków mieszkalnych
 /// </summary>
-public class OutpostEntity : MonoBehaviour
+public class OutpostEntity : BuildingEntity
 {
     [Header("── Konfiguracja ────────────────────────")]
-    [Tooltip("Po ilu dniach pojawia się opcja transformacji")]
     public int daysUntilTransform = 10;
 
     [Header("── Opcje Transformacji (bazowe) ─────────")]
-    [Tooltip("Prefaby budynków do wyboru przy transformacji")]
     public List<TransformOption> baseTransformOptions = new List<TransformOption>();
 
     [Header("── Stan (Podgląd) ───────────────────────")]
@@ -25,133 +20,103 @@ public class OutpostEntity : MonoBehaviour
     [SerializeField] private bool transformAvailable = false;
     [SerializeField] private Vector2Int chunkCoord;
 
-    // Aktywne opcje (bazowe + modyfikowane przez ulepszenia)
     private List<TransformOption> activeOptions = new List<TransformOption>();
-
     private MapExpansionManager expansionManager;
 
     // =========================================================================
-    // INICJALIZACJA
+    // INICJALIZACJA (Nadpisanie z BuildingEntity)
     // =========================================================================
 
-    public void Initialize(Vector2Int chunk, MapExpansionManager manager)
+    public override void Initialize(BuildingData buildingData)
     {
-        chunkCoord       = chunk;
-        expansionManager = manager;
-        daysRemaining    = daysUntilTransform;
-        activeOptions    = new List<TransformOption>(baseTransformOptions);
+        // 1. Inicjalizacja bazowa (tworzy niezbędne minimum)
+        base.Initialize(buildingData);
 
-        // Natychmiastowe odblokowanie budownictwa
-        expansionManager.OnOutpostBuilt(chunkCoord);
+        // 2. Szukamy HexCell pod nami, by wiedzieć gdzie stoimy
+        HexCell myCell = GetComponentInParent<HexCell>();
+        if (myCell != null)
+        {
+            chunkCoord = myCell.chunkCoord;
+        }
 
-        Debug.Log($"[Outpost] Posterunek na {chunkCoord}. " +
-                  $"Transformacja za {daysRemaining} dni.");
+        // 3. Konfiguracja Posterunku
+        expansionManager = Object.FindObjectOfType<MapExpansionManager>();
+        daysRemaining = daysUntilTransform;
+        activeOptions = new List<TransformOption>(baseTransformOptions);
+
+        if (expansionManager != null)
+        {
+            expansionManager.RegisterOutpost(this);
+            // BARDZO WAŻNE: Odblokowanie chunka!
+            expansionManager.OnOutpostBuilt(chunkCoord);
+        }
+
+        Debug.Log($"[Outpost] Posterunek zbudowany na {chunkCoord}. Transformacja za {daysRemaining} dni.");
     }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (expansionManager != null)
+            expansionManager.UnregisterOutpost(this);
+    }
+
+    // Nie generujemy zasobów co godzinę
+    protected override void HandleHourlyProduction(int currentHour) { }
 
     // =========================================================================
     // TICK DZIENNY
     // =========================================================================
 
-    /// <summary>Wywołuj raz na dzień przez MapExpansionManager lub GameManager.</summary>
     public void OnDayPassed()
     {
         if (transformAvailable) return;
 
         daysRemaining--;
-        Debug.Log($"[Outpost] {chunkCoord} – {daysRemaining} dni do transformacji.");
 
         if (daysRemaining <= 0)
         {
             transformAvailable = true;
-            expansionManager.OnOutpostReadyToTransform(this, activeOptions);
+            Debug.Log($"[Outpost] {chunkCoord} gotowy do transformacji!");
+            
+            // Opcjonalnie: automatyczne otwarcie popupu, albo poczekanie aż gracz kliknie
+            // expansionManager.OnOutpostReadyToTransform(this, activeOptions);
         }
+
+        // Odśwież UI inspektora jeśli jest otwarty
+        if (UIBuildingInspector.Instance != null)
+            UIBuildingInspector.Instance.RefreshContent();
     }
 
     // =========================================================================
     // TRANSFORMACJA
     // =========================================================================
 
-    /// <summary>
-    /// Gracz wybrał opcję transformacji.
-    /// Niszczy posterunek i spawnuje wybrany budynek w tym samym miejscu.
-    /// </summary>
     public void Transform(TransformOption chosen)
     {
-        if (!transformAvailable)
-        {
-            Debug.LogWarning("[Outpost] Transformacja niedostępna.");
-            return;
-        }
+        if (!transformAvailable) return;
 
-        Debug.Log($"[Outpost] Transformacja → {chosen.displayName}");
-
-        // Spawn wybranego budynku na pozycji posterunku
         if (chosen.buildingPrefab != null)
-            Instantiate(chosen.buildingPrefab, transform.position, transform.rotation);
-
-        expansionManager.OnOutpostTransformed(chunkCoord);
-        Destroy(gameObject);
-    }
-
-    // =========================================================================
-    // ULEPSZENIA (modyfikują listę opcji transformacji)
-    // =========================================================================
-
-    /// <summary>
-    /// Wywołaj gdy gracz kupi ulepszenie posterunku.
-    /// Ulepszenie może podmienić lub dodać opcję transformacji.
-    /// </summary>
-    public void ApplyUpgrade(OutpostUpgrade upgrade)
-    {
-        foreach (var replacement in upgrade.replacedOptions)
         {
-            // Szukamy opcji bazowej którą to ulepszenie zastępuje
-            int idx = activeOptions.FindIndex(o => o.optionId == replacement.replacesOptionId);
-            if (idx >= 0)
-                activeOptions[idx] = replacement.newOption;
-            else
-                activeOptions.Add(replacement.newOption); // Nowa opcja
+            Instantiate(chosen.buildingPrefab, transform.position, transform.rotation, transform.parent);
         }
 
-        Debug.Log($"[Outpost] Ulepszenie '{upgrade.upgradeName}' zastosowane. " +
-                  $"Opcji transformacji: {activeOptions.Count}");
+        expansionManager?.OnOutpostTransformed(chunkCoord);
+        Demolish(); // Niszczy ten budynek
     }
 
-    // ─── Gettery ──────────────────────────────────────────────────────────────
-    public bool            TransformAvailable => transformAvailable;
-    public int             DaysRemaining      => daysRemaining;
-    public Vector2Int      ChunkCoord         => chunkCoord;
+    // Gettery dla interfejsu
+    public bool TransformAvailable => transformAvailable;
+    public int DaysRemaining => daysRemaining;
+    public Vector2Int ChunkCoord => chunkCoord;
     public List<TransformOption> ActiveOptions => activeOptions;
 }
-
-// ============================================================================
-// Klasy pomocnicze (mogą żyć w osobnych plikach jeśli urosną)
-// ============================================================================
 
 [System.Serializable]
 public class TransformOption
 {
-    [Tooltip("Unikalny ID opcji (do zastępowania przez ulepszenia)")]
     public string optionId;
     public string displayName;
     [TextArea] public string description;
     public GameObject buildingPrefab;
-
-    // Przykładowe informacje dla UI
-    public Race  primaryRace;
-    public int       populationSlots;
-}
-
-[System.Serializable]
-public class OutpostUpgrade
-{
-    public string upgradeName;
-    public List<OptionReplacement> replacedOptions = new List<OptionReplacement>();
-}
-
-[System.Serializable]
-public class OptionReplacement
-{
-    public string        replacesOptionId; // ID bazowej opcji do zastąpienia
-    public TransformOption newOption;      // Nowa opcja po ulepszeniu
 }

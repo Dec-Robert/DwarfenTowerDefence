@@ -15,12 +15,12 @@ MonoBehaviour:
   id: efficent_mining_i
   upgradeName: Efficent Mining I
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ec4836f18e1ced145b16dcce66b85e3c, type: 3}
   cost: 100
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 577f24d4ea052c748bb11bcde3703a16, type: 2}
-  effectType: 31
-  effectValue: 0.1
+  effectType: 39
+  effectValue: 0.05
   effectValue2: 0
-  targetBuilding: {fileID: 0}
+  targetBuilding: {fileID: 11400000, guid: 2f35943f5da640b44968e098eec878f6, type: 2}

@@ -332,7 +332,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentSaveData:
-    totalArtifacts: 0
+    totalHope: 0
     unlockedUpgradeIDs: []
 --- !u!4 &634605880
 Transform:
@@ -537,23 +537,7 @@ MonoBehaviour:
   uiDocument: {fileID: 1934644213}
   gameSceneName: Game scene
   feedbackUrl: https://forms.gle/XPK9PmrQN8EDr5fb9
-  allMetaUpgrades:
-  - {fileID: 11400000, guid: de08ea098ed151140bfb063dd378349b, type: 2}
-  - {fileID: 11400000, guid: 3fa944e695acfbb4b8fc81ac67db91c8, type: 2}
-  - {fileID: 11400000, guid: 5c7dd8fdd5767ea4795437ad34997c98, type: 2}
-  - {fileID: 11400000, guid: 54b55ce838c88174c9da85c1f1f9e0a8, type: 2}
-  - {fileID: 11400000, guid: b17ef3f98dcc7be44b5f07674e04ce71, type: 2}
-  - {fileID: 11400000, guid: 1376c86c06eef424880fd274f2f7b423, type: 2}
-  - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}
-  - {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
-  - {fileID: 11400000, guid: 577f24d4ea052c748bb11bcde3703a16, type: 2}
-  - {fileID: 11400000, guid: 16183f60b74b1994593dc655cc6efd21, type: 2}
-  - {fileID: 11400000, guid: 2bbf4843cf84fae48838a08f6118af02, type: 2}
-  - {fileID: 11400000, guid: c291587027caa034cb23562a91e415d9, type: 2}
-  - {fileID: 11400000, guid: 72972713b88d6604c8381c22ae1b7a39, type: 2}
-  - {fileID: 11400000, guid: 6f5c90464f8a20c4dbee08a0f5f671e1, type: 2}
-  - {fileID: 11400000, guid: 6904904b6fdf75d449355a94fdd6bf94, type: 2}
-  playerArtifacts: 10
+  playerHope: 0
 --- !u!1 &2042010940
 GameObject:
   m_ObjectHideFlags: 0
@@ -626,7 +610,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 72972713b88d6604c8381c22ae1b7a39, type: 2}
   - {fileID: 11400000, guid: 6f5c90464f8a20c4dbee08a0f5f671e1, type: 2}
   - {fileID: 11400000, guid: 6904904b6fdf75d449355a94fdd6bf94, type: 2}
-  gameSceneName: GameScene
+  gameSceneName: Game scene
 --- !u!4 &2042010942
 Transform:
   m_ObjectHideFlags: 0

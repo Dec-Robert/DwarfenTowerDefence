@@ -198,6 +198,12 @@ public class MapExpansionManager : MonoBehaviour
     /// </summary>
     public bool TrySendScout(Vector2Int targetChunk)
     {
+        if (costConfig == null)
+        {
+            Debug.LogError("[Expansion] Nie można wysłać zwiadowcy, bo brakuje pliku CostConfig!");
+            return false;
+        }
+        
         if (!activeChunks.TryGetValue(targetChunk, out var data) || !data.CanScout)
         {
             Debug.LogWarning("[Expansion] Nieprawidłowy stan chunka.");
@@ -391,8 +397,20 @@ public class MapExpansionManager : MonoBehaviour
     /// <summary>Koszt misji dla UI – wywołaj przed wyświetleniem panelu.</summary>
     public MissionCost GetMissionCost(Vector2Int coord)
     {
+        // 1. Zabezpieczenie: Czy mamy plik konfiguracyjny?
+        if (costConfig == null)
+        {
+            Debug.LogError("<b>[Expansion] BŁĄD:</b> Brak przypisanego pliku 'Cost Config' w MapExpansionManager!");
+            return new MissionCost { days = 99, goldCost = 999, foodCost = 999 }; // Zwraca kosmiczne wartości jako fallback
+        }
+
+        // 2. Zabezpieczenie: Czy chunk w ogóle istnieje w rejestrze?
         if (!activeChunks.TryGetValue(coord, out var data))
+        {
             return default;
+        }
+
+        // 3. Właściwe obliczenie
         return ExpansionCostCalculator.Calculate(coord, activeChunks, data.isRoadChunk, costConfig);
     }
 

@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1116208614774478242}
-  - component: {fileID: 7163348544390160270}
   - component: {fileID: 3260364826062181512}
   m_Layer: 7
   m_Name: Outpost
@@ -37,21 +36,6 @@ Transform:
   - {fileID: 2997687059513032366}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7163348544390160270
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 201365494600780548}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 850fb12f38bac1544a596db7eaab5d27, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  data: {fileID: 11400000, guid: 0c9c752673ac15c45ae68bf730811379, type: 2}
-  shiftStartHour: 6
-  shiftLength: 8
 --- !u!114 &3260364826062181512
 MonoBehaviour:
   m_ObjectHideFlags: 0

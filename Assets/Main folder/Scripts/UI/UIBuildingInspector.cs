@@ -238,7 +238,37 @@ public class UIBuildingInspector : MonoBehaviour
                 workerPanel.Refresh(tower);
                 towerPanel.Refresh(tower);
                 break;
+            
+            // ── POSTERUNEK ─────────────────────────────────────────────────────
+            case OutpostEntity outpost:
+                expeditionCenterSection.style.display = DisplayStyle.Flex;
+                
+                // Używamy tych samych elementów co Ekspedycja, by oszczędzić czas
+                var lblStatus = expeditionCenterSection.Q<Label>("Exp_ElfStatusLabel");
+                var lblMission = expeditionCenterSection.Q<Label>("Exp_MissionStatusLabel");
+                var dot = expeditionCenterSection.Q<VisualElement>("Exp_ElfStatusDot");
+                var header = expeditionCenterSection.Q<Label>("expedition-section-header"); // Pobierz nagłówek jeśli istnieje
+                
+                if (header != null) header.text = "POSTERUNEK GRANICZNY";
 
+                if (outpost.TransformAvailable)
+                {
+                    dot.style.backgroundColor = Color.green;
+                    lblStatus.text = "Posterunek gotowy do przebudowy!";
+                    lblStatus.style.color = Color.green;
+                    lblMission.text = "Użyj menu kontekstowego by wybrać nowy budynek mieszkalny.";
+                    
+                    // Pokazujemy menu wyboru
+                    MapExpansionManager.Instance.OnOutpostReadyToTransform(outpost, outpost.ActiveOptions);
+                }
+                else
+                {
+                    dot.style.backgroundColor = Color.yellow;
+                    lblStatus.text = $"Zasiedlanie... (pozostało dni: {outpost.DaysRemaining})";
+                    lblStatus.style.color = Color.yellow;
+                    lblMission.text = "Zabezpiecza teren, wkrótce będzie można tu zbudować wioskę.";
+                }
+                break;
             // ── Budynek ekonomiczny (domyślny) ────────────────────────────────
             default:
                 workerSection.style.display  = DisplayStyle.Flex;

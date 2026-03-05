@@ -17,10 +17,10 @@ MonoBehaviour:
   description: "Domy zaczynaj\u0105 z 2 populacjami wi\u0119cej\r\n"
   icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
   cost: 300
-  isUnlocked: 0
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 16183f60b74b1994593dc655cc6efd21, type: 2}
   effectType: 34
-  effectValue: 2
+  effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}

@@ -68,7 +68,8 @@ public class MetaUpgradeSO : ScriptableObject
     /// <summary>Czy ten upgrade wymaga wskazania konkretnego budynku?</summary>
     public bool RequiresTargetBuilding =>
         effectType == MetaEffectType.SpecificBuildingUpgradeCostReduction ||
-        effectType == MetaEffectType.BuildingTerrainBonusMultiplier;
+        effectType == MetaEffectType.BuildingTerrainBonusMultiplier||
+        effectType == MetaEffectType.SpecificBuildingProductionBonus;
 
     /// <summary>Czy wszystkie wymagania są spełnione?</summary>
     public bool ArePrerequisitesMet()

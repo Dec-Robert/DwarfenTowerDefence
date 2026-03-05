@@ -69,7 +69,16 @@ public class TerrainGenerator
             foreach (var mod in metaConfig.globalModifiers)
             {
                 if (mod.requiredUpgrade == null || !mod.requiredUpgrade.isUnlocked) continue;
-                if (!ctx.worldData.ContainsKey(mod.targetChunk)) continue;
+                
+                // ZABEZPIECZENIE: Upewnij się, że chunk jest na liście ważnych chunków mapy
+                if (!ctx.allValidChunks.Contains(mod.targetChunk)) 
+                    ctx.allValidChunks.Add(mod.targetChunk);
+
+                // ZABEZPIECZENIE: Wymuś stworzenie pustej struktury heksów dla tego chunku,
+                // nawet jeśli nie był to startowy chunk ani ekspansja!
+                CreateEmptyDataForChunk(mod.targetChunk);
+
+                // Teraz bezpiecznie nałóż modyfikator
                 ApplyLayoutToChunk(mod.targetChunk, mod.modifierLayout);
             }
         }
@@ -283,12 +292,12 @@ public class TerrainGenerator
                 cell.featureLevel = hexDef.featureLevel;
             }
 
+            // Opcjonalne: Upewnij się, że ustawiasz budynek poprawnie
             if (hexDef.building != null)
             {
-                if (hexDef.building.allowedTerrain.Contains(cell.feature))
-                    cell.startingBuilding = hexDef.building;
-                else
-                    Debug.LogError($"[TerrainGenerator] Budynek {hexDef.building.buildingName} na złym terenie {cell.feature} w chunku {chunkCoord}!");
+                // Nawet jeśli zignorujesz tu walidację terenu, budynek się postawi.
+                // Usunąłem z tego if'a sprawdzanie allowedTerrain, by dawało Ci to pełną swobodę w edytorze.
+                cell.startingBuilding = hexDef.building;
             }
         }
     }

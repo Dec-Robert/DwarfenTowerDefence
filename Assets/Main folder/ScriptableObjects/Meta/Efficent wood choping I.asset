@@ -15,12 +15,12 @@ MonoBehaviour:
   id: efficent_wood_choping_i
   upgradeName: Efficent wood choping I
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9c366330a3936574b9f20dad49cb0323, type: 3}
   cost: 100
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: de08ea098ed151140bfb063dd378349b, type: 2}
-  effectType: 31
+  effectType: 39
   effectValue: 0.1
   effectValue2: 0
-  targetBuilding: {fileID: 0}
+  targetBuilding: {fileID: 11400000, guid: 305ea702f61030e4184fd8704c128bcf, type: 2}

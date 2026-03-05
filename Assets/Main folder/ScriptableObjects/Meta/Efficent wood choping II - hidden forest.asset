@@ -15,9 +15,9 @@ MonoBehaviour:
   id: efficent_wood_choping_ii_hidden_forest
   upgradeName: Efficent wood choping II
   description: Dodatkowy las na polu
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9c366330a3936574b9f20dad49cb0323, type: 3}
   cost: 100
-  isUnlocked: 0
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 47eaa60aa79ab874b843b8299d58a934, type: 2}
   - {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}

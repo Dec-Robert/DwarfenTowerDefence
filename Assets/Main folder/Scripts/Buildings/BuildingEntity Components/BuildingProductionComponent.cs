@@ -117,6 +117,9 @@ public class BuildingProductionComponent
     /// Oblicza bieżącą produkcję per cykl (baza + ulepszenia + teren).
     /// Używane też przez UI do podglądu.
     /// </summary>
+    /// <summary>
+    /// Oblicza bieżącą produkcję per cykl (baza + ulepszenia + teren + meta progresja specyficzna).
+    /// </summary>
     public Dictionary<ResourceType, float> GetCurrentProduction()
     {
         var total = new Dictionary<ResourceType, float>();
@@ -126,7 +129,7 @@ public class BuildingProductionComponent
             foreach (var res in data.productionPerCycle)
                 AddToDict(total, res.type, res.amount);
 
-        // 2. Bonusy z ulepszeń
+        // 2. Bonusy z ulepszeń w grze (Tier 1 -> Tier 2)
         var upgradeBonus = upgradeComponent.GetAllProductionBonuses();
         foreach (var kvp in upgradeBonus)
             AddToDict(total, kvp.Key, kvp.Value);
@@ -139,6 +142,23 @@ public class BuildingProductionComponent
         {
             ResourceType mainRes = data.productionPerCycle[0].type;
             AddToDict(total, mainRes, terrainBonus);
+        }
+
+        // 4. NOWE: Bonus ze specyficznej Meta-Progresji (tylko dla tego konkretnego budynku)
+        if (MetaUpgradeManager.Instance != null && data.productionPerCycle != null)
+        {
+            // Pobieramy wartość. Zwraca np. 0.15 (jeśli daliśmy 15% boosta do Tartaku)
+            float metaSpecificBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
+            
+            if (metaSpecificBonus > 0f)
+            {
+                // Aplikujemy bonus (mnożnik) do KAŻDEGO bazowego surowca produkowanego przez ten budynek
+                foreach (var res in data.productionPerCycle)
+                {
+                    float extraAmount = res.amount * metaSpecificBonus;
+                    AddToDict(total, res.type, extraAmount);
+                }
+            }
         }
 
         return total;

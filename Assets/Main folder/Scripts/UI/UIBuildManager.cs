@@ -228,17 +228,45 @@ public class UIBuildManager : MonoBehaviour
         switch (data.type)
         {
             case BuildingType.Housing:
-                if (data is HousingBuildingData house)
-                {
-                    sb.AppendLine($"<color=#AAAAAA>Pojemność:</color> <b>{house.initialResidents} / {house.maxResidents} {house.housingRace}</b>");
-                    
-                    if (house.growthSurplusCost != null && house.growthSurplusCost.Count > 0)
-                    {
-                        sb.AppendLine("\n<color=#AAAAAA>Koszt przyrostu (na cykl):</color>");
-                        foreach (var cost in house.growthSurplusCost) sb.AppendLine($" <color=#FF8888>-{cost.amount} {cost.type}</color>");
-                    }
-                }
-                break;
+                            if (data is HousingBuildingData houseData)
+                            {
+                                // --- OBLICZANIE RZECZYWISTYCH WARTOŚCI (Baza + Config + Meta) ---
+                                int startPop = houseData.initialResidents;
+                                int maxPop = houseData.maxResidents;
+
+                                var globalCfg = ResourceManager.Instance?.cityConfig;
+                                if (globalCfg != null && globalCfg.overrideHousingData)
+                                {
+                                    if (houseData.housingRace == Race.Humans) { startPop = globalCfg.humanStartPop; maxPop = globalCfg.humanMaxPop; }
+                                    else if (houseData.housingRace == Race.Elves) { startPop = globalCfg.elfStartPop; maxPop = globalCfg.elfMaxPop; }
+                                    else if (houseData.housingRace == Race.Dwarves) { startPop = globalCfg.dwarfStartPop; maxPop = globalCfg.dwarfMaxPop; }
+                                }
+
+                                int metaStartBonus = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingStartPopulation)) : 0;
+                                startPop += metaStartBonus;
+
+                                int metaMaxBonusGlobal = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingMaxResidents)) : 0;
+                                MetaEffectType specificEffect = houseData.housingRace switch {
+                                    Race.Humans => MetaEffectType.HousingMaxResidents_Humans,
+                                    Race.Elves => MetaEffectType.HousingMaxResidents_Elves,
+                                    Race.Dwarves => MetaEffectType.HousingMaxResidents_Dwarves,
+                                    _ => MetaEffectType.None
+                                };
+                                int metaMaxBonusSpecific = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(specificEffect)) : 0;
+                                maxPop += (metaMaxBonusGlobal + metaMaxBonusSpecific);
+                                // ----------------------------------------------------------------
+
+                                // Zmienione wyświetlanie: oddzielamy Startową i Maksymalną dla czytelności
+                                sb.AppendLine($"<color=#AAAAAA>Pojemność na start:</color> <b>{startPop} {houseData.housingRace}</b>");
+                                sb.AppendLine($"<color=#AAAAAA>Pojemność max:</color> <b>{maxPop} {houseData.housingRace}</b>");
+                                
+                                if (houseData.growthSurplusCost != null && houseData.growthSurplusCost.Count > 0)
+                                {
+                                    sb.AppendLine("\n<color=#AAAAAA>Koszt przyrostu (na cykl):</color>");
+                                    foreach (var cost in houseData.growthSurplusCost) sb.AppendLine($" <color=#FF8888>-{cost.amount} {cost.type}</color>");
+                                }
+                            }
+                            break;
 
             case BuildingType.Defense:
                 if (data is TowerData tower)

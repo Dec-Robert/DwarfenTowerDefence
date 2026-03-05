@@ -20,10 +20,7 @@ public class TimeCycleManager : MonoBehaviour
     [Range(0, 24)] public float currentTime = 5.0f;
     public int currentHour = 5;
     public int dayCount = 1;
-
-    [Header("UI")]
-    public TextMeshProUGUI timeDisplay;
-
+    
     // Zmienna do zapami�tania pr�dko�ci przed pauz� (domy�lnie 1x)
     private float storedSpeed = 1f;
 
@@ -56,8 +53,6 @@ public class TimeCycleManager : MonoBehaviour
         // 3. Dodajemy czas
         // (Time.deltaTime uwzgl�dnia przyciski pr�dko�ci 1x, 2x, 5x, wi�c to nadal dzia�a)
         currentTime += Time.deltaTime / currentSecondsPerHour;
-
-        UpdateUI();
 
         // 4. Wybijanie pe�nych godzin
         if (currentTime >= currentHour + 1)
@@ -120,16 +115,7 @@ public class TimeCycleManager : MonoBehaviour
             Time.timeScale = 0f;
         }
     }
-
-    private void UpdateUI()
-    {
-        if (timeDisplay != null)
-        {
-            float minutes = (currentTime - Mathf.Floor(currentTime)) * 60;
-            timeDisplay.text = GetFormattedTime();
-        }
-    }
-
+    
     public string GetFormattedTime()
     {
         float minutes = (currentTime - Mathf.Floor(currentTime)) * 60;

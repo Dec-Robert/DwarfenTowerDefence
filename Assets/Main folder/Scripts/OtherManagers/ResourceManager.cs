@@ -6,14 +6,9 @@ public class ResourceManager : MonoBehaviour
 {
     public static ResourceManager Instance { get; private set; }
 
-    [System.Serializable]
-    public struct ResourceStartAmount
-    {
-        public ResourceType type;
-        public float amount; // ZMIANA NA FLOAT
-    }
-    public List<ResourceStartAmount> startingResources;
 
+    [Header("Baza Startowa")]
+    public CityBaseConfigSO cityConfig;
     // Słownik teraz przechowuje float
     private Dictionary<ResourceType, float> resourceBank = new Dictionary<ResourceType, float>();
 
@@ -33,9 +28,19 @@ public class ResourceManager : MonoBehaviour
         {
             resourceBank[type] = 0f;
         }
-        foreach (var entry in startingResources)
+
+        if (cityConfig != null)
         {
-            resourceBank[entry.type] = entry.amount;
+            resourceBank[ResourceType.Gold] = cityConfig.startGold;
+            resourceBank[ResourceType.Wood] = cityConfig.startWood;
+            resourceBank[ResourceType.Stone] = cityConfig.startStone;
+            resourceBank[ResourceType.Iron] = cityConfig.startIron;
+            resourceBank[ResourceType.Coal] = cityConfig.startCoal;
+            resourceBank[ResourceType.Food] = cityConfig.startFood;
+        }
+        else
+        {
+            Debug.LogError("[ResourceManager] BRAK CITY BASE CONFIGU!");
         }
     }
 

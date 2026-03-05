@@ -22,7 +22,20 @@ public class MainMenuController : MonoBehaviour
     private Label lblCurrency;
     private Label lblProgress;
 
+    private void Update()
+    {
+        // DEBUG: F5 dodaje 10 000 Nadziei
+        if (Input.GetKeyDown(KeyCode.F5))
+        {
+            GiveDebugHope();
+        }
 
+        // DEBUG: F1 resetuje CAŁY postęp i wyzerowuje konto
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            HardResetProgression();
+        }
+    }
     private void OnEnable()
     {
         var root = uiDocument.rootVisualElement;
@@ -89,34 +102,40 @@ public class MainMenuController : MonoBehaviour
     void RefreshProgressionUI()
     {
         metaList.Clear();
-        lblCurrency.text = $"Nadzieja: {playerHope}"; 
+        lblCurrency.text = $"Nadzieja: {playerHope}";
 
         List<MetaUpgradeSO> availableUpgrades = new List<MetaUpgradeSO>();
         List<MetaUpgradeSO> ownedUpgrades = new List<MetaUpgradeSO>();
 
         int unlockedCount = 0;
 
-        // POBIERAMY LISTĘ Z MANAGERA:
+        // POBIERAMY LISTĘ Z MANAGERA
         var upgradesList = MetaUpgradeManager.Instance != null ? MetaUpgradeManager.Instance.allUpgrades : new List<MetaUpgradeSO>();
 
         // 1. ETAP SEGREGACJI
         foreach (var upgrade in upgradesList)
         {
+            // ZABEZPIECZENIE: Jeśli z jakiegoś powodu w liście jest puste pole (null), ignorujemy je
+            if (upgrade == null) continue;
+
             // Zliczamy odblokowane
             if (upgrade.isUnlocked)
             {
                 unlockedCount++;
-                ownedUpgrades.Add(upgrade); // Idzie na d� listy
+                ownedUpgrades.Add(upgrade); // Idzie na dół listy
                 continue;
             }
 
             // Sprawdzamy wymagania dla nieodblokowanych
             bool prereqsMet = true;
+            
+            // ZABEZPIECZENIE: Sprawdzamy czy lista prerequisites nie jest null
             if (upgrade.prerequisites != null)
             {
                 foreach (var req in upgrade.prerequisites)
                 {
-                    if (!req.isUnlocked)
+                    // ZABEZPIECZENIE: Sprawdzamy czy konkretny element listy wymagań nie jest null
+                    if (req != null && !req.isUnlocked)
                     {
                         prereqsMet = false;
                         break;
@@ -124,17 +143,16 @@ public class MainMenuController : MonoBehaviour
                 }
             }
 
-            // Je�li wymagania spe�nione -> Idzie na g�r� listy
+            // Jeśli wymagania spełnione -> Idzie na górę listy
             if (prereqsMet)
             {
                 availableUpgrades.Add(upgrade);
             }
-            // Je�li wymagania niespe�nione -> W og�le nie dodajemy (ukryte)
         }
 
         lblProgress.text = $"Odblokowano: {unlockedCount}/{upgradesList.Count}";
 
-        // 2. ETAP ��CZENIA (Najpierw Dost�pne, potem Posiadane)
+        // 2. ETAP ŁĄCZENIA
         List<MetaUpgradeSO> finalDisplayList = new List<MetaUpgradeSO>();
         finalDisplayList.AddRange(availableUpgrades);
         finalDisplayList.AddRange(ownedUpgrades);
@@ -161,7 +179,9 @@ public class MainMenuController : MonoBehaviour
 
             Label title = new Label(upgrade.upgradeName);
             title.AddToClassList("card-title");
-            Label desc = new Label(upgrade.description);
+            
+            // ZABEZPIECZENIE: Upewniamy się, że description nie zwróci błędu jeśli jest puste
+            Label desc = new Label(upgrade.description ?? "");
             desc.AddToClassList("card-desc");
 
             info.Add(title);
@@ -182,15 +202,15 @@ public class MainMenuController : MonoBehaviour
 
                 if (playerHope >= upgrade.cost)
                 {
-                    buyBtn.text = $"{upgrade.cost} Art";
+                    buyBtn.text = $"{upgrade.cost} Nadziei";
                     buyBtn.clicked += () => BuyUpgrade(upgrade);
                 }
                 else
                 {
-                    buyBtn.text = $"{upgrade.cost} Art";
+                    buyBtn.text = $"{upgrade.cost} Nadziei";
                     buyBtn.SetEnabled(false);
                     buyBtn.style.color = new Color(1f, 0.5f, 0.5f);
-                    buyBtn.tooltip = "Nie sta� Ci�";
+                    buyBtn.tooltip = "Nie stać Cię";
                 }
                 card.Add(buyBtn);
             }
@@ -219,5 +239,64 @@ public class MainMenuController : MonoBehaviour
             
             RefreshProgressionUI();
         }
+    }
+    
+    // =========================================================================
+    // DEBUG CHEATS (Tylko w Menu Głównym)
+    // =========================================================================
+
+    private void HardResetProgression()
+    {
+        // 1. Zresetuj lokalną walutę w Menu
+        playerHope = 0;
+
+        // 2. Zresetuj plik Save'a (Wyzeruj konto i wyczyść listę odblokowanych ID)
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.currentSaveData.totalHope = 0;
+            SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Clear();
+            SaveManager.Instance.SaveGame(); // Zapisz pusty stan natychmiast na dysk
+        }
+
+        // 3. Oznacz wszystkie obiekty ScriptableObject (MetaUpgradeSO) jako ZABLOKOWANE
+        if (MetaUpgradeManager.Instance != null && MetaUpgradeManager.Instance.allUpgrades != null)
+        {
+            foreach (var upgrade in MetaUpgradeManager.Instance.allUpgrades)
+            {
+                if (upgrade != null)
+                {
+                    upgrade.isUnlocked = false;
+                }
+            }
+        }
+
+        // 4. Odśwież UI, jeśli gracz aktualnie przebywa w oknie progresji
+        if (menuProgression != null && menuProgression.style.display == DisplayStyle.Flex)
+        {
+            RefreshProgressionUI();
+        }
+
+        // Ostrzeżenie wizualne w konsoli dla pewności
+        Debug.LogWarning("<color=red>[DEBUG] HARD RESET! Cały postęp wyczyszczony. Waluta: 0.</color>");
+    }
+    
+    private void GiveDebugHope()
+    {
+        playerHope += 10000;
+
+        // Natychmiastowy zapis do SaveManagera
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.currentSaveData.totalHope = (int)playerHope;
+            SaveManager.Instance.SaveGame();
+        }
+
+        // Jeśli jesteśmy na ekranie progresji, odśwież licznik w rogu
+        if (menuProgression.style.display == DisplayStyle.Flex)
+        {
+            RefreshProgressionUI();
+        }
+
+        Debug.Log("<color=green>[DEBUG] Dodano 10 000 Nadziei!</color>");
     }
 }

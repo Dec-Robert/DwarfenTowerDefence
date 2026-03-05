@@ -158,7 +158,10 @@ public enum MetaEffectType
 
     /// <summary>Zwiększa maxResidents tylko dla domów krasnoludów (Race.Dwarves).</summary>
     HousingMaxResidents_Dwarves        = 38,
-
+    
+    /// <summary>Zwiększa produktywnośc konkretnego typu budynku </summary>
+    SpecificBuildingProductionBonus    = 39,
+    
     // ── Wrogowie ──────────────────────────────────────────────────────────────
     EliteChanceBoost               = 40,
     EnemySurvivorPenaltyArmor      = 41,

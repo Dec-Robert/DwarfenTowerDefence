@@ -32,22 +32,38 @@ public class UIExpansionMenu : MonoBehaviour
     // UNITY
     // =========================================================================
 
-    private void OnEnable()
+private void OnEnable()
     {
         root      = uiDocument.rootVisualElement;
+        
+        // Szukamy kontenera
         menuPanel = root.Q<VisualElement>("ExpansionMenu");
+        if (menuPanel == null) Debug.LogError("[UIExpansionMenu] BŁĄD: Nie znaleziono elementu o nazwie 'ExpansionMenu' w UXML!");
 
         lblTitle      = root.Q<Label>("Exp_Title");
+        if (lblTitle == null) Debug.LogError("[UIExpansionMenu] BŁĄD: Nie znaleziono elementu o nazwie 'Exp_Title' w UXML!");
+
         lblDesc       = root.Q<Label>("Exp_Description");
+        if (lblDesc == null) Debug.LogError("[UIExpansionMenu] BŁĄD: Nie znaleziono elementu o nazwie 'Exp_Description' w UXML!");
+
         lblCostVal    = root.Q<Label>("Exp_CostVal");
+        if (lblCostVal == null) Debug.LogError("[UIExpansionMenu] BŁĄD: Nie znaleziono elementu o nazwie 'Exp_CostVal' w UXML!");
+
         costContainer = root.Q<VisualElement>("Exp_CostContainer");
+        if (costContainer == null) Debug.LogError("[UIExpansionMenu] BŁĄD: Nie znaleziono elementu o nazwie 'Exp_CostContainer' w UXML!");
 
         btnBuy   = root.Q<Button>("Btn_Exp_Buy");
-        btnClose = root.Q<Button>("Btn_Exp_Close");
+        if (btnBuy == null) Debug.LogError("[UIExpansionMenu] BŁĄD: Nie znaleziono elementu o nazwie 'Btn_Exp_Buy' w UXML!");
 
-        if (btnBuy   != null) btnBuy.clicked   += OnBuyClicked;
+        btnClose = root.Q<Button>("Btn_Exp_Close");
+        if (btnClose == null) Debug.LogError("[UIExpansionMenu] BŁĄD: Nie znaleziono elementu o nazwie 'Btn_Exp_Close' w UXML!");
+
+        // Podpinanie eventów tylko gdy guziki istnieją
+        if (btnBuy != null) btnBuy.clicked += OnBuyClicked;
         if (btnClose != null) btnClose.clicked += Hide;
     }
+
+    
 
     private void Update()
     {
@@ -138,11 +154,6 @@ public class UIExpansionMenu : MonoBehaviour
         {
             BuildTooFarUI();
         }
-        else if (expansionManager.IsMilitaryAllowed(currentTarget) &&
-                 !expansionManager.IsFullyUnlocked(currentTarget))
-        {
-            BuildMilitaryOnlyUI();
-        }
         else if (expansionManager.IsChunkScoutable(currentTarget))
         {
             BuildScoutUI();
@@ -216,6 +227,13 @@ public class UIExpansionMenu : MonoBehaviour
         currentMode = PanelMode.Scout;
 
         MissionCost cost = expansionManager.GetMissionCost(currentTarget);
+
+        // ZABEZPIECZENIE przed nullem
+        if (lblTitle == null || lblDesc == null || lblCostVal == null || btnBuy == null)
+        {
+            Debug.LogError("[UIExpansionMenu] Błąd w BuildScoutUI: Któryś z elementów UI jest NULL! Sprawdź logi z OnEnable.");
+            return;
+        }
 
         lblTitle.text = "Ziemia Rozrzedzonej Mgły";
         lblDesc.text  = $"Czas podróży: {cost.days} dni\n" +

@@ -40,33 +40,39 @@ public class HousingEntity : BuildingEntity
     // Inicjalizacja
     // =========================================================================
 
+    // Wymagany dostęp do configu z poziomu całego systemu domów
+    private CityBaseConfigSO GetConfig() => ResourceManager.Instance?.cityConfig;
+
     public override void Initialize(BuildingData buildingData)
     {
-        // Tworzy komponenty (Workers, Fuel, Production itd.),
-        // ale dla domu nie będą używane – to dopuszczalne,
-        // koszt ich stworzenia jest pomijalny.
         base.Initialize(buildingData);
 
-        if (housingData == null)
+        if (housingData == null) return;
+
+        // 1. OBLICZAMY POCZĄTKOWĄ POPULACJĘ (Baza + Meta)
+        int baseStartPop = housingData.initialResidents;
+        if (GetConfig() != null && GetConfig().overrideHousingData)
         {
-            Debug.LogError($"[HousingEntity] Złe dane przypisane do {name}!");
-            return;
+            if (housingData.housingRace == Race.Humans) baseStartPop = GetConfig().humanStartPop;
+            else if (housingData.housingRace == Race.Elves) baseStartPop = GetConfig().elfStartPop;
+            else if (housingData.housingRace == Race.Dwarves) baseStartPop = GetConfig().dwarfStartPop;
         }
 
+        int metaBonus = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingStartPopulation)) : 0;
+        int finalStartPop = baseStartPop + metaBonus;
+
         // Spawn startowych mieszkańców
-        for (int i = 0; i < housingData.initialResidents; i++)
+        for (int i = 0; i < finalStartPop; i++)
         {
             if (residents.Count >= GetEffectiveMaxResidents()) break;
-
             Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
             residents.Add(newC);
         }
 
-        // Subskrybujemy własny handler poranny (base.Initialize już podpiął OnHourTick i OnDayChanged,
-        // ale HandleHourlyProduction jest nadpisana jako pusta – patrz niżej)
         if (TimeCycleManager.Instance != null)
             TimeCycleManager.Instance.OnDayChanged += HandleMorningRoutine;
     }
+    
 
     protected override void OnDestroy()  // 'new' żeby nie ukryć base.OnDestroy przypadkowo
     {
@@ -188,15 +194,24 @@ public class HousingEntity : BuildingEntity
     /// </summary>
     public int GetEffectiveMaxResidents()
     {
+        int baseMaxPop = housingData.maxResidents;
+        
+        // Zastąpienie wartości przez globalny Config
+        if (GetConfig() != null && GetConfig().overrideHousingData)
+        {
+            if (housingData.housingRace == Race.Humans) baseMaxPop = GetConfig().humanMaxPop;
+            else if (housingData.housingRace == Race.Elves) baseMaxPop = GetConfig().elfMaxPop;
+            else if (housingData.housingRace == Race.Dwarves) baseMaxPop = GetConfig().dwarfMaxPop;
+        }
+
         int bonus = 0;
 
         if (MetaUpgradeManager.Instance != null)
         {
-            // Bonus ogólny — działa dla wszystkich domów
-            bonus += Mathf.RoundToInt(
-                MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingMaxResidents));
+            // Bonus ogólny 
+            bonus += Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingMaxResidents));
 
-            // Bonus per rasa — tylko dla pasującego domu
+            // Bonus per rasa 
             MetaEffectType raceEffect = housingData.housingRace switch
             {
                 Race.Humans  => MetaEffectType.HousingMaxResidents_Humans,
@@ -206,11 +221,10 @@ public class HousingEntity : BuildingEntity
             };
 
             if (raceEffect != MetaEffectType.None)
-                bonus += Mathf.RoundToInt(
-                    MetaUpgradeManager.Instance.GetValue(raceEffect));
+                bonus += Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(raceEffect));
         }
 
-        return housingData.maxResidents + bonus;
+        return baseMaxPop + bonus;
     }
 
     // =========================================================================

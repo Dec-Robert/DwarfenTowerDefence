@@ -1,89 +1,46 @@
 using UnityEngine;
-using UnityEngine.Networking;
-using System.Collections;
-using System;
+using Unity.Services.Core;
+using Unity.Services.Analytics;
+using System.Threading.Tasks;
 
 public class TelemetryManager : MonoBehaviour
 {
-    [Header("Konfiguracja Google Form")]
-    // Link do Twojego formularza (z ko�c�wk� formResponse)
-    [SerializeField] private string googleFormURL = "https://docs.google.com/forms/d/1l9Gj_MaGIw31kVcagDYCFExUexmhBpLiguwaE3KeEqY/formResponse";
+    public static TelemetryManager Instance { get; private set; }
 
-    // ID pola tekstowego (entry.XXXXXX)
-    [SerializeField] private string entryID = "entry.645495749";
-
-    private const string PREF_KEY_HAS_SENT = "Telemetry_Sent_V1";
-    private const string PREF_KEY_USER_ID = "Telemetry_UserID";
-    //
-    private void Start()
+    private async void Awake()
     {
-        // Sprawdzamy, czy ju� wys�ali�my dane w przesz�o�ci
-        if (PlayerPrefs.GetInt(PREF_KEY_HAS_SENT, 0) == 0)
+        // Standardowy Singleton – chcemy, żeby ten skrypt żył od odpalenia menu aż do wyłączenia gry
+        if (Instance != null && Instance != this)
         {
-            StartCoroutine(SendFirstLaunchData());
+            Destroy(gameObject);
+            return;
         }
-        else
-        {
-            Debug.Log("[Telemetry] U�ytkownik powracaj�cy. Dane ju� by�y wys�ane.");
-        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        // Uruchamiamy proces łączenia z chmurą
+        await InitializeUnityServices();
     }
 
-    IEnumerator SendFirstLaunchData()
+    private async Task InitializeUnityServices()
     {
-        // 1. Generujemy lub pobieramy unikalne ID
-        string userID = GetOrCreateUserID();
-        Debug.Log($"[Telemetry] Nowy u�ytkownik! Wysy�am ID: {userID}");
-
-        // 2. Przygotowujemy formularz
-        WWWForm form = new WWWForm();
-        // entryID to nazwa pola w Google Form
-        form.AddField(entryID, userID);
-
-        // 3. Wysy�amy ��danie
-        using (UnityWebRequest www = UnityWebRequest.Post(googleFormURL, form))
+        try
         {
-            yield return www.SendWebRequest();
+            // 1. Inicjalizacja rdzenia usług Unity (wymagane dla każdej usługi UGS)
+            await UnityServices.InitializeAsync();
 
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError($"[Telemetry] B��d wysy�ania: {www.error}");
-                // Nie zapisujemy flagi, spr�bujemy znowu przy kolejnym uruchomieniu
-            }
-            else
-            {
-                Debug.Log("[Telemetry] Sukces! U�ytkownik zarejestrowany.");
+            // Opcjonalnie: Obsługa zgody na RODO (GDPR/COPPA)
+            // W pełnej wersji gry powinieneś wyświetlić popup z prośbą o zgodę.
+            // Dla naszych celów testowych wymuszamy start zbierania danych:
+            AnalyticsService.Instance.StartDataCollection();
 
-                // 4. Zapisujemy flag�, �e wys�ano (�eby nie liczy� go drugi raz)
-                PlayerPrefs.SetInt(PREF_KEY_HAS_SENT, 1);
-                PlayerPrefs.Save();
-            }
+            Debug.Log("<color=green>[TelemetryManager] Unity Analytics pomyślnie zainicjowane i połączone z chmurą!</color>");
         }
-    }
-
-    string GetOrCreateUserID()
-    {
-        // Sprawdzamy czy mamy ju� ID (mo�e gracz skasowa� save, ale PlayerPrefs zosta�y)
-        if (PlayerPrefs.HasKey(PREF_KEY_USER_ID))
+        catch (System.Exception e)
         {
-            return PlayerPrefs.GetString(PREF_KEY_USER_ID);
+            // Łapiemy błąd, żeby gra nie "wybuchła", jeśli np. gracz nie ma internetu
+            Debug.LogWarning($"<color=orange>[TelemetryManager] Błąd inicjalizacji Unity Services (brak internetu?): {e.Message}</color>");
         }
-
-        // Generujemy nowe UUID (Globalnie Unikalny Identyfikator)
-        string newID = Guid.NewGuid().ToString(); // Wygl�da np. tak: "d83b2b4a-1c6d-4b5a-9e3f-2c8d1b4a5e6f"
-
-        // Zapisujemy
-        PlayerPrefs.SetString(PREF_KEY_USER_ID, newID);
-        PlayerPrefs.Save();
-
-        return newID;
-    }
-
-    // Opcjonalne: Metoda do resetowania test�w (przypisz np. pod przycisk w menu debugowym)
-    [ContextMenu("Reset Telemetry (Debug)")]
-    public void ResetTelemetry()
-    {
-        PlayerPrefs.DeleteKey(PREF_KEY_HAS_SENT);
-        PlayerPrefs.DeleteKey(PREF_KEY_USER_ID);
-        Debug.Log("[Telemetry] Zresetowano. Przy nast�pnym starcie gra uzna Ci� za nowego gracza.");
     }
 }

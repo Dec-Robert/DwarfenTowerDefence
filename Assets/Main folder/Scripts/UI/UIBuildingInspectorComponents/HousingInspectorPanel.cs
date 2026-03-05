@@ -75,7 +75,8 @@ public class HousingInspectorPanel : BuildingInspectorPanel
         if (residentCapsules == null) return;
 
         residentCapsules.Clear();
-        int max     = house.housingData.maxResidents;
+        
+        int max     = house.GetEffectiveMaxResidents(); 
         int current = house.residents.Count;
 
         for (int i = 0; i < max; i++)

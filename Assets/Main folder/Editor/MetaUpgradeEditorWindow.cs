@@ -331,8 +331,11 @@ public class MetaUpgradeEditorWindow : EditorWindow
                 Color edgeColor = met ? COLOR_EDGE : COLOR_EDGE_UNMET;
 
                 // Bezierowa krzywa
-                Vector2 ctrl1 = from + new Vector2(50f * zoomScale, 0);
-                Vector2 ctrl2 = to   - new Vector2(50f * zoomScale, 0);
+                float distanceX = Mathf.Abs(to.x - from.x);
+                float tangentStrength = Mathf.Max(50f * zoomScale, distanceX * 0.4f);
+
+                Vector2 ctrl1 = from + new Vector2(tangentStrength, 0);
+                Vector2 ctrl2 = to   - new Vector2(tangentStrength, 0);
 
                 Handles.DrawBezier(
                     new Vector3(from.x, from.y, 0),
@@ -932,79 +935,150 @@ public class MetaUpgradeEditorWindow : EditorWindow
         AutoLayout();
     }
 
-    /// <summary>
-    /// Automatyczny layout: BFS od korzeni (brak prerequisites).
-    /// Każdy poziom zależności → osobna kolumna.
+/// <summary>
+    /// Automatyczny layout oparty na heurystyce Sugiyamy (Layering + Relaxation).
+    /// Gwarantuje absolutny brak nakładania się bloków.
     /// </summary>
     private void AutoLayout()
     {
         if (nodes.Count == 0) return;
 
-        // Przypisz poziomy (columns) przez BFS
-        var levels = new Dictionary<UpgradeNode, int>();
-        var queue  = new Queue<UpgradeNode>();
+        // 1. Zbudowanie słowników relacji
+        var parents = new Dictionary<UpgradeNode, List<UpgradeNode>>();
+        var children = new Dictionary<UpgradeNode, List<UpgradeNode>>();
 
-        // Korzenie = brak prerequisites lub wszystkie null
-        foreach (var node in nodes)
+        foreach (var n in nodes)
         {
-            bool isRoot = node.upgrade.prerequisites == null
-                || node.upgrade.prerequisites.All(p => p == null);
-            if (isRoot)
+            parents[n] = new List<UpgradeNode>();
+            children[n] = new List<UpgradeNode>();
+        }
+
+        foreach (var n in nodes)
+        {
+            if (n.upgrade.prerequisites == null) continue;
+            foreach (var req in n.upgrade.prerequisites)
             {
-                levels[node] = 0;
-                queue.Enqueue(node);
+                if (req != null && nodeMap.TryGetValue(req.id, out var pNode))
+                {
+                    parents[n].Add(pNode);
+                    children[pNode].Add(n);
+                }
             }
         }
 
-        // Jeśli brak korzeni — wszytkie na poziomie 0
-        if (queue.Count == 0)
-        {
-            foreach (var node in nodes) { levels[node] = 0; queue.Enqueue(node); }
-        }
+        // 2. Przypisanie warstw (Kolumn) za pomocą algorytmu najdłuższej ścieżki
+        var layers = new Dictionary<UpgradeNode, int>();
+        foreach (var n in nodes) layers[n] = 0;
 
-        while (queue.Count > 0)
-        {
-            var current = queue.Dequeue();
-            int nextLevel = levels[current] + 1;
+        bool changed = true;
+        int safeguard = nodes.Count * 2; // Zabezpieczenie przed cyklami w grafie
 
-            foreach (var other in nodes)
+        while (changed && safeguard > 0)
+        {
+            changed = false;
+            safeguard--;
+            foreach (var n in nodes)
             {
-                if (other.upgrade.prerequisites == null) continue;
-                if (!other.upgrade.prerequisites.Contains(current.upgrade)) continue;
-                if (levels.TryGetValue(other, out int existing) && existing >= nextLevel) continue;
+                int maxParentLayer = -1;
+                foreach (var p in parents[n])
+                {
+                    if (layers[p] > maxParentLayer) maxParentLayer = layers[p];
+                }
 
-                levels[other] = nextLevel;
-                queue.Enqueue(other);
+                if (layers[n] <= maxParentLayer)
+                {
+                    layers[n] = maxParentLayer + 1;
+                    changed = true;
+                }
             }
         }
 
-        // Pozostałe węzły (bez poziomu)
-        foreach (var node in nodes)
-            if (!levels.ContainsKey(node)) levels[node] = 0;
+        int maxLayer = layers.Values.Count > 0 ? layers.Values.Max() : 0;
+        var nodesByLayer = new List<List<UpgradeNode>>();
+        for (int i = 0; i <= maxLayer; i++)
+            nodesByLayer.Add(new List<UpgradeNode>());
 
-        // Grupuj po poziomach i rozmieść
-        var byLevel = nodes.GroupBy(n => levels.TryGetValue(n, out int l) ? l : 0)
-                           .OrderBy(g => g.Key)
-                           .ToList();
+        foreach (var n in nodes)
+            nodesByLayer[layers[n]].Add(n);
 
-        float startX = 20f;
-        float startY = 20f;
+        // Sortowanie warstwy 0 dla lepszego startu (najpierw te z największą ilością dzieci)
+        nodesByLayer[0] = nodesByLayer[0].OrderByDescending(n => children[n].Count).ToList();
 
-        foreach (var group in byLevel)
+        float startX = 40f;
+        float startY = 40f;
+
+        // Inicjalne, proste rozłożenie węzłów
+        for (int i = 0; i <= maxLayer; i++)
         {
-            float x = startX + group.Key * NODE_SPACING_X;
-            float y = startY;
-            int   row = 0;
-
-            foreach (var node in group.OrderBy(n => n.upgrade.upgradeName))
+            float curY = startY;
+            foreach (var n in nodesByLayer[i])
             {
-                node.rect = new Rect(x, y + row * NODE_SPACING_Y, NODE_WIDTH, NODE_HEIGHT);
-                row++;
+                n.rect.y = curY;
+                curY += NODE_SPACING_Y;
             }
+        }
+
+        // 3. Relaksacja (Iteracyjne wygładzanie + Rozwiązywanie kolizji)
+        // Robimy 4 iteracje w przód i w tył, żeby drzewo naturalnie się "ułożyło"
+        for (int iter = 0; iter < 4; iter++)
+        {
+            // Propagacja w dół (Dzieci dążą do rodziców)
+            for (int i = 1; i <= maxLayer; i++)
+            {
+                foreach (var n in nodesByLayer[i])
+                {
+                    if (parents[n].Count > 0)
+                        n.rect.y = parents[n].Average(p => p.rect.y);
+                }
+                
+                // Zabezpieczenie przed kolizjami (wymusza odstępy)
+                nodesByLayer[i] = nodesByLayer[i].OrderBy(n => n.rect.y).ToList();
+                ResolveOverlaps(nodesByLayer[i], startY);
+            }
+
+            // Propagacja w górę (Rodzice dążą do średniej dzieci)
+            for (int i = maxLayer - 1; i >= 0; i--)
+            {
+                foreach (var n in nodesByLayer[i])
+                {
+                    if (children[n].Count > 0)
+                        n.rect.y = children[n].Average(c => c.rect.y);
+                }
+
+                // Zabezpieczenie przed kolizjami (wymusza odstępy)
+                nodesByLayer[i] = nodesByLayer[i].OrderBy(n => n.rect.y).ToList();
+                ResolveOverlaps(nodesByLayer[i], startY);
+            }
+        }
+
+        // 4. Aplikacja finalnych wymiarów i szerokości
+        foreach (var n in nodes)
+        {
+            n.rect.x = startX + layers[n] * NODE_SPACING_X;
+            n.rect.width = NODE_WIDTH;
+            n.rect.height = NODE_HEIGHT;
         }
 
         panOffset = Vector2.zero;
         Repaint();
+    }
+
+    /// <summary>
+    /// Metoda przechodzi przez kolumnę od góry do dołu i twardo wymusza bezpieczny odstęp między węzłami.
+    /// </summary>
+    private void ResolveOverlaps(List<UpgradeNode> layerNodes, float startY)
+    {
+        float currentY = startY;
+        foreach (var n in layerNodes)
+        {
+            // Jeśli węzeł jest "za wysoko" i nachodziłby na poprzedni, spychamy go w dół
+            if (n.rect.y < currentY)
+            {
+                n.rect.y = currentY;
+            }
+            // Aktualizujemy barierę (końcówka tego węzła + bezpieczny margines)
+            currentY = n.rect.y + NODE_SPACING_Y;
+        }
     }
 
     // =========================================================================
@@ -1080,6 +1154,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
             MetaEffectType.WallSystem_Solution1            => "Mury: Baza",
             MetaEffectType.WallSystem_Solution2            => "Mury: Linia Frontu",
             MetaEffectType.UniqueChunkUnlock               => "Unikatowy chunk",
+            MetaEffectType.SpecificBuildingProductionBonus => $"+{v*100:F0}% produkcji",
             _                                              => upgrade.effectType.ToString()
         };
     }
@@ -1109,6 +1184,15 @@ public class MetaUpgradeEditorWindow : EditorWindow
             or MetaEffectType.EnemySurvivorPenaltyDodge
             or MetaEffectType.ExpansionCostReduction
             or MetaEffectType.SpecificBuildingUpgradeCostReduction => "Wartość (0.0–1.0 = %)",
+        MetaEffectType.BuildingPassiveEfficiency
+            or MetaEffectType.BuildingWorkerEfficiencyBonus
+            or MetaEffectType.EliteChanceBoost
+            or MetaEffectType.EnemySurvivorPenaltyArmor
+            or MetaEffectType.EnemySurvivorPenaltySpeed
+            or MetaEffectType.EnemySurvivorPenaltyDodge
+            or MetaEffectType.ExpansionCostReduction
+            or MetaEffectType.SpecificBuildingUpgradeCostReduction 
+            or MetaEffectType.SpecificBuildingProductionBonus => "Wartość (0.0–1.0 = %)",
         MetaEffectType.TowerNoAmmoNightPenalty
             or MetaEffectType.BuildingTerrainBonusMultiplier => "Mnożnik",
         _                                       => "effectValue"

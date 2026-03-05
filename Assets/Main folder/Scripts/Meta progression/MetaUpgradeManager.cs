@@ -37,7 +37,7 @@ public class MetaUpgradeManager : MonoBehaviour
 
     [Header("── Konfiguracja Scen ────────────────────")]
     [Tooltip("Nazwa sceny, w której manager ma zaaplikować efekty (np. GameScene)")]
-    public string gameSceneName = "GameScene";
+    public string gameSceneName = "Game scene";
 
     private readonly Dictionary<MetaEffectType, float> appliedValues = new Dictionary<MetaEffectType, float>();
     private readonly Dictionary<(MetaEffectType, string), float> buildingSpecificValues = new Dictionary<(MetaEffectType, string), float>();
@@ -81,10 +81,18 @@ public class MetaUpgradeManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Jeśli załadowana scena to nasza gra, DOPIRERO WTEDY aplikujemy efekty
         if (scene.name == gameSceneName)
         {
-            Debug.Log("[MetaUpgradeManager] Wykryto scenę gry. Aplikuję meta-efekty...");
+            Debug.Log("[MetaUpgradeManager] Wykryto scenę gry.");
+            
+            // --- POPRAWKA: WYMUŚ SYNCHRONIZACJĘ JESZCZE RAZ ---
+            if (SaveManager.Instance != null)
+            {
+                SaveManager.Instance.SyncUpgradesWithSave(allUpgrades);
+                Debug.Log("[MetaUpgradeManager] Wymuszono synchronizację save'a przed grą.");
+            }
+            // ----------------------------------------------------
+
             CollectValues();
             ApplyAllEffects();
         }
@@ -101,6 +109,7 @@ public class MetaUpgradeManager : MonoBehaviour
     /// </summary>
     private void CollectValues()
     {
+        Debug.LogWarning("[MetaUpgradeManager] Rozpoczynam CollectValues()..."); // <--- NOWE
         appliedValues.Clear();
         buildingSpecificValues.Clear();
 
@@ -112,16 +121,25 @@ public class MetaUpgradeManager : MonoBehaviour
             if (upgrade.RequiresTargetBuilding && upgrade.targetBuilding != null)
             {
                 var key = (upgrade.effectType, upgrade.targetBuilding.name);
-                buildingSpecificValues[key] = upgrade.effectValue;
+                
+                // SUMOWANIE WARTOŚCI
+                if (buildingSpecificValues.ContainsKey(key))
+                    buildingSpecificValues[key] += upgrade.effectValue;
+                else
+                    buildingSpecificValues[key] = upgrade.effectValue;
             }
             else
             {
-                appliedValues[upgrade.effectType] = upgrade.effectValue;
+                // SUMOWANIE WARTOŚCI GLOBALNYCH
+                if (appliedValues.ContainsKey(upgrade.effectType))
+                    appliedValues[upgrade.effectType] += upgrade.effectValue;
+                else
+                    appliedValues[upgrade.effectType] = upgrade.effectValue;
             }
+            Debug.Log($"[MetaUpgradeManager] Dodano efekt: {upgrade.effectType} o wartości {upgrade.effectValue}. Suma: {appliedValues[upgrade.effectType]}");
         }
 
-        Debug.Log($"[MetaUpgradeManager] Zebrano {appliedValues.Count} globalnych " +
-                  $"i {buildingSpecificValues.Count} budynkowych efektów.");
+        Debug.Log($"[MetaUpgradeManager] Zebrano zsumowane efekty. Globalne: {appliedValues.Count}, Specyficzne dla budynków: {buildingSpecificValues.Count}.");
     }
 
     // =========================================================================

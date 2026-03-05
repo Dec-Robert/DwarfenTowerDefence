@@ -22,11 +22,10 @@ MonoBehaviour:
     (przeciwnik z 30%hp zniszczy 2hp bramy pomocniczej), a bossowie (5%*hp bramy))\r\n"
   icon: {fileID: 21300000, guid: be6c839a82e53b6479fc40a0b60ca912, type: 3}
   cost: 800
-  isUnlocked: 0
+  isUnlocked: 1
   prerequisites:
   - {fileID: 11400000, guid: 3fa944e695acfbb4b8fc81ac67db91c8, type: 2}
   - {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
-  - {fileID: 0}
   effectType: 81
   effectValue: 0
   effectValue2: 0

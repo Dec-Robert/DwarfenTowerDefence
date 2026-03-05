@@ -17,18 +17,34 @@ MonoBehaviour:
   - chunkCoordinate: {x: -1, y: 0}
     requiredUpgrade: {fileID: 11400000, guid: 026a054e93c746a418ace08bfe75c96b, type: 2}
     baseLayout: {fileID: 11400000, guid: 0e2d3e0c21648984fae19a88daf84366, type: 2}
-  - chunkCoordinate: {x: -1, y: 1}
-    requiredUpgrade: {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
-    baseLayout: {fileID: 11400000, guid: 1d2b9bcec586ff04a8271c20a9bac4ac, type: 2}
   - chunkCoordinate: {x: -2, y: 1}
-    requiredUpgrade: {fileID: 11400000, guid: 577f24d4ea052c748bb11bcde3703a16, type: 2}
+    requiredUpgrade: {fileID: 11400000, guid: daa4e0c269353874d931812351834306, type: 2}
     baseLayout: {fileID: 11400000, guid: 3ca9b1f9c44a6ac408fa22f5583a7844, type: 2}
+  - chunkCoordinate: {x: -1, y: 1}
+    requiredUpgrade: {fileID: 11400000, guid: 577f24d4ea052c748bb11bcde3703a16, type: 2}
+    baseLayout: {fileID: 11400000, guid: 1d2b9bcec586ff04a8271c20a9bac4ac, type: 2}
   globalModifiers:
   - name: Tree expansion
     targetChunk: {x: -1, y: 0}
-    requiredUpgrade: {fileID: 11400000, guid: 72972713b88d6604c8381c22ae1b7a39, type: 2}
+    requiredUpgrade: {fileID: 11400000, guid: fa9a857a46e58964eb72ce3da69c7328, type: 2}
     modifierLayout: {fileID: 11400000, guid: eea8ec8aa75a45c4c825d2e598e1790a, type: 2}
   - name: Tree->Sawmil expansion
     targetChunk: {x: -1, y: 0}
-    requiredUpgrade: {fileID: 11400000, guid: 6f5c90464f8a20c4dbee08a0f5f671e1, type: 2}
+    requiredUpgrade: {fileID: 11400000, guid: 50014c826ba92a84aa72edc8a10e62ef, type: 2}
     modifierLayout: {fileID: 11400000, guid: 7ccdddbe18cf2414db2a72abd2004fd0, type: 2}
+  - name: Fields
+    targetChunk: {x: -1, y: 1}
+    requiredUpgrade: {fileID: 11400000, guid: b688a76a1c4f86e40ab4e933cefd9b81, type: 2}
+    modifierLayout: {fileID: 11400000, guid: 597d5e4c7fcb4cc46990b772d3231c90, type: 2}
+  - name: Fields -> farms
+    targetChunk: {x: -1, y: 1}
+    requiredUpgrade: {fileID: 11400000, guid: a1a1a677070a7e34a86249f56e49ace8, type: 2}
+    modifierLayout: {fileID: 11400000, guid: e50209d899f24434d9e34581c57aa820, type: 2}
+  - name: Mountains
+    targetChunk: {x: -2, y: 1}
+    requiredUpgrade: {fileID: 11400000, guid: 074b94088bd51c34897559f1364cf88e, type: 2}
+    modifierLayout: {fileID: 11400000, guid: aef56c93aafd6214cb30d9a20806d37e, type: 2}
+  - name: Mountains -> mines
+    targetChunk: {x: -2, y: 1}
+    requiredUpgrade: {fileID: 11400000, guid: d29e1b6ed7706e14dbef6c9db7d37a9b, type: 2}
+    modifierLayout: {fileID: 11400000, guid: 2bf146cf497b3e44884e4a29b071ca0a, type: 2}

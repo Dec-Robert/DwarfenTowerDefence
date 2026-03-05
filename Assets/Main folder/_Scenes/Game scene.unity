@@ -156,7 +156,6 @@ MonoBehaviour:
   currentTime: 6
   currentHour: 6
   dayCount: 1
-  timeDisplay: {fileID: 0}
 --- !u!4 &34146714
 Transform:
   m_ObjectHideFlags: 0
@@ -1356,7 +1355,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a2b331b144210e48a90ae31e6278c25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingHp: 20000
+  cityConfig: {fileID: 11400000, guid: 36fa0cdf4fd0d9543ac3f6ce2858eb10, type: 2}
 --- !u!4 &1478630900
 Transform:
   m_ObjectHideFlags: 0
@@ -1384,19 +1383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ec51f369b7878c4d88603d9e4a2447f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingResources:
-  - type: 0
-    amount: 20
-  - type: 1
-    amount: 20
-  - type: 2
-    amount: 20
-  - type: 4
-    amount: 40
-  - type: 3
-    amount: 10
-  - type: 7
-    amount: 5
+  cityConfig: {fileID: 11400000, guid: 36fa0cdf4fd0d9543ac3f6ce2858eb10, type: 2}
 --- !u!114 &1478630906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1699,7 +1686,7 @@ MonoBehaviour:
   fogManager: {fileID: 1837610585}
   mapGenerator: {fileID: 1837610582}
   uiExpansionMenu: {fileID: 548684870}
-  costConfig: {fileID: 11400000, guid: 24ff8894efa87934d9a2249b4c485395, type: 2}
+  costConfig: {fileID: 11400000, guid: 90565ad927aefd74dac08ce4970c440d, type: 2}
   activeMissions: []
   playerExpeditionCenter: []
 --- !u!1 &1871804221
