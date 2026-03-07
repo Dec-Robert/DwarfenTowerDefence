@@ -59,6 +59,10 @@ public class BuildingEntity : MonoBehaviour
 
     // Flaga zabezpieczająca przed wielokrotną inicjalizacją
     private bool isInitialized = false;
+    
+    [Header("Stan zwrotu kosztów")]
+    [Tooltip("Czy budynek został użyty? Jeśli nie = 100% zwrotu. Jeśli tak = 50% zwrotu.")]
+    public bool hasBeenUsed = false; 
 
     // =========================================================================
     // Cykl życia Unity
@@ -189,7 +193,11 @@ public class BuildingEntity : MonoBehaviour
     public virtual bool TryAddWorker(Race race)
     {
         bool success = Workers.TryAddWorker(race);
-        if (success) RefreshInspectorUI();
+        if (success) 
+        {
+            hasBeenUsed = true; // Budynek ekonomiczny/wieża uznawany za 'użyty' gdy przyjmie 1. pracownika
+            RefreshInspectorUI();
+        }
         return success;
     }
 
@@ -234,6 +242,29 @@ public class BuildingEntity : MonoBehaviour
     public void Demolish()
     {
         Workers.ReleaseAllWorkers();
+
+        // 1. ZWROT KOSZTÓW BUDOWY
+        if (data != null && data.constructionCost != null && ResourceManager.Instance != null)
+        {
+            float refundMultiplier = hasBeenUsed ? 0.5f : 1.0f;
+
+            foreach (var cost in data.constructionCost)
+            {
+                float amountToRefund = cost.amount * refundMultiplier;
+                
+                // Zabezpieczenie przed ułamkami (np. z 5 drewna odda 2 zamiast 2.5)
+                int intRefund = Mathf.FloorToInt(amountToRefund); 
+                
+                if (intRefund > 0)
+                {
+                    ResourceManager.Instance.AddResource(cost.type, intRefund);
+                    
+                    if (FloatingTextManager.Instance != null)
+                        FloatingTextManager.Instance.ShowGain(transform.position, cost.type.ToString(), intRefund);
+                }
+            }
+        }
+
         Destroy(gameObject);
     }
 

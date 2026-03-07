@@ -80,6 +80,15 @@ public class TowerEntity : BuildingEntity
 
     private void TryPayAmmoCost()
     {
+        // --- NOWE: Zabezpieczenie przed płaceniem podczas Grace Period ---
+        if (TimeCycleManager.Instance != null && TimeCycleManager.Instance.dayCount <= TimeCycleManager.Instance.gracePeriodDays)
+        {
+            hasAmmo = false; // Nie ładujemy broni, bo i tak nie ma do kogo strzelać
+            paidUpkeepCache.Clear();
+            return;
+        }
+        // -----------------------------------------------------------------
+
         var upkeepCost = GetCurrentUpkeep();
 
         if (ResourceManager.Instance.SpendResources(upkeepCost))

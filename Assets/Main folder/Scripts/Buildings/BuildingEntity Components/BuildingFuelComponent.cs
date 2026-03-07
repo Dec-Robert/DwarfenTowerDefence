@@ -40,13 +40,19 @@ public class BuildingFuelComponent
     /// <summary>
     /// Wstępne napełnienie budżetu przy inicjalizacji budynku (40% dziennego zapotrzebowania).
     /// </summary>
+    /// <summary>
+    /// Wstępne napełnienie budżetu przy inicjalizacji budynku.
+    /// </summary>
     public void InitialFill()
     {
         operationalBudget.Clear();
         var maxDaily = CalculateMaxDailyConsumption();
 
         foreach (var kvp in maxDaily)
-            operationalBudget[kvp.Key] = kvp.Value * 0.40f;
+        {
+            // --- ZMIANA: Zamiast 0.40f wpisujemy 1.0f ---
+            operationalBudget[kvp.Key] = kvp.Value * 1.0f;
+        }
     }
 
     /// <summary>

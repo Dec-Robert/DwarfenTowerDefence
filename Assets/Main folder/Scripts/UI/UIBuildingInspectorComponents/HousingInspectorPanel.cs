@@ -15,6 +15,8 @@ public class HousingInspectorPanel : BuildingInspectorPanel
     private readonly Label lblHouseTotal;
     private readonly Label lblGrowthMod;
     private readonly Label lblHouseStatus;
+    private readonly Button btnToggleGrowth; 
+    private HousingEntity currentHouseTarget;
 
     public HousingInspectorPanel(
         VisualElement root,
@@ -25,22 +27,26 @@ public class HousingInspectorPanel : BuildingInspectorPanel
         Label lblHouseMaint,
         Label lblHouseTotal,
         Label lblGrowthMod,
-        Label lblHouseStatus)
+        Label lblHouseStatus,
+        Button btnToggleGrowth) // <--- Dodane w parametrze!
         : base(root)
     {
         this.birthBarFill    = birthBarFill;
-        this.residentCapsules = residentCapsules;
-        this.lblBirthDays    = lblBirthDays;
-        this.lblHouseBase    = lblHouseBase;
-        this.lblHouseMaint   = lblHouseMaint;
-        this.lblHouseTotal   = lblHouseTotal;
-        this.lblGrowthMod    = lblGrowthMod;
+        // ... reszta ...
         this.lblHouseStatus  = lblHouseStatus;
+        this.btnToggleGrowth = btnToggleGrowth; // <--- Zapisz
+
+        // Podpinamy event
+        if (this.btnToggleGrowth != null)
+        {
+            this.btnToggleGrowth.clicked += OnToggleGrowthClicked;
+        }
     }
 
     public override void Refresh(BuildingEntity target)
     {
         if (target is not HousingEntity house) return;
+        currentHouseTarget = house; // Zapisujemy cel dla naszego guzika!
 
         // 1. Pasek progresu narodzin
         float progress = house.GetGrowthProgress();
@@ -61,12 +67,31 @@ public class HousingInspectorPanel : BuildingInspectorPanel
         if (lblGrowthMod != null)
             lblGrowthMod.text = $"Modyfikatory: {mod:+0;-0}%";
 
-        // 5. Status wzrostu
+        if (btnToggleGrowth != null)
+        {
+            if (house.stopGrowth)
+            {
+                btnToggleGrowth.text = "WZNÓW WZROST";
+                btnToggleGrowth.style.backgroundColor = new Color(0.2f, 0.5f, 0.2f); // Zielony
+                btnToggleGrowth.style.color = new Color(0.6f, 1f, 0.6f);
+            }
+            else
+            {
+                btnToggleGrowth.text = "WSTRZYMAJ WZROST";
+                btnToggleGrowth.style.backgroundColor = new Color(0.4f, 0.1f, 0.1f); // Czerwony
+                btnToggleGrowth.style.color = new Color(1f, 0.6f, 0.6f);
+            }
+
+            // Opcjonalnie: ukryj przycisk, jeśli dom jest pełny (żeby gracz się nie mylił)
+            btnToggleGrowth.style.display = (house.residents.Count >= house.GetEffectiveMaxResidents()) ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
+        // Status wzrostu
         if (lblHouseStatus != null)
         {
             string status = house.GetGrowthStatus();
             lblHouseStatus.text = $"Status: {status}";
-            lblHouseStatus.style.color = status == "ROSNĄCY" ? Color.green : Color.red;
+            lblHouseStatus.style.color = status == "ROSNĄCY" ? Color.green : (status == "WSTRZYMANY" ? Color.yellow : Color.red);
         }
     }
 
@@ -99,5 +124,16 @@ public class HousingInspectorPanel : BuildingInspectorPanel
         if (lblHouseBase  != null) lblHouseBase.text  = $"Koszt bazy: {baseVal} Food";
         if (lblHouseMaint != null) lblHouseMaint.text = $"Mieszkańcy: {total - baseVal:F1} Food";
         if (lblHouseTotal != null) lblHouseTotal.text = $"SUMA (06:00): {total:F1} Food";
+    }
+    private void OnToggleGrowthClicked()
+    {
+        if (currentHouseTarget != null)
+        {
+            // Zmieniamy stan na przeciwny
+            currentHouseTarget.stopGrowth = !currentHouseTarget.stopGrowth;
+            
+            // Odświeżamy UI żeby zobaczyć efekty (kolor przycisku i napis "WSTRZYMANY")
+            Refresh(currentHouseTarget);
+        }
     }
 }

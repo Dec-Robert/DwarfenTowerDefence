@@ -19,6 +19,8 @@ public class HousingEntity : BuildingEntity
 
     public int currentGrowthProgress = 0;
 
+    [Header("Sterowanie Graczem")]
+    public bool stopGrowth = false; // Czy gracz zatrzymał przyrost demograficzny?
     // =========================================================================
     // Cykl życia
     // =========================================================================
@@ -99,6 +101,21 @@ public class HousingEntity : BuildingEntity
     {
         var logChanges = new Dictionary<ResourceType, float>();
 
+        // --- SPRAWDZANIE CZY DOM ZOSTAŁ "UŻYTY" ---
+        if (!hasBeenUsed)
+        {
+            foreach (var citizen in residents)
+            {
+                // Jeśli chociaż 1 osoba poszła do pracy / została przypisana - dom traci 100% gwarancję zwrotu
+                if (citizen.workState != WorkState.Idle)
+                {
+                    hasBeenUsed = true;
+                    break;
+                }
+            }
+        }
+        // ------------------------------------------
+
         // A. Produkcja pasywna (na mieszkańca)
         ProducePerResident(logChanges);
 
@@ -108,13 +125,13 @@ public class HousingEntity : BuildingEntity
 
         ShowLossFeedback(survivalCost, survivalPaid);
 
-        // C. Logika wzrostu
+        // C. Logika wzrostu (Z uwzględnieniem Stop Growth!)
         if (!survivalPaid)
         {
             Debug.Log($"<color=red>Głód w {name}! Populacja stagnuje.</color>");
             if (currentGrowthProgress > 0) currentGrowthProgress--;
         }
-        else
+        else if (!stopGrowth) // NOWE: Jeśli gracz nie zablokował wzrostu
         {
             TryGrow();
         }
@@ -288,6 +305,9 @@ public class HousingEntity : BuildingEntity
     public string GetGrowthStatus()
     {
         if (residents.Count >= GetEffectiveMaxResidents()) return "PEŁNY";
+        
+        // NOWE:
+        if (stopGrowth) return "WSTRZYMANY";
 
         foreach (var kvp in CalculateSurvivalCost())
             if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value)) return "BRAK ZASOBÓW";

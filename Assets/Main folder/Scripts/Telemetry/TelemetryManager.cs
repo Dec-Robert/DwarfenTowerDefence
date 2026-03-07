@@ -81,6 +81,7 @@ public class TelemetryManager : MonoBehaviour
 
         float runDurationSeconds = Time.unscaledTime - runStartTime;
         float runDurationMinutes = runDurationSeconds / 60f;
+        double runDurationMinutesFormatted = (double) runDurationMinutes;
         isRunActive = false;
 
         RunEnded runEnded = new RunEnded(daysSurvived,runDurationMinutes,finalHopeGathered);
@@ -94,9 +95,12 @@ public class TelemetryManager : MonoBehaviour
     }
 }
 
+/// <summary>
+/// Zakończone rozgrywki
+/// </summary>
 public class RunEnded : Unity.Services.Analytics.Event
 {
-    public RunEnded(float _daysSurvived, float _durationMinutes, int _hopeGathered) :
+    public RunEnded(float _daysSurvived, double _durationMinutes, int _hopeGathered) :
         base(name: "run_ended")
     {
         daysSurvived = _daysSurvived;
@@ -105,11 +109,15 @@ public class RunEnded : Unity.Services.Analytics.Event
     }
     
     public float daysSurvived { set{SetParameter("DaysSurvived", value);} }
-    public float durationMinutes { set {SetParameter("DurationMinutes", value); } }
+    public double durationMinutes { set {SetParameter("DurationMinutes", value); } }
     public int hopeGathered { set{SetParameter("HopeGathered", value);} }
 
 }
 
+
+/// <summary>
+/// Rozpoczęte rozgrywki
+/// </summary>
 public class RunStarted : Unity.Services.Analytics.Event
 {
     public RunStarted()
@@ -119,3 +127,32 @@ public class RunStarted : Unity.Services.Analytics.Event
     
 }
 
+/// <summary>
+/// Ile danych budynków jest budowane w czasie jednego runa
+/// </summary>
+public class BuildingAmmount : Unity.Services.Analytics.Event
+{
+    public BuildingAmmount(string _buildingName,int _buildingAmount)
+        : base("building_ammount")
+    {
+        buildingName = _buildingName;
+        buidlingAmount = _buildingAmount;
+    }
+    public string buildingName {set{SetParameter("BuildingName", value);} }
+    public int buidlingAmount {set{SetParameter("BuidlingAmmout", value);} }
+}
+
+/// <summary>
+/// Ile danych budynków jest ulepszane do konkretnego tieru
+/// </summary>
+public class TierUpgrade : Unity.Services.Analytics.Event
+{
+    public TierUpgrade(string _buildingName,int _buildingTier)
+        : base("building_upgrade")
+    {
+        buildingName = _buildingName;
+        buidlingTier = _buildingTier;
+    }
+    public string buildingName {set{SetParameter("BuildingName", value);} }
+    public int buidlingTier {set{SetParameter("BuildingTier", value);} }
+}

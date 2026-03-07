@@ -131,6 +131,11 @@ public class EnemySpawner : MonoBehaviour
     {
         enemiesToSpawnQueue.Clear();
 
+        if (TimeCycleManager.Instance != null && waveNumber <= TimeCycleManager.Instance.gracePeriodDays)
+        {
+            Debug.Log($"<color=green>[Spawner] Dzień {waveNumber} to Grace Period. Pomijam generowanie fali.</color>");
+            return; 
+        }
         // Moduł Echo – aktualizacja zagrożeń na początku fali
         echoSystem.OnWaveStarted(waveNumber);
 
@@ -250,7 +255,9 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemy(EnemyData data)
     {
-        if (activeRoutes.Count == 0 || data?.prefab == null) return;
+        if (activeRoutes.Count == 0 || 
+            data?.prefab == null || 
+            TimeCycleManager.Instance.gracePeriodDays > TimeCycleManager.Instance.dayCount) return;
 
         // Wybór trasy (weighted random)
         SpawnRoute route = SelectRoute();

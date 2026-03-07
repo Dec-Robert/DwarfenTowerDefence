@@ -7,10 +7,18 @@ public class TimeCycleManager : MonoBehaviour
     public static TimeCycleManager Instance { get; private set; }
 
     [Header("Konfiguracja Czasu")]
-    public float realSecondsPerHour = 20.0f;
+    public float realSecondsPerHour = 2.0f;
+    [Tooltip("Ile razy wolniej płynie czas w NOCY (np. 3 = noc jest 3x dłuższa).")]
+    public float nightSlowdownFactor = 3.0f;
 
-    [Tooltip("Ile razy wolniej p�ynie czas w NOCY (np. 3 = noc jest 3x d�u�sza).")]
-    public float nightSlowdownFactor = 3.0f; // <--- NOWO��
+    // --- NOWE ZMIENNE GRACE PERIOD ---
+    [Header("Grace Period (Dni Pokoju)")]
+    [Tooltip("Ile pierwszych dni jest wolnych od ataków (np. 9 = 10. nocy przyjdą wrogowie)")]
+    public int gracePeriodDays = 9; 
+    
+    [Tooltip("Mnożnik czasu nocy podczas Grace Periodu (np. 0.5 = 2x szybciej niż w dzień)")]
+    public float gracePeriodNightFactor = 0.5f; 
+    // ---------------------------------
 
     [Header("Cykl Dnia i Nocy")]
     public int dayStartHour = 6;
@@ -46,15 +54,28 @@ public class TimeCycleManager : MonoBehaviour
         // 1. Sprawdzamy czy jest noc (20:00 - 06:00)
         bool isNight = (currentHour >= nightStartHour) || (currentHour < dayStartHour);
 
-        // 2. Obliczamy aktualn� d�ugo�� godziny
-        // Je�li noc -> mno�ymy czas trwania godziny razy faktor (np. 20s * 3 = 60s za godzin�)
-        float currentSecondsPerHour = isNight ? (realSecondsPerHour * nightSlowdownFactor) : realSecondsPerHour;
+        // --- ZMIANA: Kalkulacja czasu z uwzględnieniem Grace Period ---
+        float currentSecondsPerHour = realSecondsPerHour;
+
+        if (isNight)
+        {
+            if (dayCount <= gracePeriodDays)
+            {
+                // Noc podczas Grace Periodu (np. przyspieszona 2x -> 0.5f)
+                currentSecondsPerHour = realSecondsPerHour * gracePeriodNightFactor;
+            }
+            else
+            {
+                // Normalna noc z atakami (spowolniona)
+                currentSecondsPerHour = realSecondsPerHour * nightSlowdownFactor;
+            }
+        }
+        // --------------------------------------------------------------
 
         // 3. Dodajemy czas
-        // (Time.deltaTime uwzgl�dnia przyciski pr�dko�ci 1x, 2x, 5x, wi�c to nadal dzia�a)
         currentTime += Time.deltaTime / currentSecondsPerHour;
 
-        // 4. Wybijanie pe�nych godzin
+        // 4. Wybijanie pełnych godzin
         if (currentTime >= currentHour + 1)
         {
             currentHour++;

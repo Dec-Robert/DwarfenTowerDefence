@@ -119,7 +119,8 @@ public class UIBuildingInspector : MonoBehaviour
             mi.Q<Label>("Lbl_HouseMaintenance"),
             mi.Q<Label>("Lbl_HouseTotal"),
             mi.Q<Label>("Lbl_GrowthMod"),
-            mi.Q<Label>("Lbl_HouseStatus"));
+            mi.Q<Label>("Lbl_HouseStatus"),
+            mi.Q<Button>("Btn_ToggleGrowth"));
 
         towerPanel = new TowerInspectorPanel(
             combatStatsContainer,

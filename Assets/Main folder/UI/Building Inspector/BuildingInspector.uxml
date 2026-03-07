@@ -74,6 +74,8 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:Label name="Lbl_BirthDays" text="Pozostało: 2 dni" class="birth-days-remaining" />
+                    <!-- NOWY PRZYCISK: Wstrzymanie/Wznowienie wzrostu -->
+                    <ui:Button name="Btn_ToggleGrowth" text="WSTRZYMAJ WZROST" style="font-size: 9px; height: 20px; background-color: #552222; color: #ffaaaa; margin-bottom: 10px; border-radius: 2px;" />
 
                     <ui:Label text="Mieszkańcy:" class="residents-label" />
                     <ui:VisualElement name="ResidentCapsules" class="resident-capsules-row" />
