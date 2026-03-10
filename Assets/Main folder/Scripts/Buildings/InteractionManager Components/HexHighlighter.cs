@@ -24,7 +24,7 @@ public class HexHighlighter
     /// <summary>
     /// Podświetla heksy sąsiednie i środkowy jeśli mają wymagany feature.
     /// </summary>
-    public void HighlightFor(BuildingData data, Vector2Int centerChunk, Vector2Int centerLocal)
+    public void HighlightFor(BuildingData data, Vector2Int centerChunk, Vector2Int centerLocal, BuildingEntity entity = null)
     {
         Clear();
 
@@ -33,9 +33,18 @@ public class HexHighlighter
 
         var chunkData = mapGenerator.worldData[centerChunk];
 
-        // Sąsiedzi + środkowy heks
-        var candidates = HexGridMath.GetNeighbors(centerLocal);
-        candidates.Add(centerLocal);
+        // 1. Ustalenie promienia (Baza z configu)
+        int radius = data.bonusRule.searchRadius <= 0 ? 1 : data.bonusRule.searchRadius;
+
+        // 2. Modyfikacja promienia na podstawie ulepszeń (jeśli inspektujemy już wybudowany budynek)
+        if (entity != null && entity.Upgrades != null)
+        {
+            if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_1")) radius += 1;
+            if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 2;
+        }
+
+        // 3. Zbieranie wszystkich kandydatów w promieniu (a nie tylko bezpośrednich sąsiadów)
+        var candidates = GetHexesInRadius(centerLocal, radius);
 
         foreach (var coord in candidates)
         {
@@ -57,5 +66,19 @@ public class HexHighlighter
             if (cell != null) cell.ToggleHighlight(false);
 
         highlightedHexes.Clear();
+    }
+    private List<Vector2Int> GetHexesInRadius(Vector2Int center, int radius)
+    {
+        var results = new List<Vector2Int>();
+        for (int q = -radius; q <= radius; q++)
+        {
+            int r1 = Mathf.Max(-radius, -q - radius);
+            int r2 = Mathf.Min(radius, -q + radius);
+            for (int r = r1; r <= r2; r++)
+            {
+                results.Add(new Vector2Int(center.x + q, center.y + r));
+            }
+        }
+        return results;
     }
 }

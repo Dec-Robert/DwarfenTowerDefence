@@ -309,11 +309,20 @@ public class UIBuildManager : MonoBehaviour
                 // Bonusy z Terenu
                 if (data.bonusRule.requiredFeature != HexFeatureType.None)
                 {
-                    sb.AppendLine($"\n<color=#AAAAAA>Bonus z terenu:</color> <b>{data.bonusRule.requiredFeature}</b>");
+                    // NOWE: Wyświetlanie zasięgu (Search Radius)
+                    int rad = data.bonusRule.searchRadius <= 0 ? 1 : data.bonusRule.searchRadius;
+                    sb.AppendLine($"\n<color=#AAAAAA>Skanuje teren:</color> <b>{data.bonusRule.requiredFeature}</b> (w promieniu {rad})");
+
                     if (data.bonusRule.onTopProductionBonus > 0) 
                         sb.AppendLine($" <color=#88FF88>+{data.bonusRule.onTopProductionBonus} za postawienie na źródle</color>");
                     if (data.bonusRule.baseBonusPerHex > 0) 
-                        sb.AppendLine($" <color=#88FF88>+{data.bonusRule.baseBonusPerHex} za każde źródło obok</color>");
+                        sb.AppendLine($" <color=#88FF88>+{data.bonusRule.baseBonusPerHex} za każde źródło w zasięgu</color>");
+                }
+
+                // NOWE: Szybki rzut okiem na potencjalne ścieżki ulepszeń (opcjonalnie)
+                if (data.tier1Upgrades != null && data.tier1Upgrades.Count > 0)
+                {
+                    sb.AppendLine($"\n<color=#AAAAAA>Drzewko Technologiczne:</color> <b>{data.tier1Upgrades.Count} opcje rozwoju</b>");
                 }
                 break;
 

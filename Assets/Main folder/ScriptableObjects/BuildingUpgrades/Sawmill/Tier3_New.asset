@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
+  m_Name: Tier3_New
+  m_EditorClassIdentifier: 
+  upgradeName: Linie kolejowe
+  icon: {fileID: 0}
+  description: "Zwi\u0119ksza zasi\u0119g wydobycia o 1. Wydajno\u015B\u0107 zostaje
+    zmiejszona."
+  cost:
+  - type: 0
+    amount: 10
+  productionBonus: []
+  upkeepIncrease: []
+  globalProductionMultiplierBonus: 0
+  globalUpkeepMultiplierBonus: 0
+  terrainFlatBonus: 0
+  terrainPercentBonus: -0.25
+  extraShifts: 0
+  extraWorkersPerShift: 0
+  specialEffectIDs:
+  - INCREASE_RANGE_2
+  nextTierOptions: []

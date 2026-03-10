@@ -138,8 +138,18 @@ public class BuildingUpgradeTreeEditor : EditorWindow
     }
 
     // =========================================================================
-    // ŚRODEK (Graf Drzewka)
+    // GRAF DRZEWKA (Ulepszony układ dla łączących się ścieżek)
     // =========================================================================
+    
+    // Klasa pomocnicza do budowania unikalnych węzłów przed narysowaniem
+    private class RenderNode
+    {
+        public BuildingUpgradeSO upgrade;
+        public int tier;
+        public Rect rect;
+        public List<RenderNode> children = new List<RenderNode>();
+    }
+
     private void DrawGraph(Rect rect)
     {
         GUI.BeginGroup(rect);
@@ -152,59 +162,141 @@ public class BuildingUpgradeTreeEditor : EditorWindow
             return;
         }
 
-        graphScroll = GUI.BeginScrollView(new Rect(0, 0, rect.width, rect.height), graphScroll, new Rect(0, 0, 2000, 2000));
+        graphScroll = GUI.BeginScrollView(new Rect(0, 0, rect.width, rect.height), graphScroll, new Rect(0, 0, 3000, 3000));
 
-        // Rysuj korzeń (Sam Budynek)
-        Rect rootRect = new Rect(rect.width / 2 - NODE_WIDTH / 2, 30, NODE_WIDTH, NODE_HEIGHT);
-        DrawNode(rootRect, selectedBuilding.buildingName, "Budynek Bazowy", Color.gray, null);
+        // 1. Zbudowanie drzewa relacji (gwarancja unikalności)
+        var allNodes = new Dictionary<BuildingUpgradeSO, RenderNode>();
+        var rootNodes = new List<RenderNode>();
 
         if (selectedBuilding.tier1Upgrades == null) selectedBuilding.tier1Upgrades = new List<BuildingUpgradeSO>();
 
-        DrawChildren(rootRect, selectedBuilding.tier1Upgrades, 1, rect.width / 2);
+        // Analizujemy graf rekursywnie i wyciągamy unikalne ulepszenia
+        foreach (var t1 in selectedBuilding.tier1Upgrades)
+        {
+            if (t1 != null) rootNodes.Add(BuildNodeTree(t1, 1, allNodes));
+        }
+
+        // 2. Grupowanie węzłów według Tierów do poprawnego ułożenia w siatce
+        var nodesByTier = new Dictionary<int, List<RenderNode>>();
+        int maxTier = 0;
+
+        foreach (var node in allNodes.Values)
+        {
+            if (!nodesByTier.ContainsKey(node.tier)) 
+            {
+                nodesByTier[node.tier] = new List<RenderNode>();
+            }
             
-        // Przycisk "Dodaj opcję Tier 1" pod korzeniem
+            nodesByTier[node.tier].Add(node); // POPRAWIONE!
+            
+            if (node.tier > maxTier) 
+            {
+                maxTier = node.tier;
+            }
+        }
+
+        // 3. Pozycjonowanie
+        float startY = 120f;
+        float spacingX = NODE_WIDTH + 40f;
+        float spacingY = NODE_HEIGHT + 70f;
+        float centerX = 1500f; // Środek ogromnego ScrollView
+
+        // Rysuj korzeń (Sam Budynek)
+        Rect rootRect = new Rect(centerX - NODE_WIDTH / 2, 20, NODE_WIDTH, NODE_HEIGHT);
+        DrawNode(rootRect, selectedBuilding.buildingName, "Budynek Bazowy", Color.gray, null);
+
         if (GUI.Button(new Rect(rootRect.x + 20, rootRect.yMax + 10, NODE_WIDTH - 40, 20), "+ Dodaj Tier 1"))
         {
-            CreateNewUpgrade(selectedBuilding.tier1Upgrades, "Tier1_Nowe_Ulepszenie", selectedBuilding);
+            CreateNewUpgrade(selectedBuilding.tier1Upgrades, selectedBuilding.buildingName + "_T1_New", selectedBuilding);
+        }
+
+        // Ustawianie pozycji X dla unikalnych węzłów w poszczególnych Tierach
+        for (int i = 1; i <= maxTier; i++)
+        {
+            if (!nodesByTier.ContainsKey(i)) continue;
+            
+            var tierNodes = nodesByTier[i];
+            float startX = centerX - ((tierNodes.Count - 1) * spacingX) / 2f;
+
+            for (int j = 0; j < tierNodes.Count; j++)
+            {
+                tierNodes[j].rect = new Rect(startX + j * spacingX - NODE_WIDTH / 2, startY + (i - 1) * spacingY, NODE_WIDTH, NODE_HEIGHT);
+            }
+        }
+
+        // 4. Rysowanie linii (od rodziców do dzieci)
+        Handles.color = new Color(0.6f, 0.6f, 0.6f);
+
+        // Linie od korzenia do Tier 1
+        foreach (var t1 in rootNodes)
+        {
+            DrawConnection(rootRect, t1.rect);
+        }
+
+        // Linie między unikalnymi ulepszeniami
+        foreach (var node in allNodes.Values)
+        {
+            foreach (var child in node.children)
+            {
+                DrawConnection(node.rect, child.rect);
+            }
+        }
+
+        // 5. Rysowanie węzłów
+        foreach (var node in allNodes.Values)
+        {
+            Color nodeColor = (selectedUpgrade == node.upgrade) ? new Color(0.2f, 0.6f, 0.2f) : new Color(0.2f, 0.3f, 0.4f);
+            DrawNode(node.rect, node.upgrade.upgradeName, $"Tier {node.tier}", nodeColor, node.upgrade);
+
+            // Przycisk "Dodaj dziecko"
+            if (GUI.Button(new Rect(node.rect.x + 20, node.rect.yMax + 5, NODE_WIDTH - 40, 16), $"+ Dodaj Tier {node.tier + 1}"))
+            {
+                if (node.upgrade.nextTierOptions == null) node.upgrade.nextTierOptions = new List<BuildingUpgradeSO>();
+                CreateNewUpgrade(node.upgrade.nextTierOptions, $"Tier{node.tier + 1}_New", node.upgrade);
+            }
         }
 
         GUI.EndScrollView();
         GUI.EndGroup();
     }
 
-    private void DrawChildren(Rect parentRect, List<BuildingUpgradeSO> children, int tier, float parentCenterX)
+    // Tworzy strukturę unikalnych węzłów z najgłębszym przypisanym tierem (jeśli ścieżki się krzyżują)
+    private RenderNode BuildNodeTree(BuildingUpgradeSO upgrade, int currentTier, Dictionary<BuildingUpgradeSO, RenderNode> allNodes)
     {
-        if (children == null || children.Count == 0) return;
+        if (upgrade == null) return null;
 
-        float spacingX = NODE_WIDTH * 1.5f;
-        float startX = parentCenterX - ((children.Count - 1) * spacingX) / 2f;
-        float y = parentRect.yMax + 70f; 
-
-        for (int i = 0; i < children.Count; i++)
+        if (allNodes.TryGetValue(upgrade, out RenderNode existingNode))
         {
-            var child = children[i];
-            if (child == null) continue;
+            // Jeśli węzeł już istnieje, ale dotarliśmy do niego dłuższą ścieżką, zaktualizuj jego tier (żeby zepchnąć go niżej)
+            if (currentTier > existingNode.tier) existingNode.tier = currentTier;
+            return existingNode;
+        }
 
-            float x = startX + i * spacingX;
-            Rect childRect = new Rect(x - NODE_WIDTH / 2, y, NODE_WIDTH, NODE_HEIGHT);
+        RenderNode newNode = new RenderNode { upgrade = upgrade, tier = currentTier };
+        allNodes[upgrade] = newNode;
 
-            // Rysuj linię
-            Handles.color = new Color(0.7f, 0.7f, 0.7f);
-            Handles.DrawAAPolyLine(3f, new Vector3(parentRect.center.x, parentRect.yMax), new Vector3(childRect.center.x, childRect.y));
-
-            // Rysuj węzeł
-            Color nodeColor = (selectedUpgrade == child) ? new Color(0.2f, 0.6f, 0.2f) : new Color(0.2f, 0.3f, 0.4f);
-            DrawNode(childRect, child.upgradeName, $"Tier {tier}", nodeColor, child);
-
-            if (child.nextTierOptions == null) child.nextTierOptions = new List<BuildingUpgradeSO>();
-
-            DrawChildren(childRect, child.nextTierOptions, tier + 1, childRect.center.x);
-
-            if (GUI.Button(new Rect(childRect.x + 20, childRect.yMax + 5, NODE_WIDTH - 40, 16), $"+ Dodaj Tier {tier + 1}"))
+        if (upgrade.nextTierOptions != null)
+        {
+            foreach (var child in upgrade.nextTierOptions)
             {
-                CreateNewUpgrade(child.nextTierOptions, $"Tier{tier+1}_Nowe_Ulepszenie", child);
+                var childNode = BuildNodeTree(child, currentTier + 1, allNodes);
+                if (childNode != null && !newNode.children.Contains(childNode))
+                {
+                    newNode.children.Add(childNode);
+                }
             }
         }
+
+        return newNode;
+    }
+
+    private void DrawConnection(Rect parentRect, Rect childRect)
+    {
+        Vector3 startPos = new Vector3(parentRect.center.x, parentRect.yMax);
+        Vector3 endPos = new Vector3(childRect.center.x, childRect.y);
+        
+        // Zwykła linia prosta (Dla lepszej czytelności przy krzyżujących się ścieżkach)
+        Handles.DrawAAPolyLine(3f, startPos, endPos);
     }
 
     private void DrawNode(Rect rect, string title, string subtitle, Color color, BuildingUpgradeSO linkedSO)
@@ -265,14 +357,80 @@ public class BuildingUpgradeTreeEditor : EditorWindow
         EditorGUILayout.PropertyField(serializedUpgrade.FindProperty("extraWorkersPerShift"), new GUIContent("Miejsca na zmianę"));
 
         EditorGUILayout.Space();
+       EditorGUILayout.Space();
         EditorGUILayout.LabelField("── Ekonomia ──", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(serializedUpgrade.FindProperty("cost"), new GUIContent("Koszt Zakupu"), true);
         EditorGUILayout.PropertyField(serializedUpgrade.FindProperty("productionBonus"), new GUIContent("Bonus do Produkcji"), true);
         EditorGUILayout.PropertyField(serializedUpgrade.FindProperty("upkeepIncrease"), new GUIContent("Zwiększenie Utrzymania"), true);
 
         EditorGUILayout.Space();
-        EditorGUILayout.PropertyField(serializedUpgrade.FindProperty("specialEffectID"), new GUIContent("Specjalne ID (np. AUTO_REPLANT)"));
+        EditorGUILayout.LabelField("── Modyfikatory Terenu ──", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("Wpływa na zysk z KAŻDEGO heksa (Sąsiada).\nProcenty wpisuj jako ułamki (np. 0.15 to +15%, -0.25 to kara -25%).", MessageType.Info);
+        EditorGUILayout.PropertyField(serializedUpgrade.FindProperty("terrainFlatBonus"), new GUIContent("Płaski Bonus (Flat)"));
+        EditorGUILayout.PropertyField(serializedUpgrade.FindProperty("terrainPercentBonus"), new GUIContent("Mnożnik (%)"));
+        
+        // --- ZMIANA DLA LISTY EFEKTÓW SPECJALNYCH ---
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("── Mechaniki Unikalne ──", EditorStyles.boldLabel);
+        
+        string[] availableEffects = new string[] 
+        {
+            "SAWMILL_PLANT_FOREST",
+            "SAWMILL_DESTROY_FOREST",
+            "INCREASE_RANGE_1",
+            "INCREASE_RANGE_2", 
+            "RANGE_PENALTY_25",
+            "RANGE_PENALTY_50",
+            "BONUS_BOOST_200",
+            "FARM_CREATE_SOIL",
+            "IGNORE_OCCUPIED_PENALTY",
+            "MINE_EXPLOSION_RISK",
+            "MINE_MOUNTAIN_CHAIN",
+            "FULL_SHIFT_MEGA_BONUS",
+            "MINE_RUNE_DROP",
+            "FARM_80_PERCENT_START",
+            "MINE_ONE_WORKER_100",
+            "SAWMILL_ONE_WORKER_100_NEXT_15"
+        };
 
+        if (selectedUpgrade.specialEffectIDs == null) selectedUpgrade.specialEffectIDs = new List<string>();
+
+        // Budujemy maskę bitową (Dropdown wielokrotnego wyboru)
+        int currentMask = 0;
+        for (int i = 0; i < availableEffects.Length; i++)
+        {
+            if (selectedUpgrade.specialEffectIDs.Contains(availableEffects[i]))
+            {
+                currentMask |= (1 << i);
+            }
+        }
+
+        int newMask = EditorGUILayout.MaskField("Zdolności", currentMask, availableEffects);
+
+        // Aplikujemy zmiany z maski na z powrotem do listy
+        if (newMask != currentMask)
+        {
+            Undo.RecordObject(selectedUpgrade, "Zmieniono Zdolności Specjalne");
+            selectedUpgrade.specialEffectIDs.Clear();
+            for (int i = 0; i < availableEffects.Length; i++)
+            {
+                if ((newMask & (1 << i)) != 0)
+                {
+                    selectedUpgrade.specialEffectIDs.Add(availableEffects[i]);
+                }
+            }
+            EditorUtility.SetDirty(selectedUpgrade);
+        }
+
+        // --- ZMIANA DLA DZIECI / NASTĘPNEGO TIERU ---
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("── Łączenie Węzłów (Co odblokowuje ten upgrade) ──", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("Dodaj istniejący upgrade z projektu, jeśli ścieżki w drzewku się krzyżują.", MessageType.Info);
+
+        SerializedProperty nextTierProp = serializedUpgrade.FindProperty("nextTierOptions");
+        EditorGUILayout.PropertyField(nextTierProp, new GUIContent("Kolejny Tier (Wnuki)"), true);
+
+        // ... Reszta (zapis i przycisk usuwania) ...
         serializedUpgrade.ApplyModifiedProperties();
 
         EditorGUILayout.Space(20);

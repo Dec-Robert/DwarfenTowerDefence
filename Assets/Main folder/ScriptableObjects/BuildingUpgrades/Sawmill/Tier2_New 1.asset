@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
+  m_Name: Tier2_New 1
+  m_EditorClassIdentifier: 
+  upgradeName: "Zaprz\u0119gi"
+  icon: {fileID: 0}
+  description: "Zwi\u0119ksza zasi\u0119g pozyskiwania tartaku o 1, zmiejsza pozyskiwanie
+    o 25%."
+  cost:
+  - type: 0
+    amount: 10
+  productionBonus: []
+  upkeepIncrease: []
+  globalProductionMultiplierBonus: 0
+  globalUpkeepMultiplierBonus: 0
+  terrainFlatBonus: -0.25
+  terrainPercentBonus: 0
+  extraShifts: 0
+  extraWorkersPerShift: 0
+  specialEffectIDs:
+  - INCREASE_RANGE_1
+  nextTierOptions:
+  - {fileID: 11400000, guid: 4fa6828bf8f957948876558bf7b72abf, type: 2}
+  - {fileID: 11400000, guid: fa66eae8d1501f14a9c5e8514bd83b9c, type: 2}
+  - {fileID: 11400000, guid: 13f26a237d33d7b46afc67abbab13e25, type: 2}

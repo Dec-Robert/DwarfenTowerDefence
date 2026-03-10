@@ -34,12 +34,13 @@ MonoBehaviour:
   - type: 0
     amount: 5
   tier1Upgrades:
-  - {fileID: 11400000, guid: d15bb5ac8d09ce44bb60e9613d773519, type: 2}
-  - {fileID: 11400000, guid: 79fd58e917c0d55498a9e3b9c5714462, type: 2}
+  - {fileID: 11400000, guid: 289fd13374d7ccf4288a1d814aaca36b, type: 2}
+  - {fileID: 11400000, guid: 3b95b65ec64317347839620d482c707f, type: 2}
+  - {fileID: 11400000, guid: 7aeb1b1c47312ae40a6a417f47dee9ec, type: 2}
   prefab: {fileID: 8647511797650135546, guid: a372fba93af731545bd3d3bd85da8b44, type: 3}
   bonusRule:
     requiredFeature: 1
-    range: 1
+    searchRadius: 0
     baseBonusPerHex: 3
     penaltyPerUser: 0
     minBonus: 1

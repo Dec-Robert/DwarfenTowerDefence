@@ -102,7 +102,36 @@ public class UpgradeInspectorPanel : BuildingInspectorPanel
             if (upgrade.productionBonus != null)
                 foreach (var p in upgrade.productionBonus) sb.Append($"+{p.amount} {p.type} Prod, ");
             if (upgrade.upkeepIncrease != null)
-                foreach (var u in upgrade.upkeepIncrease)  sb.Append($"+{u.amount} {u.type} Utrzymania, ");
+                foreach (var u in upgrade.upkeepIncrease)  sb.Append($"+{u.amount} {u.type} Kosztów, ");
+            
+            // NOWE: Zamiana gołych ID stringów na piękny tekst dla Gracza!
+            // NOWE: Czytanie wszystkich tagów z listy
+            if (upgrade.specialEffectIDs != null && upgrade.specialEffectIDs.Count > 0)
+            {
+                foreach (string effectID in upgrade.specialEffectIDs)
+                {
+                    string magicText = effectID switch
+                    {
+                        "SAWMILL_PLANT_FOREST" => "<color=#44FF44>Sieję sztuczne lasy wokół budynku (co 2 dni).</color>",
+                        "SAWMILL_DESTROY_FOREST" => "<color=#FF4444>Niszczy jedno źródło drewna w zasięgu (co 3 dni).</color>",
+                        "INCREASE_RANGE_1" => "<color=#44AAFF>Zwiększa promień pozyskiwania o 1 heks.</color>",
+                        "RANGE_PENALTY_25" => "<color=#FF8844>Zmniejsza ostateczny zysk z terenu o 25%.</color>",
+                        "RANGE_PENALTY_50" => "<color=#FF4444>Zmniejsza ostateczny zysk z terenu o 50%.</color>",
+                        "BONUS_BOOST_200" => "<color=#FFD700>Potraja (x3) zysk z całego skanowanego terenu!</color>",
+                        "FARM_CREATE_SOIL" => "<color=#88FF44>Użyźnia jeden pusty heks w zasięgu (co 4 dni).</color>",
+                        "IGNORE_OCCUPIED_PENALTY" => "<color=#44FFFF>Ten budynek nie dzieli się zasobami z sąsiadami (Pełny zysk).</color>",
+                        "MINE_EXPLOSION_RISK" => "<color=#FF0000>KATASTROFALNE RYZYKO: Zawalenie szybu i śmierć załogi (0.5% co h).</color>",
+                        "MINE_MOUNTAIN_CHAIN" => "<color=#FFD700>Tworzy ogromny łańcuch z połączonych gór.</color>",
+                        "FULL_SHIFT_MEGA_BONUS" => "<color=#44AAFF>Podwaja (x2) całkowitą produkcję, jeśli zmiana jest pełna.</color>",
+                        "MINE_RUNE_DROP" => "<color=#AA44FF>15% szansy na odkrycie darmowej Runy pod koniec zmiany.</color>",
+                        "FARM_80_PERCENT_START" => "<color=#88FF44>Natychmiastowe 80% wydajności już od pierwszego pracownika.</color>",
+                        "MINE_ONE_WORKER_100" => "<color=#FFD700>Pojedynczy pracownik zapewnia 100% wydajności kopalni.</color>",
+                        _ => $"<color=#888>Unikalna Zdolność: {effectID}</color>"
+                    };
+                    sb.Append($"\n{magicText}");
+                }
+            }
+
             detEffects.text = sb.Length > 0 ? sb.ToString().TrimEnd(',', ' ') : "Brak zmiany statystyk";
         }
     }
@@ -146,7 +175,7 @@ public class BudgetInspectorPanel : BuildingInspectorPanel
         budgetContainer.Clear();
 
         var currentBudget = target.GetCurrentBudget();
-        var maxBudget     = target.CalculateMaxDailyConsumption();
+        var maxBudget     = target.CalculateMaxShiftConsumption(); // Zmieniono na Shift
 
         if (maxBudget.Count == 0)
         {

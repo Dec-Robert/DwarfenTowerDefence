@@ -299,6 +299,34 @@ public class HexMapVisualizer : MonoBehaviour
         }
         return null;
     }
+    
+    public void RedrawSingleHex(Vector2Int chunkCoord, Vector2Int localCoord, HexCellData cellData, Dictionary<BiomeType, Material> biomeMaterials, BiomeType biome)
+    {
+        HexCell cell = GetHexCell(chunkCoord, localCoord);
+        if (cell == null) return;
+
+        // 1. Zniszcz stare dekoracje (żeby nie nałożyły się np. drzewa na góry)
+        List<GameObject> toDestroy = new List<GameObject>();
+        foreach (Transform child in cell.transform)
+        {
+            // Ignoruj budynki gracza
+            if (child.GetComponent<BuildingEntity>() == null)
+            {
+                toDestroy.Add(child.gameObject);
+            }
+        }
+        foreach (var obj in toDestroy) Destroy(obj);
+
+        // 2. Ustal materiał
+        Material chunkBaseMat = matDefaultGrass;
+        if (biomeMaterials != null && biomeMaterials.ContainsKey(biome))
+        {
+            chunkBaseMat = biomeMaterials[biome];
+        }
+
+        // 3. Zaaplikuj nowe wizualia
+        ApplyVisualsToHex(cell.gameObject, cellData, chunkBaseMat);
+    }
 
 
 }

@@ -177,7 +177,8 @@ public class InteractionManager : MonoBehaviour
         }
 
         // Podświetl sąsiednie zasoby
-        highlighter.HighlightFor(building.data, cell.chunkCoord, cell.localCoord);
+        highlighter.HighlightFor(building.data, cell.chunkCoord, cell.localCoord, building);
+
     }
 
     // =========================================================================

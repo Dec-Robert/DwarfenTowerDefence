@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
+  m_Name: Mines_T1_New 1
+  m_EditorClassIdentifier: 
+  upgradeName: "Kopalnia z\u0142ota"
+  icon: {fileID: 0}
+  description: 
+  cost: []
+  productionBonus:
+  - type: 0
+    amount: 34
+  - type: 3
+    amount: -2
+  - type: 6
+    amount: -2
+  upkeepIncrease: []
+  globalProductionMultiplierBonus: 0
+  globalUpkeepMultiplierBonus: 0
+  terrainFlatBonus: 0
+  terrainPercentBonus: 0
+  extraShifts: 0
+  extraWorkersPerShift: 0
+  specialEffectIDs: []
+  nextTierOptions:
+  - {fileID: 11400000, guid: d28136a28c3d3694ea3b375773021d2a, type: 2}
+  - {fileID: 11400000, guid: 9dc09cd66a745f84c9afe02af95fc4dd, type: 2}
+  - {fileID: 11400000, guid: 1aa4a921c8534eb4a983db4f1a50d3f5, type: 2}

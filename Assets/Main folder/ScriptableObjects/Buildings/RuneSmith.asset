@@ -29,7 +29,7 @@ MonoBehaviour:
     amount: 80
   - type: 2
     amount: 50
-  - type: 7
+  - type: 6
     amount: 40
   productionPerCycle: []
   upkeepPerCycle: []
@@ -37,7 +37,7 @@ MonoBehaviour:
   prefab: {fileID: 1253841588521944598, guid: 84cdae73d5ef63943aa2dc6ab913954e, type: 3}
   bonusRule:
     requiredFeature: 0
-    range: 0
+    searchRadius: 0
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0

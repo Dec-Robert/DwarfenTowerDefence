@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
+  m_Name: Tier2_New 2
+  m_EditorClassIdentifier: 
+  upgradeName: Gospodarka rabunkowa
+  icon: {fileID: 0}
+  description: "Znacz\u0105co zwi\u0119ksza produkcje na ka\u017Cde pole z lasem.
+    Las po kilku dniach ulega ca\u0142kowitej wycince."
+  cost:
+  - type: 0
+    amount: 10
+  productionBonus: []
+  upkeepIncrease: []
+  globalProductionMultiplierBonus: 0
+  globalUpkeepMultiplierBonus: 0
+  terrainFlatBonus: 0
+  terrainPercentBonus: 2
+  extraShifts: 0
+  extraWorkersPerShift: 0
+  specialEffectIDs:
+  - SAWMILL_DESTROY_FOREST
+  nextTierOptions:
+  - {fileID: 11400000, guid: 4fa6828bf8f957948876558bf7b72abf, type: 2}
+  - {fileID: 11400000, guid: fa66eae8d1501f14a9c5e8514bd83b9c, type: 2}
+  - {fileID: 11400000, guid: 13f26a237d33d7b46afc67abbab13e25, type: 2}

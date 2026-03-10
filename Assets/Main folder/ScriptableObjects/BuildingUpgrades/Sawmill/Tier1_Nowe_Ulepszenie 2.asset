@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
+  m_Name: Tier1_Nowe_Ulepszenie 2
+  m_EditorClassIdentifier: 
+  upgradeName: "R\u0119bacze zawodowi"
+  icon: {fileID: 0}
+  description: Tartak dodatkowo pasynie produkuje drewno
+  cost: []
+  productionBonus:
+  - type: 1
+    amount: 5
+  upkeepIncrease: []
+  globalProductionMultiplierBonus: 0
+  globalUpkeepMultiplierBonus: 0
+  terrainFlatBonus: 0
+  terrainPercentBonus: 0
+  extraShifts: 0
+  extraWorkersPerShift: 0
+  specialEffectIDs: []
+  nextTierOptions:
+  - {fileID: 11400000, guid: e247f3834365d3c419c4e33c9a35468e, type: 2}
+  - {fileID: 11400000, guid: a7ae05b3eae3d9a45ac24eaf612f3588, type: 2}
+  - {fileID: 11400000, guid: 213224a2a3bbb034589f23e07b30f282, type: 2}
+  - {fileID: 11400000, guid: f7820cc6057e9cf4fa2f7128471a05db, type: 2}
+  - {fileID: 11400000, guid: 2e1b8b0faefbf1e4d9361ac3b15fbd36, type: 2}
+  - {fileID: 11400000, guid: 4664b885eba88164490f384fd518f0c1, type: 2}

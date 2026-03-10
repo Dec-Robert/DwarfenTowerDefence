@@ -22,14 +22,16 @@ MonoBehaviour:
   requiresSpecificCitizen: 0
   requiredCitizenRace: 1
   isOutpost: 0
-  constructionCost: []
+  constructionCost:
+  - type: 0
+    amount: 0
   productionPerCycle: []
   upkeepPerCycle: []
   tier1Upgrades: []
   prefab: {fileID: 1253841588521944598, guid: e4ebaf1706ba84b46b677476efc21a57, type: 3}
   bonusRule:
     requiredFeature: 0
-    range: 0
+    searchRadius: 0
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0

@@ -12,13 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
   m_Name: Tier1_Nowe_Ulepszenie 1
   m_EditorClassIdentifier: 
-  upgradeName: Nowe Ulepszenie
+  upgradeName: "Optymalizacja ci\u0119cia"
   icon: {fileID: 0}
-  description: 
-  cost: []
+  description: "Bonus z s\u0105siednich las\xF3w zostaje zwi\u0119kszony o 10%"
+  cost:
+  - type: 0
+    amount: 5
+  - type: 1
+    amount: 5
   productionBonus: []
   upkeepIncrease: []
+  globalProductionMultiplierBonus: 0
+  globalUpkeepMultiplierBonus: 0
+  terrainFlatBonus: 0
+  terrainPercentBonus: 0.1
   extraShifts: 0
   extraWorkersPerShift: 0
-  specialEffectID: 
-  nextTierOptions: []
+  specialEffectIDs: []
+  nextTierOptions:
+  - {fileID: 11400000, guid: 2e1b8b0faefbf1e4d9361ac3b15fbd36, type: 2}
+  - {fileID: 11400000, guid: f7820cc6057e9cf4fa2f7128471a05db, type: 2}
+  - {fileID: 11400000, guid: 4664b885eba88164490f384fd518f0c1, type: 2}

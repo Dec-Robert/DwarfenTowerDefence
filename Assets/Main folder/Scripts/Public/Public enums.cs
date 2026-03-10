@@ -203,16 +203,13 @@ public struct TerrainBonusRule
     [Tooltip("Jaki teren daje bonus? (np. Forest dla Tartaku)")]
     public HexFeatureType requiredFeature;
 
-    [Tooltip("Zasi�g poszukiwania (1 = tylko s�siedzi)")]
-    public int range;
+    [Tooltip("Zasięg poszukiwania (1 = tylko sąsiedzi, 2 = sąsiedzi sąsiadów)")]
+    public int searchRadius;
 
     [Header("Matematyka")]
-    public float baseBonusPerHex;   // np. 0.5
-    public float penaltyPerUser;    // np. 0.2
-    public float minBonus;          // np. 0.1
-
-    // --- NOWE POLE ---
-    [Tooltip("Jednorazowy bonus do produkcji, je�li budynek stoi BEZPO�REDNIO na tym terenie.")]
+    public float baseBonusPerHex;   
+    public float penaltyPerUser;    
+    public float minBonus;          
     public float onTopProductionBonus;
 }
 

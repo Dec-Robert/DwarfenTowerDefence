@@ -23,6 +23,8 @@ public class BuildingData : ScriptableObject
     [Header("Ekonomia Produkcji")]
     [Tooltip("Ile każdy DODATKOWY pracownik zwiększa zużycie/produkcję względem bazy. 0.25 = 25%")]
     public float workerScalingFactor = 0.25f;
+    [Tooltip("Ile produkcji zapewnia pierwszy pracownik")]
+    public float firstWorkerProduction = 0.7f; 
 
     [Header("Wymagania Terenu")]
     public List<HexFeatureType> allowedTerrain;

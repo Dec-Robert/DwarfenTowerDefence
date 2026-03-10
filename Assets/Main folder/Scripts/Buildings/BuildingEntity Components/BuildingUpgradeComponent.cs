@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq; 
 
 /// <summary>
 /// Odpowiada za całą logikę ulepszeń budynku:
@@ -116,5 +117,59 @@ public class BuildingUpgradeComponent
     {
         if (dict.ContainsKey(type)) dict[type] += amount;
         else dict.Add(type, amount);
+    }
+    
+    /// <summary>
+    /// Sprawdza, czy budynek posiada ulepszenie z danym specjalnym ID.
+    /// Używane do aktywowania unikalnych mechanik (np. "MINE_EXPLOSION").
+    /// </summary>
+    public bool HasSpecialEffect(string effectID)
+    {
+        // Sprawdzamy wszystkie zastosowane ulepszenia, a w nich listę ich tagów
+        return AppliedUpgrades.Exists(u => u.specialEffectIDs != null && u.specialEffectIDs.Contains(effectID));
+    }
+
+    /// <summary>
+    /// Zwraca zsumowaną wartość konkretnego atrybutu ukrytą w ulepszeniach.
+    /// (Przydatne, gdy zrobimy listę modyfikatorów w przyszłości).
+    /// </summary>
+    public int CountSpecialEffects(string effectID)
+    {
+        return AppliedUpgrades.Count(u => u.specialEffectIDs != null && u.specialEffectIDs.Contains(effectID));
+    }
+    
+    /// <summary>Zbiera wszystkie ulepszenia procentowe do terenu i zwraca finalny mnożnik (np. 1.15).</summary>
+    public float GetTotalTerrainMultiplier()
+    {
+        float totalPercent = 0f;
+        foreach (var upgrade in AppliedUpgrades)
+        {
+            totalPercent += upgrade.terrainPercentBonus;
+        }
+        return 1f + totalPercent; // 0.15 -> 1.15
+    }
+
+    /// <summary>Zbiera wszystkie płaskie bonusy do terenu.</summary>
+    public float GetTotalTerrainFlatBonus()
+    {
+        float totalFlat = 0f;
+        foreach (var upgrade in AppliedUpgrades)
+        {
+            totalFlat += upgrade.terrainFlatBonus;
+        }
+        return totalFlat;
+    }
+    public float GetGlobalProductionMultiplier()
+    {
+        float total = 0f;
+        foreach (var u in AppliedUpgrades) total += u.globalProductionMultiplierBonus;
+        return 1f + total;
+    }
+
+    public float GetGlobalUpkeepMultiplier()
+    {
+        float total = 0f;
+        foreach (var u in AppliedUpgrades) total += u.globalUpkeepMultiplierBonus;
+        return 1f + total;
     }
 }

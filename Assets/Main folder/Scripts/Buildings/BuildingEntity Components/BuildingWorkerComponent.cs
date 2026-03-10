@@ -121,6 +121,14 @@ public class BuildingWorkerComponent
         int baseWorkers = data != null ? data.baseWorkersPerShift : 1;
         return baseWorkers + upgradeComponent.LocalBonusWorkers + globalBonus;
     }
+    public void RemoveSpecificWorker(Citizen worker)
+    {
+        if (assignedCitizens.Contains(worker))
+        {
+            worker.RemoveFromWorkplace();
+            assignedCitizens.Remove(worker);
+        }
+    }
 
     public int GetTotalWorkerCount() => assignedCitizens.Count;
 }

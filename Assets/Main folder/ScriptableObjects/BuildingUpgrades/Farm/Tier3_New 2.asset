@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
+  m_Name: Tier3_New 2
+  m_EditorClassIdentifier: 
+  upgradeName: Farmy kolektywne
+  icon: {fileID: 0}
+  description: "Budynek otrzymuje 4 miejsca na pracownik\xF3w i mo\u017Ce mie\u0107
+    tylko 1 zmian\u0119. Kiedy ca\u0142a zmiana jest zape\u0142niona farma otrzymuje
+    ogromne bonusy."
+  cost: []
+  productionBonus: []
+  upkeepIncrease: []
+  globalProductionMultiplierBonus: 0
+  globalUpkeepMultiplierBonus: 0
+  terrainFlatBonus: 0
+  terrainPercentBonus: 0
+  extraShifts: -4
+  extraWorkersPerShift: 4
+  specialEffectIDs:
+  - BONUS_BOOST_200
+  nextTierOptions: []

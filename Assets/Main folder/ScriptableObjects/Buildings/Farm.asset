@@ -19,6 +19,9 @@ MonoBehaviour:
   workerScalingFactor: 0.25
   allowedTerrain: 0000000005000000
   requiresOccupiedSpace: 0
+  requiresSpecificCitizen: 0
+  requiredCitizenRace: 1
+  isOutpost: 0
   constructionCost:
   - type: 0
     amount: 5
@@ -32,11 +35,14 @@ MonoBehaviour:
   upkeepPerCycle:
   - type: 1
     amount: 6
-  tier1Upgrades: []
+  tier1Upgrades:
+  - {fileID: 11400000, guid: 8fab46d0e2fc17848bb55e8ea964cd2e, type: 2}
+  - {fileID: 11400000, guid: e3a2d0267fa4fcd43858be9e402dafa6, type: 2}
+  - {fileID: 11400000, guid: 602960ad5b67a88448134919c3b2e80e, type: 2}
   prefab: {fileID: 2413402597642724196, guid: 03adf5a8c6caa8f45a2868a6af66e344, type: 3}
   bonusRule:
     requiredFeature: 5
-    range: 1
+    searchRadius: 0
     baseBonusPerHex: 5
     penaltyPerUser: 2
     minBonus: 0

@@ -1,31 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Odpowiada za budżet operacyjny budynku (paliwo/surowce zużywane do pracy):
-/// codzienne tankowanie z ResourceManager, sprawdzanie dostępności zasobów
-/// i pobieranie kosztów podczas produkcji.
-/// Trzymana jako pole w BuildingEntity (zwykła klasa C#, nie MonoBehaviour).
-/// </summary>
 public class BuildingFuelComponent
 {
-    // --- Referencje ---
     private readonly BuildingData data;
     private readonly BuildingUpgradeComponent upgradeComponent;
     private readonly System.Func<int> getMaxShifts;
     private readonly System.Func<int> getMaxWorkersPerShift;
     private readonly System.Func<float> getCurrentShiftLength;
 
-    // --- Stan ---
-    private readonly Dictionary<ResourceType, float> operationalBudget =
-        new Dictionary<ResourceType, float>();
+    private readonly Dictionary<ResourceType, float> operationalBudget = new Dictionary<ResourceType, float>();
 
-    // --- Konstruktor ---
     public BuildingFuelComponent(
-        BuildingData data,
-        BuildingUpgradeComponent upgradeComponent,
-        System.Func<int> getMaxShifts,
-        System.Func<int> getMaxWorkersPerShift,
+        BuildingData data, BuildingUpgradeComponent upgradeComponent,
+        System.Func<int> getMaxShifts, System.Func<int> getMaxWorkersPerShift,
         System.Func<float> getCurrentShiftLength)
     {
         this.data = data;
@@ -35,76 +23,29 @@ public class BuildingFuelComponent
         this.getCurrentShiftLength = getCurrentShiftLength;
     }
 
-    // --- API Publiczne ---
-
-    /// <summary>
-    /// Wstępne napełnienie budżetu przy inicjalizacji budynku (40% dziennego zapotrzebowania).
-    /// </summary>
-    /// <summary>
-    /// Wstępne napełnienie budżetu przy inicjalizacji budynku.
-    /// </summary>
+    /// <summary>Puste na starcie. Paliwo ładujemy dopiero jak zaczyna się pierwsza zmiana.</summary>
     public void InitialFill()
     {
         operationalBudget.Clear();
-        var maxDaily = CalculateMaxDailyConsumption();
-
-        foreach (var kvp in maxDaily)
-        {
-            // --- ZMIANA: Zamiast 0.40f wpisujemy 1.0f ---
-            operationalBudget[kvp.Key] = kvp.Value * 1.0f;
-        }
     }
 
     /// <summary>
-    /// Sprawdza, czy budynek ma wystarczające paliwo na bieżącą godzinę pracy
-    /// przy danej liczbie aktywnych pracowników (efficiency).
+    /// Uzupełnia budżet przed startem ZMIANY, a nie dnia.
+    /// Pobiera dokładnie tyle, ile wymaga 1 pełna zmiana z ulepszeniami.
+    /// Zwraca TRUE jeśli zatankowano w pełni.
     /// </summary>
-    public bool HasFuelForHour(Dictionary<ResourceType, float> baseUpkeepPerShift, float efficiency)
+    public bool RefillForShift()
     {
-        float shiftLen = getCurrentShiftLength();
+        // 1. Liczymy maksymalny koszt na JEDNĄ ZMIANĘ
+        var shiftUpkeep = CalculateMaxShiftConsumption();
+        bool isFullyFueled = true;
 
-        foreach (var cost in baseUpkeepPerShift)
-        {
-            float needed = (cost.Value / shiftLen) * efficiency;
-
-            if (!operationalBudget.TryGetValue(cost.Key, out float available)
-                || available < needed)
-                return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Pobiera koszt paliwa za bieżącą godzinę pracy.
-    /// Należy wywołać tylko po uprzednim potwierdzeniu przez HasFuelForHour.
-    /// </summary>
-    public void ConsumeFuelForHour(Dictionary<ResourceType, float> baseUpkeepPerShift, float efficiency)
-    {
-        float shiftLen = getCurrentShiftLength();
-
-        foreach (var cost in baseUpkeepPerShift)
-        {
-            float needed = (cost.Value / shiftLen) * efficiency;
-
-            if (operationalBudget.ContainsKey(cost.Key))
-                operationalBudget[cost.Key] -= needed;
-        }
-    }
-
-    /// <summary>
-    /// Uzupełnia budżet operacyjny na początku nowego dnia.
-    /// Pobiera brakujące zasoby z ResourceManager (tyle ile dostępne).
-    /// </summary>
-    public void RefillForNewDay()
-    {
-        var maxDaily = CalculateMaxDailyConsumption();
-
-        foreach (var kvp in maxDaily)
+        foreach (var kvp in shiftUpkeep)
         {
             float current = operationalBudget.TryGetValue(kvp.Key, out float val) ? val : 0f;
             float needed = kvp.Value - current;
-            if (needed <= 0f) continue;
+            
+            if (needed <= 0f) continue; // Mamy wystarczająco dużo (np. resztki z poprzedniej zmiany)
 
             if (ResourceManager.Instance.SpendResource(kvp.Key, needed))
             {
@@ -112,39 +53,64 @@ public class BuildingFuelComponent
             }
             else
             {
-                // Bierz ile jest – nie blokuj działania budynku całkowicie
+                // Jeśli nie stać nas na pełne zatankowanie - dolewamy to, co gracz ma, ale oznaczamy że brakuje
                 float available = ResourceManager.Instance.GetResourceAmount(kvp.Key);
                 if (available > 0f)
                 {
                     ResourceManager.Instance.SpendResource(kvp.Key, available);
                     AddToBudget(kvp.Key, available);
                 }
+                isFullyFueled = false;
             }
+        }
+        
+        if (!isFullyFueled) Debug.LogWarning($"[Fuel] {data.buildingName} nie ma pełnego paliwa na start zmiany!");
+        return isFullyFueled;
+    }
+
+    public bool HasFuelForHour(Dictionary<ResourceType, float> baseUpkeepPerShift, float efficiency)
+    {
+        float shiftLen = getCurrentShiftLength();
+        foreach (var cost in baseUpkeepPerShift)
+        {
+            float needed = (cost.Value / shiftLen) * efficiency;
+            if (!operationalBudget.TryGetValue(cost.Key, out float available) || available < needed)
+                return false;
+        }
+        return true;
+    }
+
+    public void ConsumeFuelForHour(Dictionary<ResourceType, float> baseUpkeepPerShift, float efficiency)
+    {
+        float shiftLen = getCurrentShiftLength();
+        foreach (var cost in baseUpkeepPerShift)
+        {
+            float needed = (cost.Value / shiftLen) * efficiency;
+            if (operationalBudget.ContainsKey(cost.Key))
+                operationalBudget[cost.Key] -= needed;
         }
     }
 
     /// <summary>
-    /// Oblicza maksymalne dzienne zużycie surowców przy pełnym obłożeniu.
-    /// Używane do rezerwowania budżetu i wyświetlania w UI.
+    /// Oblicza zużycie na JEDNĄ zmianę przy maksymalnym obłożeniu pracownikami (baza + mnożniki).
     /// </summary>
-    public Dictionary<ResourceType, float> CalculateMaxDailyConsumption()
+    public Dictionary<ResourceType, float> CalculateMaxShiftConsumption()
     {
         var result = new Dictionary<ResourceType, float>();
         var baseUpkeep = GetCurrentUpkeep();
 
+        // Maksymalne skalowanie dla tej ZMIANY (zależne od max pracowników)
         float scale = data.workerScalingFactor > 0 ? data.workerScalingFactor : 0.1f;
         float maxScale = 1f + (getMaxWorkersPerShift() - 1) * scale;
 
         foreach (var kvp in baseUpkeep)
         {
-            float dailyTotal = kvp.Value * maxScale * getMaxShifts();
-            result.Add(kvp.Key, dailyTotal);
+            // Nie mnożymy już przez getMaxShifts() ! Liczymy tylko dla 1 zmiany.
+            result.Add(kvp.Key, kvp.Value * maxScale);
         }
-
         return result;
     }
 
-    /// <summary>Zwraca aktualny upkeep (baza + ulepszenia).</summary>
     public Dictionary<ResourceType, float> GetCurrentUpkeep()
     {
         var total = new Dictionary<ResourceType, float>();
@@ -157,14 +123,18 @@ public class BuildingFuelComponent
         foreach (var kvp in upgradeUpkeep)
             AddToDict(total, kvp.Key, kvp.Value);
 
+        // Mnożnik globalny z drzewka
+        float globalUpgradeMulti = upgradeComponent.GetGlobalUpkeepMultiplier();
+        if (globalUpgradeMulti != 1f)
+        {
+            var keys = new List<ResourceType>(total.Keys);
+            foreach (var k in keys) total[k] *= globalUpgradeMulti;
+        }
+
         return total;
     }
 
-    /// <summary>Zwraca kopię bieżącego budżetu (do odczytu w UI).</summary>
-    public Dictionary<ResourceType, float> GetCurrentBudget() =>
-        new Dictionary<ResourceType, float>(operationalBudget);
-
-    // --- Helpers ---
+    public Dictionary<ResourceType, float> GetCurrentBudget() => new Dictionary<ResourceType, float>(operationalBudget);
 
     private void AddToBudget(ResourceType type, float amount)
     {

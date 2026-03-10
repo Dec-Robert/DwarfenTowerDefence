@@ -53,32 +53,52 @@ public class BuildingProductionComponent
         bool isWorkingHours = currentHour >= shiftStartHour && currentHour < shiftEndHour;
         if (!isWorkingHours) return false;
 
-        // Aktywacja pracowników na początku zmiany
-        workerComponent.ActivateWorkersForShift();
+        // --- NOWE: TANKOWANIE NA POCZĄTKU ZMIANY ---
+        // Sprawdzamy czy to dokładny start zmiany
+        if (currentHour == shiftStartHour)
+        {
+            fuelComponent.RefillForShift();
+        }
+        // ------------------------------------------
 
+        workerComponent.ActivateWorkersForShift();
         var activeWorkers = workerComponent.GetActiveWorkers();
         int workerCount = activeWorkers.Count;
+        
         if (workerCount == 0) return false;
 
-        // Wydajność skaluje się z liczbą pracowników
-        float scale = data.workerScalingFactor > 0 ? data.workerScalingFactor : 0.1f;
-        float efficiency = 1f + (workerCount - 1) * scale;
+        // ── 1. ZAAWANSOWANA KALKULACJA WYDAJNOŚCI (Na podstawie Twoich notatek) ──
+        float efficiency = CalculateDynamicEfficiency(workerCount);
 
-        // Sprawdzenie paliwa
+        // ── 2. EKSPLOZJA KOPALNI (RYZYKO) ──
+        if (upgradeComponent.HasSpecialEffect("MINE_EXPLOSION_RISK"))
+        {
+            // Niewielka szansa na wybuch każdej godziny pracy (np. 0.5% co godzinę)
+            if (Random.value < 0.005f) 
+            {
+                Debug.LogWarning($"<color=red>KATASTROFA! Kopalnia {data.buildingName} zawaliła się!</color>");
+                // Zabijamy pracowników
+                foreach(var w in activeWorkers)
+                {
+                    CitizenManager.Instance.citizens.Remove(w); // Śmierć
+                }
+                // Niszczymy budynek (Wymaga referencji do entity w tym komponencie, użyjemy buildingTransform)
+                var entity = buildingTransform.GetComponent<BuildingEntity>();
+                if (entity != null) entity.Demolish(); 
+                return false; 
+            }
+        }
+
+        // ── 3. SPRAWDZENIE PALIWA ──
         var upkeep = fuelComponent.GetCurrentUpkeep();
-        if (!fuelComponent.HasFuelForHour(upkeep, efficiency))
-            return false;
-
-        // Pobranie paliwa i produkcja
+        if (!fuelComponent.HasFuelForHour(upkeep, efficiency)) return false;
         fuelComponent.ConsumeFuelForHour(upkeep, efficiency);
 
-        float beaconBonus = GlobalModifierRegistry.Instance != null
-            ? GlobalModifierRegistry.Instance.GetGlobalProductionMultiplier()
-            : 1f;
-
+        float beaconBonus = GlobalModifierRegistry.Instance != null ? GlobalModifierRegistry.Instance.GetGlobalProductionMultiplier() : 1f;
         var production = GetCurrentProduction();
         var loggedProduction = new Dictionary<ResourceType, float>();
 
+        // ── 4. PRODUKCJA WŁAŚCIWA ──
         foreach (var kvp in production)
         {
             float hourlyAmount = (kvp.Value / CurrentShiftLength) * efficiency * beaconBonus;
@@ -92,25 +112,79 @@ public class BuildingProductionComponent
                 productionBuffer[kvp.Key] -= amountToGive;
 
                 ResourceManager.Instance.AddResource(kvp.Key, amountToGive);
-
-                if (amountToGive > 0)
-                    AddToDict(loggedProduction, kvp.Key, amountToGive);
+                if (amountToGive > 0) AddToDict(loggedProduction, kvp.Key, amountToGive);
 
                 if (FloatingTextManager.Instance != null)
-                    FloatingTextManager.Instance.ShowGain(
-                        buildingTransform.position, kvp.Key.ToString(), amountToGive);
+                    FloatingTextManager.Instance.ShowGain(buildingTransform.position, kvp.Key.ToString(), amountToGive);
             }
         }
 
-        // Logowanie
+        // ── 5. DROP RUN Z ODPADÓW (Ulepszenie Kopalni T3) ──
+        if (upgradeComponent.HasSpecialEffect("MINE_RUNE_DROP"))
+        {
+            // Pod koniec zmiany szansa na znalezienie runy (np. 15% na koniec dnia)
+            if (currentHour == shiftEndHour - 1 && Random.value < 0.15f)
+            {
+                if (RuneManager.Instance != null)
+                {
+                    var r = RuneManager.Instance.GenerateRandomRune();
+                    RuneManager.Instance.playerRunes.Add(r);
+                    RuneManager.Instance.NotifyInventoryChanged();
+                    Debug.Log($"<color=magenta>Górnicy znaleźli runę w odpadach: {r.definition.runeName}!</color>");
+                }
+            }
+        }
+
         if (loggedProduction.Count > 0 && ResourceLogger.Instance != null)
             ResourceLogger.Instance.LogTransaction($"Produkcja: {data.buildingName}", loggedProduction);
 
-        // Wyczerpanie pracowników na końcu zmiany
         if (currentHour == shiftEndHour - 1)
             workerComponent.ExhaustWorkers();
 
         return true;
+    }
+
+    // Nowa potężna metoda uelastyczniająca wydajność
+    private float CalculateDynamicEfficiency(int workerCount)
+    {
+        float scale = data.workerScalingFactor;
+        float eff = 1f;
+        float firstWorkerEff = data.firstWorkerProduction;
+
+        // SPRAWDZAMY ULEPSZENIA:
+
+        // Farma Tier 1: 1 pracownik daje od razu 80% (zamiast standardu)
+        if (upgradeComponent.HasSpecialEffect("FARM_80_PERCENT_START") && workerCount == 1)
+        {
+            return 0.9f; 
+        }
+        
+        // Kopalnia Wiertła Parowe: 1 pracownik = 100%, 
+        if (upgradeComponent.HasSpecialEffect("MINE_ONE_WORKER_100"))
+        {
+            eff = 1.0f + ((workerCount - 1) * scale);
+            return eff;
+        }
+
+        // Farma Tier 3 (Full Shift Bonus) lub Kopalnia Jądro Planety
+        if (upgradeComponent.HasSpecialEffect("FULL_SHIFT_MEGA_BONUS"))
+        {
+            int maxWorkers = workerComponent.GetMaxWorkersPerShift();
+            eff = 1f + ((workerCount - 1) * scale);
+            
+            if (workerCount >= maxWorkers) 
+            {
+                eff *= 2.0f; // Potężny x2 mnożnik za pełną zmianę
+            }
+            return eff;
+        }
+
+        if (upgradeComponent.HasSpecialEffect("SAWMILL_ONE_WORKER_100_NEXT_15"))
+        {
+            return 1.0f + ((workerCount - 1) * ( scale + 0.15f));
+        }
+
+        return workerCount > 1 ? 1f + ((workerCount - 1) * scale) : firstWorkerEff;
     }
 
     /// <summary>
@@ -161,6 +235,13 @@ public class BuildingProductionComponent
             }
         }
 
+        float globalUpgradeMulti = upgradeComponent.GetGlobalProductionMultiplier();
+        if (globalUpgradeMulti != 1f)
+        {
+            var keys = new List<ResourceType>(total.Keys);
+            foreach (var k in keys) total[k] *= globalUpgradeMulti;
+        }
+        
         return total;
     }
 

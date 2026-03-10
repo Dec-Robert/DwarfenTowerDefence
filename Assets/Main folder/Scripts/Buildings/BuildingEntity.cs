@@ -19,6 +19,9 @@ public class BuildingEntity : MonoBehaviour
 
     [Header("Dane Bazowe")]
     public BuildingData data;
+    
+    [Header("Zarządzanie")]
+    public bool isBuildingActive = true;
 
     [Header("Ustawienia Czasu Pracy")]
     public int shiftStartHour = 6;
@@ -127,7 +130,7 @@ public class BuildingEntity : MonoBehaviour
             getGlobalBonusWorkers: () => CityStatsManager.Instance?.globalBonusWorkersPerShift ?? 0);
 
         // 3. Terrain – potrzebuje tylko danych i pozycji
-        Terrain = new BuildingTerrainComponent(data, transform);
+        Terrain = new BuildingTerrainComponent(data, transform, Upgrades);
 
         // 4. Fuel – potrzebuje Upgrades + getterów z Workers
         Fuel = new BuildingFuelComponent(
@@ -173,14 +176,18 @@ public class BuildingEntity : MonoBehaviour
 
     protected virtual void HandleHourlyProduction(int currentHour)
     {
-        Production.ProcessHour(currentHour, shiftStartHour);
+        if (isBuildingActive) 
+        {
+            Production.ProcessHour(currentHour, shiftStartHour);
+        }
         RefreshInspectorUI();
     }
 
     protected virtual void HandleDayReset(int day)
     {
         Workers.ResetWorkersForNewDay();
-        Fuel.RefillForNewDay();
+        // Fuel.RefillForNewDay(); <--- USUŃ TO
+        if (Terrain != null) Terrain.ProcessDailyTerrainModifiers();
         RefreshInspectorUI();
     }
 
@@ -192,10 +199,12 @@ public class BuildingEntity : MonoBehaviour
 
     public virtual bool TryAddWorker(Race race)
     {
+        if (!isBuildingActive) return false; // NOWE: Zablokowane przypisywanie
+
         bool success = Workers.TryAddWorker(race);
         if (success) 
         {
-            hasBeenUsed = true; // Budynek ekonomiczny/wieża uznawany za 'użyty' gdy przyjmie 1. pracownika
+            hasBeenUsed = true;
             RefreshInspectorUI();
         }
         return success;
@@ -226,7 +235,7 @@ public class BuildingEntity : MonoBehaviour
 
     public Dictionary<ResourceType, float> GetCurrentProduction()         => Production.GetCurrentProduction();
     public Dictionary<ResourceType, float> GetCurrentUpkeep()             => Fuel.GetCurrentUpkeep();
-    public Dictionary<ResourceType, float> CalculateMaxDailyConsumption() => Fuel.CalculateMaxDailyConsumption();
+    public Dictionary<ResourceType, float> CalculateMaxShiftConsumption() => Fuel.CalculateMaxShiftConsumption();
     public Dictionary<ResourceType, float> GetCurrentBudget()             => Fuel.GetCurrentBudget();
 
     // --- Teren ---
@@ -264,6 +273,7 @@ public class BuildingEntity : MonoBehaviour
                 }
             }
         }
+        if (Terrain != null) Terrain.DestroyArtificialFeatures();
 
         Destroy(gameObject);
     }
@@ -286,5 +296,26 @@ public class BuildingEntity : MonoBehaviour
     {
         if (UIBuildingInspector.Instance != null)
             UIBuildingInspector.Instance.RefreshContent();
+    }
+    
+    public void ToggleBuildingActive()
+    {
+        isBuildingActive = !isBuildingActive;
+
+        // Kiedy wyłączamy budynek - wywal wszystkich, którzy nie zaczęli pracować (Assigned)
+        // Opcjonalnie wywal też pracujących (Working), robiąc ich od razu Exhausted.
+        if (!isBuildingActive)
+        {
+            var workers = Workers.GetAssignedCitizens();
+            // Tworzymy kopię listy do iteracji
+            foreach (var w in new List<Citizen>(workers))
+            {
+                if (w.workState == WorkState.Assigned)
+                {
+                    Workers.RemoveSpecificWorker(w);
+                }
+            }
+        }
+        RefreshInspectorUI();
     }
 }
