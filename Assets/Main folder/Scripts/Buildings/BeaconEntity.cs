@@ -1,41 +1,39 @@
+using System;
 using UnityEngine;
 
 /// <summary>
-/// Unikalny budynek – Beacon (Latarnia). Singleton.
-///
-/// Przy zmianie poziomu rejestruje swoje modyfikatory w GlobalModifierRegistry.
-/// TowerEntity i BuildingProductionComponent czytają stamtąd – Beacon nie jest
-/// już znany bezpośrednio żadnemu innemu systemowi poza UI.
+///     Unikalny budynek – Beacon (Latarnia). Singleton.
+///     Przy zmianie poziomu rejestruje swoje modyfikatory w GlobalModifierRegistry.
+///     TowerEntity i BuildingProductionComponent czytają stamtąd – Beacon nie jest
+///     już znany bezpośrednio żadnemu innemu systemowi poza UI.
 /// </summary>
 public class BeaconEntity : BuildingEntity
 {
-    public static BeaconEntity Instance { get; private set; }
-
     private const string SOURCE_ID = "Beacon";
 
-    [Header("Konfiguracja Paliwa")]
-    public float maxFuel = 100f;
+    [Header("Konfiguracja Paliwa")] public float maxFuel = 100f;
+
     public float currentFuel = 60f;
     public int coalToFuelRatio = 5;
 
     [Header("Konfiguracja Poziomów (Zużycie na dobę)")]
     public int[] fuelConsumptionPerLevel = { 5, 10, 15, 20, 25 };
 
-    [Header("Sterowanie Gracza")]
-    [Range(0, 20)] public int dailyCoalInput = 0;
-
-    public int CurrentFireLevel { get; private set; }
-
-    public event System.Action OnBeaconStateChanged;
+    [Header("Sterowanie Gracza")] [Range(0, 20)]
+    public int dailyCoalInput;
 
     // =========================================================================
     // Modyfikatory per poziom – edytowalne w Inspectorze
     // =========================================================================
 
     [Header("Modyfikatory Per Poziom (indeks 0 = poziom 1)")]
-    public float[] productionMultipliers  = { 0.7f, 0.9f, 1.0f, 1.1f, 1.2f  };
-    public float[] towerRangeMultipliers  = { 0.7f, 0.9f, 1.0f, 1.1f, 1.15f };
+    public float[] productionMultipliers = { 0.7f, 0.9f, 1.0f, 1.1f, 1.2f };
+
+    public float[] towerRangeMultipliers = { 0.7f, 0.9f, 1.0f, 1.1f, 1.15f };
     public float[] towerDamageMultipliers = { 1.0f, 1.0f, 1.0f, 1.0f, 1.05f };
+    public static BeaconEntity Instance { get; private set; }
+
+    public int CurrentFireLevel { get; private set; }
 
     // =========================================================================
     // Cykl życia
@@ -49,17 +47,8 @@ public class BeaconEntity : BuildingEntity
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
-    }
-
-    public override void Initialize(BuildingData buildingData)
-    {
-        base.Initialize(buildingData);
-
-        if (TimeCycleManager.Instance != null)
-            TimeCycleManager.Instance.OnDayChanged += HandleDayNightCycle;
-
-        CalculateLevel();
     }
 
     protected override void OnDestroy()
@@ -74,8 +63,22 @@ public class BeaconEntity : BuildingEntity
         if (Instance == this) Instance = null;
     }
 
+    public event Action OnBeaconStateChanged;
+
+    public override void Initialize(BuildingData buildingData)
+    {
+        base.Initialize(buildingData);
+
+        if (TimeCycleManager.Instance != null)
+            TimeCycleManager.Instance.OnDayChanged += HandleDayNightCycle;
+
+        CalculateLevel();
+    }
+
     // Beacon nie produkuje zasobów godzinowo
-    protected override void HandleHourlyProduction(int currentHour) { }
+    protected override void HandleHourlyProduction(int currentHour)
+    {
+    }
 
     // =========================================================================
     // Logika dobowa
@@ -92,7 +95,7 @@ public class BeaconEntity : BuildingEntity
 
     private void ConsumeFuel()
     {
-        int consumption = fuelConsumptionPerLevel[Mathf.Clamp(CurrentFireLevel - 1, 0, 4)];
+        var consumption = fuelConsumptionPerLevel[Mathf.Clamp(CurrentFireLevel - 1, 0, 4)];
         currentFuel = Mathf.Max(0f, currentFuel - consumption);
         Debug.Log($"[Beacon] Zużyto {consumption} paliwa. Pozostało: {currentFuel}");
     }
@@ -101,9 +104,9 @@ public class BeaconEntity : BuildingEntity
     {
         if (dailyCoalInput <= 0) return;
 
-        float fuelSpace   = maxFuel - currentFuel;
-        int maxCoalUsable = Mathf.CeilToInt(fuelSpace / coalToFuelRatio);
-        int actualCoal    = Mathf.Min(dailyCoalInput, maxCoalUsable);
+        var fuelSpace = maxFuel - currentFuel;
+        var maxCoalUsable = Mathf.CeilToInt(fuelSpace / coalToFuelRatio);
+        var actualCoal = Mathf.Min(dailyCoalInput, maxCoalUsable);
         if (actualCoal <= 0) return;
 
         if (ResourceManager.Instance.SpendResource(ResourceType.Coal, actualCoal))
@@ -112,7 +115,7 @@ public class BeaconEntity : BuildingEntity
             return;
         }
 
-        float available = ResourceManager.Instance.GetResourceAmount(ResourceType.Coal);
+        var available = ResourceManager.Instance.GetResourceAmount(ResourceType.Coal);
         if (available <= 0f) return;
 
         ResourceManager.Instance.SpendResource(ResourceType.Coal, available);
@@ -122,11 +125,11 @@ public class BeaconEntity : BuildingEntity
 
     private void CalculateLevel()
     {
-        if      (currentFuel <= 20f) CurrentFireLevel = 1;
+        if (currentFuel <= 20f) CurrentFireLevel = 1;
         else if (currentFuel <= 40f) CurrentFireLevel = 2;
         else if (currentFuel <= 60f) CurrentFireLevel = 3;
         else if (currentFuel <= 80f) CurrentFireLevel = 4;
-        else                          CurrentFireLevel = 5;
+        else CurrentFireLevel = 5;
 
         RegisterModifiers();
         OnBeaconStateChanged?.Invoke();
@@ -140,19 +143,19 @@ public class BeaconEntity : BuildingEntity
     {
         if (GlobalModifierRegistry.Instance == null) return;
 
-        int lvl = Mathf.Clamp(CurrentFireLevel - 1, 0, 4);
+        var lvl = Mathf.Clamp(CurrentFireLevel - 1, 0, 4);
 
         GlobalModifierRegistry.Instance.Register(
             new StatModifier(SOURCE_ID, TowerStatType.GlobalProduction,
-                multiplier: productionMultipliers[lvl]));
+                productionMultipliers[lvl]));
 
         GlobalModifierRegistry.Instance.Register(
             new StatModifier(SOURCE_ID, TowerStatType.Range,
-                multiplier: towerRangeMultipliers[lvl]));
+                towerRangeMultipliers[lvl]));
 
         GlobalModifierRegistry.Instance.Register(
             new StatModifier(SOURCE_ID, TowerStatType.Damage,
-                multiplier: towerDamageMultipliers[lvl]));
+                towerDamageMultipliers[lvl]));
     }
 
     // =========================================================================
@@ -160,18 +163,30 @@ public class BeaconEntity : BuildingEntity
     // =========================================================================
 
     /// <summary>Procent paliwa (0-1) dla UI paska.</summary>
-    public float GetFuelPercent() =>
-        maxFuel > 0f ? currentFuel / maxFuel : 0f;
+    public float GetFuelPercent()
+    {
+        return maxFuel > 0f ? currentFuel / maxFuel : 0f;
+    }
 
     /// <summary>Modyfikatory wrogów – Beacon jest jedynym źródłem, nie wymagają rejestru.</summary>
     public void GetEnemyModifiers(
         out float countMod, out float hpMod, out float speedMod, out float eliteMod)
     {
-        countMod = 1f; hpMod = 1f; speedMod = 1f; eliteMod = 1f;
+        countMod = 1f;
+        hpMod = 1f;
+        speedMod = 1f;
+        eliteMod = 1f;
 
         if (CurrentFireLevel == 1)
-        { countMod = 1.3f; hpMod = 1.2f; speedMod = 1.1f; eliteMod = 2.0f; }
+        {
+            countMod = 1.3f;
+            hpMod = 1.2f;
+            speedMod = 1.1f;
+            eliteMod = 2.0f;
+        }
         else if (CurrentFireLevel == 2)
-        { hpMod = 1.1f; }
+        {
+            hpMod = 1.1f;
+        }
     }
 }

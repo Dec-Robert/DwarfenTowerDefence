@@ -1,26 +1,23 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// Budynek mieszkalny. Dziedziczy po BuildingEntity wyłącznie po to,
-/// by żyć na mapie i mieć dane bazowe – NIE używa komponentów
-/// Worker / Fuel / Production (nie ma zmian, pracowników ani paliwa).
-///
-/// Własna logika: pasywna produkcja per mieszkaniec + wzrost populacji,
-/// odpalane raz dziennie przez OnDayChanged.
+///     Budynek mieszkalny. Dziedziczy po BuildingEntity wyłącznie po to,
+///     by żyć na mapie i mieć dane bazowe – NIE używa komponentów
+///     Worker / Fuel / Production (nie ma zmian, pracowników ani paliwa).
+///     Własna logika: pasywna produkcja per mieszkaniec + wzrost populacji,
+///     odpalane raz dziennie przez OnDayChanged.
 /// </summary>
 public class HousingEntity : BuildingEntity
 {
+    [Header("Status Mieszkańców")] public List<Citizen> residents = new();
+
+    public int currentGrowthProgress;
+
+    [Header("Sterowanie Graczem")] public bool stopGrowth; // Czy gracz zatrzymał przyrost demograficzny?
+
     // Rzutowanie danych na typ Housing
     public HousingBuildingData housingData => data as HousingBuildingData;
-
-    [Header("Status Mieszkańców")]
-    public List<Citizen> residents = new List<Citizen>();
-
-    public int currentGrowthProgress = 0;
-
-    [Header("Sterowanie Graczem")]
-    public bool stopGrowth = false; // Czy gracz zatrzymał przyrost demograficzny?
     // =========================================================================
     // Cykl życia
     // =========================================================================
@@ -35,6 +32,15 @@ public class HousingEntity : BuildingEntity
         base.OnDisable();
     }
 
+
+    protected override void OnDestroy() // 'new' żeby nie ukryć base.OnDestroy przypadkowo
+    {
+        base.OnDestroy(); // Odpina OnHourTick / OnDayChanged z base + zwalnia Terrain
+
+        if (TimeCycleManager.Instance != null)
+            TimeCycleManager.Instance.OnDayChanged -= HandleMorningRoutine;
+    }
+
     // Start() z BuildingEntity wywoła Initialize(data) – tego chcemy.
     // Nie nadpisujemy Start() – zamiast tego nadpisujemy Initialize().
 
@@ -43,7 +49,10 @@ public class HousingEntity : BuildingEntity
     // =========================================================================
 
     // Wymagany dostęp do configu z poziomu całego systemu domów
-    private CityBaseConfigSO GetConfig() => ResourceManager.Instance?.cityConfig;
+    private CityBaseConfigSO GetConfig()
+    {
+        return ResourceManager.Instance?.cityConfig;
+    }
 
     public override void Initialize(BuildingData buildingData)
     {
@@ -52,7 +61,7 @@ public class HousingEntity : BuildingEntity
         if (housingData == null) return;
 
         // 1. OBLICZAMY POCZĄTKOWĄ POPULACJĘ (Baza + Meta)
-        int baseStartPop = housingData.initialResidents;
+        var baseStartPop = housingData.initialResidents;
         if (GetConfig() != null && GetConfig().overrideHousingData)
         {
             if (housingData.housingRace == Race.Humans) baseStartPop = GetConfig().humanStartPop;
@@ -60,28 +69,21 @@ public class HousingEntity : BuildingEntity
             else if (housingData.housingRace == Race.Dwarves) baseStartPop = GetConfig().dwarfStartPop;
         }
 
-        int metaBonus = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingStartPopulation)) : 0;
-        int finalStartPop = baseStartPop + metaBonus;
+        var metaBonus = MetaUpgradeManager.Instance != null
+            ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingStartPopulation))
+            : 0;
+        var finalStartPop = baseStartPop + metaBonus;
 
         // Spawn startowych mieszkańców
-        for (int i = 0; i < finalStartPop; i++)
+        for (var i = 0; i < finalStartPop; i++)
         {
             if (residents.Count >= GetEffectiveMaxResidents()) break;
-            Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
+            var newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
             residents.Add(newC);
         }
 
         if (TimeCycleManager.Instance != null)
             TimeCycleManager.Instance.OnDayChanged += HandleMorningRoutine;
-    }
-    
-
-    protected override void OnDestroy()  // 'new' żeby nie ukryć base.OnDestroy przypadkowo
-    {
-        base.OnDestroy(); // Odpina OnHourTick / OnDayChanged z base + zwalnia Terrain
-
-        if (TimeCycleManager.Instance != null)
-            TimeCycleManager.Instance.OnDayChanged -= HandleMorningRoutine;
     }
 
     // =========================================================================
@@ -103,25 +105,21 @@ public class HousingEntity : BuildingEntity
 
         // --- SPRAWDZANIE CZY DOM ZOSTAŁ "UŻYTY" ---
         if (!hasBeenUsed)
-        {
             foreach (var citizen in residents)
-            {
                 // Jeśli chociaż 1 osoba poszła do pracy / została przypisana - dom traci 100% gwarancję zwrotu
                 if (citizen.workState != WorkState.Idle)
                 {
                     hasBeenUsed = true;
                     break;
                 }
-            }
-        }
         // ------------------------------------------
 
         // A. Produkcja pasywna (na mieszkańca)
         ProducePerResident(logChanges);
 
         // B. Utrzymanie (Survival Cost)
-        Dictionary<ResourceType, float> survivalCost = CalculateSurvivalCost();
-        bool survivalPaid = ResourceManager.Instance.SpendResources(survivalCost);
+        var survivalCost = CalculateSurvivalCost();
+        var survivalPaid = ResourceManager.Instance.SpendResources(survivalCost);
 
         ShowLossFeedback(survivalCost, survivalPaid);
 
@@ -156,7 +154,7 @@ public class HousingEntity : BuildingEntity
 
         foreach (var prod in housingData.productionPerResident)
         {
-            float totalAmount = prod.amount * residents.Count;
+            var totalAmount = prod.amount * residents.Count;
             if (totalAmount <= 0f) continue;
 
             ResourceManager.Instance.AddResource(prod.type, totalAmount);
@@ -173,11 +171,9 @@ public class HousingEntity : BuildingEntity
         if (!paid || FloatingTextManager.Instance == null) return;
 
         foreach (var cost in costs)
-        {
             if (cost.Value >= 1f)
                 FloatingTextManager.Instance.ShowLoss(
                     transform.position, cost.Key.ToString(), Mathf.FloorToInt(cost.Value));
-        }
     }
 
     private void TryGrow()
@@ -193,10 +189,10 @@ public class HousingEntity : BuildingEntity
 
     private void CheckForNewResident()
     {
-        int required = CalculateRequiredGrowthTicks();
+        var required = CalculateRequiredGrowthTicks();
         if (currentGrowthProgress < required) return;
 
-        Citizen newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
+        var newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
         residents.Add(newC);
         currentGrowthProgress = 0;
     }
@@ -206,13 +202,13 @@ public class HousingEntity : BuildingEntity
     // =========================================================================
 
     /// <summary>
-    /// Zwraca rzeczywisty limit mieszkańców uwzględniający meta-upgrady.
-    /// Sprawdza bonus ogólny (HousingMaxResidents) oraz bonus per-rasa.
+    ///     Zwraca rzeczywisty limit mieszkańców uwzględniający meta-upgrady.
+    ///     Sprawdza bonus ogólny (HousingMaxResidents) oraz bonus per-rasa.
     /// </summary>
     public int GetEffectiveMaxResidents()
     {
-        int baseMaxPop = housingData.maxResidents;
-        
+        var baseMaxPop = housingData.maxResidents;
+
         // Zastąpienie wartości przez globalny Config
         if (GetConfig() != null && GetConfig().overrideHousingData)
         {
@@ -221,7 +217,7 @@ public class HousingEntity : BuildingEntity
             else if (housingData.housingRace == Race.Dwarves) baseMaxPop = GetConfig().dwarfMaxPop;
         }
 
-        int bonus = 0;
+        var bonus = 0;
 
         if (MetaUpgradeManager.Instance != null)
         {
@@ -229,12 +225,12 @@ public class HousingEntity : BuildingEntity
             bonus += Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingMaxResidents));
 
             // Bonus per rasa 
-            MetaEffectType raceEffect = housingData.housingRace switch
+            var raceEffect = housingData.housingRace switch
             {
-                Race.Humans  => MetaEffectType.HousingMaxResidents_Humans,
-                Race.Elves   => MetaEffectType.HousingMaxResidents_Elves,
+                Race.Humans => MetaEffectType.HousingMaxResidents_Humans,
+                Race.Elves => MetaEffectType.HousingMaxResidents_Elves,
                 Race.Dwarves => MetaEffectType.HousingMaxResidents_Dwarves,
-                _            => MetaEffectType.None
+                _ => MetaEffectType.None
             };
 
             if (raceEffect != MetaEffectType.None)
@@ -248,27 +244,30 @@ public class HousingEntity : BuildingEntity
     // Matematyka
     // =========================================================================
 
-    public int CalculateRequiredGrowthTicks() =>
-        Mathf.FloorToInt(housingData.baseGrowthTicks + residents.Count * housingData.growthDifficultyMultiplier);
+    public int CalculateRequiredGrowthTicks()
+    {
+        return Mathf.FloorToInt(housingData.baseGrowthTicks + residents.Count * housingData.growthDifficultyMultiplier);
+    }
 
     private Dictionary<ResourceType, float> CalculateSurvivalCost()
     {
         var total = new Dictionary<ResourceType, float>();
-        foreach (var c in housingData.baseDailyUpkeep)         AddToDict(total, c.type, c.amount);
-        foreach (var c in housingData.upkeepPerResident)       AddToDict(total, c.type, c.amount * residents.Count);
+        foreach (var c in housingData.baseDailyUpkeep) AddToDict(total, c.type, c.amount);
+        foreach (var c in housingData.upkeepPerResident) AddToDict(total, c.type, c.amount * residents.Count);
         return total;
     }
 
     private Dictionary<ResourceType, float> CalculateGrowthCost()
     {
         var total = new Dictionary<ResourceType, float>();
-        foreach (var c in housingData.growthSurplusCost)       AddToDict(total, c.type, c.amount);
+        foreach (var c in housingData.growthSurplusCost) AddToDict(total, c.type, c.amount);
         return total;
     }
 
     private void AddToDict(Dictionary<ResourceType, float> d, ResourceType t, float a)
     {
-        if (d.ContainsKey(t)) d[t] += a; else d.Add(t, a);
+        if (d.ContainsKey(t)) d[t] += a;
+        else d.Add(t, a);
     }
 
     private void RefreshUI()
@@ -284,7 +283,7 @@ public class HousingEntity : BuildingEntity
     public float GetGrowthProgress()
     {
         if (residents.Count >= GetEffectiveMaxResidents()) return 1f;
-        int required = CalculateRequiredGrowthTicks();
+        var required = CalculateRequiredGrowthTicks();
         return required == 0 ? 1f : (float)currentGrowthProgress / required;
     }
 
@@ -296,21 +295,22 @@ public class HousingEntity : BuildingEntity
 
     public float GetProjectedUpkeep()
     {
-        float total = 0f;
-        foreach (var cost in housingData.baseDailyUpkeep)    total += cost.amount;
-        foreach (var cost in housingData.upkeepPerResident)  total += cost.amount * residents.Count;
+        var total = 0f;
+        foreach (var cost in housingData.baseDailyUpkeep) total += cost.amount;
+        foreach (var cost in housingData.upkeepPerResident) total += cost.amount * residents.Count;
         return total;
     }
 
     public string GetGrowthStatus()
     {
         if (residents.Count >= GetEffectiveMaxResidents()) return "PEŁNY";
-        
+
         // NOWE:
         if (stopGrowth) return "WSTRZYMANY";
 
         foreach (var kvp in CalculateSurvivalCost())
-            if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value)) return "BRAK ZASOBÓW";
+            if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value))
+                return "BRAK ZASOBÓW";
 
         return "ROSNĄCY";
     }

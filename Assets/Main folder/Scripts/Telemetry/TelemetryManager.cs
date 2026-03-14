@@ -4,6 +4,7 @@ using Unity.Services.Core.Environments;
 using Unity.Services.Analytics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using NUnit.Framework;
 using Unity.VisualScripting;
 using Event = UnityEngine.Event;
 
@@ -14,6 +15,9 @@ public class TelemetryManager : MonoBehaviour
     // Zmienne do mierzenia czasu trwania "Runu"
     private float runStartTime;
     private bool isRunActive = false;
+
+    public List<string> buildedBuildings = new List<string>();
+    
 
     private async void Awake()
     {
@@ -89,11 +93,49 @@ public class TelemetryManager : MonoBehaviour
         if (UnityServices.State == ServicesInitializationState.Initialized)
         {
             AnalyticsService.Instance.RecordEvent(runEnded);
+            Debug.Log($"[Telemetry] Zapamiętano zdarzenie: run_ended | Dni: {daysSurvived} | Czas: {runDurationMinutes:F1}m");
+
+            Dictionary<string, int> buildingCount = CountBuildings(buildedBuildings);
+
+            if (buildingCount.Count > 0)
+            {
+
+                foreach (var i in buildingCount)
+                {
+                    BuildingAmmount buildingAmmountTelemetry =  new BuildingAmmount(i.Key, i.Value);
+                    AnalyticsService.Instance.RecordEvent(buildingAmmountTelemetry);
+                    Debug.Log($"[Telemetry] Postawiony budynek: {i.Key} | Ilosc: {i.Value}");
+                }
+            }
+
+            
             AnalyticsService.Instance.Flush();
-            Debug.Log($"[Telemetry] Wysłano zdarzenie: run_ended | Dni: {daysSurvived} | Czas: {runDurationMinutes:F1}m");
         }
     }
+    
+    // =========================================================================
+    // Metody powiązane z budowaniem budynkow
+    // =========================================================================
+
+    public void addBuilding(string _buildingName)
+    {
+        buildedBuildings.Add(_buildingName);
+    }
+    private Dictionary<string, int> CountBuildings(List<string> buildings)
+    {
+        Dictionary<string, int> buildingCount = new Dictionary<string, int>();
+
+        foreach (var i in buildings)
+        {
+            if (buildingCount.ContainsKey(i)) buildingCount[i]++;
+            else buildingCount.Add(i, 1);
+        }
+        
+        return buildingCount;
+    }
 }
+
+
 
 /// <summary>
 /// Zakończone rozgrywki

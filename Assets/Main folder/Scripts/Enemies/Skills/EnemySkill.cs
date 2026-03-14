@@ -13,6 +13,6 @@ public abstract class EnemySkill : MonoBehaviour
 
     // Hooki (Metody wirtualne), kt�re wywo�a EnemyStats
     public virtual void OnDamageTaken(float amount, float currentHp) { }
-    public virtual float OnBeforeDamageCalculation(float incomingDamage, DamageType type) { return incomingDamage; }
+    public virtual float OnBeforeDamageCalculation(float incomingDamage, DamageType type, TowerEntity sourceTower = null, bool isAoE = false) { return incomingDamage; }
     public virtual void OnDeath() { } //
 }

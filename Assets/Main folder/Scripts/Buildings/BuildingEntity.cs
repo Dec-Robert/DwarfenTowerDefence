@@ -1,15 +1,16 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// Cienki koordynator budynku.
-/// Odpowiada wyłącznie za:
-///   - stworzenie i powiązanie komponentów logicznych,
-///   - subskrypcję zdarzeń czasowych (TimeCycleManager),
-///   - delegowanie wywołań do odpowiednich komponentów,
-///   - globalny rejestr budynków (AllBuildings).
-/// Cała logika produkcji, paliwa, pracowników, terenu i ulepszeń
-/// żyje w dedykowanych komponentach.
+///     Cienki koordynator budynku.
+///     Odpowiada wyłącznie za:
+///     - stworzenie i powiązanie komponentów logicznych,
+///     - subskrypcję zdarzeń czasowych (TimeCycleManager),
+///     - delegowanie wywołań do odpowiednich komponentów,
+///     - globalny rejestr budynków (AllBuildings).
+///     Cała logika produkcji, paliwa, pracowników, terenu i ulepszeń
+///     żyje w dedykowanych komponentach.
 /// </summary>
 public class BuildingEntity : MonoBehaviour
 {
@@ -17,28 +18,33 @@ public class BuildingEntity : MonoBehaviour
     // Dane i konfiguracja (Inspector)
     // -------------------------------------------------------------------------
 
-    [Header("Dane Bazowe")]
-    public BuildingData data;
-    
-    [Header("Zarządzanie")]
-    public bool isBuildingActive = true;
+    [Header("Dane Bazowe")] public BuildingData data;
 
-    [Header("Ustawienia Czasu Pracy")]
-    public int shiftStartHour = 6;
+    [Header("Zarządzanie")] public bool isBuildingActive = true;
+
+    [Header("Ustawienia Czasu Pracy")] public int shiftStartHour = 6;
+
     public int shiftLength = 8;
+
+    [Header("Stan zwrotu kosztów")]
+    [Tooltip("Czy budynek został użyty? Jeśli nie = 100% zwrotu. Jeśli tak = 50% zwrotu.")]
+    public bool hasBeenUsed;
+
+    // Flaga zabezpieczająca przed wielokrotną inicjalizacją
+    private bool isInitialized;
 
     // -------------------------------------------------------------------------
     // Komponenty logiczne (tworzone przez new, nie MonoBehaviour)
     // -------------------------------------------------------------------------
 
-    public BuildingUpgradeComponent Upgrades      { get; private set; }
-    public BuildingWorkerComponent  Workers       { get; private set; }
-    public BuildingTerrainComponent Terrain       { get; private set; }
-    public BuildingFuelComponent    Fuel          { get; private set; }
+    public BuildingUpgradeComponent Upgrades { get; private set; }
+    public BuildingWorkerComponent Workers { get; private set; }
+    public BuildingTerrainComponent Terrain { get; private set; }
+    public BuildingFuelComponent Fuel { get; private set; }
     public BuildingProductionComponent Production { get; private set; }
 
     /// <summary>
-    /// Przekaźnik dla UI – zachowuje stare API bez ujawniania komponentu.
+    ///     Przekaźnik dla UI – zachowuje stare API bez ujawniania komponentu.
     /// </summary>
     public int currentTier => Upgrades?.CurrentTier ?? 0;
 
@@ -47,37 +53,37 @@ public class BuildingEntity : MonoBehaviour
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// Skrót dla wygody – zamiast BuildingRegistry.Instance.AllBuildings.
-    /// Jeśli rejestr nie istnieje zwraca pustą listę zamiast rzucać wyjątek.
+    ///     Skrót dla wygody – zamiast BuildingRegistry.Instance.AllBuildings.
+    ///     Jeśli rejestr nie istnieje zwraca pustą listę zamiast rzucać wyjątek.
     /// </summary>
     public static IReadOnlyList<BuildingEntity> AllBuildings =>
         BuildingRegistry.Instance != null
             ? BuildingRegistry.Instance.AllBuildings
-            : System.Array.Empty<BuildingEntity>();
+            : Array.Empty<BuildingEntity>();
     // -------------------------------------------------------------------------
     // Długość zmiany (obliczana, uwzględnia globalne modyfikatory)
     // -------------------------------------------------------------------------
 
     public float CurrentShiftLength { get; private set; }
 
-    // Flaga zabezpieczająca przed wielokrotną inicjalizacją
-    private bool isInitialized = false;
-    
-    [Header("Stan zwrotu kosztów")]
-    [Tooltip("Czy budynek został użyty? Jeśli nie = 100% zwrotu. Jeśli tak = 50% zwrotu.")]
-    public bool hasBeenUsed = false; 
+    protected virtual void Start()
+    {
+        // Inicjalizuj tylko jeśli jeszcze nie została wywołana
+        if (data != null && !isInitialized) Initialize(data);
+    }
 
     // =========================================================================
     // Cykl życia Unity
     // =========================================================================
 
-    protected virtual void OnEnable()  => BuildingRegistry.Instance?.Register(this);
-    protected virtual void OnDisable() => BuildingRegistry.Instance?.Unregister(this);
-
-    protected virtual void Start()
+    protected virtual void OnEnable()
     {
-        // Inicjalizuj tylko jeśli jeszcze nie została wywołana
-        if (data != null && !isInitialized) Initialize(data);
+        BuildingRegistry.Instance?.Register(this);
+    }
+
+    protected virtual void OnDisable()
+    {
+        BuildingRegistry.Instance?.Unregister(this);
     }
 
     protected virtual void OnDestroy()
@@ -113,8 +119,8 @@ public class BuildingEntity : MonoBehaviour
     }
 
     /// <summary>
-    /// Tworzy wszystkie komponenty logiczne i przekazuje im wzajemne zależności.
-    /// Kolejność ma znaczenie – Upgrades musi powstać pierwszy.
+    ///     Tworzy wszystkie komponenty logiczne i przekazuje im wzajemne zależności.
+    ///     Kolejność ma znaczenie – Upgrades musi powstać pierwszy.
     /// </summary>
     private void CreateComponents()
     {
@@ -126,8 +132,8 @@ public class BuildingEntity : MonoBehaviour
         Workers = new BuildingWorkerComponent(
             data,
             Upgrades,
-            getGlobalBonusShifts:  () => CityStatsManager.Instance?.globalBonusShifts ?? 0,
-            getGlobalBonusWorkers: () => CityStatsManager.Instance?.globalBonusWorkersPerShift ?? 0);
+            () => CityStatsManager.Instance?.globalBonusShifts ?? 0,
+            () => CityStatsManager.Instance?.globalBonusWorkersPerShift ?? 0);
 
         // 3. Terrain – potrzebuje tylko danych i pozycji
         Terrain = new BuildingTerrainComponent(data, transform, Upgrades);
@@ -136,9 +142,9 @@ public class BuildingEntity : MonoBehaviour
         Fuel = new BuildingFuelComponent(
             data,
             Upgrades,
-            getMaxShifts:          () => Workers.GetMaxShifts(),
-            getMaxWorkersPerShift: () => Workers.GetMaxWorkersPerShift(),
-            getCurrentShiftLength: () => CurrentShiftLength);
+            () => Workers.GetMaxShifts(),
+            () => Workers.GetMaxWorkersPerShift(),
+            () => CurrentShiftLength);
 
         // 5. Production – agreguje wszystkie pozostałe
         Production = new BuildingProductionComponent(
@@ -159,15 +165,15 @@ public class BuildingEntity : MonoBehaviour
     private void SubscribeToTime()
     {
         if (TimeCycleManager.Instance == null) return;
-        TimeCycleManager.Instance.OnHourTick    += HandleHourlyProduction;
-        TimeCycleManager.Instance.OnDayChanged  += HandleDayReset;
+        TimeCycleManager.Instance.OnHourTick += HandleHourlyProduction;
+        TimeCycleManager.Instance.OnDayChanged += HandleDayReset;
     }
 
     private void UnsubscribeFromTime()
     {
         if (TimeCycleManager.Instance == null) return;
-        TimeCycleManager.Instance.OnHourTick    -= HandleHourlyProduction;
-        TimeCycleManager.Instance.OnDayChanged  -= HandleDayReset;
+        TimeCycleManager.Instance.OnHourTick -= HandleHourlyProduction;
+        TimeCycleManager.Instance.OnDayChanged -= HandleDayReset;
     }
 
     // =========================================================================
@@ -176,10 +182,7 @@ public class BuildingEntity : MonoBehaviour
 
     protected virtual void HandleHourlyProduction(int currentHour)
     {
-        if (isBuildingActive) 
-        {
-            Production.ProcessHour(currentHour, shiftStartHour);
-        }
+        if (isBuildingActive) Production.ProcessHour(currentHour, shiftStartHour);
         RefreshInspectorUI();
     }
 
@@ -201,12 +204,13 @@ public class BuildingEntity : MonoBehaviour
     {
         if (!isBuildingActive) return false; // NOWE: Zablokowane przypisywanie
 
-        bool success = Workers.TryAddWorker(race);
-        if (success) 
+        var success = Workers.TryAddWorker(race);
+        if (success)
         {
             hasBeenUsed = true;
             RefreshInspectorUI();
         }
+
         return success;
     }
 
@@ -216,27 +220,60 @@ public class BuildingEntity : MonoBehaviour
         RefreshInspectorUI();
     }
 
-    public List<Citizen> GetAssignedCitizens()          => Workers.GetAssignedCitizens();
-    public int           GetWorkerCount(Race race)       => Workers.GetWorkerCount(race);
-    public int           getMaxShifts()                  => Workers.GetMaxShifts();
-    public int           getMaxWorkersPerShift()         => Workers.GetMaxWorkersPerShift();
+    public List<Citizen> GetAssignedCitizens()
+    {
+        return Workers.GetAssignedCitizens();
+    }
+
+    public int GetWorkerCount(Race race)
+    {
+        return Workers.GetWorkerCount(race);
+    }
+
+    public int getMaxShifts()
+    {
+        return Workers.GetMaxShifts();
+    }
+
+    public int getMaxWorkersPerShift()
+    {
+        return Workers.GetMaxWorkersPerShift();
+    }
 
     // --- Ulepszenia ---
 
-    public List<BuildingUpgradeSO> GetAvailableUpgrades() => Upgrades.GetAvailableUpgrades();
+    public List<BuildingUpgradeSO> GetAvailableUpgrades()
+    {
+        return Upgrades.GetAvailableUpgrades();
+    }
 
     public void ApplyUpgrade(BuildingUpgradeSO upgrade)
     {
-        Upgrades.ApplyUpgrade(upgrade);   // CalculateFinalShiftLength wywoła się przez OnUpgradeApplied
+        Upgrades.ApplyUpgrade(upgrade); // CalculateFinalShiftLength wywoła się przez OnUpgradeApplied
         RefreshInspectorUI();
     }
 
     // --- Produkcja i paliwo ---
 
-    public Dictionary<ResourceType, float> GetCurrentProduction()         => Production.GetCurrentProduction();
-    public Dictionary<ResourceType, float> GetCurrentUpkeep()             => Fuel.GetCurrentUpkeep();
-    public Dictionary<ResourceType, float> CalculateMaxShiftConsumption() => Fuel.CalculateMaxShiftConsumption();
-    public Dictionary<ResourceType, float> GetCurrentBudget()             => Fuel.GetCurrentBudget();
+    public Dictionary<ResourceType, float> GetCurrentProduction()
+    {
+        return Production.GetCurrentProduction();
+    }
+
+    public Dictionary<ResourceType, float> GetCurrentUpkeep()
+    {
+        return Fuel.GetCurrentUpkeep();
+    }
+
+    public Dictionary<ResourceType, float> CalculateMaxShiftConsumption()
+    {
+        return Fuel.CalculateMaxShiftConsumption();
+    }
+
+    public Dictionary<ResourceType, float> GetCurrentBudget()
+    {
+        return Fuel.GetCurrentBudget();
+    }
 
     // --- Teren ---
 
@@ -255,24 +292,25 @@ public class BuildingEntity : MonoBehaviour
         // 1. ZWROT KOSZTÓW BUDOWY
         if (data != null && data.constructionCost != null && ResourceManager.Instance != null)
         {
-            float refundMultiplier = hasBeenUsed ? 0.5f : 1.0f;
+            var refundMultiplier = hasBeenUsed ? 0.5f : 1.0f;
 
             foreach (var cost in data.constructionCost)
             {
-                float amountToRefund = cost.amount * refundMultiplier;
-                
+                var amountToRefund = cost.amount * refundMultiplier;
+
                 // Zabezpieczenie przed ułamkami (np. z 5 drewna odda 2 zamiast 2.5)
-                int intRefund = Mathf.FloorToInt(amountToRefund); 
-                
+                var intRefund = Mathf.FloorToInt(amountToRefund);
+
                 if (intRefund > 0)
                 {
                     ResourceManager.Instance.AddResource(cost.type, intRefund);
-                    
+
                     if (FloatingTextManager.Instance != null)
                         FloatingTextManager.Instance.ShowGain(transform.position, cost.type.ToString(), intRefund);
                 }
             }
         }
+
         if (Terrain != null) Terrain.DestroyArtificialFeatures();
 
         Destroy(gameObject);
@@ -284,7 +322,7 @@ public class BuildingEntity : MonoBehaviour
 
     private void CalculateFinalShiftLength()
     {
-        int globalMod = CityStatsManager.Instance?.globalShiftLengthModifier ?? 0;
+        var globalMod = CityStatsManager.Instance?.globalShiftLengthModifier ?? 0;
         CurrentShiftLength = Mathf.Max(1f, shiftLength + globalMod);
 
         // Synchronizacja z komponentem produkcji (może jeszcze nie istnieć przy pierwszym wywołaniu)
@@ -297,7 +335,7 @@ public class BuildingEntity : MonoBehaviour
         if (UIBuildingInspector.Instance != null)
             UIBuildingInspector.Instance.RefreshContent();
     }
-    
+
     public void ToggleBuildingActive()
     {
         isBuildingActive = !isBuildingActive;
@@ -309,13 +347,10 @@ public class BuildingEntity : MonoBehaviour
             var workers = Workers.GetAssignedCitizens();
             // Tworzymy kopię listy do iteracji
             foreach (var w in new List<Citizen>(workers))
-            {
                 if (w.workState == WorkState.Assigned)
-                {
                     Workers.RemoveSpecificWorker(w);
-                }
-            }
         }
+
         RefreshInspectorUI();
     }
 }

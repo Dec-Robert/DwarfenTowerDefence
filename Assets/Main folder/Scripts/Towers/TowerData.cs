@@ -1,29 +1,32 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewTower", menuName = "Game/Tower Data")]
 public class TowerData : BuildingData
 {
-    [Header("Statystyki Bojowe")]
-    public float baseRange;                 // Zasi�g ataku w jednostkach gry 2 zapewnia, �e wie�a mo�e atakowa� tylko na tym samym heksie, ka�de kolejne +3/4 jednostki zwi�ksza zasi�g o 1 heks
+    [Header("Statystyki Bojowe")] 
+    public float baseRange; // Zasig ataku w jednostkach gry.
     public float baseDamage;
-    public float fireRate;                  // Strza�y na sekund�
+    public float fireRate; // Strza�y na sekund�
 
-    public float criticalChancel;           // Warto�� procentowa, np. 20 = 20% daje 20% szansy na trafienie krytyczne
-    public float criticalDamageMultiplier;  // Warto�� procentowa, np. 2 = 200% obra�e� przy trafieniu krytycznym
-    public float armorPenetration;          // Warto�� procentowa, np. 20 = 20% penetracji pancerza
-    public float magicPenetration;          // Warto�� procentowa, np. 20 = 20% penetracji odporno�ci magicznej
+    public float criticalChancel; // Wartość procentowa, np. 20 = 20% daje 20% szansy na trafienie krytyczne
+    public float criticalDamageMultiplier; // Wartość procentowa, np. 2 = 200% obrażeń przy trafieniu krytycznym
+    public float armorPenetration; // Wartość procentowa, np. 20 = 20% penetracji pancerza
+    public float magicPenetration; // Wartość procentowa, np. 20 = 20% penetracji odporności magicznej
+    public DamageType damageType; // Typ obrażeń, np. Physical, Magic, True
+
+    [Header("Celowanie")] public bool canShootChunk;
+
+    [Tooltip("Domyślna lista priorytetów (do 3). Puste = domyślnie ClosestOnTrack")]
+    public List<TargetingMode> defaultTargetingPriorities;
 
 
-    private BuildingType type;              // Bazowy typ wiez, zawsze ustawiany na Defense w OnValidate()
-    public DamageType damageType;           // Typ obra�e�, np. Physical, Magic, True
-
-    //
-    [Header("Efekty Specjalne")]
-    // Lista efekt�w, np. [SlowEffect, PoisonEffect]
-    public List<TowerEffectSO> effects;
+    // Lista efektów, np. [SlowEffect, PoisonEffect]
+    [Header("Efekty Specjalne")] public List<TowerEffectSO> effects;
 
     public GameObject bulletPrefab;
+
+    private BuildingType type; // Bazowy typ wiez, zawsze ustawiany na Defense w OnValidate()
 
     // To wymusza typ Defense automatycznie w edytorze
     private void OnValidate()

@@ -52,6 +52,8 @@ public class ChunkWallManager : MonoBehaviour
     [Header("── Ustawienia ───────────────────────────────")]
     [Tooltip("Wysokość (Y) na jakiej spawniemy mury i bramy")]
     public float wallHeightOffset = 0.1f;
+    
+    public bool debug = false;
 
     // =========================================================================
     // STAN WEWNĘTRZNY
@@ -90,6 +92,7 @@ public class ChunkWallManager : MonoBehaviour
 
     private void Start()
     {
+
         if (expansionManager != null)
         {
             expansionManager.OnMapInitialized          += HandleMapInitialized;
@@ -141,6 +144,8 @@ public class ChunkWallManager : MonoBehaviour
         // Zbuduj reverse lookup: globalAxialHex → chunkCoord
         BuildGlobalHexLookup();
 
+        if(debug) SetMode(WallSystemMode.Solution2_FrontLine);
+        
         // Postaw mury wg aktualnego trybu
         RebuildAll();
     }
@@ -180,17 +185,33 @@ public class ChunkWallManager : MonoBehaviour
     }
 
     // =========================================================================
-    // SOLUTION 1 — TYLKO CHUNKI STARTOWE
+    // SOLUTION 1 — TYLKO BAZA STARTOWA
     // =========================================================================
 
     private void BuildSolution1()
     {
+        // Otaczamy murem tylko startowe chunki (0,0 i ekspansje meta)
         foreach (var chunk in baseChunks)
+        {
             PlaceOuterWallsForChunk(chunk, excludeNeighborChunks: baseChunks);
+        }
+
+        // Bramy na wyjściu z bazy startowej
+        foreach (var kvp in expansionManager.roadDependencies)
+        {
+            Vector2Int successor = kvp.Key;   
+            Vector2Int predecessor = kvp.Value; 
+
+            // Jeśli droga wychodzi z bazy startowej na zewnątrz
+            if (baseChunks.Contains(predecessor) && !baseChunks.Contains(successor))
+            {
+                PlaceGateOnBoundary(predecessor, successor);
+            }
+        }
     }
 
     // =========================================================================
-    // SOLUTION 2 — ŻYWA LINIA FRONTU
+    // SOLUTION 2 — DYNAMICZNA LINIA FRONTU
     // =========================================================================
 
     private void BuildSolution2()
@@ -201,31 +222,31 @@ public class ChunkWallManager : MonoBehaviour
         var roadChunks     = GetRoadChunks();
         var frontierChunks = FindFrontierChunks(fullyUnlocked, roadChunks);
 
-        // 1. Mury zewnętrzne wokół całego miasta
-        foreach (var chunk in fullyUnlocked)
-            PlaceOuterWallsForChunk(chunk, excludeNeighborChunks: fullyUnlocked);
-
-        // 2. Mury korytarzowe wzdłuż dróg (tylko nie-frontier chunki drogowe)
-        foreach (var chunk in roadChunks)
+        // Zbiór chunków, które BĘDĄ otoczone murem (czyli FullyUnlocked BEZ Frontierów)
+        var walledCityChunks = new HashSet<Vector2Int>(fullyUnlocked);
+        foreach (var f in frontierChunks)
         {
-            if (!fullyUnlocked.Contains(chunk)) continue;
-            if (frontierChunks.Contains(chunk))  continue;  // frontier — brak korytarza
-            PlaceCorridorWallsForChunk(chunk);
+            walledCityChunks.Remove(f);
         }
 
-        // 3. Bramy na granicach frontier → predecessor
+        // 1. Mury zewnętrzne wokół całego miasta (ignorujemy Frontiery)
+        foreach (var chunk in walledCityChunks)
+        {
+            PlaceOuterWallsForChunk(chunk, excludeNeighborChunks: walledCityChunks);
+        }
+
+        // 2. Bramy na granicach walledCityChunks -> frontierChunks
         foreach (var frontier in frontierChunks)
         {
             if (!expansionManager.roadDependencies.TryGetValue(frontier, out var predecessor))
                 continue;
 
-            // Sprawdź czy predecessor jest FullyUnlocked (wymagane żeby brama miała sens)
-            if (!fullyUnlocked.Contains(predecessor)) continue;
+            // Sprawdź czy poprzednik należy do otoczonego miasta
+            if (!walledCityChunks.Contains(predecessor)) continue;
 
-            PlaceGateBetween(predecessor, frontier);
+            PlaceGateOnBoundary(predecessor, frontier);
         }
     }
-
     // =========================================================================
     // MURY ZEWNĘTRZNE
     // =========================================================================
@@ -235,15 +256,24 @@ public class ChunkWallManager : MonoBehaviour
     /// jest w chunku SPOZA excludeSet (lub poza mapą) → postaw mur zewnętrzny
     /// na midpoincie krawędzi między tym hexem a sąsiadem.
     /// </summary>
+    /// <summary>
+    /// Dla każdego hexa w danym chunku, jeśli przynajmniej jeden jego sąsiad
+    /// jest w chunku SPOZA excludeSet (lub poza mapą) → postaw mur zewnętrzny
+    /// na midpoincie krawędzi między tym hexem a sąsiadem.
+    /// Z wyjątkiem ścieżek prowadzących do Frontiera (tam stanie brama).
+    /// </summary>
     private void PlaceOuterWallsForChunk(Vector2Int chunkCoord, HashSet<Vector2Int> excludeNeighborChunks)
     {
         if (!mapGenerator.worldData.ContainsKey(chunkCoord)) return;
 
-        foreach (var kvp in mapGenerator.worldData[chunkCoord])
+        var chunkData = mapGenerator.worldData[chunkCoord];
+
+        foreach (var kvp in chunkData)
         {
             Vector2Int localCoord = kvp.Key;
             Vector2Int globalCoord = LocalToGlobal(chunkCoord, localCoord);
             Vector3    hexWorldPos = GetHexWorldPos(chunkCoord, localCoord);
+            bool       isPath     = kvp.Value.isPath; // Sprawdzamy czy TEN heks to droga
 
             // Sprawdź 6 sąsiadów w globalnej siatce
             foreach (var neighborGlobal in HexGridMath.GetNeighbors(globalCoord))
@@ -255,8 +285,22 @@ public class ChunkWallManager : MonoBehaviour
                 // Jeśli sąsiad jest w tym samym chunku — skip
                 if (neighborInMap && neighborChunk == chunkCoord) continue;
 
-                // Jeśli sąsiad jest w chunku należącym do excludeSet — skip (wspólna granica)
+                // Jeśli sąsiad jest w chunku należącym do otoczonego miasta — skip (wspólna bezpieczna granica)
                 if (neighborInMap && excludeNeighborChunks.Contains(neighborChunk)) continue;
+
+                // --- NOWE: ZROBIENIE DZIURY NA BRAMĘ ---
+                if (isPath && neighborInMap)
+                {
+                    Vector2Int neighborLocal = GlobalToLocal(neighborChunk, neighborGlobal);
+                    if (mapGenerator.worldData.TryGetValue(neighborChunk, out var neighborData))
+                    {
+                        if (neighborData.TryGetValue(neighborLocal, out var neighborCell) && neighborCell.isPath)
+                        {
+                            continue; // Zostaw dziurę!
+                        }
+                    }
+                }
+                // ----------------------------------------
 
                 // Miejsce muru = midpoint między tym hexem a sąsiadem
                 Vector3 neighborWorldPos = neighborInMap
@@ -313,7 +357,78 @@ public class ChunkWallManager : MonoBehaviour
             }
         }
     }
+// =========================================================================
+    // BRAMA (NA KRAWĘDZI HEKSÓW)
+    // =========================================================================
 
+    /// <summary>
+    /// Szuka heksów drogi na granicy dwóch chunków i stawia bramę 
+    /// dokładnie na krawędzi pomiędzy nimi (jak mur zewnętrzny).
+    /// </summary>
+    private void PlaceGateOnBoundary(Vector2Int insideChunk, Vector2Int outsideChunk)
+    {
+        var key = insideChunk.x < outsideChunk.x || (insideChunk.x == outsideChunk.x && insideChunk.y < outsideChunk.y)
+            ? (insideChunk, outsideChunk) : (outsideChunk, insideChunk);
+
+        if (activeGates.ContainsKey(key)) return;
+        if (gatePrefab == null) return;
+
+        if (!mapGenerator.worldData.ContainsKey(insideChunk)) return;
+
+        var insideData = mapGenerator.worldData[insideChunk];
+
+        foreach (var kvp in insideData)
+        {
+            // Szukamy tylko heksów, które są ścieżką
+            if (!kvp.Value.isPath) continue;
+
+            Vector2Int localCoord = kvp.Key;
+            Vector2Int globalCoord = LocalToGlobal(insideChunk, localCoord);
+
+            // Sprawdzamy sąsiadów tego heksa w poszukiwaniu heksa z outsideChunk, który też jest ścieżką
+            foreach (var neighborGlobal in HexGridMath.GetNeighbors(globalCoord))
+            {
+                if (!globalHexToChunk.TryGetValue(neighborGlobal, out var neighborChunk)) continue;
+                if (neighborChunk != outsideChunk) continue; // To nie ten chunk
+
+                Vector2Int neighborLocal = GlobalToLocal(outsideChunk, neighborGlobal);
+                
+                if (mapGenerator.worldData.TryGetValue(outsideChunk, out var outsideData))
+                {
+                    if (outsideData.TryGetValue(neighborLocal, out var neighborCell) && neighborCell.isPath)
+                    {
+                        // ZNALEZIONO GRANICĘ DROGI!
+                        Vector3 insideHexPos = GetHexWorldPos(insideChunk, localCoord);
+                        Vector3 outsideHexPos = GetHexWorldPos(outsideChunk, neighborLocal);
+
+                        // Pozycja = idealny środek między dwoma heksami (krawędź)
+                        Vector3 gatePos = (insideHexPos + outsideHexPos) * 0.5f;
+                        gatePos.y = wallHeightOffset;
+
+                        // Rotacja = prostopadle do wektora łączącego heksy
+                        Quaternion gateRot = GetEdgeRotation(insideHexPos, outsideHexPos);
+
+                        var gateObj = Instantiate(gatePrefab, gatePos, gateRot, transform);
+                        var gateEntity = gateObj.GetComponent<GateEntity>();
+
+                        if (gateEntity != null)
+                        {
+                            gateEntity.chunkA = insideChunk;
+                            gateEntity.chunkB = outsideChunk;
+                            activeGates[key] = gateEntity;
+                        }
+                        else
+                        {
+                            activeWalls.Add(gateObj); // Fallback
+                        }
+
+                        Debug.Log($"[WallSystem] Brama postawiona na krawędzi drogi między {insideChunk} a {outsideChunk}");
+                        return; // Brama postawiona, kończymy szukanie dla tej pary chunków
+                    }
+                }
+            }
+        }
+    }
     // =========================================================================
     // BRAMA
     // =========================================================================

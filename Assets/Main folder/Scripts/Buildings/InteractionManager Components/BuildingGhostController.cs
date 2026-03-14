@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// Zarządza wizualnym "widmem" budynku podczas trybu stawiania.
-/// Odpowiada za tworzenie, przesuwanie, zmianę materiału i usuwanie ghost-prefabu.
+///     Zarządza wizualnym "widmem" budynku podczas trybu stawiania.
+///     Odpowiada za tworzenie, przesuwanie, zmianę materiału i usuwanie ghost-prefabu.
 /// </summary>
 public class BuildingGhostController
 {
-    private readonly Material ghostValidMat;
     private readonly Material ghostInvalidMat;
+    private readonly Material ghostValidMat;
     private readonly GameObject rangeVisualizerPrefab;
 
     private GameObject currentGhost;
@@ -18,10 +18,12 @@ public class BuildingGhostController
         Material ghostInvalidMat,
         GameObject rangeVisualizerPrefab)
     {
-        this.ghostValidMat         = ghostValidMat;
-        this.ghostInvalidMat       = ghostInvalidMat;
+        this.ghostValidMat = ghostValidMat;
+        this.ghostInvalidMat = ghostInvalidMat;
         this.rangeVisualizerPrefab = rangeVisualizerPrefab;
     }
+
+    public bool IsActive => currentGhost != null;
 
     // =========================================================================
     // API Publiczne
@@ -31,7 +33,7 @@ public class BuildingGhostController
     {
         if (data.prefab == null) return;
 
-        currentGhost      = Object.Instantiate(data.prefab);
+        currentGhost = Object.Instantiate(data.prefab);
         currentGhost.name = "Placement_Ghost";
 
         // Wyłączamy logikę i kolizje żeby widmo było pasywne
@@ -46,7 +48,7 @@ public class BuildingGhostController
             currentRangePreview = Object.Instantiate(rangeVisualizerPrefab, currentGhost.transform);
             currentRangePreview.transform.localPosition = new Vector3(0, 0.1f, 0);
 
-            float scale = towerData.baseRange * 2f;
+            var scale = towerData.baseRange * 2f;
             currentRangePreview.transform.localScale = new Vector3(scale, 1, scale);
         }
     }
@@ -66,13 +68,11 @@ public class BuildingGhostController
 
     public void Clear()
     {
-        if (currentGhost       != null) Object.Destroy(currentGhost);
+        if (currentGhost != null) Object.Destroy(currentGhost);
         if (currentRangePreview != null) Object.Destroy(currentRangePreview);
-        currentGhost        = null;
+        currentGhost = null;
         currentRangePreview = null;
     }
-
-    public bool IsActive => currentGhost != null;
 
     // =========================================================================
     // Prywatne
@@ -80,7 +80,7 @@ public class BuildingGhostController
 
     private void ApplyMaterial(bool isValid)
     {
-        Material mat = isValid ? ghostValidMat : ghostInvalidMat;
+        var mat = isValid ? ghostValidMat : ghostInvalidMat;
 
         foreach (var r in currentGhost.GetComponentsInChildren<Renderer>())
         {

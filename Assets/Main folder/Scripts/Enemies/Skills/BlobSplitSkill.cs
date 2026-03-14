@@ -1,78 +1,54 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class BlobSplitSkill : EnemySkill
 {
-    [Header("Konfiguracja")]
-    public int splitCharges = 1; // Ile razy ta linia mo�e si� podzieli� (Blob -> 2 Ma�e -> koniec)
-    public float splitThreshold = 0.5f; // 50% HP
-    public float childHpPercent = 0.7f; // 70% HP rodzica
-    public float scaleReduction = 0.7f; // Dzieci są mniejsze
+    [Header("Konfiguracja Splitu")]
+    public int amountOfChildren = 2;
+    [Tooltip("Procent max HP oryginalnego wroga, jaki otrzymają małe bloby (np. 0.3 = 30%)")]
+    public float childHpPercent = 0.3f; 
+    public float scaleReduction = 0.6f;
 
+    // Kiedy zadziała? np. po śmierci, ale możemy odpalić to przed nią
     private bool hasSplit = false;
 
-    public override void OnDamageTaken(float amount, float currentHp)
+    public override void OnDeath()
     {
-        if (splitCharges <= 0 || hasSplit) return;
+        if (hasSplit) return; // Zabezpieczenie przed pętlą
 
-        float maxHp = stats.GetMaxHealth(); // Potrzebujemy metody w stats
-
-        if (currentHp <= maxHp * splitThreshold)
-        {
-            Split();
-        }
-    }
-
-    void Split()
-    {
         hasSplit = true;
-        Debug.Log($"{name} dzieli si�!");
+        Debug.Log($"<color=orange>{name} dzieli się na {amountOfChildren} małych wrogów!</color>");
 
-        // Spawnowanie 2 dzieci
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < amountOfChildren; i++)
         {
-            // POPRAWKA: Klonujemy stats.gameObject (CA�EGO WROGA), a nie gameObject (tylko skrypt skilla)
             GameObject childObj = Instantiate(stats.gameObject, transform.position, transform.rotation);
 
-            // Konfiguracja Walkera
+            // Kopiujemy postęp na ścieżce, by dzieci nie szły od początku mapy
             EnemyWalker childWalker = childObj.GetComponent<EnemyWalker>();
-            // Pobieramy walkera rodzica (z tego skryptu mamy do niego referencj�)
-
             if (walker != null && childWalker != null)
             {
                 childWalker.CopyProgressFrom(walker);
             }
 
-            // Konfiguracja Statystyk
+            // Ustawiamy nowe, małe HP
             EnemyStats childStats = childObj.GetComponent<EnemyStats>();
-
             if (childStats != null)
             {
                 float newMaxHp = stats.GetMaxHealth() * childHpPercent;
                 childStats.SetHealthManually(newMaxHp);
             }
 
-            // Pomniejszamy
             childObj.transform.localScale *= scaleReduction;
 
-            // Przesuwamy lekko
-            childObj.transform.position += new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
+            // Przesuwamy lekko w bok, by się nie zablokowały w sobie
+            Vector2 randCircle = Random.insideUnitCircle * 2f;
+            childObj.transform.position += new Vector3(randCircle.x, 0, randCircle.y);
 
-            // Zmniejszamy �adunek podzia�u u dziecka
-            // Szukamy komponentu na dziecku (bo skill jest dzieckiem wroga)
+            // Odbieramy dziecku ten skill, żeby nie dzielił się w nieskończoność (opcjonalnie)
             BlobSplitSkill childSkill = childObj.GetComponentInChildren<BlobSplitSkill>();
             if (childSkill != null)
             {
-                childSkill.splitCharges = this.splitCharges - 1;
-                childSkill.hasSplit = false;
-
-                // WA�NE: Musimy te� zaktualizowa� referencje w nowym skillu, 
-                // bo Instantiate skopiowa� stare referencje (wskazuj�ce na martwego rodzica)
-                childSkill.Initialize(childStats);
+                Destroy(childSkill); // Dzieci nie będą się już dzielić!
             }
         }
-
-        // Niszczymy rodzica (ca�ego wroga)
-        Destroy(stats.gameObject);
     }
 }

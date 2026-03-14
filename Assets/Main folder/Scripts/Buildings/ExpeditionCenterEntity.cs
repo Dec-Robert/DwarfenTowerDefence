@@ -1,38 +1,57 @@
 using UnityEngine;
 
 /// <summary>
-/// Centrum Ekspedycyjne – specjalny budynek który:
-///   - Rozszerza BuildingEntity (pełna integracja z inspektorem)
-///   - Blokuje na stałe 1 elfa z populacji (WorkState.Assigned)
-///   - Wysyła misje zwiadowcze (jedną na raz)
-///   - Rejestruje się w MapExpansionManager
+///     Centrum Ekspedycyjne – specjalny budynek który:
+///     - Rozszerza BuildingEntity (pełna integracja z inspektorem)
+///     - Blokuje na stałe 1 elfa z populacji (WorkState.Assigned)
+///     - Wysyła misje zwiadowcze (jedną na raz)
+///     - Rejestruje się w MapExpansionManager
 /// </summary>
 public class ExpeditionCenterEntity : BuildingEntity
 {
     [Header("── Konfiguracja Ekspedycji ────────────────")]
     public int reservedElves = 1;
 
-    [Header("── Stan (Podgląd) ───────────────────────")]
-    [SerializeField] private bool elfIsAssigned = false;
-    [SerializeField] private bool missionActive = false;
-    [SerializeField] private ScoutingMission currentMission;
+    [Header("── Stan (Podgląd) ───────────────────────")] [SerializeField]
+    private bool elfIsAssigned;
 
-    private Citizen      reservedElf      = null;
-    private MapExpansionManager expansionManager = null;
+    [SerializeField] private bool missionActive;
+    [SerializeField] private ScoutingMission currentMission;
+    private MapExpansionManager expansionManager;
+
+    private Citizen reservedElf;
+
+    // =========================================================================
+    // MISJE
+    // =========================================================================
+
+    public bool CanSendMission => elfIsAssigned && !missionActive;
+
+    // ─── Gettery publiczne ────────────────────────────────────────────────────
+    public bool HasElf => elfIsAssigned;
+    public bool IsBusy => missionActive;
+    public ScoutingMission ActiveMission => currentMission;
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        ReleaseElf();
+        expansionManager?.UnregisterExpeditionCenter(this);
+    }
 
     // =========================================================================
     // INICJALIZACJA
     // =========================================================================
 
     /// <summary>
-    /// Wywoływana przez BuildingPlacer po postawieniu budynku.
-    /// Najpierw inicjalizuje bazowy BuildingEntity, następnie logikę ekspedycji.
+    ///     Wywoływana przez BuildingPlacer po postawieniu budynku.
+    ///     Najpierw inicjalizuje bazowy BuildingEntity, następnie logikę ekspedycji.
     /// </summary>
     public override void Initialize(BuildingData buildingData)
     {
         base.Initialize(buildingData);
 
-        expansionManager = Object.FindObjectOfType<MapExpansionManager>();
+        expansionManager = FindObjectOfType<MapExpansionManager>();
 
         if (expansionManager == null)
         {
@@ -44,13 +63,6 @@ public class ExpeditionCenterEntity : BuildingEntity
         expansionManager.RegisterExpeditionCenter(this);
     }
 
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-        ReleaseElf();
-        expansionManager?.UnregisterExpeditionCenter(this);
-    }
-
     // =========================================================================
     // ZARZĄDZANIE ELFEM
     // =========================================================================
@@ -59,8 +71,7 @@ public class ExpeditionCenterEntity : BuildingEntity
     {
         if (CitizenManager.Instance == null) return;
 
-        reservedElf = CitizenManager.Instance.citizens.Find(
-            c => c.race == Race.Elves && c.workState == WorkState.Idle);
+        reservedElf = CitizenManager.Instance.citizens.Find(c => c.race == Race.Elves && c.workState == WorkState.Idle);
 
         if (reservedElf != null)
         {
@@ -83,12 +94,6 @@ public class ExpeditionCenterEntity : BuildingEntity
         elfIsAssigned = false;
     }
 
-    // =========================================================================
-    // MISJE
-    // =========================================================================
-
-    public bool CanSendMission => elfIsAssigned && !missionActive;
-
     /// <summary>Wywołuj tylko przez MapExpansionManager.</summary>
     public bool StartMission(ScoutingMission mission)
     {
@@ -97,8 +102,9 @@ public class ExpeditionCenterEntity : BuildingEntity
             Debug.LogWarning("[ExpCenter] Centrum zajęte lub brak elfa.");
             return false;
         }
+
         currentMission = mission;
-        missionActive  = true;
+        missionActive = true;
         Debug.Log($"[ExpCenter] Wysłano: {mission}");
         return true;
     }
@@ -106,12 +112,7 @@ public class ExpeditionCenterEntity : BuildingEntity
     public void OnMissionComplete(ScoutingMission mission)
     {
         currentMission = null;
-        missionActive  = false;
+        missionActive = false;
         Debug.Log($"[ExpCenter] Misja zakończona: chunk {mission.targetChunk} odkryty.");
     }
-
-    // ─── Gettery publiczne ────────────────────────────────────────────────────
-    public bool            HasElf        => elfIsAssigned;
-    public bool            IsBusy        => missionActive;
-    public ScoutingMission ActiveMission => currentMission;
 }

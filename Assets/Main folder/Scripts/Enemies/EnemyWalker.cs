@@ -65,4 +65,9 @@ public class EnemyWalker : MonoBehaviour
         transform.position = other.transform.position;
         isInitialized = true;
     }
+
+    public int GetPathProgress()
+    {
+        return targetIndex;
+    }
 }

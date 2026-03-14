@@ -83,14 +83,15 @@ public class EnemyStats : MonoBehaviour
     // OTRZYMYWANIE OBRAŻEŃ
     // =========================================================================
 
-    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical,
-        float criticalMultiplier)
+    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical, float criticalMultiplier, TowerEntity sourceTower = null, bool isAoE = false)
     {
         foreach (var skill in skills)
         {
-            rawDamage = skill.OnBeforeDamageCalculation(rawDamage, type);
-            if (rawDamage <= 0) return;
+            // Przekazujemy pełne dane strzału do skilli (tarczy, proximity defence)
+            rawDamage = skill.OnBeforeDamageCalculation(rawDamage, type, sourceTower, isAoE);
+            if (rawDamage <= 0) return; // Skill zanegował obrażenia w 100%
         }
+        
 
         float dodgeRoll = Random.Range(0f, 100f);
         float finalDamage = CalculateFinalDamage(type, rawDamage, armourPiercing, magicPiercing, isCritical,
@@ -213,5 +214,10 @@ public class EnemyStats : MonoBehaviour
                 Color.grey, 0.4f);
 
         Debug.Log($"[EnemySurvivor] {gameObject.name} otrzymał kary za przeżycie do dnia.");
+    }
+
+    public float GetCurrentHealth()
+    {
+        return currentHealth;
     }
 }

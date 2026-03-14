@@ -28,9 +28,11 @@ public class GroundProjectile : ProjectileBase
         float _criticalMultiplier, 
         float _armorPen = 0f,   
         float _magicPen = 0f,   
-        float _critChance = 0f)
+        float _critChance = 0f,
+        TowerEntity _sourceTower = null)
     {
-        base.Initialize(_damage, _type, _effects, _isCritical, _criticalMultiplier, _critChance);
+        base.Initialize(_damage, _type, _effects, _isCritical, _criticalMultiplier, _armorPen, _magicPen, _critChance,
+            _sourceTower);
         zoneCritChance = _critChance;
     }
     

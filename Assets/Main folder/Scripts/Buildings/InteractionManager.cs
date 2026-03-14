@@ -3,48 +3,45 @@ using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Cienki koordynator interakcji gracza z mapą.
-/// Odpowiada wyłącznie za:
-///   - obsługę inputu (kliknięcia, PPM, Shift),
-///   - przełączanie między trybem budowania i inspekcji,
-///   - zarządzanie selekcją wieży (wskaźnik zasięgu).
-///
-/// Cała logika wizualna i budowlana żyje w:
-///   BuildingGhostController, BuildingPlacer, HexHighlighter.
+///     Cienki koordynator interakcji gracza z mapą.
+///     Odpowiada wyłącznie za:
+///     - obsługę inputu (kliknięcia, PPM, Shift),
+///     - przełączanie między trybem budowania i inspekcji,
+///     - zarządzanie selekcją wieży (wskaźnik zasięgu).
+///     Cała logika wizualna i budowlana żyje w:
+///     BuildingGhostController, BuildingPlacer, HexHighlighter.
 /// </summary>
 public class InteractionManager : MonoBehaviour
 {
-    public static InteractionManager Instance { get; private set; }
+    [Header("Referencje")] public HexMapGenerator mapGenerator;
 
-    [Header("Referencje")]
-    public HexMapGenerator       mapGenerator;
-    public MapExpansionManager   expansionManager;
-    public UIDocument            uiDocument;
-    public LayerMask             hexLayer;
+    public MapExpansionManager expansionManager;
+    public UIDocument uiDocument;
+    public LayerMask hexLayer;
 
-    [Header("Widmo")]
-    public Material    ghostValidMat;
-    public Material    ghostInvalidMat;
-    public GameObject  rangeVisualizerPrefab;
+    [Header("Widmo")] public Material ghostValidMat;
 
-    [Header("Podświetlenie zasobów")]
-    public Material resourceHighlightMat;
+    public Material ghostInvalidMat;
+    public GameObject rangeVisualizerPrefab;
 
-    // -------------------------------------------------------------------------
-    // Stan
-    // -------------------------------------------------------------------------
-
-    public BuildingData SelectedBuilding { get; private set; }
-
-    private TowerController lastSelectedTower;
+    [Header("Podświetlenie zasobów")] public Material resourceHighlightMat;
 
     // -------------------------------------------------------------------------
     // Komponenty logiczne
     // -------------------------------------------------------------------------
 
     private BuildingGhostController ghost;
-    private BuildingPlacer          placer;
-    private HexHighlighter          highlighter;
+    private HexHighlighter highlighter;
+
+    private TowerController lastSelectedTower;
+    private BuildingPlacer placer;
+    public static InteractionManager Instance { get; private set; }
+
+    // -------------------------------------------------------------------------
+    // Stan
+    // -------------------------------------------------------------------------
+
+    public BuildingData SelectedBuilding { get; private set; }
 
     // =========================================================================
     // Cykl życia
@@ -57,8 +54,8 @@ public class InteractionManager : MonoBehaviour
 
     private void Start()
     {
-        ghost       = new BuildingGhostController(ghostValidMat, ghostInvalidMat, rangeVisualizerPrefab);
-        placer      = new BuildingPlacer(mapGenerator);
+        ghost = new BuildingGhostController(ghostValidMat, ghostInvalidMat, rangeVisualizerPrefab);
+        placer = new BuildingPlacer(mapGenerator);
         highlighter = new HexHighlighter(mapGenerator, resourceHighlightMat);
     }
 
@@ -106,19 +103,19 @@ public class InteractionManager : MonoBehaviour
 
     private void UpdateGhostPosition()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, hexLayer))
+        if (!Physics.Raycast(ray, out var hit, 1000f, hexLayer))
         {
             ghost.Hide();
             highlighter.Clear();
             return;
         }
 
-        HexCell cell = hit.collider.GetComponentInParent<HexCell>();
+        var cell = hit.collider.GetComponentInParent<HexCell>();
         if (cell == null) return;
 
-        bool isValid = placer.IsPlacementValid(cell, SelectedBuilding);
+        var isValid = placer.IsPlacementValid(cell, SelectedBuilding);
         ghost.MoveTo(cell.transform.position, isValid);
         highlighter.HighlightFor(SelectedBuilding, cell.chunkCoord, cell.localCoord);
     }
@@ -129,10 +126,10 @@ public class InteractionManager : MonoBehaviour
 
     private void HandleClick()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, hexLayer)) return;
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (!Physics.Raycast(ray, out var hit, 1000f, hexLayer)) return;
 
-        HexCell clickedCell = hit.collider.GetComponentInParent<HexCell>();
+        var clickedCell = hit.collider.GetComponentInParent<HexCell>();
         if (clickedCell == null) return;
 
         if (SelectedBuilding != null)
@@ -145,8 +142,10 @@ public class InteractionManager : MonoBehaviour
     {
         DeselectAll();
 
-        bool success = placer.TryBuild(cell, SelectedBuilding);
+        var success = placer.TryBuild(cell, SelectedBuilding);
 
+        if (success) TelemetryManager.Instance.addBuilding(SelectedBuilding.buildingName);
+        
         if (success && !Input.GetKey(KeyCode.LeftShift))
             CancelBuilding();
         else if (success)
@@ -178,7 +177,6 @@ public class InteractionManager : MonoBehaviour
 
         // Podświetl sąsiednie zasoby
         highlighter.HighlightFor(building.data, cell.chunkCoord, cell.localCoord, building);
-
     }
 
     // =========================================================================
@@ -203,9 +201,9 @@ public class InteractionManager : MonoBehaviour
     private bool IsPointerOverUI()
     {
         if (uiDocument == null) return false;
-        Vector2 mousePos  = Input.mousePosition;
-        Vector2 panelPos  = new Vector2(mousePos.x, Screen.height - mousePos.y);
-        VisualElement hit = uiDocument.rootVisualElement.panel.Pick(panelPos);
+        Vector2 mousePos = Input.mousePosition;
+        var panelPos = new Vector2(mousePos.x, Screen.height - mousePos.y);
+        var hit = uiDocument.rootVisualElement.panel.Pick(panelPos);
         return hit != null && hit != uiDocument.rootVisualElement;
     }
 }

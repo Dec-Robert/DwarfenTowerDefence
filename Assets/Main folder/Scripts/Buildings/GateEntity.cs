@@ -1,20 +1,18 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
+using UnityEditor;
+using UnityEngine;
 
 /// <summary>
-/// Brama graniczna między chunkami — pierwsza linia obrony przed falami wrogów.
-///
-/// ZACHOWANIE:
-///   Normal  → ginie natychmiastowo (true dmg = maxHP), brama traci 1 HP
-///   Elite   → brama traci hpCostPerElite HP, elita traci 20% maxHP (true dmg)
-///   Boss    → brama traci hpCostPerBoss HP,  boss traci 5%  maxHP (true dmg)
-///
-/// Po zniszczeniu brama nie blokuje wrogów (kolizja wyłączona).
-/// Gracz może ją odbudować w fazie dziennej za surowce (rosnący koszt).
-///
-/// SETUP PREFABU:
-///   - Collider ustawiony jako Trigger, obejmujący szerokość ścieżki
-///   - Enemy prefab musi mieć Collider (niekoniecznie Trigger) i Rigidbody (kinematic OK)
+///     Brama graniczna między chunkami — pierwsza linia obrony przed falami wrogów.
+///     ZACHOWANIE:
+///     Normal  → ginie natychmiastowo (true dmg = maxHP), brama traci 1 HP
+///     Elite   → brama traci hpCostPerElite HP, elita traci 20% maxHP (true dmg)
+///     Boss    → brama traci hpCostPerBoss HP,  boss traci 5%  maxHP (true dmg)
+///     Po zniszczeniu brama nie blokuje wrogów (kolizja wyłączona).
+///     Gracz może ją odbudować w fazie dziennej za surowce (rosnący koszt).
+///     SETUP PREFABU:
+///     - Collider ustawiony jako Trigger, obejmujący szerokość ścieżki
+///     - Enemy prefab musi mieć Collider (niekoniecznie Trigger) i Rigidbody (kinematic OK)
 /// </summary>
 public class GateEntity : MonoBehaviour
 {
@@ -22,47 +20,45 @@ public class GateEntity : MonoBehaviour
     // KONFIGURACJA
     // =========================================================================
 
-    [Header("HP Bramy")]
-    [Tooltip("Maksymalne HP bramy (resetuje się przy odbudowie)")]
+    [Header("HP Bramy")] [Tooltip("Maksymalne HP bramy (resetuje się przy odbudowie)")]
     public float maxHP = 5f;
 
     [Tooltip("Ile HP traci brama przy każdym uderzeniu Elity")]
     public float hpCostPerElite = 2f;
 
     [Tooltip("Ile HP traci brama przy każdym uderzeniu Bossa")]
-    public float hpCostPerBoss  = 1f;
+    public float hpCostPerBoss = 1f;
 
-    [Header("Koszt Odbudowy")]
-    [Tooltip("Bazowy koszt odbudowy w złocie")]
+    [Header("Koszt Odbudowy")] [Tooltip("Bazowy koszt odbudowy w złocie")]
     public float baseRebuildCostGold = 50f;
 
     [Tooltip("O ile złota rośnie koszt za każdą falę")]
     public float rebuildCostGrowthPerWave = 10f;
 
-    [Header("Wizualizacja")]
-    [Tooltip("Obiekt pokazywany gdy brama jest aktywna")]
+    [Header("Wizualizacja")] [Tooltip("Obiekt pokazywany gdy brama jest aktywna")]
     public GameObject activeVisual;
 
     [Tooltip("Obiekt pokazywany gdy brama jest zniszczona (ruina)")]
     public GameObject ruinedVisual;
 
+    /// <summary>Chunki między którymi stoi ta brama (A = bliżej bazy, B = frontier).</summary>
+    [HideInInspector] public Vector2Int chunkA;
+
+    [HideInInspector] public Vector2Int chunkB;
+
     // =========================================================================
     // STAN
     // =========================================================================
 
-    private float currentHP;
-    private bool  isDestroyed;
-
-    /// <summary>Chunki między którymi stoi ta brama (A = bliżej bazy, B = frontier).</summary>
-    [HideInInspector] public Vector2Int chunkA;
-    [HideInInspector] public Vector2Int chunkB;
-
     // =========================================================================
-    // EVENTY
+    // STAN PUBLICZNY
     // =========================================================================
 
-    public event Action<GateEntity> OnGateDestroyed;
-    public event Action<GateEntity> OnGateRebuilt;
+    public bool IsDestroyed { get; private set; }
+
+    public float CurrentHP { get; private set; }
+
+    public float MaxHP => maxHP;
 
     // =========================================================================
     // UNITY
@@ -70,20 +66,43 @@ public class GateEntity : MonoBehaviour
 
     private void Awake()
     {
-        currentHP   = maxHP;
-        isDestroyed = false;
+        CurrentHP = maxHP;
+        IsDestroyed = false;
         RefreshVisuals();
     }
 
+    // =========================================================================
+    // GIZMOS
+    // =========================================================================
+
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = IsDestroyed ? Color.red : Color.green;
+        Gizmos.DrawWireCube(transform.position, new Vector3(2f, 1.5f, 0.3f));
+
+        Handles.Label(
+            transform.position + Vector3.up * 2f,
+            $"Gate [{chunkA}↔{chunkB}]\nHP: {CurrentHP}/{maxHP}");
+    }
+#endif
+
     private void OnTriggerEnter(Collider other)
     {
-        if (isDestroyed) return;
+        if (IsDestroyed) return;
 
         var stats = other.GetComponent<EnemyStats>();
         if (stats == null) return;
 
         HandleEnemyCollision(stats);
     }
+
+    // =========================================================================
+    // EVENTY
+    // =========================================================================
+
+    public event Action<GateEntity> OnGateDestroyed;
+    public event Action<GateEntity> OnGateRebuilt;
 
     // =========================================================================
     // LOGIKA KOLIZJI
@@ -119,14 +138,14 @@ public class GateEntity : MonoBehaviour
 
     private void ApplyGateDamage(float amount)
     {
-        if (isDestroyed) return;
+        if (IsDestroyed) return;
 
-        currentHP -= amount;
+        CurrentHP -= amount;
 
-        if (currentHP <= 0f)
+        if (CurrentHP <= 0f)
         {
-            currentHP   = 0f;
-            isDestroyed = true;
+            CurrentHP = 0f;
+            IsDestroyed = true;
             RefreshVisuals();
             OnGateDestroyed?.Invoke(this);
             Debug.Log($"[Gate] Brama między {chunkA} a {chunkB} zniszczona.");
@@ -146,21 +165,21 @@ public class GateEntity : MonoBehaviour
     // =========================================================================
 
     /// <summary>
-    /// Zwraca aktualny koszt odbudowy w złocie (rośnie z każdą falą).
+    ///     Zwraca aktualny koszt odbudowy w złocie (rośnie z każdą falą).
     /// </summary>
     public int GetRebuildCost()
     {
-        int wave = GameManager.Instance != null ? GameManager.Instance.waveNumber : 0;
+        var wave = GameManager.Instance != null ? GameManager.Instance.waveNumber : 0;
         return Mathf.RoundToInt(baseRebuildCostGold + rebuildCostGrowthPerWave * wave);
     }
 
     /// <summary>
-    /// Próbuje odbudować bramę. Zwraca true jeśli się udało.
-    /// Odbudowa możliwa tylko w fazie dziennej (PreparePhase).
+    ///     Próbuje odbudować bramę. Zwraca true jeśli się udało.
+    ///     Odbudowa możliwa tylko w fazie dziennej (PreparePhase).
     /// </summary>
     public bool TryRebuild()
     {
-        if (!isDestroyed)
+        if (!IsDestroyed)
         {
             Debug.LogWarning("[Gate] Brama nie jest zniszczona — odbudowa zbędna.");
             return false;
@@ -174,7 +193,7 @@ public class GateEntity : MonoBehaviour
             return false;
         }
 
-        int cost = GetRebuildCost();
+        var cost = GetRebuildCost();
         if (ResourceManager.Instance == null ||
             !ResourceManager.Instance.CanAfford(ResourceType.Gold, cost))
         {
@@ -184,8 +203,8 @@ public class GateEntity : MonoBehaviour
 
         ResourceManager.Instance.SpendResource(ResourceType.Gold, cost);
 
-        currentHP   = maxHP;
-        isDestroyed = false;
+        CurrentHP = maxHP;
+        IsDestroyed = false;
         RefreshVisuals();
 
         OnGateRebuilt?.Invoke(this);
@@ -194,40 +213,16 @@ public class GateEntity : MonoBehaviour
     }
 
     // =========================================================================
-    // STAN PUBLICZNY
-    // =========================================================================
-
-    public bool IsDestroyed => isDestroyed;
-    public float CurrentHP  => currentHP;
-    public float MaxHP      => maxHP;
-
-    // =========================================================================
     // HELPERS
     // =========================================================================
 
     private void RefreshVisuals()
     {
-        if (activeVisual  != null) activeVisual.SetActive(!isDestroyed);
-        if (ruinedVisual  != null) ruinedVisual.SetActive(isDestroyed);
+        if (activeVisual != null) activeVisual.SetActive(!IsDestroyed);
+        if (ruinedVisual != null) ruinedVisual.SetActive(IsDestroyed);
 
         // Wyłącz trigger gdy zniszczona (wrogowie przechodzą swobodnie)
         var col = GetComponent<Collider>();
-        if (col != null) col.enabled = !isDestroyed;
+        if (col != null) col.enabled = !IsDestroyed;
     }
-
-    // =========================================================================
-    // GIZMOS
-    // =========================================================================
-
-#if UNITY_EDITOR
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = isDestroyed ? Color.red : Color.green;
-        Gizmos.DrawWireCube(transform.position, new Vector3(2f, 1.5f, 0.3f));
-
-        UnityEditor.Handles.Label(
-            transform.position + Vector3.up * 2f,
-            $"Gate [{chunkA}↔{chunkB}]\nHP: {currentHP}/{maxHP}");
-    }
-#endif
 }

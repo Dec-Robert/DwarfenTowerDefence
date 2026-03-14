@@ -2,14 +2,14 @@
 using UnityEngine;
 
 /// <summary>
-/// Zarządza podświetlaniem heksów z zasobami podczas trybu budowania i inspekcji.
-/// Odpowiada wyłącznie za wizualne wyróżnienie – nie zna logiki budynków.
+///     Zarządza podświetlaniem heksów z zasobami podczas trybu budowania i inspekcji.
+///     Odpowiada wyłącznie za wizualne wyróżnienie – nie zna logiki budynków.
 /// </summary>
 public class HexHighlighter
 {
-    private readonly HexMapGenerator mapGenerator;
+    private readonly List<HexCell> highlightedHexes = new();
     private readonly Material highlightMat;
-    private readonly List<HexCell> highlightedHexes = new List<HexCell>();
+    private readonly HexMapGenerator mapGenerator;
 
     public HexHighlighter(HexMapGenerator mapGenerator, Material highlightMat)
     {
@@ -22,9 +22,10 @@ public class HexHighlighter
     // =========================================================================
 
     /// <summary>
-    /// Podświetla heksy sąsiednie i środkowy jeśli mają wymagany feature.
+    ///     Podświetla heksy sąsiednie i środkowy jeśli mają wymagany feature.
     /// </summary>
-    public void HighlightFor(BuildingData data, Vector2Int centerChunk, Vector2Int centerLocal, BuildingEntity entity = null)
+    public void HighlightFor(BuildingData data, Vector2Int centerChunk, Vector2Int centerLocal,
+        BuildingEntity entity = null)
     {
         Clear();
 
@@ -34,7 +35,7 @@ public class HexHighlighter
         var chunkData = mapGenerator.worldData[centerChunk];
 
         // 1. Ustalenie promienia (Baza z configu)
-        int radius = data.bonusRule.searchRadius <= 0 ? 1 : data.bonusRule.searchRadius;
+        var radius = data.bonusRule.searchRadius <= 0 ? 1 : data.bonusRule.searchRadius;
 
         // 2. Modyfikacja promienia na podstawie ulepszeń (jeśli inspektujemy już wybudowany budynek)
         if (entity != null && entity.Upgrades != null)
@@ -51,7 +52,7 @@ public class HexHighlighter
             if (!chunkData.ContainsKey(coord)) continue;
             if (chunkData[coord].feature != data.bonusRule.requiredFeature) continue;
 
-            HexCell cell = mapGenerator.visualizer.GetHexCell(centerChunk, coord);
+            var cell = mapGenerator.visualizer.GetHexCell(centerChunk, coord);
             if (cell == null) continue;
 
             cell.ToggleHighlight(true, highlightMat);
@@ -63,22 +64,22 @@ public class HexHighlighter
     public void Clear()
     {
         foreach (var cell in highlightedHexes)
-            if (cell != null) cell.ToggleHighlight(false);
+            if (cell != null)
+                cell.ToggleHighlight(false);
 
         highlightedHexes.Clear();
     }
+
     private List<Vector2Int> GetHexesInRadius(Vector2Int center, int radius)
     {
         var results = new List<Vector2Int>();
-        for (int q = -radius; q <= radius; q++)
+        for (var q = -radius; q <= radius; q++)
         {
-            int r1 = Mathf.Max(-radius, -q - radius);
-            int r2 = Mathf.Min(radius, -q + radius);
-            for (int r = r1; r <= r2; r++)
-            {
-                results.Add(new Vector2Int(center.x + q, center.y + r));
-            }
+            var r1 = Mathf.Max(-radius, -q - radius);
+            var r2 = Mathf.Min(radius, -q + radius);
+            for (var r = r1; r <= r2; r++) results.Add(new Vector2Int(center.x + q, center.y + r));
         }
+
         return results;
     }
 }

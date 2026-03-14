@@ -3,45 +3,54 @@ using UnityEngine;
 public class PointDefenseSkill : EnemySkill
 {
     [Header("Konfiguracja")]
-    public float range = 3f;
-    public float cooldown = 2f;
-    public GameObject zapEffect;
+    [Tooltip("Zasięg wybuchu niszczącego pociski")]
+    public float radius = 6f;
+    [Tooltip("Co ile sekund odpala się impuls")]
+    public float cooldown = 4f;
+    public GameObject blastVFX;
 
     private float timer = 0f;
 
     void Update()
     {
-        if (timer > 0)
-        {
-            timer -= Time.deltaTime;
-            return;
-        }
+        timer += Time.deltaTime;
 
-        // Szukamy pocisk�w w pobli�u
-        // Zak�adamy, �e pociski s� na warstwie "Projectile" lub maj� tag "Bullet"
-        // U�yjemy OverlapSphere
-        Collider[] hits = Physics.OverlapSphere(transform.position, range);
+        if (timer >= cooldown)
+        {
+            BlastProjectiles();
+            timer = 0f;
+        }
+    }
+
+    private void BlastProjectiles()
+    {
+        // Uwaga: Wszystkie pociski MUSZĄ mieć przypisany jakiś Tag lub Layer, by Overlap działał wydajnie.
+        // Najlepiej stwórz tag "Projectile" i przypisz go do bazowych prefabów pocisków (Simple, Linear, Ground).
+        
+        Collider[] hits = Physics.OverlapSphere(transform.position, radius);
+        bool hitAnything = false;
 
         foreach (var hit in hits)
         {
             ProjectileBase bullet = hit.GetComponent<ProjectileBase>();
             if (bullet != null)
             {
-                // Zestrzelenie!
+                // Hitscan ignorujemy, bo on zadaje DMG natychmiast, a Linear niszczymy przed kontaktem.
                 Destroy(bullet.gameObject);
-                timer = cooldown;
-
-                if (zapEffect) Instantiate(zapEffect, hit.transform.position, Quaternion.identity);
-                Debug.Log($"{name} (Arcanist) zniszczy� pocisk!");
-
-                return; // Zestrzelamy tylko jeden na raz
+                hitAnything = true;
             }
+        }
+
+        if (hitAnything)
+        {
+            Debug.Log($"<color=cyan>{name} (Area Defence) zniszczył nadlatujące pociski!</color>");
+            if (blastVFX != null) Instantiate(blastVFX, transform.position, Quaternion.identity);
         }
     }
 
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, range);
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, radius);
     }
 }

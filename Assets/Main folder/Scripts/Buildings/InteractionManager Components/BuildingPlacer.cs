@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
-/// Odpowiada za walidację miejsca pod budynek, fizyczną budowę
-/// i powiadamianie sąsiednich budynków o zmianie terenu.
+///     Odpowiada za walidację miejsca pod budynek, fizyczną budowę
+///     i powiadamianie sąsiednich budynków o zmianie terenu.
 /// </summary>
 public class BuildingPlacer
 {
@@ -23,10 +22,10 @@ public class BuildingPlacer
     {
         if (!mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return false;
 
-        HexCellData cellData = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
+        var cellData = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
 
-        if (cellData.isPath)                                        return false;
-        if (!data.allowedTerrain.Contains(cellData.feature))       return false;
+        if (cellData.isPath) return false;
+        if (!data.allowedTerrain.Contains(cellData.feature)) return false;
         if (cell.GetComponentInChildren<BuildingEntity>() != null) return false;
 
         // Walidacja stanu chunku
@@ -36,19 +35,23 @@ public class BuildingPlacer
         if (data.prefab != null && data.prefab.GetComponent<RuneTowerEntity>() != null)
         {
             // 1. Sprawdź limit z Meta-Progresji (Bazowo 0)
-            int currentCount = BuildingRegistry.Instance != null ? BuildingRegistry.Instance.GetAllOfType<RuneTowerEntity>().Count : 0;
-            int maxAllowed = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit)) : 0;
-            
+            var currentCount = BuildingRegistry.Instance != null
+                ? BuildingRegistry.Instance.GetAllOfType<RuneTowerEntity>().Count
+                : 0;
+            var maxAllowed = MetaUpgradeManager.Instance != null
+                ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit))
+                : 0;
+
             if (currentCount >= maxAllowed) return false;
 
             // 2. Sprawdź, czy sąsiaduje z Kuźnią Runiczną
-            bool hasForgeNeighbor = false;
+            var hasForgeNeighbor = false;
             if (HexMapVisualizer.Instance != null)
             {
                 var neighbors = HexGridMath.GetNeighbors(cell.localCoord);
                 foreach (var nCoord in neighbors)
                 {
-                    HexCell neighborCell = HexMapVisualizer.Instance.GetHexCell(cell.chunkCoord, nCoord);
+                    var neighborCell = HexMapVisualizer.Instance.GetHexCell(cell.chunkCoord, nCoord);
                     if (neighborCell != null && neighborCell.GetComponentInChildren<RuneForgeEntity>() != null)
                     {
                         hasForgeNeighbor = true;
@@ -56,45 +59,52 @@ public class BuildingPlacer
                     }
                 }
             }
-            
+
             if (!hasForgeNeighbor) return false; // Nie pozwala postawić, jeśli nie ma kuźni obok
         }
         // ───────────────────────────────────────────────────────────────────────
 
         return true;
     }
+
     /// <summary>
-    /// Próbuje pobrać zasoby i postawić budynek.
-    /// Zwraca true jeśli budowa się powiodła.
+    ///     Próbuje pobrać zasoby i postawić budynek.
+    ///     Zwraca true jeśli budowa się powiodła.
     /// </summary>
     public bool TryBuild(HexCell cell, BuildingData data)
     {
-        if (!IsPlacementValid(cell, data)) 
+        if (!IsPlacementValid(cell, data))
         {
             // Opcjonalny feedback dla gracza klikającego "złe" miejsce pod wieżę runiczną
             if (data.prefab != null && data.prefab.GetComponent<RuneTowerEntity>() != null)
             {
-                int currentCount = BuildingRegistry.Instance != null ? BuildingRegistry.Instance.GetAllOfType<RuneTowerEntity>().Count : 0;
-                int maxAllowed = MetaUpgradeManager.Instance != null ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit)) : 0;
-                
+                var currentCount = BuildingRegistry.Instance != null
+                    ? BuildingRegistry.Instance.GetAllOfType<RuneTowerEntity>().Count
+                    : 0;
+                var maxAllowed = MetaUpgradeManager.Instance != null
+                    ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit))
+                    : 0;
+
                 if (currentCount >= maxAllowed)
                     Debug.Log("<color=orange>Osiągnięto limit Wież Runicznych! Zwiększ go w Meta-Progresji.</color>");
                 else
                     Debug.Log("<color=orange>Wieża Runiczna musi zostać zbudowana tuż obok Kuźni Runicznej!</color>");
             }
+
             return false;
         }
 
         // ── Wymaganie: Wolny Obywatel (Elf dla Centrum / Krasnolud dla Kuźni) ──
         if (data.requiresSpecificCitizen)
         {
-            bool hasFreeCitizen = CitizenManager.Instance != null &&
-                                  CitizenManager.Instance.citizens.Exists(
-                                      c => c.race == data.requiredCitizenRace && c.workState == WorkState.Idle);
+            var hasFreeCitizen = CitizenManager.Instance != null &&
+                                 CitizenManager.Instance.citizens.Exists(c =>
+                                     c.race == data.requiredCitizenRace && c.workState == WorkState.Idle);
 
             if (!hasFreeCitizen)
             {
-                Debug.Log($"<color=orange>Brak wolnego obywatela! Ten budynek wymaga przypisania do niego rasy: {data.requiredCitizenRace}.</color>");
+                Debug.Log(
+                    $"<color=orange>Brak wolnego obywatela! Ten budynek wymaga przypisania do niego rasy: {data.requiredCitizenRace}.</color>");
                 return false;
             }
         }
@@ -121,10 +131,8 @@ public class BuildingPlacer
         var expansion = MapExpansionManager.Instance;
 
         if (expansion == null)
-        {
             // Brak managera ekspansji – tryb edytora lub debug, pozwól budować
             return true;
-        }
 
         if (!expansion.activeChunks.TryGetValue(chunkCoord, out var chunkData))
         {
@@ -147,6 +155,7 @@ public class BuildingPlacer
                     Debug.Log("<color=orange>Na tym terenie można budować tylko wieże obronne i Posterunek!</color>");
                     return false;
                 }
+
                 return true;
 
             case ChunkState.FullyUnlocked:
@@ -166,7 +175,7 @@ public class BuildingPlacer
         foreach (Transform child in cell.transform)
             Object.Destroy(child.gameObject);
 
-        GameObject newObj = Object.Instantiate(data.prefab, cell.transform.position, Quaternion.identity);
+        var newObj = Object.Instantiate(data.prefab, cell.transform.position, Quaternion.identity);
         newObj.transform.parent = cell.transform;
 
         var entity = newObj.GetComponent<BuildingEntity>() ?? newObj.AddComponent<BuildingEntity>();
@@ -187,7 +196,7 @@ public class BuildingPlacer
 
         foreach (var nCoord in HexGridMath.GetNeighbors(centerCell.localCoord))
         {
-            HexCell neighborHex = HexMapVisualizer.Instance.GetHexCell(centerCell.chunkCoord, nCoord);
+            var neighborHex = HexMapVisualizer.Instance.GetHexCell(centerCell.chunkCoord, nCoord);
             if (neighborHex == null) continue;
 
             neighborHex.GetComponentInChildren<BuildingEntity>()?.ForceRescan();

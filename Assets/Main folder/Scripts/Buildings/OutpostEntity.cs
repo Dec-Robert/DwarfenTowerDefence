@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// Posterunek – specjalny budynek który:
-///   1. Dziedziczy po BuildingEntity (automatyczna inicjalizacja przez BuildingPlacer)
-///   2. Natychmiast odblokowuje pełne budownictwo na chunku (FullyUnlocked)
-///   3. Po 10 dniach oferuje bezpłatną transformację w 1 z 3 budynków mieszkalnych
+///     Posterunek – specjalny budynek który:
+///     1. Dziedziczy po BuildingEntity (automatyczna inicjalizacja przez BuildingPlacer)
+///     2. Natychmiast odblokowuje pełne budownictwo na chunku (FullyUnlocked)
+///     3. Po 10 dniach oferuje bezpłatną transformację w 1 z 3 budynków mieszkalnych
 /// </summary>
 public class OutpostEntity : BuildingEntity
 {
@@ -13,15 +14,28 @@ public class OutpostEntity : BuildingEntity
     public int daysUntilTransform = 10;
 
     [Header("── Opcje Transformacji (bazowe) ─────────")]
-    public List<TransformOption> baseTransformOptions = new List<TransformOption>();
+    public List<TransformOption> baseTransformOptions = new();
 
-    [Header("── Stan (Podgląd) ───────────────────────")]
-    [SerializeField] private int daysRemaining;
-    [SerializeField] private bool transformAvailable = false;
+    [Header("── Stan (Podgląd) ───────────────────────")] [SerializeField]
+    private int daysRemaining;
+
+    [SerializeField] private bool transformAvailable;
     [SerializeField] private Vector2Int chunkCoord;
 
-    private List<TransformOption> activeOptions = new List<TransformOption>();
     private MapExpansionManager expansionManager;
+
+    // Gettery dla interfejsu
+    public bool TransformAvailable => transformAvailable;
+    public int DaysRemaining => daysRemaining;
+    public Vector2Int ChunkCoord => chunkCoord;
+    public List<TransformOption> ActiveOptions { get; private set; } = new();
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (expansionManager != null)
+            expansionManager.UnregisterOutpost(this);
+    }
 
     // =========================================================================
     // INICJALIZACJA (Nadpisanie z BuildingEntity)
@@ -33,16 +47,13 @@ public class OutpostEntity : BuildingEntity
         base.Initialize(buildingData);
 
         // 2. Szukamy HexCell pod nami, by wiedzieć gdzie stoimy
-        HexCell myCell = GetComponentInParent<HexCell>();
-        if (myCell != null)
-        {
-            chunkCoord = myCell.chunkCoord;
-        }
+        var myCell = GetComponentInParent<HexCell>();
+        if (myCell != null) chunkCoord = myCell.chunkCoord;
 
         // 3. Konfiguracja Posterunku
-        expansionManager = Object.FindObjectOfType<MapExpansionManager>();
+        expansionManager = FindObjectOfType<MapExpansionManager>();
         daysRemaining = daysUntilTransform;
-        activeOptions = new List<TransformOption>(baseTransformOptions);
+        ActiveOptions = new List<TransformOption>(baseTransformOptions);
 
         if (expansionManager != null)
         {
@@ -54,15 +65,10 @@ public class OutpostEntity : BuildingEntity
         Debug.Log($"[Outpost] Posterunek zbudowany na {chunkCoord}. Transformacja za {daysRemaining} dni.");
     }
 
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-        if (expansionManager != null)
-            expansionManager.UnregisterOutpost(this);
-    }
-
     // Nie generujemy zasobów co godzinę
-    protected override void HandleHourlyProduction(int currentHour) { }
+    protected override void HandleHourlyProduction(int currentHour)
+    {
+    }
 
     // =========================================================================
     // TICK DZIENNY
@@ -78,7 +84,7 @@ public class OutpostEntity : BuildingEntity
         {
             transformAvailable = true;
             Debug.Log($"[Outpost] {chunkCoord} gotowy do transformacji!");
-            
+
             // Opcjonalnie: automatyczne otwarcie popupu, albo poczekanie aż gracz kliknie
             // expansionManager.OnOutpostReadyToTransform(this, activeOptions);
         }
@@ -97,22 +103,14 @@ public class OutpostEntity : BuildingEntity
         if (!transformAvailable) return;
 
         if (chosen.buildingPrefab != null)
-        {
             Instantiate(chosen.buildingPrefab, transform.position, transform.rotation, transform.parent);
-        }
 
         expansionManager?.OnOutpostTransformed(chunkCoord);
         Demolish(); // Niszczy ten budynek
     }
-
-    // Gettery dla interfejsu
-    public bool TransformAvailable => transformAvailable;
-    public int DaysRemaining => daysRemaining;
-    public Vector2Int ChunkCoord => chunkCoord;
-    public List<TransformOption> ActiveOptions => activeOptions;
 }
 
-[System.Serializable]
+[Serializable]
 public class TransformOption
 {
     public string optionId;
