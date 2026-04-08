@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Rare_Flat_Damage
   m_EditorClassIdentifier: 
   runeName: Rare Flat Damage
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: a59b5246f00e2e041804ccc0be6de435, type: 3}
   rarity: 2
   primaryStat: 1
   valueType: 0
-  primaryValueRange: {x: 10, y: 25}
+  primaryValueRange: {x: 8, y: 20}
   possiblePenalties: []

@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Cursed_Flat_Damage
   m_EditorClassIdentifier: 
   runeName: Cursed Flat Damage
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 26b14f5e03c704c42b8c4469913b629d, type: 3}
   rarity: 4
   primaryStat: 1
   valueType: 0
-  primaryValueRange: {x: 70, y: 150}
+  primaryValueRange: {x: 20, y: 50}
   possiblePenalties:
-  - stat: 0
+  - stat: 2
     valueType: 0
-    penaltyRange: {x: 20, y: 50}
+    penaltyRange: {x: 2, y: 10}

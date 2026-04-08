@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Common_Flat_Damage
   m_EditorClassIdentifier: 
   runeName: Common Flat Damage
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ed735f9a83e0a784eba66c33e47c3799, type: 3}
   rarity: 0
   primaryStat: 1
   valueType: 0
