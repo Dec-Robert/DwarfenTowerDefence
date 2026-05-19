@@ -1,19 +1,36 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
 public class CitizenManager : MonoBehaviour
 {
+    [System.Serializable]
+    public class RaceStats
+    {
+        public int Total;
+        public int Idle;
+        public int Working;
+    }
+    
     public static CitizenManager Instance { get; private set; }
 
     public List<Citizen> citizens = new List<Citizen>();
+    public Dictionary<Race, RaceStats> PopulationStats = new Dictionary<Race, RaceStats>();
 
+    public event Action<RaceStats, Race> PopulationChange;
+    
     [SerializeField] private bool debugMode = false;
 
+    
     private void Awake()
     {
         if (Instance != null && Instance != this) Destroy(this.gameObject);
         else Instance = this;
+        
+        PopulationStats[Race.Humans] = new RaceStats();
+        PopulationStats[Race.Elves] = new RaceStats();
+        PopulationStats[Race.Dwarves] = new RaceStats();
     }
     //
     void Start()
@@ -30,18 +47,12 @@ public class CitizenManager : MonoBehaviour
 
                 citizens.Add(newCitizen);
             }
-
-            // --- POPRAWKA 1: Powiadom ResourceManager o debugowych ludziach ---
-            // Musimy to zrobi�, �eby UI od�wie�y�o si� na starcie
-            if (ResourceManager.Instance != null)
-            {
-                // Dodajemy ich "wirtualnie" do banku zasob�w, co wywo�a od�wie�enie UI
-                ResourceManager.Instance.AddResource(ResourceType.Population, citizens.Count);
-            }
         }
+
+        RefreshStats();
     }
 
-    // --- POPRAWKA 2: Metoda do tworzenia nowych ludzi (dla Dom�w) ---
+    // --- POPRAWKA 2: Metoda do tworzenia nowych ludzi (dla Domow) ---
     public Citizen SpawnNewCitizen(Race race, HousingEntity home)
     {
         Citizen newCitizen = new Citizen();
@@ -50,19 +61,13 @@ public class CitizenManager : MonoBehaviour
 
         citizens.Add(newCitizen);
 
-        // KLUCZOWE: M�wimy systemowi ekonomii, �e przyby� cz�owiek.
-        // To wywo�a event OnResourceChanged, kt�ry zaktualizuje UI na H:X | E:Y | D:Z
-        if (ResourceManager.Instance != null)
-        {
-            ResourceManager.Instance.AddResource(ResourceType.Population, 1);
-        }
-
         Debug.Log($"Narodzi� si� nowy {race} w {home.name}");
         if (HopeSessionManager.Instance != null) HopeSessionManager.Instance.OnCitizenSpawned();
+        RefreshStats();
         return newCitizen;
     }
 
-    // Metoda pomocnicza dla budynk�w (szukanie pracownika)
+    // Metoda pomocnicza dla budynkow (szukanie pracownika)
     public Citizen FindAndAssignCitizen(Race race, BuildingEntity workplace)
     {
         Citizen availableCitizen = citizens.Find(c => c.race == race && c.workState == WorkState.Idle);
@@ -70,21 +75,38 @@ public class CitizenManager : MonoBehaviour
         if (availableCitizen != null)
         {
             availableCitizen.AssignToWorkplace(workplace);
+            RefreshStats();
             return availableCitizen;
         }
+        
         return null;
     }
-
-    // Metoda dla UIManager do zliczania ras
-    public int GetRaceCount(Race race)
+    
+    // Refreshing stats in PopulationStats for UI
+    public void RefreshStats()
     {
-        return citizens.Count(c => c.race == race);
-    }
+        // Szybkie zerowanie
+        foreach (var stat in PopulationStats.Values)
+        {
+            stat.Total = stat.Idle = stat.Working = 0;
+        }
 
-    // Metoda pomocnicza do zliczania (przyjmuje jeden lub wi�cej stan�w)
-    public int GetCountByState(Race race, params WorkState[] states)
-    {
-        // U�ywamy System.Linq
-        return citizens.Count(c => c.race == race && System.Array.Exists(states, state => state == c.workState));
+        // Jedno przejście przez populację (bardzo wydajne)
+        foreach (var c in citizens)
+        {
+            PopulationStats[c.race].Total++;
+            
+            if (c.workState == WorkState.Idle)
+                PopulationStats[c.race].Idle++;
+            else
+                PopulationStats[c.race].Working++;
+            
+            
+        }
+
+        foreach (var populationStat in PopulationStats)
+        {
+            PopulationChange?.Invoke(populationStat.Value, populationStat.Key);
+        }
     }
 }

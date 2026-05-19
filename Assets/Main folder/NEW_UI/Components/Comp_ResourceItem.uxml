@@ -1,8 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/Main%20folder/NEW_UI/Styles/GlobalStyles.uss?fileID=7433441132597879392&amp;guid=3c88db703615bb04ba66d7a51493902e&amp;type=3#GlobalStyles" />
-    <Style src="project://database/Assets/Main%20folder/NEW_UI/Styles/WindowsStyles.uss?fileID=7433441132597879392&amp;guid=809cee9e07d22b146a17c6c16a177f4d&amp;type=3#WindowsStyles" />
-    <ui:VisualElement name="ResourceContainer" class="resource-chip">
-        <ui:VisualElement name="ResourceIcon" class="resource-icon" />
-        <ui:Label name="ResourceValue" text="999" class="resource-value" />
-    </ui:VisualElement>
-</ui:UXML>

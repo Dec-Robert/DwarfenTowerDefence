@@ -142,4 +142,11 @@ public class TimeCycleManager : MonoBehaviour
         float minutes = (currentTime - Mathf.Floor(currentTime)) * 60;
         return $"Dzie� {dayCount} | {Mathf.FloorToInt(currentTime):00}:{Mathf.FloorToInt(minutes):00}";
     }
+
+    public string GetFormattedHour()
+    {
+        float minutes = (currentTime - Mathf.Floor(currentTime)) * 60;
+        return $"{Mathf.FloorToInt(currentTime):00}:{Mathf.FloorToInt(minutes):00}";
+
+    }
 }

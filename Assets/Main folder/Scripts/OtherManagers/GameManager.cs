@@ -49,9 +49,7 @@ public class GameManager : MonoBehaviour
             TelemetryManager.Instance.RecordRunStarted();
         }
     }
-
-    // USUNI�TO: Metod� ModifyGold(int amount)
-
+    
     // Metoda do zmiany HP
     public void ModifyBaseHealth(int amount)
     {
@@ -77,7 +75,7 @@ public class GameManager : MonoBehaviour
         // Time.timeScale = 0f; 
     }
 
-    // ZARZ�DZANIE STANAMI
+    // ZARZADZANIE STANAMI
 
     public void StartWave()
     {

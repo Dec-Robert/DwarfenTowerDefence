@@ -206,4 +206,10 @@ public class InteractionManager : MonoBehaviour
         var hit = uiDocument.rootVisualElement.panel.Pick(panelPos);
         return hit != null && hit != uiDocument.rootVisualElement;
     }
+
+    private void HandleEnemyClick(EnemyStats stats)
+    {
+        DeselectAll();
+        
+    }
 }

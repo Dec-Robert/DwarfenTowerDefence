@@ -41,6 +41,12 @@ public class ResourceManager : MonoBehaviour
         else
         {
             Debug.LogError("[ResourceManager] BRAK CITY BASE CONFIGU!");
+            resourceBank[ResourceType.Gold] = 999999;
+            resourceBank[ResourceType.Wood] = 999999;
+            resourceBank[ResourceType.Stone] = 999999;
+            resourceBank[ResourceType.Iron] = 999999;
+            resourceBank[ResourceType.Coal] = 999999;
+            resourceBank[ResourceType.Food] = 999999;
         }
     }
 
@@ -60,7 +66,7 @@ public class ResourceManager : MonoBehaviour
 
         resourceBank[type] += amount;
 
-        // POPRAWKA: Zaokr�glenie do 4 miejsc po przecinku, aby usun�� "�mieci" (0.00001)
+        // POPRAWKA: Zaokraglenie do 4 miejsc po przecinku, aby usunac "smieci" (0.00001)
         resourceBank[type] = (float)Math.Round(resourceBank[type], 4);
 
         OnResourceChanged?.Invoke(type, resourceBank[type]);
@@ -68,15 +74,15 @@ public class ResourceManager : MonoBehaviour
 
     public bool SpendResource(ResourceType type, float amount)
     {
-        // Sprawdzamy z ma�ym marginesem b��du
+        // Sprawdzamy z malym marginesem bledu
         if (resourceBank[type] >= amount - 0.0001f)
         {
             resourceBank[type] -= amount;
 
-            // POPRAWKA: Zaokr�glenie wyniku
+            // POPRAWKA: Zaokraglenie wyniku
             resourceBank[type] = (float)Math.Round(resourceBank[type], 4);
 
-            // Zabezpieczenie, �eby nie spad�o poni�ej absolutnego zera przez b��d float
+            // Zabezpieczenie, zeby nie spadlo ponizej absolutnego zera przez float
             if (resourceBank[type] < 0) resourceBank[type] = 0;
 
             OnResourceChanged?.Invoke(type, resourceBank[type]);

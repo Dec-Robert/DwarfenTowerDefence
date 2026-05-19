@@ -123,7 +123,7 @@ public class UIResourceTooltip : MonoBehaviour
     void UpdatePopulationTable()
     {
         if (CitizenManager.Instance == null) return;
-
+/*
         // Wolni (Idle)
         pIdleH.text = CitizenManager.Instance.GetCountByState(Race.Humans, WorkState.Idle).ToString();
         pIdleE.text = CitizenManager.Instance.GetCountByState(Race.Elves, WorkState.Idle).ToString();
@@ -138,6 +138,7 @@ public class UIResourceTooltip : MonoBehaviour
         pWorkH.text = CitizenManager.Instance.GetCountByState(Race.Humans, WorkState.Working, WorkState.Exhausted).ToString();
         pWorkE.text = CitizenManager.Instance.GetCountByState(Race.Elves, WorkState.Working, WorkState.Exhausted).ToString();
         pWorkD.text = CitizenManager.Instance.GetCountByState(Race.Dwarves, WorkState.Working, WorkState.Exhausted).ToString();
+        */
     }
 
     void CloseTooltip()

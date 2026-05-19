@@ -95,9 +95,11 @@ public class HopeSessionManager : MonoBehaviour
                 case MilestoneType.TotalPopulation:
                     isAchieved = CitizenManager.Instance.citizens.Count >= m.targetValue;
                     break;
+                /*
                 case MilestoneType.SpecificRacePopulation:
                     isAchieved = CitizenManager.Instance.GetRaceCount(m.targetRace) >= m.targetValue;
                     break;
+                */
                 case MilestoneType.EnemiesKilled:
                     isAchieved = enemiesKilled >= m.targetValue;
                     break;
