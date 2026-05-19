@@ -332,8 +332,7 @@ public class BuildingEntity : MonoBehaviour
 
     private void RefreshInspectorUI()
     {
-        if (UIBuildingInspector.Instance != null)
-            UIBuildingInspector.Instance.RefreshContent();
+
     }
 
     public void ToggleBuildingActive()

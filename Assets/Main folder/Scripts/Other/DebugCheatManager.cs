@@ -115,7 +115,6 @@ public class DebugCheatManager : MonoBehaviour
         expansion.activeMissions.Clear();
 
         Debug.Log($"<color=cyan>[DEBUG F3] Odblokowano {count} pól (Scouting + Unlocked).</color>");
-        expansion.uiExpansionMenu?.Hide();
     }
 
     // =========================================================================
@@ -157,7 +156,6 @@ public class DebugCheatManager : MonoBehaviour
         expansion.activeMissions.Clear();
 
         Debug.Log($"<color=magenta>[DEBUG F3+I] Odblokowano {count} pól (wszystkie stany).</color>");
-        expansion.uiExpansionMenu?.Hide();
     }
 
     // =========================================================================
@@ -229,6 +227,5 @@ public class DebugCheatManager : MonoBehaviour
         data.discoveredOnDay          = GameManager.Instance?.waveNumber ?? 0;
 
         fogManager?.RevealChunk(coord);
-        expansion.uiExpansionMenu?.OnChunkFullyUnlocked(coord);
     }
 }

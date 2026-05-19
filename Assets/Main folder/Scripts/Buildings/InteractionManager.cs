@@ -159,15 +159,11 @@ public class InteractionManager : MonoBehaviour
         if (building == null)
         {
             DeselectAll();
-            UIBuildingInspector.Instance?.Hide();
             return;
         }
 
         DeselectAll();
-
-        // Otwórz inspektor
-        UIBuildingInspector.Instance?.ShowInspector(building);
-
+        
         // Pokaż zasięg wieży
         if (building is TowerEntity towerEntity)
         {
@@ -200,11 +196,7 @@ public class InteractionManager : MonoBehaviour
 
     private bool IsPointerOverUI()
     {
-        if (uiDocument == null) return false;
-        Vector2 mousePos = Input.mousePosition;
-        var panelPos = new Vector2(mousePos.x, Screen.height - mousePos.y);
-        var hit = uiDocument.rootVisualElement.panel.Pick(panelPos);
-        return hit != null && hit != uiDocument.rootVisualElement;
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
     }
 
     private void HandleEnemyClick(EnemyStats stats)

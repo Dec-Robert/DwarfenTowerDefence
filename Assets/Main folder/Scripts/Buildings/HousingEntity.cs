@@ -272,8 +272,7 @@ public class HousingEntity : BuildingEntity
 
     private void RefreshUI()
     {
-        if (UIBuildingInspector.Instance != null)
-            UIBuildingInspector.Instance.RefreshContent();
+
     }
 
     // =========================================================================

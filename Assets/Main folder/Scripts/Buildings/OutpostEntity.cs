@@ -88,10 +88,7 @@ public class OutpostEntity : BuildingEntity
             // Opcjonalnie: automatyczne otwarcie popupu, albo poczekanie aż gracz kliknie
             // expansionManager.OnOutpostReadyToTransform(this, activeOptions);
         }
-
-        // Odśwież UI inspektora jeśli jest otwarty
-        if (UIBuildingInspector.Instance != null)
-            UIBuildingInspector.Instance.RefreshContent();
+        
     }
 
     // =========================================================================

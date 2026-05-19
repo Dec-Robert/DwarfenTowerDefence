@@ -29,21 +29,6 @@ public class FloatingTextManager : MonoBehaviour
 
     public void ShowText(Vector3 position, string text, Color color)
     {
-        if (floatingTextPrefab == null) return;
 
-        // Losowy offset, �eby teksty nie nak�ada�y si� idealnie na siebie
-        Vector3 offset = new Vector3(Random.Range(-0.5f, 0.5f), 2.5f, Random.Range(-0.2f, 0.2f));
-        Vector3 spawnPos = position + offset;
-
-        GameObject obj = Instantiate(floatingTextPrefab, spawnPos, Quaternion.identity);
-
-        // Je�li masz kamer� pod k�tem, ustaw rotacj� tekstu tutaj, np. 45 stopni w X
-        // obj.transform.rotation = Quaternion.Euler(60, 0, 0); 
-
-        FloatingText ft = obj.GetComponent<FloatingText>();
-        if (ft != null)
-        {
-            ft.Setup(text, color);
-        }
     }
 }

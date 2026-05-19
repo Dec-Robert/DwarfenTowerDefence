@@ -19,7 +19,6 @@ public class MapExpansionManager : MonoBehaviour
     [Header("── Referencje ────────────────────────────")]
     public FogOfWarManager     fogManager;
     public HexMapGenerator     mapGenerator;
-    public UIExpansionMenu     uiExpansionMenu;
     public ExpansionCostConfig costConfig;
 
     // =========================================================================
@@ -158,7 +157,6 @@ public class MapExpansionManager : MonoBehaviour
                 data.state = ChunkState.FullyUnlocked;
                 fogManager?.UpdateChunkFogState(kvp.Key, ChunkState.FullyUnlocked);
                 Debug.Log($"[Expansion] {kvp.Key} w pełni zasiedlony.");
-                uiExpansionMenu?.OnChunkFullyUnlocked(kvp.Key);
                 OnChunkBecameFullyUnlocked?.Invoke(kvp.Key);
             }
         }
@@ -185,7 +183,7 @@ public class MapExpansionManager : MonoBehaviour
 
         // W każdym przypadku pokazujemy menu – UIExpansionMenu.UpdateContent()
         // czyta stan z managera i samo buduje treść
-        uiExpansionMenu?.ShowMenu(coord, worldPos);
+
     }
 
     // =========================================================================
@@ -245,7 +243,6 @@ public class MapExpansionManager : MonoBehaviour
         fogManager?.UpdateChunkFogState(targetChunk, ChunkState.Scouting);
 
         Debug.Log($"[Expansion] Zwiadowca wysłany na {targetChunk}. {cost}");
-        uiExpansionMenu?.Hide();
         return true;
     }
 
@@ -273,7 +270,6 @@ public class MapExpansionManager : MonoBehaviour
         UnlockNeighbors(coord, new HashSet<Vector2Int>(roadDependencies.Keys));
 
         mission.sourceCenter?.OnMissionComplete(mission);
-        uiExpansionMenu?.OnChunkDiscovered(coord);
     }
 
     // =========================================================================
@@ -292,7 +288,6 @@ public class MapExpansionManager : MonoBehaviour
             data.state = ChunkState.FullyUnlocked;
             fogManager?.UpdateChunkFogState(coord, ChunkState.FullyUnlocked);
             Debug.Log($"[Expansion] Posterunek odblokował {coord} natychmiastowo.");
-            uiExpansionMenu?.OnChunkFullyUnlocked(coord);
             OnChunkBecameFullyUnlocked?.Invoke(coord);
         }
     }
@@ -300,7 +295,6 @@ public class MapExpansionManager : MonoBehaviour
     public void OnOutpostReadyToTransform(OutpostEntity outpost, List<TransformOption> options)
     {
         Debug.Log($"[Expansion] Posterunek {outpost.ChunkCoord} gotowy do transformacji.");
-        uiExpansionMenu?.ShowTransformOptions(outpost, options);
     }
 
     public void OnOutpostTransformed(Vector2Int coord)
