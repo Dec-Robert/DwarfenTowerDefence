@@ -55,26 +55,29 @@ public class PopulationDisplayUI : MonoBehaviour
 
     private void showExtendedPanel()
     {
-        extendedPanel.DOAnchorPosY(shownPosition, 0.5f); 
+        extendedPanel.DOAnchorPosY(shownPosition, 0.5f).SetUpdate(true); 
 
     }
 
     private void hideExtendedPanel()
     {
-        extendedPanel.DOAnchorPosY(hiddenPosition, 0.5f);
+        extendedPanel.DOAnchorPosY(hiddenPosition, 0.5f).SetUpdate(true);
     }
 
 
     private void Update()
     {
+        
+        //Todo: Usunać po debugu
         if (Input.GetKeyDown(KeyCode.F4))
         {
             hideExtendedPanel();
         }
 
-        if (Input.GetKeyDown(KeyCode.F5))
+        if (Input.GetKeyUp(KeyCode.F4))
         {
             showExtendedPanel();
         }
+        // Do tego miejsca
     }
 }

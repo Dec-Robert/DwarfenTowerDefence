@@ -16,7 +16,6 @@ public class InteractionManager : MonoBehaviour
     [Header("Referencje")] public HexMapGenerator mapGenerator;
 
     public MapExpansionManager expansionManager;
-    public UIDocument uiDocument;
     public LayerMask hexLayer;
 
     [Header("Widmo")] public Material ghostValidMat;
@@ -25,10 +24,7 @@ public class InteractionManager : MonoBehaviour
     public GameObject rangeVisualizerPrefab;
 
     [Header("Podświetlenie zasobów")] public Material resourceHighlightMat;
-
-    // -------------------------------------------------------------------------
-    // Komponenty logiczne
-    // -------------------------------------------------------------------------
+    
 
     private BuildingGhostController ghost;
     private HexHighlighter highlighter;
@@ -36,16 +32,10 @@ public class InteractionManager : MonoBehaviour
     private TowerController lastSelectedTower;
     private BuildingPlacer placer;
     public static InteractionManager Instance { get; private set; }
-
-    // -------------------------------------------------------------------------
-    // Stan
-    // -------------------------------------------------------------------------
+    
 
     public BuildingData SelectedBuilding { get; private set; }
-
-    // =========================================================================
-    // Cykl życia
-    // =========================================================================
+    
 
     private void Awake()
     {
@@ -75,12 +65,11 @@ public class InteractionManager : MonoBehaviour
         // LPM – obsługa kliknięcia
         if (Input.GetMouseButtonDown(0))
         {
-            if (IsPointerOverUI()) return;
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
             HandleClick();
         }
     }
-
+    
     // =========================================================================
     // Tryb budowania
     // =========================================================================
@@ -126,16 +115,19 @@ public class InteractionManager : MonoBehaviour
 
     private void HandleClick()
     {
+        Debug.Log("[Interaction] Attempt to interact");
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (!Physics.Raycast(ray, out var hit, 1000f, hexLayer)) return;
+        if (!Physics.Raycast(ray, out var hit, 1000f))
+        {
+            EnemyInfoUI.Instance.CloseWindow();
+            DeselectAll();
+            return;
+        }
 
-        var clickedCell = hit.collider.GetComponentInParent<HexCell>();
-        if (clickedCell == null) return;
-
-        if (SelectedBuilding != null)
-            HandleBuildClick(clickedCell);
-        else
-            HandleInspectClick(clickedCell);
+        
+        if (hit.collider.TryGetComponent<EnemyStats>(out var stats)) HandleEnemyClick(stats);
+        else if (hit.collider.TryGetComponent<HexCell>(out var cell)) HandleBuildClick(cell); 
+        else HandleInspectClick(cell);
     }
 
     private void HandleBuildClick(HexCell cell)
@@ -149,7 +141,7 @@ public class InteractionManager : MonoBehaviour
         if (success && !Input.GetKey(KeyCode.LeftShift))
             CancelBuilding();
         else if (success)
-            UpdateGhostPosition(); // Shift – kontynuuj budowanie
+            UpdateGhostPosition(); 
     }
 
     private void HandleInspectClick(HexCell cell)
@@ -181,6 +173,7 @@ public class InteractionManager : MonoBehaviour
 
     public void DeselectAll()
     {
+        Debug.Log("[Interaction] DeselectAll");
         if (lastSelectedTower != null)
         {
             lastSelectedTower.ShowRangeIndicator(false);
@@ -190,18 +183,12 @@ public class InteractionManager : MonoBehaviour
         highlighter.Clear();
     }
 
-    // =========================================================================
-    // Helpers
-    // =========================================================================
 
-    private bool IsPointerOverUI()
-    {
-        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-    }
 
     private void HandleEnemyClick(EnemyStats stats)
     {
         DeselectAll();
+        EnemyInfoUI.Instance.OpenWindow(stats);
         
     }
 }

@@ -9,7 +9,7 @@ public enum BuildingType
     Defense, // Wieża (Obrona)
     Housing, // Domy (Elfy,Krasnoludy ludzie)
     Utility, // Domy, Magazyny
-    Unique // Kapitol, Beacon
+    Unique // Kapitol, Beacon   BUDYNKI NIE BUDOWALNE LUB BUDOWALNE BARDZO SPECYFICZNYCH KONDYCJI
 }
 
 [CreateAssetMenu(fileName = "NewBuilding", menuName = "City Builder/Building Data")]
@@ -72,4 +72,7 @@ public class BuildingData : ScriptableObject
         public ResourceType type;
         public float amount;
     }
+
+    [Header("Is building unlocked to be build")]
+    public bool isUnlocked = true;
 }

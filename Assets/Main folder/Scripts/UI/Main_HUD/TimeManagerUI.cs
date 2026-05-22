@@ -44,6 +44,6 @@ public class TimeManagerUI : MonoBehaviour
     {
         string dayText = TimeCycleManager.Instance.dayCount.ToString();
         string timeText = TimeCycleManager.Instance.GetFormattedHour();
-        dateTimeTxt.text = $"Day: {dayText} \n + {timeText}";
+        dateTimeTxt.text = $"Day: {dayText} \n {timeText}";
     }
 }

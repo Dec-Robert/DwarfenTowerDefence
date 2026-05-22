@@ -588,7 +588,7 @@ GameObject:
   - component: {fileID: 6722353018111200977}
   - component: {fileID: 8012354369148143859}
   m_Layer: 5
-  m_Name: Txt_speed
+  m_Name: Txt_Speed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -725,6 +725,7 @@ GameObject:
   - component: {fileID: 1029495469943341903}
   - component: {fileID: 5003124276648710786}
   - component: {fileID: 8999905966950305224}
+  - component: {fileID: 4385823302766505735}
   m_Layer: 5
   m_Name: Pnl_EnemyInfo
   m_TagString: Untagged
@@ -793,6 +794,27 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 5
+--- !u!114 &4385823302766505735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6064807710134295171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b95d6eee42e57d649827945d49ed942c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  monsterNameText: {fileID: 4399527650851948412}
+  healthText: {fileID: 4060646543469012949}
+  monsterSpeedText: {fileID: 8012354369148143859}
+  monsterArmourText: {fileID: 7436803372655774391}
+  monsterMagicDefenseText: {fileID: 2226348138487190328}
+  enemyIcon: {fileID: 857847227868210447}
+  healthBar: {fileID: 4647616758253558756}
+  hiddenYPosition: -300
+  shownYPosition: 20
 --- !u!1 &6320861280985783639
 GameObject:
   m_ObjectHideFlags: 0
@@ -882,7 +904,7 @@ GameObject:
   - component: {fileID: 307234067411986840}
   - component: {fileID: 7774891501477627363}
   m_Layer: 5
-  m_Name: Img_speed
+  m_Name: Img_Speed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
