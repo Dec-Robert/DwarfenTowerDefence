@@ -1,22 +1,26 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class BuildingCellUI : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public void Setup(BuildingData buildingData)
+    private BuildingData buildingData;
+    
+    public void Setup(BuildingData data)
     {
-        
+        buildingData = data;
     }
 
-    // Update is called once per frame
-    public void OnPointerExit(PointerEventData eventData)
+    public void PointerEnter()
     {
-        
+        Debug.Log("OnPointerEnter");
+        BuildMenuUI.Instance.OpenExtraInfo(buildingData);
     }
-
-    public void OnPointerEnter(PointerEventData eventData)
+    
+    public void PointerExit()
     {
-        
+        Debug.Log("OnPointerExit");
+        BuildMenuUI.Instance.HideExtraInfo();
     }
+    
 }

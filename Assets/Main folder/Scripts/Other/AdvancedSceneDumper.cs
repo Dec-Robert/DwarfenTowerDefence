@@ -3,70 +3,58 @@ using UnityEngine;
 using UnityEditor;
 using System.Text;
 using System.IO;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 
-public class AdvancedSceneDumper : EditorWindow
+public class CanvasUIDumper : EditorWindow
 {
-    [MenuItem("Tools/Debug/Zaawansowany Eksport Sceny (z Parametrami)")]
-    public static void DumpScene()
+    [MenuItem("Tools/Debug/Eksportuj UI (Tylko Canvas_MAIN_HUD)")]
+    public static void DumpCanvas()
     {
-        Scene activeScene = SceneManager.GetActiveScene();
-        StringBuilder sb = new StringBuilder();
+        // Szukamy konkretnego obiektu na scenie
+        GameObject rootCanvas = GameObject.Find("Canvas_MAIN_HUD");
         
-        sb.AppendLine("=========================================");
-        sb.AppendLine($"SCENA: '{activeScene.name}'");
-        sb.AppendLine("LEGENDA:");
-        sb.AppendLine("[P] - Obiekt jest Prefabem");
-        sb.AppendLine("(WYŁ) - Obiekt jest wyłączony (SetActive(false))");
-        sb.AppendLine("=========================================\n");
-
-        // Pobieramy wszystkie główne obiekty na scenie
-        foreach (GameObject go in activeScene.GetRootGameObjects())
+        if (rootCanvas == null)
         {
-            DumpGameObject(go, sb, "");
+            Debug.LogError("Nie znaleziono obiektu 'Canvas_MAIN_HUD' na scenie! Sprawdź nazwę.");
+            return;
         }
 
-        // Zapis do pliku
-        string path = Path.Combine(Application.dataPath, "AdvancedSceneDump.txt");
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("=========================================");
+        sb.AppendLine($"EKSPORT STRUKTURY UI: {rootCanvas.name}");
+        sb.AppendLine("=========================================\n");
+
+        // Odpalamy rekurencję tylko dla Canvasa
+        DumpGameObject(rootCanvas, sb, "");
+
+        string path = Path.Combine(Application.dataPath, "CanvasUI_Dump.txt");
         File.WriteAllText(path, sb.ToString());
         
-        Debug.Log($"<color=green>Pomyślnie wyeksportowano strukturę sceny do: {path}</color>");
-        
-        // Magiczna funkcja Unity - otwiera folder z plikiem tekstowym
-        EditorUtility.RevealInFinder(path); 
+        Debug.Log($"<color=green>Pomyślnie wyeksportowano UI do: {path}</color>");
+        EditorUtility.RevealInFinder(path);
     }
 
     private static void DumpGameObject(GameObject go, StringBuilder sb, string indent)
     {
         string activeTag = go.activeSelf ? "" : " (WYŁ)";
-        string prefabTag = PrefabUtility.IsPartOfAnyPrefab(go) ? "[P] " : "";
-        
-        // Wypisujemy nazwę obiektu
-        sb.AppendLine($"{indent}├─ {prefabTag}{go.name}{activeTag}");
+        sb.AppendLine($"{indent}├─ 🔲 {go.name}{activeTag}");
 
-        // Pobieramy komponenty
         Component[] components = go.GetComponents<Component>();
-        string compIndent = indent + "│    "; // Wcięcie dla komponentów
-        
+        string compIndent = indent + "│    ";
+
         foreach (var c in components)
         {
-            if (c == null)
-            {
-                sb.AppendLine($"{compIndent}[MISSING_SCRIPT]");
-                continue;
-            }
-            
+            if (c == null) continue;
             string typeName = c.GetType().Name;
             
-            // Pomijamy nudne komponenty, żeby nie zaśmiecać pliku
-            if (typeName == "CanvasRenderer") continue; 
+            // Pomijamy transformy i renderery, zostawiamy tylko to co ważne w UI
+            if (typeName == "CanvasRenderer" || typeName == "Transform") continue;
 
-            // Pobieramy parametry
-            string parameters = GetParameters(c);
-            sb.AppendLine($"{compIndent}[{typeName}] {parameters}");
+            string details = GetUIParameters(c);
+            sb.AppendLine($"{compIndent}└─ [{typeName}] {details}");
         }
 
-        // Rekurencja dla wszystkich dzieci tego obiektu
         string childIndent = indent + "│  ";
         for (int i = 0; i < go.transform.childCount; i++)
         {
@@ -74,35 +62,54 @@ public class AdvancedSceneDumper : EditorWindow
         }
     }
 
-    // Funkcja odczytująca parametry dokładnie tak, jak widać je w Inspektorze
-    private static string GetParameters(Component c)
+    private static string GetUIParameters(Component c)
     {
-        StringBuilder paramBuilder = new StringBuilder();
-        SerializedObject so = new SerializedObject(c);
-        SerializedProperty prop = so.GetIterator();
-        
-        bool enterChildren = true;
-
-        while (prop.NextVisible(enterChildren))
+        // 1. ZAAWANSOWANE CZYTANIE KONKRETNYCH KOMPONENTÓW UI
+        if (c is RectTransform rt)
         {
-            enterChildren = false; // Pobieramy tylko właściwości najwyższego poziomu
-            
-            // Pomijamy referencję do samego skryptu
-            if (prop.name == "m_Script") continue; 
-
-            string val = GetPropertyValueAsString(prop);
-            paramBuilder.Append($"{prop.name}: {val} | ");
+            return $"Anchors(Min:{rt.anchorMin}, Max:{rt.anchorMax}) | Pivot:{rt.pivot} | Size:{rt.sizeDelta} | Pos:{rt.anchoredPosition}";
+        }
+        else if (c is HorizontalOrVerticalLayoutGroup layout)
+        {
+            return $"Spacing: {layout.spacing} | ChildControlSize(W:{layout.childControlWidth}, H:{layout.childControlHeight}) | ForceExpand(W:{layout.childForceExpandWidth}, H:{layout.childForceExpandHeight}) | Align: {layout.childAlignment}";
+        }
+        else if (c is ContentSizeFitter csf)
+        {
+            return $"H_Fit: {csf.horizontalFit} | V_Fit: {csf.verticalFit}";
+        }
+        else if (c is Image img)
+        {
+            return $"Color: {img.color} | RaycastTarget: {img.raycastTarget} | Sprite: {(img.sprite ? img.sprite.name : "None")}";
+        }
+        else if (c is TextMeshProUGUI tmp)
+        {
+            string txt = tmp.text.Length > 20 ? tmp.text.Substring(0, 20) + "..." : tmp.text;
+            txt = txt.Replace("\n", " ");
+            return $"Text: \"{txt}\" | Size: {tmp.fontSize} | Align: {tmp.alignment} | RaycastTarget: {tmp.raycastTarget}";
+        }
+        else if (c is Button btn)
+        {
+            return $"Interactable: {btn.interactable}";
         }
 
-        string result = paramBuilder.ToString();
-        // Usuwamy ostatnie " | "
-        if (result.EndsWith(" | ")) result = result.Substring(0, result.Length - 3);
-        
-        return result;
+        // 2. FALLBACK: Czytanie innych skryptów (np. Twoich własnych)
+        StringBuilder pb = new StringBuilder();
+        SerializedObject so = new SerializedObject(c);
+        SerializedProperty prop = so.GetIterator();
+        bool enterChildren = true;
+        while (prop.NextVisible(enterChildren))
+        {
+            enterChildren = false;
+            if (prop.name == "m_Script" || prop.name == "m_ObjectHideFlags") continue;
+            
+            pb.Append($"{prop.name}: {GetPropValue(prop)} | ");
+        }
+
+        string res = pb.ToString();
+        return res.EndsWith(" | ") ? res.Substring(0, res.Length - 3) : res;
     }
 
-    // Zamienia wartości z Inspektora na czytelny tekst
-    private static string GetPropertyValueAsString(SerializedProperty prop)
+    private static string GetPropValue(SerializedProperty prop)
     {
         try
         {
@@ -110,22 +117,16 @@ public class AdvancedSceneDumper : EditorWindow
             {
                 case SerializedPropertyType.Integer: return prop.intValue.ToString();
                 case SerializedPropertyType.Boolean: return prop.boolValue.ToString();
-                case SerializedPropertyType.Float: return prop.floatValue.ToString("F2");
+                case SerializedPropertyType.Float: return prop.floatValue.ToString("F1");
                 case SerializedPropertyType.String: return $"\"{prop.stringValue}\"";
-                case SerializedPropertyType.Color: return $"R:{prop.colorValue.r:F1} G:{prop.colorValue.g:F1} B:{prop.colorValue.b:F1} A:{prop.colorValue.a:F1}";
+                case SerializedPropertyType.Color: return "Color";
                 case SerializedPropertyType.ObjectReference: return prop.objectReferenceValue != null ? prop.objectReferenceValue.name : "null";
                 case SerializedPropertyType.Enum: return prop.enumNames.Length > prop.enumValueIndex && prop.enumValueIndex >= 0 ? prop.enumNames[prop.enumValueIndex] : prop.enumValueIndex.ToString();
                 case SerializedPropertyType.Vector2: return prop.vector2Value.ToString();
-                case SerializedPropertyType.Vector3: return prop.vector3Value.ToString();
-                case SerializedPropertyType.Rect: return prop.rectValue.ToString();
-                case SerializedPropertyType.ArraySize: return $"Size: {prop.intValue}";
-                default: return $"[{prop.propertyType}]";
+                default: return "?";
             }
         }
-        catch
-        {
-            return "[Błąd Odczytu]";
-        }
+        catch { return "Err"; }
     }
 }
 #endif
