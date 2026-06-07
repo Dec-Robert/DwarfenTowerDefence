@@ -40,6 +40,8 @@ public class BuildMenuUI : MonoBehaviour
     public Button btnBuildHouses;
     public Button btnBuildUniq;
 
+    public Button btnCloseMenu;
+    
     [Header("Prefab of an building cell")]
     public GameObject buildingCell;
     
@@ -74,6 +76,10 @@ public class BuildMenuUI : MonoBehaviour
         if(btnBuildProduction != null) btnBuildProduction.onClick.AddListener(() => OpenWindow(BuildingType.Economic));
         if(btnBuildHouses != null) btnBuildHouses.onClick.AddListener(() => OpenWindow(BuildingType.Housing));
         if(btnBuildUniq != null) btnBuildUniq.onClick.AddListener(() => OpenWindow(BuildingType.Unique));
+        if (btnCloseMenu != null) btnCloseMenu.onClick.AddListener(() =>HideWindow());
+        {
+            
+        }
 
 }
 
@@ -147,6 +153,7 @@ public class BuildMenuUI : MonoBehaviour
     {
         buildingMenu.transform.DOKill();
         buildingMenu.transform.DOMoveY(buildingMenuHiddenPositionY, 0.2f).SetUpdate(true);
+        InteractionManager.Instance?.DeselectAll();
     }
     
 }

@@ -17,9 +17,12 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
   type: 2
   workerScalingFactor: 0.25
+  firstWorkerProduction: 0.7
   allowedTerrain: 060000000300000000000000
   requiresOccupiedSpace: 0
-  requiresFreeElf: 0
+  requiresSpecificCitizen: 0
+  requiredCitizenRace: 1
+  isOutpost: 0
   constructionCost:
   - type: 1
     amount: 5
@@ -35,21 +38,20 @@ MonoBehaviour:
   prefab: {fileID: 8713615584689418078, guid: c53b8485d701564499c48ccdca6aec42, type: 3}
   bonusRule:
     requiredFeature: 0
-    range: 0
+    searchRadius: 0
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
   baseShifts: 1
   baseWorkersPerShift: 1
+  isUnlocked: 1
   housingRace: 2
   maxResidents: 4
   initialResidents: 1
   growthDifficultyMultiplier: 2
   baseGrowthTicks: 3
   productionPerResident:
-  - type: 0
-    amount: 1
   - type: 2
     amount: 1
   baseDailyUpkeep:

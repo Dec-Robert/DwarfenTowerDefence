@@ -38,7 +38,3 @@ public class HousingBuildingData : BuildingData
         public float amount;
     }
 }
-
-// =========================================================
-//            TUTAJ ZACZYNA SIę KOD EDYTORA
-// =========================================================

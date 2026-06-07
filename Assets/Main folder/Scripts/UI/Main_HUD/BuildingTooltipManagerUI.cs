@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem.iOS;
+using UnityEngine.UI;
 
 public class BuildingTooltipManagerUI : MonoBehaviour
 {
@@ -27,14 +28,26 @@ public class BuildingTooltipManagerUI : MonoBehaviour
     public GameObject pnlProductionArray;
     public GameObject pnlStatArray;
 
+    [Header("Population specific")] 
+    public GameObject pnlHousingSpots;
+    public GameObject pnlPopConsumption;
+    public GameObject pnlPopProduction;
+    [Tooltip("0 is prodution, 1 is consumption")]public ResourceRowUI[] resourceRowUis;
+
     //Arrays of resources
     private List<GameObject> costArray = new List<GameObject>();
     private List<GameObject> maintananceArray = new List<GameObject>();
     private List<GameObject> productionArray = new List<GameObject>();
     private List<GameObject> statArray = new List<GameObject>();
+    private List<GameObject> housingSpotArray = new List<GameObject>();
     
     [Header("Prefabs")]
     public GameObject pnlSingleResource;
+    public GameObject pnlPopulationSpot;
+    
+    //Colors
+    private Color houseKept = new Color(50f / 255f, 255f / 255f, 50f / 255f);
+    private Color houseAvaible = new Color(255f / 255f, 255f / 255f, 255f / 255f);
     
     public void Awake()
     {
@@ -57,6 +70,13 @@ public class BuildingTooltipManagerUI : MonoBehaviour
             productionArray.Add(Instantiate(pnlSingleResource, pnlProductionArray.transform));
             productionArray[i].SetActive(false);
         }
+
+        for (int i = 0; i < 10; i++)
+        {
+            housingSpotArray.Add(Instantiate(pnlPopulationSpot, pnlHousingSpots.transform));
+            housingSpotArray[i].GetComponent<Image>().color = houseAvaible;
+            housingSpotArray[i].SetActive(false);
+        }
         
         HideTooltip();
     }
@@ -77,7 +97,8 @@ public class BuildingTooltipManagerUI : MonoBehaviour
                 SetupTowerPanel(towerData);
                 break;
             case BuildingType.Housing:
-                SetupHousingPanel(data);
+                HousingBuildingData buildingData = data as HousingBuildingData;
+                SetupHousingPanel(buildingData);
                 break;
             case BuildingType.Unique or BuildingType.Utility:
                 Debug.Log("ło cholera co się stało");
@@ -133,11 +154,13 @@ public class BuildingTooltipManagerUI : MonoBehaviour
 
     private void SetupProductionPanel(BuildingData data)
     {
+        foreach (var element in productionArray) element.SetActive(false);
         pnlProduction.SetActive(true);
         
         int i = 0;
         foreach (var element in data.productionPerCycle)
         {
+            productionArray[i].SetActive(true);
             productionArray[i].GetComponentInChildren<ResourceRowUI>().Setup(resourceIconDB.GetIcon(element.type),element.amount);
             i++;
         }
@@ -154,9 +177,26 @@ public class BuildingTooltipManagerUI : MonoBehaviour
         }
     }
 
-    private void SetupHousingPanel(BuildingData data)
+    private void SetupHousingPanel(HousingBuildingData data)
     {
-        
+        foreach (var element in housingSpotArray) element.SetActive(false);
+        foreach (var element in housingSpotArray) element.GetComponent<Image>().color = houseAvaible;
+        int j = 0;
+        for (int i = 0; i < data.maxResidents; i++)
+        {
+            housingSpotArray[i].SetActive(true);
+            if (j < data.initialResidents)
+            {
+                housingSpotArray[j].GetComponent<Image>().color = houseKept;
+                j++;
+            }
+
+        }
+    
+        pnlHousing.SetActive(true);
+        resourceRowUis[0].Setup(resourceIconDB.GetIcon(data.productionPerResident[0].type),data.productionPerResident[0].amount);
+        resourceRowUis[1].Setup(resourceIconDB.GetIcon(data.upkeepPerResident[0].type),data.upkeepPerResident[0].amount);
+
     }
     
     
