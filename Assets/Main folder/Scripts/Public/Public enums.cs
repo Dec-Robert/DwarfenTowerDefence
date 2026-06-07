@@ -235,3 +235,15 @@ public enum TargetingMode
     Random,           // Losowy z przefiltrowanej puli
     Chunk             // Ignoruje wrogów, wali w konkretny punkt na mapie
 }
+
+public enum BattleStats
+{
+    Range,              // Base distance in game unity
+    Damage,             // Base damage
+    FireRate,           // Shots per second
+    CriticalChancel,    // Modifier 20 is 20% to crit
+    CriticalMultiplier, // Modifier 1.2 is 120% of base dmg
+    ArmorPenetration,   // Percentage of ignored
+    MagicPenetration,   // Percenetage of ignored
+    DamageType,         // Damege typ (true,magic,physical)
+}

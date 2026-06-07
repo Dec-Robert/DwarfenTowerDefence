@@ -33,7 +33,6 @@ public class BuildingData : ScriptableObject
     public bool requiresOccupiedSpace;
 
     [Header("Wymagania Specjalne")]
-    [Tooltip("Jeśli zaznaczone, budowa wymaga jednego wolnego obywatela wybranej rasy (zostanie przypisany na stałe).")]
     public bool requiresSpecificCitizen;
 
     public Race requiredCitizenRace = Race.Elves;
@@ -43,17 +42,20 @@ public class BuildingData : ScriptableObject
 
     [Header("Ekonomia (Koszt i Produkcja Bazowa)")]
     public List<ResourceCost> constructionCost;
-
     public List<ResourceCost> productionPerCycle;
     public List<ResourceCost> upkeepPerCycle;
 
-    [Header("System Ulepszeń")] public List<BuildingUpgradeSO> tier1Upgrades;
+    [Header("System Ulepszeń")] 
+    public List<BuildingUpgradeSO> tier1Upgrades;
 
-    [Header("Prefab")] public GameObject prefab;
+    [Header("Prefab")] 
+    public GameObject prefab;
 
-    [Header("Zasady Produkcji Terenowej")] public TerrainBonusRule bonusRule;
+    [Header("Zasady Produkcji Terenowej")] 
+    public TerrainBonusRule bonusRule;
 
-    [Header("Pracownicy (Baza)")] public int baseShifts = 1;
+    [Header("Pracownicy (Baza)")]
+    public int baseShifts = 1;
 
     public int baseWorkersPerShift = 1;
 

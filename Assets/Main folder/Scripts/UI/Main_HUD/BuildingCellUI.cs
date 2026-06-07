@@ -8,19 +8,20 @@ public class BuildingCellUI : MonoBehaviour
     
     public void Setup(BuildingData data)
     {
+
         buildingData = data;
     }
 
     public void PointerEnter()
     {
-        Debug.Log("OnPointerEnter");
-        BuildMenuUI.Instance.OpenExtraInfo(buildingData);
+        //Debug.Log("OnPointerEnter");
+        BuildingTooltipManagerUI.Instance.ShowTooltip(buildingData);
     }
     
     public void PointerExit()
     {
-        Debug.Log("OnPointerExit");
-        BuildMenuUI.Instance.HideExtraInfo();
+        //Debug.Log("OnPointerExit");
+        BuildingTooltipManagerUI.Instance.HideTooltip();
     }
     
 }

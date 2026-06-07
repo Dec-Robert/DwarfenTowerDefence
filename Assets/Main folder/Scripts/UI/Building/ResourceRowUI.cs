@@ -7,16 +7,11 @@ public class ResourceRowUI : MonoBehaviour
 {
     public Image icon;
     public TextMeshProUGUI amountText;
-
-    public void Setup(Sprite sprite, float ammout)
+    
+    public void Setup(Sprite icon, float ammout)
     {
-        icon.sprite = sprite;
+        this.icon.sprite = icon;
         amountText.text = ammout.ToString();
     }
     
-    public void Setup(ResourceType resource, float ammout)
-    {
-        icon.transform.gameObject.SetActive(false);
-        amountText.text = resource.ToString() +" "+ ammout.ToString();
-    }
 }

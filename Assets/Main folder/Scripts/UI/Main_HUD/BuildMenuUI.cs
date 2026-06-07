@@ -34,7 +34,7 @@ public class BuildMenuUI : MonoBehaviour
     private List<UIBuildingData> uiBuildings = new List<UIBuildingData>(); //List of all bulding in menu
     
     
-    [Header("Referencje do przycisków")]
+    [Header("References to buttons")]
     public Button btnBuildTower;
     public Button btnBuildProduction;
     public Button btnBuildHouses;
@@ -75,30 +75,6 @@ public class BuildMenuUI : MonoBehaviour
         if(btnBuildHouses != null) btnBuildHouses.onClick.AddListener(() => OpenWindow(BuildingType.Housing));
         if(btnBuildUniq != null) btnBuildUniq.onClick.AddListener(() => OpenWindow(BuildingType.Unique));
 
-        
-        //i = 5 couse thats MAX resource for production/consumption/building
-        //Inst
-        for (int i = 0; i < 5; i++)
-        {
-            GameObject obj = Instantiate(resourcePanelPrefab,costArrayPanel.transform);
-            costArray.Add(obj);
-            obj.SetActive(false);
-        }
-
-        for (int i = 0; i < 5; i++)
-        {
-            GameObject obj = Instantiate(resourcePanelPrefab,maintananceArrayPanel.transform);
-            maintananceArray.Add(obj);
-            obj.SetActive(false);
-        }
-        
-        for (int i = 0; i < 5; i++) {
-            GameObject obj = Instantiate(resourcePanelPrefab, productionArrayPanel.transform);
-            productionArray.Add(obj);
-            obj.SetActive(false);
-        }
-    
-
 }
 
     private void Start()
@@ -136,9 +112,6 @@ public class BuildMenuUI : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F10)) HideWindow();
-        if (Input.GetKeyDown(KeyCode.F11)) OpenExtraInfo();
-        if (Input.GetKeyDown(KeyCode.F12)) HideExtraInfo();
-
         
     }
     
@@ -175,53 +148,5 @@ public class BuildMenuUI : MonoBehaviour
         buildingMenu.transform.DOKill();
         buildingMenu.transform.DOMoveY(buildingMenuHiddenPositionY, 0.2f).SetUpdate(true);
     }
-
-    //Functions called from single UI cell that will have onHover
-    //TODO: Zmienić później = null
-    public void OpenExtraInfo(BuildingData data= null)
-    {
-        CanvasGroup canvasGroup = buildingExtraInfo.GetComponent<CanvasGroup>();
-        
-        canvasGroup.DOKill();
-        buildingExtraInfo.SetActive(true);
-        
-        canvasGroup.DOKill();
-        canvasGroup.DOFade(1f, 0.2f).SetUpdate(true); 
-        
-        SetupExtraInfo(data);
-    }
-    public void HideExtraInfo()
-    {
-        CanvasGroup canvasGroup = buildingExtraInfo.GetComponent<CanvasGroup>();
-        canvasGroup.DOKill();
-        canvasGroup.DOFade(0f, 0.2f).SetUpdate(true).OnComplete(() => 
-        {
-            buildingExtraInfo.SetActive(false);
-        });
-        foreach (var variable in costArray) variable.SetActive(false);
-        foreach (var variable in productionArray) variable.SetActive(false);
-        foreach (var variable in maintananceArray) variable.SetActive(false);
-
-    }
-
-    public void SetupExtraInfo(BuildingData data)
-    {
-        //Setup for costs
-        Dictionary<ResourceType, float> resourceCosts = data.GetCostDictionary();
-
-        int i = 0;
-        foreach (var resourceCost in resourceCosts)
-        {
-            ResourceRowUI resourceRowUI = costArray[i].GetComponent<ResourceRowUI>();
-            resourceRowUI.Setup(resourceCost.Key,resourceCost.Value);
-            costArray[i].SetActive(true);
-            
-            i++;
-        }
-        i = 0;
-        //TODO: uzupełnić resztę surowców
-
-    }
-
-
+    
 }

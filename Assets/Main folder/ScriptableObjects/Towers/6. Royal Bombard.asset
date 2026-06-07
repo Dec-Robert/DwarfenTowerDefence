@@ -17,6 +17,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 1afd990cd1c03164fae2d9c0068fd288, type: 3}
   type: 1
   workerScalingFactor: 0.25
+  firstWorkerProduction: 0.7
   allowedTerrain: 00000000010000000300000005000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
@@ -35,20 +36,23 @@ MonoBehaviour:
   prefab: {fileID: 7117580149188207224, guid: eca59424e3ae589438b24b6b3c61e4b7, type: 3}
   bonusRule:
     requiredFeature: 0
-    range: 0
+    searchRadius: 0
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
   baseShifts: 1
   baseWorkersPerShift: 1
+  isUnlocked: 1
   baseRange: 9
   baseDamage: 100
   fireRate: 0.3
-  criticalChancel: 0
-  criticalDamageMultiplier: 0
+  criticalChancel: 5
+  criticalDamageMultiplier: 2
   armorPenetration: 0
   magicPenetration: 0
   damageType: 0
+  canShootChunk: 0
+  defaultTargetingPriorities: 
   effects: []
   bulletPrefab: {fileID: 1224714705083670074, guid: dcd606a0a7e63cd4d9775a36bff488e0, type: 3}

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3ba7d8b42091ab46a13043c60079873, type: 3}
+  m_Name: ResourceVisualDatabase
+  m_EditorClassIdentifier: 
+  resourceVisuals:
+  - type: 0
+    icon: {fileID: 21300000, guid: 3dbf7c9a4a3127f45b741fefae238206, type: 3}
+  - type: 1
+    icon: {fileID: 21300000, guid: 9c366330a3936574b9f20dad49cb0323, type: 3}
+  - type: 2
+    icon: {fileID: 21300000, guid: ec4836f18e1ced145b16dcce66b85e3c, type: 3}
+  - type: 3
+    icon: {fileID: 21300000, guid: 201ba8562aef6974ea5f9dc9e3b40ead, type: 3}
+  - type: 4
+    icon: {fileID: 21300000, guid: 966fcf7d12ef7d743ac842b2d6d43888, type: 3}
+  - type: 6
+    icon: {fileID: 21300000, guid: 1b3131eaaf81d074f88beaf870283193, type: 3}
+  - type: 7
+    icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
+  statVisuals:
+  - stat: 1
+    icon: {fileID: 0}
+  - stat: 2
+    icon: {fileID: 0}
+  - stat: 3
+    icon: {fileID: 0}
+  - stat: 4
+    icon: {fileID: 0}
+  - stat: 5
+    icon: {fileID: 0}
+  - stat: 6
+    icon: {fileID: 0}
+  - stat: 6
+    icon: {fileID: 0}
