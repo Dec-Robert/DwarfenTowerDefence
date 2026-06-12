@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
   m_Name: Addition towers III
   m_EditorClassIdentifier: 
-  id: addition_towers_iii
-  upgradeName: Addition towers III
+  id: addition_towers_3
+  upgradeName: Runic resurrection III
   description: "Do ku\u017Ani mo\u017Ce zosta\u0107 dobudowa 3 wie\u017Ce runiczne"
   icon: {fileID: 0}
   cost: 100

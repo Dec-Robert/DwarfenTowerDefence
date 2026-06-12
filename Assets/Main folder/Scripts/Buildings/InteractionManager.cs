@@ -115,10 +115,11 @@ public class InteractionManager : MonoBehaviour
 
     private void HandleClick()
     {
-        Debug.Log("[Interaction] Attempt to interact");
+        
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (!Physics.Raycast(ray, out var hit, 1000f))
         {
+            Debug.Log("[Interaction] Attempt to interact");
             EnemyInfoUI.Instance.CloseWindow();
             DeselectAll();
             return;
@@ -151,6 +152,7 @@ public class InteractionManager : MonoBehaviour
         if (building == null)
         {
             DeselectAll();
+            Debug.Log("[Interaction] Interaction with terrain"+ cell.chunkCoord);
             return;
         }
 
@@ -159,12 +161,14 @@ public class InteractionManager : MonoBehaviour
         // Pokaż zasięg wieży
         if (building is TowerEntity towerEntity)
         {
+            CenterInfoPanelControllerUI.Instance.Setup(building);
             lastSelectedTower = towerEntity.controller;
             lastSelectedTower?.ShowRangeIndicator(true);
         }
 
         // Podświetl sąsiednie zasoby
         highlighter.HighlightFor(building.data, cell.chunkCoord, cell.localCoord, building);
+        Debug.Log("[Interaction] Interaction with " + building);
     }
 
     // =========================================================================
@@ -187,6 +191,7 @@ public class InteractionManager : MonoBehaviour
 
     private void HandleEnemyClick(EnemyStats stats)
     {
+        Debug.Log("[Interaction] Interaction with " + stats.name);
         DeselectAll();
         EnemyInfoUI.Instance.OpenWindow(stats);
         

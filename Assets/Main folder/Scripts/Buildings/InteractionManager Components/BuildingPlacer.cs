@@ -86,9 +86,9 @@ public class BuildingPlacer
                     : 0;
 
                 if (currentCount >= maxAllowed)
-                    Debug.Log("<color=orange>Osiągnięto limit Wież Runicznych! Zwiększ go w Meta-Progresji.</color>");
+                    Debug.Log("[Info] <color=orange>Osiągnięto limit Wież Runicznych! Zwiększ go w Meta-Progresji.</color>");
                 else
-                    Debug.Log("<color=orange>Wieża Runiczna musi zostać zbudowana tuż obok Kuźni Runicznej!</color>");
+                    Debug.Log("[Info] <color=orange>Wieża Runiczna musi zostać zbudowana tuż obok Kuźni Runicznej!</color>");
             }
 
             return false;

@@ -6,7 +6,7 @@ using UnityEngine;
 public class ResourceVisualsSO : ScriptableObject
 {
 
-    //Struct for resources
+    //Struct for resources icons
     [System.Serializable]
     public struct ResourceVisual
     {
@@ -14,7 +14,7 @@ public class ResourceVisualsSO : ScriptableObject
         public Sprite icon;
     }
     
-    //Struct for tower data
+    //Struct for tower stats icons
     [System.Serializable]
     public struct StatsVisual
     {
@@ -22,10 +22,29 @@ public class ResourceVisualsSO : ScriptableObject
         public Sprite icon;
     }
     
+    //Struct for races icons
+    [System.Serializable]
+    public struct RacesVisual
+    {
+        public Race race;
+        public Sprite icon;
+    }
+    
+    //Struct for races icons
+    [System.Serializable]
+    public struct FocusVisual
+    {
+        public TargetingMode focus;
+        public Sprite icon;
+    }
+
+    
     
     public List<ResourceVisual> resourceVisuals;
     public List<StatsVisual> statVisuals;
-        
+    public List<RacesVisual> raceVisuals;
+    public List<FocusVisual> focusVisuals;
+    
     public Sprite GetIcon(ResourceType type)
     {
             foreach (var res in resourceVisuals)
@@ -43,5 +62,21 @@ public class ResourceVisualsSO : ScriptableObject
         }
         return null;
     }
-    
+
+    public Sprite GetIcon(Race race)
+    {
+        foreach (var res in raceVisuals)
+        {
+            if (res.race == race) return res.icon;
+        }
+        return null;
+    }
+    public Sprite GetIcon(TargetingMode focus)
+    {
+        foreach (var res in focusVisuals)
+        {
+            if (res.focus == focus) return res.icon;
+        }
+        return null;
+    }
 }

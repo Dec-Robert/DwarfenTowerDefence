@@ -133,7 +133,7 @@ public class EnemySpawner : MonoBehaviour
 
         if (TimeCycleManager.Instance != null && waveNumber <= TimeCycleManager.Instance.gracePeriodDays)
         {
-            Debug.Log($"<color=green>[Spawner] Dzień {waveNumber} to Grace Period. Pomijam generowanie fali.</color>");
+            Debug.Log($"<color=green>[Spawner] Day {waveNumber} is Grace Period. Wave not spawning yet.</color>");
             return; 
         }
         // Moduł Echo – aktualizacja zagrożeń na początku fali

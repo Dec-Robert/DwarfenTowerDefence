@@ -33,7 +33,12 @@ public class EnemyInfoUI : MonoBehaviour
         Instance = this;
         rectTransform = GetComponent<RectTransform>();
     }
-    
+
+    public void Start()
+    {
+        CloseWindow();
+    }
+
     void Update()
     {
         if (enemyStats == null)

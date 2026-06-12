@@ -7,7 +7,7 @@ public enum BuildingType
 {
     Economic, // Tartak, Kopalnia (Produkcja)
     Defense, // Wieża (Obrona)
-    Housing, // Domy (Elfy,Krasnoludy ludzie)
+    Housing, // Domy (Elfy, Krasnoludy, ludzie)
     Utility, // Domy, Magazyny
     Unique // Kapitol, Beacon   BUDYNKI NIE BUDOWALNE LUB BUDOWALNE BARDZO SPECYFICZNYCH KONDYCJI
 }

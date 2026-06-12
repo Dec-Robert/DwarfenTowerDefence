@@ -23,6 +23,8 @@ public class TowerEntity : BuildingEntity
     private const int NIGHT_START_HOUR = 20;
     private const int NIGHT_END_HOUR   = 6;
 
+    private static readonly float[] efficencyTable = new float[] { 0f, 1f, 1.1f, 1.2f, 1.3f, 1.35f, 1.4f };
+
     // =========================================================================
     // Cykl życia
     // =========================================================================
@@ -134,10 +136,10 @@ public class TowerEntity : BuildingEntity
             .FindAll(c => c.workState != WorkState.Exhausted);
         int crewCount = activeCrew.Count;
 
-        // 2. Wydajność bazowa od liczby załogi
-        float efficiency = crewCount == 0 ? 0f
-                         : crewCount == 1 ? 0.7f
-                         : 1.0f;
+        // 2. Efficency based on working pop
+        float efficiency = crewCount < efficencyTable.Length
+            ? efficencyTable[crewCount] 
+            : efficencyTable[efficencyTable.Length-1];
 
         // 3. Rasowe bonusy załogi (flat, per pracownik)
         float rangeBonusFlat    = 0f;

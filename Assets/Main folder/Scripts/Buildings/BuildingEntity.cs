@@ -352,4 +352,10 @@ public class BuildingEntity : MonoBehaviour
 
         RefreshInspectorUI();
     }
+    
+    // Get lenght of working citizens
+    public int GetTotalWorkerCount()
+    {
+        return Workers.GetAssignedCitizens().Count;
+    }
 }

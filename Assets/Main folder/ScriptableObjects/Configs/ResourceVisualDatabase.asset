@@ -42,3 +42,29 @@ MonoBehaviour:
     icon: {fileID: 0}
   - stat: 6
     icon: {fileID: 0}
+  raceVisuals:
+  - race: 0
+    icon: {fileID: 21300000, guid: 88ec3e3f5c5873b49a364b493ec7302b, type: 3}
+  - race: 1
+    icon: {fileID: 21300000, guid: 68fa02fcf10b4f74e88ebed0fb6d2aff, type: 3}
+  - race: 2
+    icon: {fileID: 21300000, guid: 5c7219dc3ccf11a4ea995557a9a14b40, type: 3}
+  focusVisuals:
+  - focus: 0
+    icon: {fileID: 21300000, guid: 336b9662f71d9cf44b4b2713be650d1b, type: 3}
+  - focus: 1
+    icon: {fileID: 21300000, guid: 086cd9988d764e94288225b1bc1ab76e, type: 3}
+  - focus: 2
+    icon: {fileID: 21300000, guid: 346e379f12866ff4aaae352994b3610c, type: 3}
+  - focus: 3
+    icon: {fileID: 21300000, guid: bc30bdc1e5e675d419e2222e1ddc5fde, type: 3}
+  - focus: 4
+    icon: {fileID: 21300000, guid: 7017cd081d78ff241b84677f77449a21, type: 3}
+  - focus: 5
+    icon: {fileID: 21300000, guid: 338f2c9e326b0d64d9c970110d07a16e, type: 3}
+  - focus: 6
+    icon: {fileID: 21300000, guid: 87bc04c93972ff64397392be8467ba77, type: 3}
+  - focus: 7
+    icon: {fileID: 21300000, guid: c15a795b125027046a60e8ce5869cf50, type: 3}
+  - focus: 8
+    icon: {fileID: 21300000, guid: 4b9f08adc0948d741a3b78bdb691a9ca, type: 3}
