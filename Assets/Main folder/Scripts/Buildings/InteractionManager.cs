@@ -1,6 +1,6 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UIElements;
 
 /// <summary>
 ///     Cienki koordynator interakcji gracza z mapą.
@@ -125,10 +125,21 @@ public class InteractionManager : MonoBehaviour
             return;
         }
 
+
+        if (hit.collider.TryGetComponent<EnemyStats>(out var stats))
+        {
+            HandleEnemyClick(stats);
+            return;
+        }
         
-        if (hit.collider.TryGetComponent<EnemyStats>(out var stats)) HandleEnemyClick(stats);
-        else if (hit.collider.TryGetComponent<HexCell>(out var cell)) HandleBuildClick(cell); 
-        else HandleInspectClick(cell);
+        if(hit.collider.TryGetComponent<HexCell>(out var cell))
+        {
+            EnemyInfoUI.Instance.CloseWindow();
+            if (SelectedBuilding != null) HandleBuildClick(cell);
+            else HandleInspectClick(cell);
+            
+        } 
+        
     }
 
     private void HandleBuildClick(HexCell cell)
@@ -147,7 +158,17 @@ public class InteractionManager : MonoBehaviour
 
     private void HandleInspectClick(HexCell cell)
     {
-        var building = cell.GetComponentInChildren<BuildingEntity>();
+        BuildingEntity building;
+        try
+        {
+            Debug.Log("[Interaction] Inspecting"+cell.chunkCoord);
+            building = cell.GetComponentInChildren<BuildingEntity>();
+        }
+        catch (Exception e)
+        {
+            building = null;
+        }
+        
 
         if (building == null)
         {
@@ -156,18 +177,32 @@ public class InteractionManager : MonoBehaviour
             return;
         }
 
+
         DeselectAll();
+            
+            Debug.Log("[Interaction]" + building.GetType());
         
-        // Pokaż zasięg wieży
+        //Interaction for towers
         if (building is TowerEntity towerEntity)
         {
             CenterInfoPanelControllerUI.Instance.Setup(building);
             lastSelectedTower = towerEntity.controller;
             lastSelectedTower?.ShowRangeIndicator(true);
         }
+        //Interaction for houses
+        else if (building is HousingEntity housingEntity)
+        {
+            //TODO: Add centerPanelUI interaction for housingEntity
+        }
+        else if (building.data.type == BuildingType.Economic)
+        {
+            CenterInfoPanelControllerUI.Instance.Setup(building);
+            lastSelectedTower?.ShowRangeIndicator(false);
+            lastSelectedTower = null;
+        }
 
         // Podświetl sąsiednie zasoby
-        highlighter.HighlightFor(building.data, cell.chunkCoord, cell.localCoord, building);
+        //highlighter.HighlightFor(building.data, cell.chunkCoord, cell.localCoord, building);
         Debug.Log("[Interaction] Interaction with " + building);
     }
 
@@ -184,6 +219,7 @@ public class InteractionManager : MonoBehaviour
             lastSelectedTower = null;
         }
 
+        CenterInfoPanelControllerUI.Instance.HideAll();
         highlighter.Clear();
     }
 

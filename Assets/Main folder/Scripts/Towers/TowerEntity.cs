@@ -204,4 +204,10 @@ public class TowerEntity : BuildingEntity
         base.RemoveWorker(race);
         RecalculateStats();
     }
+    
+    // =========================================================================
+    // Udostępniacz tablicy modyfikatorów
+    // =========================================================================
+    
+    public float[] GetEfficencyTable() {return efficencyTable;}
 }

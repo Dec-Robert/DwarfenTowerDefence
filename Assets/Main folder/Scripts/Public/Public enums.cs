@@ -195,6 +195,20 @@ public struct TerrainBonusRule
     public float onTopProductionBonus;
 }
 
+[Serializable]
+public struct TowerStats
+{
+    public float range; // Range in game units
+    public float damage; // Damage pre mitigations
+    public float fireRate; // Shoots per seconds
+
+    public float criticalChancel; // Percentage value of crit chance.
+    public float criticalDamageMultiplier; // Numerical value of crit multiplayer 1.4 = 140% crit dmg
+    public float armorPenetration; // Percentage of armor penetration
+    public float magicPenetration; // Percenta of magic penetration
+    public DamageType damageType; // Damage type, one of:  Physical, Magic, True
+} 
+
 
 public enum RuneRarity
 {

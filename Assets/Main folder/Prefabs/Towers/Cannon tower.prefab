@@ -82,7 +82,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 972520069133064576}
-  - component: {fileID: 3052351962640967533}
   - component: {fileID: -6491389187303088308}
   - component: {fileID: -5995639072880687604}
   m_Layer: 7
@@ -108,27 +107,6 @@ Transform:
   - {fileID: 1583754250275910143}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &3052351962640967533
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7117580149188207224}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.3, y: 1.3, z: 1.3}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &-6491389187303088308
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -151,9 +129,14 @@ MonoBehaviour:
   currentRange: 0
   currentDamage: 0
   currentFireRate: 0
+  currentArmorPen: 0
+  currentMagicPen: 0
   criticalChance: 0
   criticalMultiplier: 0
   isAimed: 0
+  isFeared: 0
+  activeTargetingRules: 
+  targetChunkCoord: {x: 0, y: 0}
 --- !u!114 &-5995639072880687604
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,12 +150,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 0}
-  currentTier: 0
-  appliedUpgrades: []
+  isBuildingActive: 1
   shiftStartHour: 6
   shiftLength: 10
-  currentShiftLength: 0
-  assignedCitizens: []
+  hasBeenUsed: 0
   controller: {fileID: 0}
   isCombatActive: 0
   hasAmmo: 0

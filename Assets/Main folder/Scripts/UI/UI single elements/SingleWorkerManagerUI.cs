@@ -19,21 +19,23 @@ public class SingleWorkerManagerUI : MonoBehaviour
         icon.sprite = raceVisuals.GetIcon(race);
     }
 
-    public void Setup(BuildingEntity currentBuilding, System.Action onWorkerChangedCallback)
+    public void Setup(BuildingEntity currentBuilding)
     {
         this.currentBuilding = currentBuilding;
         buttonAdd.onClick.RemoveAllListeners();
         buttonAdd.onClick.AddListener(() =>
         {
+            currentBuilding.TryAddWorker(race);
+            
             RefreshUI();
-            onWorkerChangedCallback?.Invoke();
+            
         });
         
         buttonRemove.onClick.RemoveAllListeners();
         buttonRemove.onClick.AddListener(() =>
         {
             currentBuilding.RemoveWorker(race);
-            onWorkerChangedCallback?.Invoke();
+            
             RefreshUI();
         });
 
@@ -54,4 +56,6 @@ public class SingleWorkerManagerUI : MonoBehaviour
         
         buttonAdd.interactable = (!isBuildingFull && hasFreeCitizen);
     }
+    
+    
 }

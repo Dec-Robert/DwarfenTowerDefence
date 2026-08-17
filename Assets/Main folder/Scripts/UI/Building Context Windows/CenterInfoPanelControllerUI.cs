@@ -23,12 +23,18 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         if (buildingEntity is TowerEntity towerEntity)
         {
                 towerPanel.SetActive(true);
-                towerPanel.GetComponent<TowerInfoPanelUI>().Setup(towerEntity );
+                towerPanel.GetComponent<TowerInfoPanelUI>().Setup(buildingEntity as TowerEntity);
             
+        }
+
+        if (buildingEntity.data.type == BuildingType.Economic)
+        {
+            productionPanel.SetActive(true);
+            productionPanel.GetComponent<ProductionInfoPanelUI>().Setup(buildingEntity);
         }
     }
     
-    private void HideAll()
+    public void HideAll()
     {
         productionPanel.SetActive(false);
         housingPanel.SetActive(false);

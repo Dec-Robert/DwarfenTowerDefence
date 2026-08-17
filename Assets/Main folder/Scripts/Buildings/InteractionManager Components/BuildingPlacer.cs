@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 /// <summary>
 ///     Odpowiada za walidację miejsca pod budynek, fizyczną budowę
@@ -20,13 +22,18 @@ public class BuildingPlacer
     /// <summary>Sprawdza czy można postawić budynek na danym heksie (teren + stan chunku).</summary>
     public bool IsPlacementValid(HexCell cell, BuildingData data)
     {
+        if (data == null || cell == null) return false;
         if (!mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return false;
 
         var cellData = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
 
         if (cellData.isPath) return false;
         if (!data.allowedTerrain.Contains(cellData.feature)) return false;
-        if (cell.GetComponentInChildren<BuildingEntity>() != null) return false;
+
+        try {var _ = cell.GetComponentInChildren<BuildingEntity>();}
+        catch (Exception e) {return false;}
+        
+        
 
         // Walidacja stanu chunku
         if (!IsChunkStateValidForBuilding(cell.chunkCoord, data)) return false;
@@ -75,6 +82,7 @@ public class BuildingPlacer
     {
         if (!IsPlacementValid(cell, data))
         {
+            if (cell == null || data == null) return false;
             // Opcjonalny feedback dla gracza klikającego "złe" miejsce pod wieżę runiczną
             if (data.prefab != null && data.prefab.GetComponent<RuneTowerEntity>() != null)
             {

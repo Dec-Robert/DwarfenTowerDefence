@@ -27,6 +27,8 @@ public class BuildingData : ScriptableObject
 
     [Tooltip("Ile produkcji zapewnia pierwszy pracownik")]
     public float firstWorkerProduction = 0.7f;
+    
+    public List<float> shiftEffectivenese = new List<float>();
 
     [Header("Wymagania Terenu")] public List<HexFeatureType> allowedTerrain;
 

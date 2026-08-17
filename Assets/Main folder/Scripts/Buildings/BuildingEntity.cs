@@ -240,6 +240,24 @@ public class BuildingEntity : MonoBehaviour
         return Workers.GetMaxWorkersPerShift();
     }
 
+    public int GetWorkersFromShift(int shiftNumber)
+    {
+        List<Citizen> citizens = new List<Citizen>();
+        List<Citizen>  allCitizens = new List<Citizen>();
+        allCitizens = Workers.GetAssignedCitizens();
+
+        if (allCitizens.Count == 0) return 0;
+        
+        for (int i = shiftNumber; i < shiftNumber*getMaxWorkersPerShift()+getMaxWorkersPerShift(); i++)
+        {
+            
+            if (i > allCitizens.Count)break;
+            
+            citizens.Add(allCitizens[i]);
+        }
+        return citizens.Count;
+    }
+
     // --- Ulepszenia ---
 
     public List<BuildingUpgradeSO> GetAvailableUpgrades()

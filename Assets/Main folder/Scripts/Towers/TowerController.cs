@@ -41,6 +41,10 @@ public class TowerController : MonoBehaviour
     
     private Transform forcedTarget = null; // Dla OverrideTargeting (Prowokacja)
 
+    //Event to listen for stat change
+    public event System.Action OnStatsChanged;
+
+
     void Start()
     {
         towerEntity = GetComponent<TowerEntity>();
@@ -101,6 +105,7 @@ public class TowerController : MonoBehaviour
                 rangeIndicatorInstance.transform.localScale = new Vector3(scale, 1f, scale);
             }
         }
+        OnStatsChanged?.Invoke();
     }
 
     // --- POKAZYWANIE ZASIĘGU ---
@@ -426,5 +431,20 @@ public class TowerController : MonoBehaviour
 
         // Zabezpieczenie: jeśli filtr wywalił wszystkich (np. wrogowie nie mają komponentu Walker), zwróć oryginał
         return result.Count > 0 ? result : list;
+    }
+
+    public TowerStats GetAllStats()
+    { 
+        TowerStats stats = new TowerStats();
+        stats.range = currentRange;
+        stats.damage = currentDamage;
+        stats.fireRate = currentFireRate;
+        stats.criticalChancel = criticalChance;
+        stats.criticalDamageMultiplier = criticalMultiplier;
+        stats.armorPenetration = currentArmorPen;
+        stats.magicPenetration = currentMagicPen;
+        stats.damageType = towerData.damageType;
+
+        return stats;
     }
 }

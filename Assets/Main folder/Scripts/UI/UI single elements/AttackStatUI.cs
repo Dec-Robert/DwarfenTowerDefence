@@ -15,16 +15,17 @@ public class AttackStatUI : MonoBehaviour
         if (value == null) value = GetComponentInChildren<TextMeshProUGUI>();
     }
 
-    public void Setup(TowerData data)
+    public void Setup(TowerStats data)
     {
+        
             
         switch (stats)
         {
             case BattleStats.Range:
-                SetText(data.baseRange);
+                SetText(data.range);
                 break;
             case BattleStats.Damage:
-                SetText(data.baseDamage);
+                SetText(data.damage);
                 break;
             case BattleStats.FireRate:
                 SetText(data.fireRate);
@@ -46,6 +47,11 @@ public class AttackStatUI : MonoBehaviour
                 break;
         }
         
+    }
+
+    public void Setup()
+    {
+        return;
     }
 
     private void SetupExtraInfo(TowerData data)

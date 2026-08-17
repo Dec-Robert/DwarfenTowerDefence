@@ -170,11 +170,8 @@ public class BuildingTooltipManagerUI : MonoBehaviour
     {
         pnlTower.SetActive(true);
         AttackStatUI[] statPanels = pnlStatArray.gameObject.GetComponentsInChildren<AttackStatUI>();
+        foreach (AttackStatUI element in statPanels) element.Setup();
         
-        foreach (AttackStatUI element in statPanels)
-        {
-            element.Setup(data);
-        }
     }
 
     private void SetupHousingPanel(HousingBuildingData data)
