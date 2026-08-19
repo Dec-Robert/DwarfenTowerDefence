@@ -56,26 +56,7 @@ public class BuildingData : ScriptableObject
     [Header("Zasady Produkcji Terenowej")] 
     public TerrainBonusRule bonusRule;
 
-    [Header("Pracownicy (Baza)")]
-    public int baseShifts = 1;
-
-    public int baseWorkersPerShift = 1;
-
-    public Dictionary<ResourceType, float> GetCostDictionary()
-    {
-        var dict = new Dictionary<ResourceType, float>();
-        foreach (var cost in constructionCost)
-            if (dict.ContainsKey(cost.type)) dict[cost.type] += cost.amount;
-            else dict.Add(cost.type, cost.amount);
-        return dict;
-    }
-
-    [Serializable]
-    public struct ResourceCost
-    {
-        public ResourceType type;
-        public float amount;
-    }
+    [Header("Pracownicy (Baza)")] public int baseMaxWorkers = 1;
 
     [Header("Is building unlocked to be build")]
     public bool isUnlocked = true;

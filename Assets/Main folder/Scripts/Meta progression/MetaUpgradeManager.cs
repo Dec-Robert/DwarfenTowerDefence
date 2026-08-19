@@ -109,7 +109,7 @@ public class MetaUpgradeManager : MonoBehaviour
     /// </summary>
     private void CollectValues()
     {
-        Debug.LogWarning("[MetaUpgradeManager] Rozpoczynam CollectValues()..."); // <--- NOWE
+        Debug.LogWarning("[MetaUpgradeManager] Rozpoczynam CollectValues()...");
         appliedValues.Clear();
         buildingSpecificValues.Clear();
 
@@ -158,22 +158,22 @@ public class MetaUpgradeManager : MonoBehaviour
         {
             // ── Surowce startowe ──────────────────────────────────────────────
             case MetaEffectType.StartingGold:
-                ResourceManager.Instance?.AddResource(ResourceType.Gold, value);
+                ResourceManager.Instance?.AddResource(ResourceType.Gold, (int)value);
                 break;
             case MetaEffectType.StartingWood:
-                ResourceManager.Instance?.AddResource(ResourceType.Wood, value);
+                ResourceManager.Instance?.AddResource(ResourceType.Wood, (int)value);
                 break;
             case MetaEffectType.StartingStone:
-                ResourceManager.Instance?.AddResource(ResourceType.Stone, value);
+                ResourceManager.Instance?.AddResource(ResourceType.Stone, (int)value);
                 break;
             case MetaEffectType.StartingIron:
-                ResourceManager.Instance?.AddResource(ResourceType.Iron, value);
+                ResourceManager.Instance?.AddResource(ResourceType.Iron, (int)value);
                 break;
             case MetaEffectType.StartingCoal:
-                ResourceManager.Instance?.AddResource(ResourceType.Coal, value);
+                ResourceManager.Instance?.AddResource(ResourceType.Coal, (int)value);
                 break;
             case MetaEffectType.StartingFood:
-                ResourceManager.Instance?.AddResource(ResourceType.Food, value);
+                ResourceManager.Instance?.AddResource(ResourceType.Food, (int)value);
                 break;
 
             // ── Pracownicy i zmiany ───────────────────────────────────────────
@@ -332,33 +332,7 @@ public class MetaUpgradeManager : MonoBehaviour
     /// </summary>
     public int GetHousingStartPopulationBonus()
         => Mathf.RoundToInt(GetValue(MetaEffectType.HousingStartPopulation));
-
-    // =========================================================================
-    // SURVIVOR PENALTY — wywoływane przez EnemySpawner na końcu fali
-    // =========================================================================
-
-    /// <summary>
-    /// Aplikuje karę dla wrogów którzy przeżyli falę.
-    /// Wywołaj w EnemySpawner gdy GameManager.EndWave() przełącza stan.
-    /// </summary>
-    public void ApplySurvivorPenaltiesToAll()
-    {
-        float armorPenalty = GetValue(MetaEffectType.EnemySurvivorPenaltyArmor);
-        float speedPenalty = GetValue(MetaEffectType.EnemySurvivorPenaltySpeed);
-        float dodgePenalty = GetValue(MetaEffectType.EnemySurvivorPenaltyDodge);
-
-        if (armorPenalty == 0f && speedPenalty == 0f && dodgePenalty == 0f) return;
-
-        var survivors = Object.FindObjectsOfType<EnemyStats>();
-        foreach (var enemy in survivors)
-        {
-            enemy.ApplySurvivorPenalty(armorPenalty, speedPenalty, dodgePenalty);
-        }
-
-        Debug.Log($"[MetaUpgradeManager] Kara dla {survivors.Length} ocalałych wrogów. " +
-                  $"Armor:-{armorPenalty*100:F0}% Speed:-{speedPenalty*100:F0}% Dodge:-{dodgePenalty*100:F0}%");
-    }
-
+    
     // =========================================================================
     // DEBUG
     // =========================================================================

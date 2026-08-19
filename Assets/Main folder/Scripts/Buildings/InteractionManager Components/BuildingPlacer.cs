@@ -116,10 +116,9 @@ public class BuildingPlacer
                 return false;
             }
         }
-        // ───────────────────────────────────────────────────────────────────────
 
-        // ── Koszt surowców ─────────────────────────────────────────────────────
-        var costs = data.GetCostDictionary();
+
+        var costs = data.constructionCost;
         if (!ResourceManager.Instance.SpendResources(costs))
         {
             Debug.Log("<color=orange>Za mało surowców!</color>");

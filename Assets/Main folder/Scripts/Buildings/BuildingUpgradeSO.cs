@@ -9,13 +9,13 @@ public class BuildingUpgradeSO : ScriptableObject
     public Sprite icon;
     [TextArea] public string description;
 
-    [Header("Koszt")] public List<BuildingData.ResourceCost> cost;
+    [Header("Koszt")] public List<ResourceCost> cost;
 
     [Header("Efekty Statystyczne (Addytywne)")]
     // Np. jeśli tartak produkuje 5, a tu wpiszemy Wood: 2, to będzie produkować 7.
-    public List<BuildingData.ResourceCost> productionBonus;
+    public List<ResourceCost> productionBonus;
 
-    public List<BuildingData.ResourceCost> upkeepIncrease;
+    public List<ResourceCost> upkeepIncrease;
 
     [Tooltip(
         "Globalny mnożnik dodawany do CAŁEJ produkcji budynku (baza + teren). Np. 0.2 to +20% ogólnej wydajności.")]

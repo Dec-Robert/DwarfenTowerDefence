@@ -1,6 +1,7 @@
 using System;
 using UnityEngine.UI;
 using UnityEngine;
+using UnityEngine.Android;
 
 public class ProductionInfoPanelUI : MonoBehaviour
 {
@@ -40,6 +41,8 @@ public class ProductionInfoPanelUI : MonoBehaviour
         currentBuilding = _entity;
         hideALLShiftPanels();
 
+        //TODO Rework całkowity menu produkcji
+        /*
         for (int i = 0; i < currentBuilding.getMaxShifts(); i++)
         {
             GameObject panel = shiftPanels.transform.GetChild(i).gameObject;
@@ -48,7 +51,7 @@ public class ProductionInfoPanelUI : MonoBehaviour
         }
         Canvas.ForceUpdateCanvases(); 
         LayoutRebuilder.ForceRebuildLayoutImmediate(shiftPanels.GetComponent<RectTransform>());
-       
+       */
     }
 
     private void hideALLShiftPanels()

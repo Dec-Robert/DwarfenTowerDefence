@@ -10,14 +10,13 @@ using UnityEngine;
 /// </summary>
 public class OutpostEntity : BuildingEntity
 {
-    [Header("── Konfiguracja ────────────────────────")]
-    public int daysUntilTransform = 10;
 
-    [Header("── Opcje Transformacji (bazowe) ─────────")]
+    /*
+    public int daysUntilTransform = 5;
+    
     public List<TransformOption> baseTransformOptions = new();
 
-    [Header("── Stan (Podgląd) ───────────────────────")] [SerializeField]
-    private int daysRemaining;
+    [SerializeField] private int daysRemaining;
 
     [SerializeField] private bool transformAvailable;
     [SerializeField] private Vector2Int chunkCoord;
@@ -65,8 +64,8 @@ public class OutpostEntity : BuildingEntity
         Debug.Log($"[Outpost] Posterunek zbudowany na {chunkCoord}. Transformacja za {daysRemaining} dni.");
     }
 
-    // Nie generujemy zasobów co godzinę
-    protected override void HandleHourlyProduction(int currentHour)
+    // Does not generate resources
+    protected override void HandleProduction()
     {
     }
 
@@ -105,6 +104,7 @@ public class OutpostEntity : BuildingEntity
         expansionManager?.OnOutpostTransformed(chunkCoord);
         Demolish(); // Niszczy ten budynek
     }
+    */
 }
 
 [Serializable]

@@ -8,19 +8,15 @@ public class EnemyWalker : MonoBehaviour
     private List<Vector3> pathPoints;
     private int targetIndex = 0;
     private bool isInitialized = false;
+    
+    private EnemyStats enemyStats;
+    
 
-    // Callback ustawiany przez EnemySpawner – powiadamia Echo o przełomie
-    // Argument: EnemyData wroga który dotarł
-    public Action<EnemyData> OnReachedBase;
-
-    // Cache na dane wroga – potrzebne do Echo callback
-    private EnemyData enemyData;
-
-    public void Initialize(List<Vector3> path, EnemyData data = null)
+    public void Initialize(List<Vector3> path, EnemyStats stats)
     {
         pathPoints = path;
         targetIndex = 0;
-        enemyData = data;
+        enemyStats = stats;
 
         if (pathPoints != null && pathPoints.Count > 0)
         {
@@ -49,12 +45,21 @@ public class EnemyWalker : MonoBehaviour
     void ReachDestination()
     {
         Debug.Log("Przeciwnik dotarł do bazy!");
-        GameManager.Instance.ModifyBaseHealth(-1);
 
-        // Powiadom Echo
-        OnReachedBase?.Invoke(enemyData);
+        switch (enemyStats.rank)
+        {
+            case EnemyRank.Normal:
+                GameManager.Instance.ModifyBaseHealth(-1);
+                break;
+            case EnemyRank.Elite:
+                GameManager.Instance.ModifyBaseHealth(-3);
+                break;
+            case EnemyRank.Boss:
+                GameManager.Instance.InstantDestruction();
+                break;
+        }
 
-        Destroy(gameObject);
+        enemyStats.GetToBase();
     }
 
     public void CopyProgressFrom(EnemyWalker other)

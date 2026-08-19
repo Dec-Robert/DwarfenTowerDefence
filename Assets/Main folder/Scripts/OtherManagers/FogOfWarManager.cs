@@ -86,7 +86,7 @@ public class FogOfWarManager : MonoBehaviour
                 {
                     Vector3 worldPos = HexGridMath.GetChunkCenterWorld(
                         kvp.Key, chunkRadius, hexSize, padding);
-                    expansionManager.OnFogClicked(kvp.Key, worldPos);
+                    //TODO: Napisać poprawny expansionManager expansionManager.OnFogClicked(kvp.Key, worldPos);
                 }
                 else
                 {

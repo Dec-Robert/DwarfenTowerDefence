@@ -36,7 +36,7 @@ public class ExpeditionCenterEntity : BuildingEntity
     {
         base.OnDestroy();
         ReleaseElf();
-        expansionManager?.UnregisterExpeditionCenter(this);
+        //expansionManager?.UnregisterExpeditionCenter(this);
     }
 
     // =========================================================================
@@ -60,7 +60,7 @@ public class ExpeditionCenterEntity : BuildingEntity
         }
 
         TryReserveElf();
-        expansionManager.RegisterExpeditionCenter(this);
+        //expansionManager.RegisterExpeditionCenter(this);
     }
 
     // =========================================================================

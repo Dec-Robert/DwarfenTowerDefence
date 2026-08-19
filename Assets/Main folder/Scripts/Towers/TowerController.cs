@@ -14,7 +14,7 @@ public class TowerController : MonoBehaviour
     [Header("Wizualizacja Zasi�gu")]
     public GameObject rangeIndicatorPrefab;
     private GameObject rangeIndicatorInstance;
-    //
+    
     [Header("Status (Read Only)")]
     [SerializeField] private bool canShoot = false;
     [SerializeField] private float currentRange;
@@ -68,14 +68,12 @@ public class TowerController : MonoBehaviour
 
     public void UpdateCombatStats(
         float efficiency, 
+        bool isOverdriven, float overdriveMod,
         float rangeMulti, float flatRange, 
         float damageMulti, float flatDamage, 
         float fireRateMulti, float flatFireRate,
-        float flatArmorPen, float flatMagicPen, float flatCritChan, float flatCritDmg,
-        bool isActive)
+        float flatArmorPen, float flatMagicPen, float flatCritChan, float flatCritDmg)
     {
-        canShoot = isActive;
-
         if (isFeared && efficiency > 0f)
         {
             efficiency = Mathf.Max(0f, efficiency - (towerData != null ? towerData.workerScalingFactor : 0.25f));
@@ -97,6 +95,14 @@ public class TowerController : MonoBehaviour
             
             // Dla krytyka mnożnik bazowy (np. 200%) + flat runy (np. +50%) = 250%
             criticalMultiplier = towerData.criticalDamageMultiplier + flatCritDmg;
+
+            if (isOverdriven)
+            {
+                currentRange *= overdriveMod;
+                currentDamage *= overdriveMod;
+                currentFireRate *= overdriveMod;
+                criticalChance += 0.1f;
+            }
 
             // Aktualizacja wizualizacji zasięgu
             if (rangeIndicatorInstance != null && rangeIndicatorInstance.activeSelf)
@@ -312,8 +318,7 @@ public class TowerController : MonoBehaviour
             // Każdy pocisk obsłuży te dane po swojemu.
             projectile.Launch(target, targetPos, firePoint);
         }
-
-        if (towerEntity != null) towerEntity.RegisterShot();
+        
     }
 
     void OnDrawGizmosSelected()

@@ -5,6 +5,7 @@ using System.Text;
 
 public class ResourceLogger : MonoBehaviour
 {
+    /*
     public static ResourceLogger Instance { get; private set; }
 
     [Header("Konfiguracja")]
@@ -153,4 +154,5 @@ public class ResourceLogger : MonoBehaviour
             Debug.LogError($"Nie znaleziono pliku w: {filePath}");
         }
     }
+    */
 }

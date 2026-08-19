@@ -13,6 +13,21 @@ public enum ResourceType
     Hope
 }
 
+[Serializable]
+public struct ResourceCost
+{
+    public ResourceType type;
+    public int amount;
+}
+
+public enum TimePhases
+{
+    Morning, //Start of the day. Summarizing the night
+    // DaySimulation, //Simulation of the day NOT NEEDED
+    Dusk, //End of work day. Preparation for night
+    Night //Fight with enemies
+}
+
 public enum Race
 {
     Humans,
@@ -22,23 +37,16 @@ public enum Race
 
 public enum WorkState
 {
-    Idle, //Nie pracuje   
-    Assigned, //Przydzielony do pracy, czeka na rozpocz�cie pracy, mozna nim porusza� mi�dzy budynkami
-    Working, //Pracuje zablokowany do konca zmiany
-    Exhausted //Zm�czony po zmianie
-}
-
-public enum DayPhase
-{
-    Day,
-    Night
+    Idle, //Not assigned
+    Assigned, //Assigned to work, can be changed
+    Locked, //Assigned to work, cannot be changed
 }
 
 public enum DamageType
 {
-    Physical, // Zwyk�e wie�e (�ucznik, Armata)
-    Magic, // Wie�e magiczne (L�d, Ogie�)
-    True // Typ obra�e� osi�galny tylko dzi�ki niekt�rym run�S
+    Physical, // Physical dmg
+    Magic, // Magic dmg
+    True // Dmg that pierces all defences
 }
 
 public enum EnemyRank

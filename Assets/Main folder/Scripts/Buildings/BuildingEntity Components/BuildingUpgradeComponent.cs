@@ -21,9 +21,7 @@ public class BuildingUpgradeComponent
     // --- Stan ---
     public int CurrentTier { get; private set; }
     public List<BuildingUpgradeSO> AppliedUpgrades { get; } = new();
-
-    /// <summary>Suma dodatkowych zmian z zastosowanych ulepszeń.</summary>
-    public int LocalBonusShifts { get; private set; }
+    
 
     /// <summary>Suma dodatkowych pracowników na zmianę z zastosowanych ulepszeń.</summary>
     public int LocalBonusWorkers { get; private set; }
@@ -38,7 +36,6 @@ public class BuildingUpgradeComponent
     {
         CurrentTier = 0;
         AppliedUpgrades.Clear();
-        LocalBonusShifts = 0;
         LocalBonusWorkers = 0;
     }
 
@@ -52,7 +49,6 @@ public class BuildingUpgradeComponent
 
         AppliedUpgrades.Add(upgrade);
         CurrentTier++;
-        LocalBonusShifts += upgrade.extraShifts;
         LocalBonusWorkers += upgrade.extraWorkersPerShift;
 
         OnUpgradeApplied?.Invoke();

@@ -47,7 +47,7 @@ public class ChunkRevealHandler
         RevealFirstRoadChunk(revealed);
         RevealMetaChunks(revealed);
 
-        expansionManager?.Initialize(revealed);
+       // expansionManager?.Initialize(revealed);
     }
 
     // =========================================================================

@@ -2,21 +2,22 @@
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Manages the Rune Forge building, allowing dwarves to equip runes
+/// and providing modifiers to specific tower types via the global registry.
+/// </summary>
 public class RuneForgeEntity : BuildingEntity
 {
     private const string SOURCE_PREFIX = "Forge_";
 
-    [Header("── Konfiguracja Kuźni ────────────────")]
-    [Tooltip("Do jakiego typu wież ta kuźnia wysyła moc run? (Można to zmieniać z poziomu UI)")]
+    [Header("Konfiguracja Kuzni")]
     public TowerData infusedTowerData;
 
-    [Header("── Stan (Podgląd) ────────────────────")] [SerializeField]
-    private bool dwarfAssigned;
+    [Header("Stan")] 
+    [SerializeField] private bool dwarfAssigned;
 
-    // Sloty na runy
     public List<RuneItem> equippedRunes = new();
 
-    // Unikalne ID źródła dla rejestru modyfikatorów
     private string myRegistrySourceID;
     private Citizen reservedDwarf;
 
@@ -25,7 +26,6 @@ public class RuneForgeEntity : BuildingEntity
         base.OnDestroy();
         ReleaseDwarf();
 
-        // Zwróć runy do ekwipunku gracza, żeby nie przepadły po zburzeniu kuźni
         if (RuneManager.Instance != null)
         {
             foreach (var rune in equippedRunes)
@@ -33,13 +33,8 @@ public class RuneForgeEntity : BuildingEntity
             RuneManager.Instance.NotifyInventoryChanged();
         }
 
-        // Wyczyść bonusy
         GlobalModifierRegistry.Instance?.Unregister(myRegistrySourceID);
     }
-
-    // =========================================================================
-    // INICJALIZACJA I CYKL ŻYCIA
-    // =========================================================================
 
     public override void Initialize(BuildingData buildingData)
     {
@@ -50,34 +45,26 @@ public class RuneForgeEntity : BuildingEntity
         RecalculateSlotsAndModifiers();
     }
 
-    // Nadpisujemy ForceRescan (wywoływane, gdy obok postawi się nowy budynek)
     public new void ForceRescan()
     {
         base.ForceRescan();
         RecalculateSlotsAndModifiers();
     }
 
-    // =========================================================================
-    // OBSŁUGA PRACOWNIKA (KRASNOLUD)
-    // =========================================================================
-
     private void TryReserveDwarf()
     {
         if (CitizenManager.Instance == null) return;
 
-        reservedDwarf =
-            CitizenManager.Instance.citizens.Find(c => c.race == Race.Dwarves && c.workState == WorkState.Idle);
+        reservedDwarf = CitizenManager.Instance.citizens.Find(c => c.race == Race.Dwarves && c.workState == WorkState.Idle);
 
         if (reservedDwarf != null)
         {
             reservedDwarf.workState = WorkState.Assigned;
             dwarfAssigned = true;
-            Debug.Log($"[RuneForge] Krasnolud przypisany do {name}.");
         }
         else
         {
             dwarfAssigned = false;
-            Debug.LogWarning($"[RuneForge] Brak wolnych Krasnoludów! {name} nie będzie działać.");
         }
     }
 
@@ -89,16 +76,11 @@ public class RuneForgeEntity : BuildingEntity
         dwarfAssigned = false;
     }
 
-    // =========================================================================
-    // SLOTY I SĄSIEDZTWO
-    // =========================================================================
-
     public int GetMaxSlots()
     {
         var baseSlots = 1;
         var runeTowersCount = 0;
 
-        // Szukamy wież runicznych w sąsiednich heksach
         var myCell = GetComponentInParent<HexCell>();
         if (myCell != null && HexMapVisualizer.Instance != null)
         {
@@ -112,20 +94,14 @@ public class RuneForgeEntity : BuildingEntity
             }
         }
 
-        // Maksymalnie 4 sloty łącznie (1 baza + max 3 wieże)
         return Mathf.Min(4, baseSlots + runeTowersCount);
     }
 
-    // =========================================================================
-    // ZARZĄDZANIE RUNAMI (API dla UI)
-    // =========================================================================
-
     public bool CanModifyRunes()
     {
-        // Tylko za dnia i tylko jeśli mamy krasnoluda
         return dwarfAssigned &&
-               GameManager.Instance != null &&
-               GameManager.Instance.currentGameState == GameManager.gameStates.PreparePhase;
+               TimePhaseManager.Instance != null &&
+               TimePhaseManager.Instance.CurrentTimePhase != TimePhases.Night;
     }
 
     public bool EquipRune(RuneItem rune)
@@ -161,13 +137,8 @@ public class RuneForgeEntity : BuildingEntity
         RecalculateSlotsAndModifiers();
     }
 
-    // =========================================================================
-    // PRZELICZANIE I REJESTRACJA MODYFIKATORÓW
-    // =========================================================================
-
     private void RecalculateSlotsAndModifiers()
     {
-        // Jeśli limit spadł (ktoś zburzył wieżę runiczną obok), wypluj nadmiarowe runy do plecaka
         var maxSlots = GetMaxSlots();
         while (equippedRunes.Count > maxSlots)
         {
@@ -178,14 +149,10 @@ public class RuneForgeEntity : BuildingEntity
 
         if (GlobalModifierRegistry.Instance == null) return;
 
-        // Czyścimy stare wpisy
         GlobalModifierRegistry.Instance.Unregister(myRegistrySourceID);
 
-        // Jeśli kuźnia nie ma celu (nie zinfuzowana) lub brak krasnoluda – nie wysyła buffów
         if (infusedTowerData == null || !dwarfAssigned) return;
 
-        // Sumujemy wartości run
-        // Słownik: statystyka -> (suma Flat, suma Percent)
         var sums = new Dictionary<TowerStatType, (float flat, float percent)>();
 
         foreach (var rune in equippedRunes)
@@ -195,15 +162,12 @@ public class RuneForgeEntity : BuildingEntity
             if (rune.hasPenalty) AddStatToSum(sums, rune.penaltyStat, rune.penaltyValueType, rune.penaltyValue);
         }
 
-        // Rejestrujemy zsumowane wartości w GlobalModifierRegistry
         foreach (var kvp in sums)
         {
             var stat = kvp.Key;
             var totalFlat = kvp.Value.flat;
             var totalPercent = kvp.Value.percent;
 
-            // Tworzymy modyfikator skierowany TYLKO na wskazany typ wieży (PerTowerData)
-            // Percent zamieniamy na mnożnik (np. +20% to 1.2f, -30% to 0.7f)
             var multiplier = 1f + totalPercent / 100f;
 
             var modifier = new StatModifier(
@@ -216,7 +180,6 @@ public class RuneForgeEntity : BuildingEntity
             GlobalModifierRegistry.Instance.Register(modifier);
         }
 
-        // Wymuś odświeżenie statystyk na wszystkich wieżach przypisanego typu
         foreach (var building in BuildingRegistry.Instance.AllBuildings)
             if (building is TowerEntity tower && tower.data == infusedTowerData)
                 tower.RecalculateStats();
@@ -247,7 +210,7 @@ public class RuneForgeEntity : BuildingEntity
             RuneStatType.MagicPenetration => TowerStatType.MagicPenetration,
             RuneStatType.CriticalChance => TowerStatType.CriticalChance,
             RuneStatType.CriticalDamage => TowerStatType.CriticalDamage,
-            _ => TowerStatType.Damage // Fallback
+            _ => TowerStatType.Damage
         };
     }
 }

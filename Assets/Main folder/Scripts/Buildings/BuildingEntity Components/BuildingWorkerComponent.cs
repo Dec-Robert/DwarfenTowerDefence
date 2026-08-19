@@ -13,7 +13,6 @@ public class BuildingWorkerComponent
 
     // --- Referencje ---
     private readonly BuildingData data;
-    private readonly Func<int> getGlobalBonusShifts;
     private readonly Func<int> getGlobalBonusWorkers;
     private readonly BuildingUpgradeComponent upgradeComponent;
 
@@ -21,12 +20,10 @@ public class BuildingWorkerComponent
     public BuildingWorkerComponent(
         BuildingData data,
         BuildingUpgradeComponent upgradeComponent,
-        Func<int> getGlobalBonusShifts,
         Func<int> getGlobalBonusWorkers)
     {
         this.data = data;
         this.upgradeComponent = upgradeComponent;
-        this.getGlobalBonusShifts = getGlobalBonusShifts;
         this.getGlobalBonusWorkers = getGlobalBonusWorkers;
     }
 
@@ -35,7 +32,7 @@ public class BuildingWorkerComponent
     /// <summary>Próbuje przypisać nowego pracownika danej rasy do budynku.</summary>
     public bool TryAddWorker(Race race)
     {
-        var maxWorkers = GetMaxShifts() * GetMaxWorkersPerShift();
+        var maxWorkers = data.baseMaxWorkers + upgradeComponent.LocalBonusWorkers + (getGlobalBonusWorkers?.Invoke() ?? 0);
         if (assignedCitizens.Count >= maxWorkers) return false;
 
         var newWorker = CitizenManager.Instance.FindAndAssignCitizen(race, null);
@@ -48,7 +45,7 @@ public class BuildingWorkerComponent
     /// <summary>Usuwa pierwszego nieaktywnego pracownika danej rasy.</summary>
     public void RemoveWorker(Race race)
     {
-        var workerToRemove = assignedCitizens.Find(c => c.race == race && c.workState != WorkState.Working);
+        var workerToRemove = assignedCitizens.Find(c => c.race == race && c.workState != WorkState.Locked);
 
         if (workerToRemove == null) return;
 
@@ -59,30 +56,23 @@ public class BuildingWorkerComponent
     /// <summary>Zwraca listę aktywnych pracowników (Assigned lub Working).</summary>
     public List<Citizen> GetActiveWorkers()
     {
-        return assignedCitizens.FindAll(c => c.workState == WorkState.Assigned || c.workState == WorkState.Working);
+        return assignedCitizens.FindAll(c => c.workState == WorkState.Assigned || c.workState == WorkState.Locked);
     }
+    
 
-    /// <summary>Ustawia stan Working dla pracowników Assigned na początku zmiany.</summary>
-    public void ActivateWorkersForShift()
-    {
-        foreach (var worker in assignedCitizens)
-            if (worker.workState == WorkState.Assigned)
-                worker.workState = WorkState.Working;
-    }
-
-    /// <summary>Ustawia stan Exhausted dla aktywnych pracowników na koniec zmiany.</summary>
-    public void ExhaustWorkers()
+    /// <summary>Locking worker at the end of the work day</summary>
+    public void LockWorkers()
     {
         var active = GetActiveWorkers();
         foreach (var worker in active)
-            worker.workState = WorkState.Exhausted;
+            worker.workState = WorkState.Locked;
     }
 
     /// <summary>Resetuje stan pracowników na początku nowego dnia.</summary>
     public void ResetWorkersForNewDay()
     {
         foreach (var worker in assignedCitizens)
-            if (worker.workState == WorkState.Exhausted || worker.workState == WorkState.Working)
+            if (worker.workState == WorkState.Assigned || worker.workState == WorkState.Locked)
                 worker.workState = WorkState.Assigned;
     }
 
@@ -106,21 +96,7 @@ public class BuildingWorkerComponent
     {
         return assignedCitizens.FindAll(c => c.race == race).Count;
     }
-
-    public int GetMaxShifts()
-    {
-        var globalBonus = getGlobalBonusShifts?.Invoke() ?? 0;
-        var baseShifts = data != null ? data.baseShifts : 1;
-        return baseShifts + upgradeComponent.LocalBonusShifts + globalBonus;
-    }
-
-    public int GetMaxWorkersPerShift()
-    {
-        var globalBonus = getGlobalBonusWorkers?.Invoke() ?? 0;
-        var baseWorkers = data != null ? data.baseWorkersPerShift : 1;
-        return baseWorkers + upgradeComponent.LocalBonusWorkers + globalBonus;
-    }
-
+    
     public void RemoveSpecificWorker(Citizen worker)
     {
         if (assignedCitizens.Contains(worker))
@@ -130,8 +106,5 @@ public class BuildingWorkerComponent
         }
     }
 
-    public int GetTotalWorkerCount()
-    {
-        return assignedCitizens.Count;
-    }
+
 }

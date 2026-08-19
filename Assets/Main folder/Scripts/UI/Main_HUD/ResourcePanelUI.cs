@@ -51,7 +51,7 @@ public class ResourcePanelUI : MonoBehaviour
         }
     }
 
-    private void UpdateResourceText(ResourceType type, float amount)
+    private void UpdateResourceText(ResourceType type, int amount)
     {
         if (uiDictionary.TryGetValue(type, out TextMeshProUGUI textComponent))
         {

@@ -73,7 +73,7 @@ public class SpecialChunkDefinition : ScriptableObject
         public bool hasOneShotLoot = false;
 
         [Tooltip("Zasoby do zdobycia jednorazowo")]
-        public List<BuildingData.ResourceCost> lootTable = new List<BuildingData.ResourceCost>();
+        public List<ResourceCost> lootTable = new List<ResourceCost>();
 
         [Tooltip("Czy modyfikuje wrogów w tym chunku?")]
         public bool hasEnemyModifier = false;

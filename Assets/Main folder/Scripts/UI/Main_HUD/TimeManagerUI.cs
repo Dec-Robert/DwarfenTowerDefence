@@ -15,11 +15,13 @@ public class TimeManagerUI : MonoBehaviour
 
     void Start()
     {
-        pauseBtn.onClick.AddListener(() =>TimeCycleManager.Instance.SetTimeSpeed(0));
-        speedOneBtn.onClick.AddListener(() =>TimeCycleManager.Instance.SetTimeSpeed(1));
-        speedTwoBtn.onClick.AddListener(() =>TimeCycleManager.Instance.SetTimeSpeed(2));
-        speedThreeBtn.onClick.AddListener(() =>TimeCycleManager.Instance.SetTimeSpeed(3));
-        speedFiveBtn.onClick.AddListener(() =>TimeCycleManager.Instance.SetTimeSpeed(5));
+        /*
+        pauseBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(0));
+        speedOneBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(1));
+        speedTwoBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(2));
+        speedThreeBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(3));
+        speedFiveBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(5));
+        */
     }
 
     private void OnDestroy()
@@ -34,7 +36,7 @@ public class TimeManagerUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (TimeCycleManager.Instance != null)
+        if (TimePhaseManager.Instance != null)
         {
             SetTimeTxt();
         }
@@ -42,8 +44,7 @@ public class TimeManagerUI : MonoBehaviour
 
     private void SetTimeTxt()
     {
-        string dayText = TimeCycleManager.Instance.dayCount.ToString();
-        string timeText = TimeCycleManager.Instance.GetFormattedHour();
-        dateTimeTxt.text = $"Day: {dayText} \n {timeText}";
+
+        dateTimeTxt.text = $"Day: X - MORNING";
     }
 }

@@ -51,7 +51,7 @@ public class SingleWorkerManagerUI : MonoBehaviour
         
         buttonRemove.interactable = (currentWorkers > 0);
         
-        bool isBuildingFull = currentBuilding.GetTotalWorkerCount() >= (currentBuilding.getMaxShifts() * currentBuilding.getMaxWorkersPerShift());
+        bool isBuildingFull = currentBuilding.GetTotalWorkerCount() >= currentBuilding.GetTotalWorkerCount();
         bool hasFreeCitizen = CitizenManager.Instance.PopulationStats[race].Idle > 0;
         
         buttonAdd.interactable = (!isBuildingFull && hasFreeCitizen);

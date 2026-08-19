@@ -5,12 +5,12 @@ using System.Collections.Generic;
 public class CityBaseConfigSO : ScriptableObject
 {
     [Header("── Surowce Startowe Bazy ──")]
-    public float startGold = 100f;
-    public float startWood = 50f;
-    public float startStone = 0f;
-    public float startIron = 0f;
-    public float startCoal = 0f;
-    public float startFood = 50f;
+    public int startGold = 100;
+    public int startWood = 50;
+    public int startStone = 0;
+    public int startIron = 0;
+    public int startCoal = 0;
+    public int startFood = 50;
 
     [Header("── Parametry Osady ──")]
     [Tooltip("Początkowe HP Głównego Budynku (Kapitolu/Głównej Bramy)")]
