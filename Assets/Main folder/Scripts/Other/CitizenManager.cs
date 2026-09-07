@@ -61,7 +61,7 @@ public class CitizenManager : MonoBehaviour
 
         citizens.Add(newCitizen);
 
-        Debug.Log($"Narodzi� si� nowy {race} w {home.name}");
+        Debug.Log($"Human has been born {race} w {home.name}");
         if (HopeSessionManager.Instance != null) HopeSessionManager.Instance.OnCitizenSpawned();
         RefreshStats();
         return newCitizen;

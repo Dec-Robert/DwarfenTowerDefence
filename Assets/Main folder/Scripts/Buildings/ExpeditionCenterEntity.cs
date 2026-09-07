@@ -1,71 +1,46 @@
 using UnityEngine;
 
-/// <summary>
-///     Centrum Ekspedycyjne – specjalny budynek który:
-///     - Rozszerza BuildingEntity (pełna integracja z inspektorem)
-///     - Blokuje na stałe 1 elfa z populacji (WorkState.Assigned)
-///     - Wysyła misje zwiadowcze (jedną na raz)
-///     - Rejestruje się w MapExpansionManager
-/// </summary>
 public class ExpeditionCenterEntity : BuildingEntity
 {
-    [Header("── Konfiguracja Ekspedycji ────────────────")]
-    public int reservedElves = 1;
-
-    [Header("── Stan (Podgląd) ───────────────────────")] [SerializeField]
-    private bool elfIsAssigned;
-
+    [SerializeField] private bool elfAssigned;
     [SerializeField] private bool missionActive;
-    [SerializeField] private ScoutingMission currentMission;
-    private MapExpansionManager expansionManager;
+    [SerializeField] private Vector2Int currentMissionTarget = new Vector2Int(-999, -999);
 
     private Citizen reservedElf;
 
-    // =========================================================================
-    // MISJE
-    // =========================================================================
-
-    public bool CanSendMission => elfIsAssigned && !missionActive;
-
-    // ─── Gettery publiczne ────────────────────────────────────────────────────
-    public bool HasElf => elfIsAssigned;
+    public bool HasElf => elfAssigned;
     public bool IsBusy => missionActive;
-    public ScoutingMission ActiveMission => currentMission;
+    public bool CanSendMission => elfAssigned && !missionActive;
+    public Vector2Int ActiveTarget => currentMissionTarget;
 
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-        ReleaseElf();
-        //expansionManager?.UnregisterExpeditionCenter(this);
-    }
-
-    // =========================================================================
-    // INICJALIZACJA
-    // =========================================================================
-
-    /// <summary>
-    ///     Wywoływana przez BuildingPlacer po postawieniu budynku.
-    ///     Najpierw inicjalizuje bazowy BuildingEntity, następnie logikę ekspedycji.
-    /// </summary>
     public override void Initialize(BuildingData buildingData)
     {
         base.Initialize(buildingData);
 
-        expansionManager = FindObjectOfType<MapExpansionManager>();
-
-        if (expansionManager == null)
-        {
-            Debug.LogError("[ExpCenter] Brak MapExpansionManager na scenie!");
-            return;
-        }
-
         TryReserveElf();
-        //expansionManager.RegisterExpeditionCenter(this);
+
+        if (MapExpansionManager.Instance != null)
+        {
+            MapExpansionManager.Instance.OnChunkStateChanged += HandleChunkStateChanged;
+        }
     }
 
-    // =========================================================================
-    // ZARZĄDZANIE ELFEM
-    // =========================================================================
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        if (MapExpansionManager.Instance != null)
+        {
+            MapExpansionManager.Instance.OnChunkStateChanged -= HandleChunkStateChanged;
+
+            if (missionActive && currentMissionTarget.x != -999)
+            {
+                MapExpansionManager.Instance.SetChunkBaseState(currentMissionTarget, ChunkState.Borderlands);
+            }
+        }
+
+        ReleaseElf();
+    }
 
     private void TryReserveElf()
     {
@@ -76,43 +51,44 @@ public class ExpeditionCenterEntity : BuildingEntity
         if (reservedElf != null)
         {
             reservedElf.workState = WorkState.Assigned;
-            elfIsAssigned = true;
-            Debug.Log("[ExpCenter] Elf zarezerwowany dla Centrum Ekspedycyjnego.");
+            elfAssigned = true;
         }
         else
         {
-            elfIsAssigned = false;
-            Debug.LogWarning("[ExpCenter] Brak wolnych elfów! Centrum nie może działać.");
+            elfAssigned = false;
         }
     }
 
     private void ReleaseElf()
     {
-        if (reservedElf == null || !elfIsAssigned) return;
+        if (reservedElf == null || !elfAssigned) return;
+
         reservedElf.workState = WorkState.Idle;
         reservedElf = null;
-        elfIsAssigned = false;
+        elfAssigned = false;
     }
 
-    /// <summary>Wywołuj tylko przez MapExpansionManager.</summary>
-    public bool StartMission(ScoutingMission mission)
+    public bool StartMission(Vector2Int targetChunk, int daysRequired)
     {
-        if (!CanSendMission)
-        {
-            Debug.LogWarning("[ExpCenter] Centrum zajęte lub brak elfa.");
-            return false;
-        }
+        if (!CanSendMission) return false;
+        if (MapExpansionManager.Instance == null) return false;
 
-        currentMission = mission;
+        bool started = MapExpansionManager.Instance.TryStartSurvey(targetChunk, daysRequired);
+        if (!started) return false;
+
+        currentMissionTarget = targetChunk;
         missionActive = true;
-        Debug.Log($"[ExpCenter] Wysłano: {mission}");
         return true;
     }
 
-    public void OnMissionComplete(ScoutingMission mission)
+    private void HandleChunkStateChanged(Vector2Int coord, ChunkState newState)
     {
-        currentMission = null;
-        missionActive = false;
-        Debug.Log($"[ExpCenter] Misja zakończona: chunk {mission.targetChunk} odkryty.");
+        if (!missionActive || coord != currentMissionTarget) return;
+
+        if (newState == ChunkState.Outskirts)
+        {
+            missionActive = false;
+            currentMissionTarget = new Vector2Int(-999, -999);
+        }
     }
 }

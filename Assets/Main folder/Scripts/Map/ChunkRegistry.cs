@@ -42,11 +42,48 @@ public class ChunkRegistry
         if (coord == Vector2Int.zero) return true;
         if (metaConfig == null) return false;
 
-        foreach (var exp in metaConfig.expansions)
-            if (exp.chunkCoordinate == coord && exp.requiredUpgrade != null && exp.requiredUpgrade.isUnlocked)
-                return true;
+        if (metaConfig.expansions != null)
+        {
+            foreach (var exp in metaConfig.expansions)
+            {
+                if (exp.chunkCoordinate == coord)
+                {
+                    return true;
+                }
+            }
+        }
+
+        if (metaConfig.globalModifiers != null)
+        {
+            foreach (var mod in metaConfig.globalModifiers)
+            {
+                if (mod.targetChunk == coord)
+                {
+                    return true;
+                }
+            }
+        }
 
         return false;
+    }
+    
+    public List<Vector2Int> GetUnlockedMetaChunks()
+    {
+        List<Vector2Int> unlocked = new List<Vector2Int> { Vector2Int.zero };
+        if (metaConfig == null || metaConfig.expansions == null) return unlocked;
+
+        foreach (var exp in metaConfig.expansions)
+        {
+            if (exp.requiredUpgrade == null || exp.requiredUpgrade.isUnlocked)
+            {
+                if (!unlocked.Contains(exp.chunkCoordinate))
+                {
+                    unlocked.Add(exp.chunkCoordinate);
+                }
+            }
+        }
+
+        return unlocked;
     }
 
     public bool IsChunkInMap(Vector2Int coord) =>

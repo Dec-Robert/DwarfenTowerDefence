@@ -2,10 +2,6 @@
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-/// <summary>
-///     Odpowiada za walidację miejsca pod budynek, fizyczną budowę
-///     i powiadamianie sąsiednich budynków o zmianie terenu.
-/// </summary>
 public class BuildingPlacer
 {
     private readonly HexMapGenerator mapGenerator;
@@ -15,44 +11,33 @@ public class BuildingPlacer
         this.mapGenerator = mapGenerator;
     }
 
-    // =========================================================================
-    // API Publiczne
-    // =========================================================================
-
-    /// <summary>Sprawdza czy można postawić budynek na danym heksie (teren + stan chunku).</summary>
     public bool IsPlacementValid(HexCell cell, BuildingData data)
     {
         if (data == null || cell == null) return false;
-        if (!mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return false;
+        if (mapGenerator == null || mapGenerator.worldData == null || !mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return false;
 
-        var cellData = mapGenerator.worldData[cell.chunkCoord][cell.localCoord];
+        var chunkDataMap = mapGenerator.worldData[cell.chunkCoord];
+        if (!chunkDataMap.TryGetValue(cell.localCoord, out var cellData)) return false;
 
         if (cellData.isPath) return false;
-        if (!data.allowedTerrain.Contains(cellData.feature)) return false;
+        if (data.allowedTerrain != null && !data.allowedTerrain.Contains(cellData.feature)) return false;
 
-        try {var _ = cell.GetComponentInChildren<BuildingEntity>();}
-        catch (Exception e) {return false;}
-        
-        
+        if (cell.GetComponentInChildren<BuildingEntity>() != null) return false;
 
-        // Walidacja stanu chunku
         if (!IsChunkStateValidForBuilding(cell.chunkCoord, data)) return false;
 
-        // ── NOWE: SPECJALNA WALIDACJA DLA WIEŻY RUNICZNEJ ─────────────────────
         if (data.prefab != null && data.prefab.GetComponent<RuneTowerEntity>() != null)
         {
-            // 1. Sprawdź limit z Meta-Progresji (Bazowo 0)
-            var currentCount = BuildingRegistry.Instance != null
+            int currentCount = BuildingRegistry.Instance != null
                 ? BuildingRegistry.Instance.GetAllOfType<RuneTowerEntity>().Count
                 : 0;
-            var maxAllowed = MetaUpgradeManager.Instance != null
+            int maxAllowed = MetaUpgradeManager.Instance != null
                 ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit))
                 : 0;
 
             if (currentCount >= maxAllowed) return false;
 
-            // 2. Sprawdź, czy sąsiaduje z Kuźnią Runiczną
-            var hasForgeNeighbor = false;
+            bool hasForgeNeighbor = false;
             if (HexMapVisualizer.Instance != null)
             {
                 var neighbors = HexGridMath.GetNeighbors(cell.localCoord);
@@ -67,29 +52,24 @@ public class BuildingPlacer
                 }
             }
 
-            if (!hasForgeNeighbor) return false; // Nie pozwala postawić, jeśli nie ma kuźni obok
+            if (!hasForgeNeighbor) return false;
         }
-        // ───────────────────────────────────────────────────────────────────────
 
         return true;
     }
 
-    /// <summary>
-    ///     Próbuje pobrać zasoby i postawić budynek.
-    ///     Zwraca true jeśli budowa się powiodła.
-    /// </summary>
     public bool TryBuild(HexCell cell, BuildingData data)
     {
         if (!IsPlacementValid(cell, data))
         {
             if (cell == null || data == null) return false;
-            // Opcjonalny feedback dla gracza klikającego "złe" miejsce pod wieżę runiczną
+
             if (data.prefab != null && data.prefab.GetComponent<RuneTowerEntity>() != null)
             {
-                var currentCount = BuildingRegistry.Instance != null
+                int currentCount = BuildingRegistry.Instance != null
                     ? BuildingRegistry.Instance.GetAllOfType<RuneTowerEntity>().Count
                     : 0;
-                var maxAllowed = MetaUpgradeManager.Instance != null
+                int maxAllowed = MetaUpgradeManager.Instance != null
                     ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit))
                     : 0;
 
@@ -102,10 +82,9 @@ public class BuildingPlacer
             return false;
         }
 
-        // ── Wymaganie: Wolny Obywatel (Elf dla Centrum / Krasnolud dla Kuźni) ──
         if (data.requiresSpecificCitizen)
         {
-            var hasFreeCitizen = CitizenManager.Instance != null &&
+            bool hasFreeCitizen = CitizenManager.Instance != null &&
                                  CitizenManager.Instance.citizens.Exists(c =>
                                      c.race == data.requiredCitizenRace && c.workState == WorkState.Idle);
 
@@ -117,9 +96,8 @@ public class BuildingPlacer
             }
         }
 
-
         var costs = data.constructionCost;
-        if (!ResourceManager.Instance.SpendResources(costs))
+        if (costs != null && ResourceManager.Instance != null && !ResourceManager.Instance.SpendResources(costs))
         {
             Debug.Log("<color=orange>Za mało surowców!</color>");
             return false;
@@ -129,53 +107,36 @@ public class BuildingPlacer
         return true;
     }
 
-    // =========================================================================
-    // Walidacja stanu chunku
-    // =========================================================================
-
     private bool IsChunkStateValidForBuilding(Vector2Int chunkCoord, BuildingData data)
     {
         var expansion = MapExpansionManager.Instance;
+        if (expansion == null) return true;
 
-        if (expansion == null)
-            // Brak managera ekspansji – tryb edytora lub debug, pozwól budować
-            return true;
-
-        if (!expansion.activeChunks.TryGetValue(chunkCoord, out var chunkData))
+        var chunkStateData = expansion.GetChunkData(chunkCoord);
+        if (chunkStateData == null)
         {
             Debug.Log("<color=orange>Ten teren nie jest jeszcze w zasięgu ekspansji!</color>");
             return false;
         }
 
-        switch (chunkData.state)
+        if (data.type == BuildingType.Defense || data.isOutpost)
         {
-            case ChunkState.Locked:
-            case ChunkState.Unlocked:
-            case ChunkState.Scouting:
-                Debug.Log("<color=orange>Ten teren nie jest jeszcze odkryty!</color>");
+            if (!chunkStateData.CanBuildDefense)
+            {
+                Debug.Log("<color=orange>Ten teren nie został jeszcze odkryty zwiadem!</color>");
                 return false;
-
-            case ChunkState.MilitaryOnly:
-                // Dozwolone tylko wieże (Defense) i posterunek
-                if (data.type != BuildingType.Defense && !data.isOutpost)
-                {
-                    Debug.Log("<color=orange>Na tym terenie można budować tylko wieże obronne i Posterunek!</color>");
-                    return false;
-                }
-
-                return true;
-
-            case ChunkState.FullyUnlocked:
-                return true;
-
-            default:
-                return false;
+            }
+            return true;
         }
-    }
 
-    // =========================================================================
-    // Prywatne
-    // =========================================================================
+        if (!chunkStateData.CanBuildEconomic)
+        {
+            Debug.Log("<color=orange>Ten teren wymaga pełnej kontroli (Settled) lub aktywnego Posterunku, aby stawiać budynki cywilne!</color>");
+            return false;
+        }
+
+        return true;
+    }
 
     private void PerformBuild(HexCell cell, BuildingData data)
     {

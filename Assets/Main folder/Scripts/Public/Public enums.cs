@@ -281,14 +281,6 @@ public enum BattleStats
     DamageType,         // Damege typ (true,magic,physical)
 }
 
-public struct ChunkTransformationState
-{
-    public Vector2Int chunkCoords;
-    public string source;
-    public int timer;
-    public ChunkState finalState;
-}
-
 public enum HexFeatureType
 {
     None,           // Pusta trawa
@@ -327,17 +319,4 @@ public class HexCellData
 
     public BuildingData startingBuilding;
 
-}
-
-public struct ChunkRoadState
-{
-    public Vector2Int chunkCoords;
-    public ChunkState state;
-    private int? _roadIndex;
-
-    public int roadIndex
-    {
-        get => _roadIndex ?? -1;
-        set => _roadIndex = value;
-    }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
@@ -117,6 +118,12 @@ public class HexMapGenerator : MonoBehaviour
         biomeSettings.Add(new BiomeSettings { name = "Mountains", type = BiomeType.Mountains, forestClusterChance = 10, mountainChance = 40, hillChance = 30, sinkholeChance = 5, fertileSoilChance = 0  });
     }
 
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) Destroy(gameObject);
+        else Instance = this;
+    }
+
     private void Start()
     {
         GenerateMap();
@@ -172,7 +179,13 @@ public class HexMapGenerator : MonoBehaviour
         visualizer.VisualizeWorld(ctx.worldData, ctx.allValidChunks, ctx.chunkBiomes, biomeMatDict, chunkRadius, hexSize, padding);
 
         // 10. Mgła i odkrywanie
-        MapExpansionManager.Instance.Initialize(ctx.worldData);
+        List<Vector2Int> startingSettled = registry.GetUnlockedMetaChunks();
+        MapExpansionManager.Instance.Initialize(ctx.worldData, startingSettled);
+
+        if (fogManager != null)
+        {
+            fogManager.InitializeFog(ctx.allValidChunks, chunkRadius, hexSize, padding);
+        }
 
         Debug.Log("<color=cyan>[HexMapGenerator] Generacja kompletna.</color>");
     }

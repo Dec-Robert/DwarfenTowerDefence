@@ -4,42 +4,33 @@ using System.Collections.Generic;
 
 public class DebugCheatManager : MonoBehaviour
 {
-    void Update()
+    private void Update()
     {
-        // F1 - Zabij wszystkich wrogów
         if (Input.GetKeyDown(KeyCode.F1))
         {
             KillAllEnemies();
         }
 
-        // F2 - Dodaj surowce
         if (Input.GetKeyDown(KeyCode.F2))
         {
             AddAllResources();
         }
 
-        // F3 + I - Odblokuj WSZYSTKIE pola (Locked, Unlocked, Scouting)
         if (Input.GetKeyDown(KeyCode.F3) && Input.GetKey(KeyCode.I))
         {
             CheatUnlockAll();
-            return; 
+            return;
         }
 
-        // F3 - Odblokuj tylko pola w stanie Scouting lub Unlocked (za darmo)
         if (Input.GetKeyDown(KeyCode.F3))
         {
             CheatUnlockScouting();
         }
 
-        // --- NOWE: F4 - SYSTEM RUN ---
         HandleRuneCheats();
     }
 
-    // =========================================================================
-    // F1 – Zabij wrogów
-    // =========================================================================
-
-    void KillAllEnemies()
+    private void KillAllEnemies()
     {
         EnemyStats[] allEnemies = FindObjectsOfType<EnemyStats>();
 
@@ -48,127 +39,48 @@ public class DebugCheatManager : MonoBehaviour
             if (enemy != null)
                 enemy.TakeDamage(999999f, DamageType.Physical, 100, 100, true, 1000);
         }
-
-        Debug.Log($"<color=red>[DEBUG] Zabito {allEnemies.Length} wrogów.</color>");
     }
 
-    // =========================================================================
-    // F2 – Dodaj surowce
-    // =========================================================================
-
-    void AddAllResources()
+    private void AddAllResources()
     {
         if (ResourceManager.Instance == null) return;
 
         foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
             ResourceManager.Instance.AddResource(type, 200);
-
-        Debug.Log("<color=green>[DEBUG] Dodano po 200 sztuk każdego surowca.</color>");
     }
 
-    // =========================================================================
-    // F3 – Odblokuj pola w stanie Scouting i Unlocked
-    // =========================================================================
-
-    /// <summary>
-    /// Natychmiastowo kończy wszystkie aktywne misje zwiadowcze (Scouting)
-    /// oraz odkrywa za darmo wszystkie pola w stanie Unlocked.
-    /// Pola Locked pozostają bez zmian.
-    /// </summary>
-    void CheatUnlockScouting()
+    private void CheatUnlockScouting()
     {
-        var expansion = FindObjectOfType<MapExpansionManager>();
-        if (expansion == null)
+        var expansion = MapExpansionManager.Instance;
+        if (expansion == null) return;
+
+        var coords = new List<Vector2Int>(expansion.activeChunks.Keys);
+        foreach (var coord in coords)
         {
-            Debug.LogWarning("[DEBUG] Brak MapExpansionManager na scenie.");
-            return;
-        }
-
-        var fogManager = expansion.fogManager;
-        int count = 0;
-
-        // Kopia – będziemy modyfikować słownik pośrednio przez CompleteMission
-        var chunksCopy = new List<KeyValuePair<Vector2Int, ChunkStateData>>(expansion.activeChunks);
-
-        foreach (var kvp in chunksCopy)
-        {
-            var coord = kvp.Key;
-            var data  = kvp.Value;
-
-            // Pola w trakcie scoutingu – zakończ misję natychmiastowo
-            if (data.state == ChunkState.Scouting)
+            var data = expansion.activeChunks[coord];
+            if (data.baseState == ChunkState.Surveying || data.baseState == ChunkState.Borderlands)
             {
-                ForceCompleteChunk(expansion, fogManager, coord, data);
-                count++;
-            }
-            // Pola gotowe do scoutingu (Unlocked) – odblokuj za darmo
-            else if (data.state == ChunkState.Unlocked)
-            {
-                ForceCompleteChunk(expansion, fogManager, coord, data);
-                count++;
+                expansion.SetChunkBaseState(coord, ChunkState.Outskirts);
             }
         }
-
-        // Anuluj aktywne misje (zwiadowcy wracają, centra zwalniają się)
-        foreach (var mission in new List<ScoutingMission>(expansion.activeMissions))
-            mission.sourceCenter?.OnMissionComplete(mission);
-        expansion.activeMissions.Clear();
-
-        Debug.Log($"<color=cyan>[DEBUG F3] Odblokowano {count} pól (Scouting + Unlocked).</color>");
     }
 
-    // =========================================================================
-    // F3 + I – Odblokuj WSZYSTKIE pola (w tym Locked)
-    // =========================================================================
-
-    /// <summary>
-    /// Natychmiastowo ustawia wszystkie znane chunki (w tym Locked) na FullyUnlocked
-    /// i odkrywa mgłę nad nimi.
-    /// </summary>
-    void CheatUnlockAll()
+    private void CheatUnlockAll()
     {
-        var expansion = FindObjectOfType<MapExpansionManager>();
-        if (expansion == null)
+        var expansion = MapExpansionManager.Instance;
+        if (expansion == null) return;
+
+        var coords = new List<Vector2Int>(expansion.activeChunks.Keys);
+        foreach (var coord in coords)
         {
-            Debug.LogWarning("[DEBUG] Brak MapExpansionManager na scenie.");
-            return;
+            expansion.SetChunkBaseState(coord, ChunkState.Settled);
         }
-
-        var fogManager = expansion.fogManager;
-        int count = 0;
-
-        var chunksCopy = new List<KeyValuePair<Vector2Int, ChunkStateData>>(expansion.activeChunks);
-
-        foreach (var kvp in chunksCopy)
-        {
-            var coord = kvp.Key;
-            var data  = kvp.Value;
-
-            if (data.state == ChunkState.FullyUnlocked) continue; // już odblokowane
-
-            ForceCompleteChunk(expansion, fogManager, coord, data);
-            count++;
-        }
-
-        // Anuluj aktywne misje
-        foreach (var mission in new List<ScoutingMission>(expansion.activeMissions))
-            mission.sourceCenter?.OnMissionComplete(mission);
-        expansion.activeMissions.Clear();
-
-        Debug.Log($"<color=magenta>[DEBUG F3+I] Odblokowano {count} pól (wszystkie stany).</color>");
     }
 
-    // =========================================================================
-    // F4 – Dodawanie Run (Ekwipunek)
-    // =========================================================================
-
-    void HandleRuneCheats()
+    private void HandleRuneCheats()
     {
-        // Sprawdzamy czy wciśnięto F4
         if (Input.GetKeyDown(KeyCode.F4))
         {
-            // Sprawdzamy, czy wciśnięto dodatkowo jakiś modyfikator
-            // (Najwygodniej jest trzymać literę i kliknąć F4)
             if (Input.GetKey(KeyCode.Y))
                 AddDebugRunes(5, RuneRarity.Common);
             else if (Input.GetKey(KeyCode.U))
@@ -180,52 +92,23 @@ public class DebugCheatManager : MonoBehaviour
             else if (Input.GetKey(KeyCode.P))
                 AddDebugRunes(5, RuneRarity.Cursed);
             else
-                AddDebugRunes(5, null); // Samo F4 = całkowicie losowe wg bazowych szans
+                AddDebugRunes(5, null);
         }
     }
 
-    void AddDebugRunes(int count, RuneRarity? forcedRarity)
+    private void AddDebugRunes(int count, RuneRarity? forcedRarity)
     {
-        if (RuneManager.Instance == null)
-        {
-            Debug.LogWarning("[DEBUG] Brak RuneManager na scenie.");
-            return;
-        }
-
-        int addedCount = 0;
+        if (RuneManager.Instance == null) return;
 
         for (int i = 0; i < count; i++)
         {
-            // Generujemy runę, używając wymuszonej rzadkości (lub null, żeby wylosować z puli)
             RuneItem newRune = RuneManager.Instance.GenerateRandomRune(forcedRarity);
-            
             if (newRune != null)
             {
                 RuneManager.Instance.playerRunes.Add(newRune);
-                addedCount++;
             }
         }
 
-        // Powiadamiamy interfejs (np. Menu Kuźni), żeby się odświeżył, jeśli jest otwarty
         RuneManager.Instance.NotifyInventoryChanged();
-
-        string rarityStr = forcedRarity.HasValue ? forcedRarity.Value.ToString() : "Mieszanych (Losowych)";
-        Debug.Log($"<color=magenta>[DEBUG F4] Wygenerowano i dodano do ekwipunku {addedCount} run typu: {rarityStr}.</color>");
-    }
-    
-    // =========================================================================
-    // Pomocnicza – wymusza FullyUnlocked na konkretnym chunku
-    // =========================================================================
-
-    private void ForceCompleteChunk(MapExpansionManager expansion,
-                                    FogOfWarManager fogManager,
-                                    Vector2Int coord,
-                                    ChunkStateData data)
-    {
-        data.state                    = ChunkState.FullyUnlocked;
-        data.settlementDaysRemaining  = 0;
-        data.discoveredOnDay          = GameManager.Instance?.waveNumber ?? 0;
-
-        fogManager?.RevealChunk(coord);
     }
 }

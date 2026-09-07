@@ -631,7 +631,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 557505595}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fa6dde09d82640dc921ba6c25ea01765, type: 3}
   m_Name: 
@@ -8016,7 +8016,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   visualizer: {fileID: 1837610584}
   fogManager: {fileID: 1837610585}
-  expansionManager: {fileID: 1837610586}
   mapWidth: 8
   mapMinY: -3
   mapMaxY: 3
@@ -8131,16 +8130,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   expansionManager: {fileID: 1837610586}
   mapVisualizer: {fileID: 1837610584}
+  mapGenerator: {fileID: 1837610582}
   defaultFogMaterial: {fileID: 2100000, guid: ecf964584f2921a42a52d9d4bc81e15f, type: 2}
-  unlockedFogMaterial: {fileID: 2100000, guid: bd1d809bd81bd1549a9811c50a52b701, type: 2}
-  militaryFogMaterial: {fileID: 2100000, guid: d9b8120594697c24e968d0dd2918c202, type: 2}
+  borderlandsFogMaterial: {fileID: 2100000, guid: bd1d809bd81bd1549a9811c50a52b701, type: 2}
+  surveyingFogMaterial: {fileID: 2100000, guid: d9b8120594697c24e968d0dd2918c202, type: 2}
+  outskirtsFogMaterial: {fileID: 2100000, guid: 69087ab46eb2d144499180d014dba817, type: 2}
   fogPrefab: {fileID: 3870602923655417153, guid: 3ace50b7f41b02447ba50c08e65fdf93, type: 3}
   fogHeightOffset: 0
   fogHeightScale: 1
-  militaryFogHeightScale: 0.08
-  militaryFogYOffset: 0
-  showDebugLogs: 0
-  debugClickToReveal: 0
+  outskirtsFogHeightScale: 0.08
+  outskirtsFogYOffset: 0
 --- !u!114 &1837610586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8153,12 +8152,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f18a79d405eae3540a41704dfb1d9eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fogManager: {fileID: 1837610585}
-  mapGenerator: {fileID: 1837610582}
-  costConfig: {fileID: 11400000, guid: 90565ad927aefd74dac08ce4970c440d, type: 2}
-  defaultSettlementDays: 5
-  activeMissions: []
-  playerExpeditionCenter: []
 --- !u!1 &1871804221
 GameObject:
   m_ObjectHideFlags: 0
