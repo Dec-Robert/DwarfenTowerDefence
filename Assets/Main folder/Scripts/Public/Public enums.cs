@@ -28,6 +28,15 @@ public enum TimePhases
     Night //Fight with enemies
 }
 
+public enum ChunkState
+{
+    Wilderness,
+    Borderlands,
+    Surveying,
+    Outskirts,
+    Settled
+}
+
 public enum Race
 {
     Humans,
@@ -68,6 +77,8 @@ public enum WallSystemMode
     Solution1_BaseOnly,
     Solution2_FrontLine
 }
+
+
 
 /// <summary>
 ///     Wszystkie możliwe efekty meta-ulepszeń.
@@ -268,4 +279,65 @@ public enum BattleStats
     ArmorPenetration,   // Percentage of ignored
     MagicPenetration,   // Percenetage of ignored
     DamageType,         // Damege typ (true,magic,physical)
+}
+
+public struct ChunkTransformationState
+{
+    public Vector2Int chunkCoords;
+    public string source;
+    public int timer;
+    public ChunkState finalState;
+}
+
+public enum HexFeatureType
+{
+    None,           // Pusta trawa
+    Forest,         // Las (wymagany do Tartaku)
+    Mountain,       // G�ra (blokuje wizj�, wymagana do Kopalni)
+    Hill,           // Wzg�rze (bonus do zasi�gu)
+    Sinkhole,       // Zapadlina (bonus dla Archeologa)
+    FertileSoil,    // żyzna gleba (bonus dla Farmy)
+    Base,           // Kapitol
+    Beacon,         // Beacon of Hope
+    Wall            // Mur (generowany na granicy)
+}
+
+// Typy biom�w dla Chunk�w
+public enum BiomeType
+{
+    Plains,     // Domy�lny (Zbalansowany)
+    Forest,     // Du�o las�w, ma�o g�r
+    Mountains,  // Du�o g�r i wzg�rz
+    Volcano,    // P�asko (brak os�on)
+    Permafrost  // (Do zdefiniowania p�niej)
+}
+
+// Klasa przechowuj�ca dane pojedynczego pola
+[Serializable]
+public class HexCellData
+{
+    public Vector2Int chunkCoord;   // W kt�rym chunku jest ten heks
+    public Vector2Int localCoord;   // Koordynaty q,r wewn�trz chunku
+    public Vector2Int gridCoord;    // Globalne koordynaty (opcjonalne, do �atwiejszego dost�pu)
+
+    public HexFeatureType feature = HexFeatureType.None;
+    public int featureLevel = 0;    // For high + for low 0
+
+    public bool isPath = false;     // Czy to jest droga wroga?
+
+    public BuildingData startingBuilding;
+
+}
+
+public struct ChunkRoadState
+{
+    public Vector2Int chunkCoords;
+    public ChunkState state;
+    private int? _roadIndex;
+
+    public int roadIndex
+    {
+        get => _roadIndex ?? -1;
+        set => _roadIndex = value;
+    }
 }

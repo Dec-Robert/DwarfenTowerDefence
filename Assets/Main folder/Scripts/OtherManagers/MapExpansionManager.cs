@@ -1,78 +1,118 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.InputSystem;
 
 /// <summary>
-/// Main coordinator for the map expansion system.
-/// Manages the state of map chunks, active scouting missions, outposts, and expedition centers.
-/// Integrates with the time phase system to process daily updates for missions and settlement timers.
+/// Main coordinator for the map expansion system. Subscribes to morning ticks from TimePhaseManager
+/// to manage scouting mission durations and natural settlement in chunks. Provides API for Outposts
+/// to instantly unlock territories and initializes chunk states at the start of the game.
 /// </summary>
 public class MapExpansionManager : MonoBehaviour
 {
     public static MapExpansionManager Instance { get; private set; }
+    //List of all chunks in world
+    private List<ChunkRoadState> worldData;
+    
+    //List of modifications going on
+    private List<ChunkTransformationState> ChunkTransformationStates = new List<ChunkTransformationState>();
+    private Dictionary<int, List<Vector2Int>> roads;
+    public event Action<Vector2Int, ChunkState> OnChunkStateChange;
+    
 
-    [Header("Referencje")]
-    public FogOfWarManager fogManager;
-    public HexMapGenerator mapGenerator;
-    public ExpansionCostConfig costConfig;
-
-    public Dictionary<Vector2Int, ChunkStateData> activeChunks = new Dictionary<Vector2Int, ChunkStateData>();
-    public List<ScoutingMission> activeMissions = new List<ScoutingMission>();
-    private List<OutpostEntity> activeOutposts = new List<OutpostEntity>();
-    public List<ExpeditionCenterEntity> playerExpeditionCenter = new List<ExpeditionCenterEntity>();
-    public Dictionary<Vector2Int, Vector2Int> roadDependencies = new Dictionary<Vector2Int, Vector2Int>();
-
-    public event System.Action<Vector2Int> OnChunkBecameFullyUnlocked;
-    public event System.Action<List<Vector2Int>> OnMapInitialized;
-
-    private void Awake()
+    public void Initialize(Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> chunkData,List<Vector2Int> initialChunks)
     {
-        Instance = this;
-        activeChunks = new Dictionary<Vector2Int, ChunkStateData>();
-        activeMissions = new List<ScoutingMission>();
-        activeOutposts = new List<OutpostEntity>();
-        playerExpeditionCenter = new List<ExpeditionCenterEntity>();
-        roadDependencies = new Dictionary<Vector2Int, Vector2Int>();
-    }
-
-    private void Start()
-    {
-    }
-
-    private void OnDestroy()
-    {
-    }
-
-#if UNITY_EDITOR
-    private void OnDrawGizmos()
-    {
-        if (!Application.isPlaying || activeChunks == null || mapGenerator == null) return;
-
-        foreach (var kvp in activeChunks)
+        Dictionary<Vector2Int, Vector2Int> roadChunks = HexMapGenerator.Instance.GetRoadRevealDependencies();
+        foreach (var c in chunkData)
         {
-            Vector3 worldPos = HexGridMath.GetChunkCenterWorld(
-                kvp.Key,
-                mapGenerator.chunkRadius,
-                mapGenerator.hexSize,
-                mapGenerator.padding);
-
-            worldPos.y = 0.5f;
-
-            Gizmos.color = kvp.Value.state switch
+            Vector2Int chunk = c.Key;
+            ChunkRoadState _chunkRoadState = new ChunkRoadState();
+            _chunkRoadState.chunkCoords = chunk;
+            if (initialChunks.Contains(chunk))
             {
-                ChunkState.FullyUnlocked => new Color(0f, 1f, 0f, 0.25f),
-                ChunkState.MilitaryOnly  => new Color(1f, 0.5f, 0f, 0.25f),
-                ChunkState.Scouting      => new Color(0f, 0.5f, 1f, 0.25f),
-                ChunkState.Unlocked      => new Color(1f, 1f, 0f, 0.2f),
-                _                        => new Color(1f, 0f, 0f, 0.12f),
-            };
+                _chunkRoadState.state = ChunkState.Settled;
+            }
+            else
+            {
+                _chunkRoadState.state = ChunkState.Wilderness;
+            }
 
-            float chunkRadius = mapGenerator.chunkRadius * mapGenerator.hexSize * 1.5f;
-            Gizmos.DrawSphere(worldPos, chunkRadius);
-
-            Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, Gizmos.color.a * 2f);
-            Gizmos.DrawWireSphere(worldPos, chunkRadius);
+            
         }
     }
-#endif
+
+    private void InitializeRoadsMaps()
+    {
+        List<List<Vector2Int>> finalRoads = new List<List<Vector2Int>>();
+        
+        Dictionary<Vector2Int,Vector2Int> roadDependencies = HexMapGenerator.Instance.GetRoadRevealDependencies();
+        List<Vector2Int> roadStarts = new List<Vector2Int>();
+
+        foreach (var transition in roadDependencies)
+        {
+            if (!roadDependencies.ContainsValue(transition.Key) && transition.Value != Vector2Int.zero)
+            {
+                roadStarts.Add(transition.Value);
+            }
+        }
+
+        foreach (var start in roadStarts)
+        {
+            Vector2Int tmp = start;
+            List<Vector2Int> road = new List<Vector2Int>();
+            road.Add(tmp);
+            
+            while (tmp != Vector2Int.zero)
+            {
+                tmp = roadDependencies[tmp];
+                road.Add(tmp);
+            }
+            finalRoads.Add(road);
+            
+        }
+
+        Dictionary<Vector2Int,int> coordWithIndexes = new Dictionary<Vector2Int,int>();
+        int roadStrenght = 0;
+        foreach (var road in finalRoads)
+        {
+            int roadIndexer = 0;
+            Vector2Int prevRoad = Vector2Int.zero;
+            foreach (var coords in road)
+            {
+
+                coordWithIndexes[coords] = roadIndexer* 10 * (int)Math.Pow(10,roadStrenght);
+                roadIndexer++;
+                
+            }
+
+            roadStrenght++;
+        }
+        
+    }
+
+
+
+    private void ChangeChunkState(Vector2Int chunkCoords, ChunkState newState)
+    {
+        /*
+        worldData[chunkCoords] = newState;
+        OnChunkStateChange?.Invoke(chunkCoords, newState);
+        */
+    }
+
+    private void UpdateAllWildernessChunks()
+    {
+        
+    }
+    private void UpdateWildernessChunk(Vector2Int chunkCoords)
+    {
+        List<Vector2Int> avaibleToMod = new List<Vector2Int>();
+ 
+    }
+
+    private void updateRoadState()
+    {
+        
+    }
 }

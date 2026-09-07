@@ -149,15 +149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a8a55b9932a2c24bbc865b71663a619, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  realSecondsPerHour: 2
-  nightSlowdownFactor: 3
-  gracePeriodDays: 9
-  gracePeriodNightFactor: 0.5
-  dayStartHour: 6
-  nightStartHour: 20
-  currentTime: 6
-  currentHour: 6
-  dayCount: 1
 --- !u!4 &34146714
 Transform:
   m_ObjectHideFlags: 0
@@ -1048,6 +1039,10 @@ PrefabInstance:
     - target: {fileID: 273931870985050981, guid: 5e838efff9ce56140a4979640ba1b009, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 276533949769013139, guid: 5e838efff9ce56140a4979640ba1b009, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 277939654274510260, guid: 5e838efff9ce56140a4979640ba1b009, type: 3}
       propertyPath: m_AnchorMax.y
@@ -5905,6 +5900,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6617221065676929303, guid: 5e838efff9ce56140a4979640ba1b009, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6647032504604930568, guid: 5e838efff9ce56140a4979640ba1b009, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -7796,8 +7795,6 @@ MonoBehaviour:
   predefinedWaves:
   - {fileID: 11400000, guid: 0f7f43213ef54a34f88709c518929875, type: 2}
   nightSpawnInterval: 1
-  daySpawnInterval: 10
-  daySpawnChance: 30
   baseFormulaConst: 10
   perSpawnerMultiplier: 2.5
   activeRoutes: []
@@ -8159,6 +8156,7 @@ MonoBehaviour:
   fogManager: {fileID: 1837610585}
   mapGenerator: {fileID: 1837610582}
   costConfig: {fileID: 11400000, guid: 90565ad927aefd74dac08ce4970c440d, type: 2}
+  defaultSettlementDays: 5
   activeMissions: []
   playerExpeditionCenter: []
 --- !u!1 &1871804221
@@ -8350,8 +8348,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60c014c1508a9bd43b5408e44c7dbb33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fileName: EconomyLog.txt
-  enableLogging: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

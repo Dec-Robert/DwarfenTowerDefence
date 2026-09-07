@@ -16,10 +16,11 @@ using System.Collections.Generic;
 /// </summary>
 public class HexMapGenerator : MonoBehaviour
 {
+    public static HexMapGenerator Instance { get; private set; }
+    
     [Header("Referencje")]
     public HexMapVisualizer       visualizer;
     public FogOfWarManager        fogManager;
-    public MapExpansionManager    expansionManager;
 
     [Header("Rozmiar Mapy")]
     public int mapWidth  = 8;
@@ -73,7 +74,6 @@ public class HexMapGenerator : MonoBehaviour
     private BiomeGenerator       biomeGen;
     private TerrainGenerator     terrainGen;
     private SpecialChunkPlacer   specialPlacer;
-    private ChunkRevealHandler   revealHandler;
 
     // =========================================================================
     // Klasy konfiguracji (Serializable – widoczne w Inspectorze)
@@ -172,7 +172,7 @@ public class HexMapGenerator : MonoBehaviour
         visualizer.VisualizeWorld(ctx.worldData, ctx.allValidChunks, ctx.chunkBiomes, biomeMatDict, chunkRadius, hexSize, padding);
 
         // 10. Mgła i odkrywanie
-        revealHandler.InitializeAndReveal(ctx.allValidChunks, chunkRadius, hexSize, padding);
+        MapExpansionManager.Instance.Initialize(ctx.worldData);
 
         Debug.Log("<color=cyan>[HexMapGenerator] Generacja kompletna.</color>");
     }
@@ -223,7 +223,7 @@ public class HexMapGenerator : MonoBehaviour
 
         specialPlacer = new SpecialChunkPlacer(ctx, registry, specialChunkTypes);
 
-        revealHandler = new ChunkRevealHandler(ctx, registry, fogManager, expansionManager);
+        //revealHandler = new ChunkRevealHandler(ctx, registry, fogManager, expansionManager);
     }
 
     private Dictionary<BiomeType, Material> BuildBiomeMaterialDict()
