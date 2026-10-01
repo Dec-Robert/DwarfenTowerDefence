@@ -10,45 +10,43 @@ public class TowerController : MonoBehaviour
     public Transform partToRotate;
     public float turnSpeed = 10f;
     public float shootAngleMargin = 10f;
-    
-    [Header("Wizualizacja Zasi�gu")]
+
+    [Header("Wizualizacja Zasięgu")]
     public GameObject rangeIndicatorPrefab;
     private GameObject rangeIndicatorInstance;
-    
+
     [Header("Status (Read Only)")]
-    [SerializeField] private bool canShoot = false;
+    [SerializeField] public bool canShoot = true;
     [SerializeField] private float currentRange;
     [SerializeField] private float currentDamage;
     [SerializeField] private float currentFireRate;
-    [SerializeField] private float currentArmorPen;  
-    [SerializeField] private float currentMagicPen;  
+    [SerializeField] private float currentArmorPen;
+    [SerializeField] private float currentMagicPen;
     [SerializeField] private float criticalChance;
     [SerializeField] private float criticalMultiplier;
-
     [SerializeField] private bool isAimed = false;
-    
-    
-    //Boole specjalne
-    [HideInInspector] public bool isFeared = false; // Paraliż strachem od bossa
+
+    [HideInInspector] public bool isFeared = false;
 
     private Transform target;
     private float fireCountdown = 0f;
     private TowerEntity towerEntity;
-    
+
     [Header("System Celowania")]
     public List<TargetingMode> activeTargetingRules = new List<TargetingMode>();
-    public Vector2Int targetChunkCoord; // Używane, jeśli tryb to Chunk
-    
-    private Transform forcedTarget = null; // Dla OverrideTargeting (Prowokacja)
+    public Vector2Int targetChunkCoord;
 
-    //Event to listen for stat change
+    private Transform forcedTarget = null;
+
     public event System.Action OnStatsChanged;
 
-
-    void Start()
+    private void Awake()
     {
         towerEntity = GetComponent<TowerEntity>();
+    }
 
+    private void Start()
+    {
         if (towerData != null)
         {
             currentRange = towerData.baseRange;
@@ -56,65 +54,37 @@ public class TowerController : MonoBehaviour
             currentFireRate = towerData.fireRate;
             criticalChance = towerData.criticalChancel;
             criticalMultiplier = towerData.criticalDamageMultiplier;
-            
+
             if (towerData.defaultTargetingPriorities != null && towerData.defaultTargetingPriorities.Count > 0)
                 activeTargetingRules = new List<TargetingMode>(towerData.defaultTargetingPriorities);
             else
-                activeTargetingRules = new List<TargetingMode> { TargetingMode.ClosestOnTrack }; // Fallback
+                activeTargetingRules = new List<TargetingMode> { TargetingMode.ClosestOnTrack };
         }
-        
-        InvokeRepeating("UpdateTarget", 0f, 0.5f);
+
+        InvokeRepeating(nameof(UpdateTarget), 0f, 0.5f);
     }
 
-    public void UpdateCombatStats(
-        float efficiency, 
-        bool isOverdriven, float overdriveMod,
-        float rangeMulti, float flatRange, 
-        float damageMulti, float flatDamage, 
-        float fireRateMulti, float flatFireRate,
-        float flatArmorPen, float flatMagicPen, float flatCritChan, float flatCritDmg)
+    public void ApplyCalculatedStats(TowerStats stats, float efficiency)
     {
-        if (isFeared && efficiency > 0f)
+        float fearMultiplier = isFeared ? 0.5f : 1f;
+
+        currentRange = stats.range;
+        currentDamage = stats.damage * fearMultiplier;
+        currentFireRate = stats.fireRate * fearMultiplier;
+        currentArmorPen = stats.armorPenetration;
+        currentMagicPen = stats.magicPenetration;
+        criticalChance = stats.criticalChancel;
+        criticalMultiplier = stats.criticalDamageMultiplier;
+
+        if (rangeIndicatorInstance != null && rangeIndicatorInstance.activeSelf)
         {
-            efficiency = Mathf.Max(0f, efficiency - (towerData != null ? towerData.workerScalingFactor : 0.25f));
+            float scale = currentRange * 2f;
+            rangeIndicatorInstance.transform.localScale = new Vector3(scale, 1f, scale);
         }
-        
-        if (towerData != null)
-        {
-            // (Baza + Flat) * Mnożnik * Opcjonalna Wydajność Załogi
-            currentRange = (towerData.baseRange + flatRange) * rangeMulti;
-            currentDamage = (towerData.baseDamage + flatDamage) * damageMulti * efficiency;
-            currentFireRate = (towerData.fireRate + flatFireRate) * fireRateMulti * efficiency;
 
-            // Nowe statystyki penetracji (tylko Flat dodawany do bazy)
-            currentArmorPen = towerData.armorPenetration + flatArmorPen;
-            currentMagicPen = towerData.magicPenetration + flatMagicPen;
-
-            // Statystyki krytyczne
-            criticalChance = towerData.criticalChancel + flatCritChan;
-            
-            // Dla krytyka mnożnik bazowy (np. 200%) + flat runy (np. +50%) = 250%
-            criticalMultiplier = towerData.criticalDamageMultiplier + flatCritDmg;
-
-            if (isOverdriven)
-            {
-                currentRange *= overdriveMod;
-                currentDamage *= overdriveMod;
-                currentFireRate *= overdriveMod;
-                criticalChance += 0.1f;
-            }
-
-            // Aktualizacja wizualizacji zasięgu
-            if (rangeIndicatorInstance != null && rangeIndicatorInstance.activeSelf)
-            {
-                float scale = currentRange * 2f;
-                rangeIndicatorInstance.transform.localScale = new Vector3(scale, 1f, scale);
-            }
-        }
         OnStatsChanged?.Invoke();
     }
 
-    // --- POKAZYWANIE ZASIĘGU ---
     public void ShowRangeIndicator(bool show)
     {
         if (show)
@@ -141,11 +111,14 @@ public class TowerController : MonoBehaviour
         }
     }
 
-    void UpdateTarget()
+    private void UpdateTarget()
     {
-        if (!canShoot) { target = null; return; }
+        if (!canShoot)
+        {
+            target = null;
+            return;
+        }
 
-        // 1. CZY MAMY OVERRIDE? (np. Shade)
         if (forcedTarget != null)
         {
             if (Vector3.Distance(transform.position, forcedTarget.position) <= currentRange)
@@ -155,23 +128,20 @@ public class TowerController : MonoBehaviour
             }
             else
             {
-                forcedTarget = null; // Cel uciekł z zasięgu, zdejmujemy override
+                forcedTarget = null;
             }
         }
 
-        // 2. CZY STRZELAMY W CHUNK?
         if (activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk)
         {
-            TowerData tData = towerData as TowerData;
-            if (tData != null && tData.canShootChunk)
+            if (towerData != null && towerData.canShootChunk)
             {
-                target = null; // Nie śledzimy konkretnego transformu!
+                target = null;
                 return;
             }
         }
 
-        // 3. POBRANIE WROGÓW W ZASIĘGU
-        EnemyStats[] allEnemies = FindObjectsOfType<EnemyStats>();
+        EnemyStats[] allEnemies = FindObjectsByType<EnemyStats>(FindObjectsSortMode.None);
         List<EnemyStats> candidates = new List<EnemyStats>();
 
         foreach (EnemyStats enemy in allEnemies)
@@ -186,28 +156,21 @@ public class TowerController : MonoBehaviour
             return;
         }
 
-        // 4. FILTROWANIE WEDŁUG ZASAD GRACZA
         foreach (var mode in activeTargetingRules)
         {
-            if (candidates.Count <= 1) break; // Został tylko jeden (lub zero), koniec filtrowania
+            if (candidates.Count <= 1) break;
             candidates = ApplyTargetingFilter(candidates, mode);
         }
 
-        // 5. FALLBACK / ROZSTRZYGNIĘCIE REMISU
-        // Jeśli lista nada ma kilku wrogów po wszystkich filtrach, bierzemy tego, który jest najbliżej bramy!
         if (candidates.Count > 1)
         {
             candidates = ApplyTargetingFilter(candidates, TargetingMode.ClosestOnTrack);
         }
 
-        // Ustalenie ostatecznego celu
-        if (candidates.Count > 0)
-            target = candidates[0].transform;
-        else
-            target = null;
+        target = candidates.Count > 0 ? candidates[0].transform : null;
     }
 
-    void Update()
+    private void Update()
     {
         if (!canShoot || target == null)
         {
@@ -215,20 +178,15 @@ public class TowerController : MonoBehaviour
             return;
         }
 
-        // 1. Obracanie
         LockOnTarget();
-
-        // 2. Sprawdzanie k�ta
         CheckIfAimed();
 
-        // 3. Strzelanie
         if (fireCountdown <= 0f)
         {
-            if(partToRotate != null)
+            if (partToRotate != null)
             {
                 if (isAimed)
                 {
-
                     Shoot();
                     if (currentFireRate > 0)
                         fireCountdown = 1f / currentFireRate;
@@ -239,17 +197,15 @@ public class TowerController : MonoBehaviour
                 Shoot();
                 if (currentFireRate > 0)
                     fireCountdown = 1f / currentFireRate;
-
             }
         }
         fireCountdown -= Time.deltaTime;
     }
 
-    void LockOnTarget()
+    private void LockOnTarget()
     {
-        if (partToRotate == null) return;
+        if (partToRotate == null || target == null) return;
         Vector3 dir = target.position - transform.position;
-        // Zabezpieczenie przed zerowym wektorem
         if (dir != Vector3.zero)
         {
             Quaternion lookRotation = Quaternion.LookRotation(dir);
@@ -258,7 +214,7 @@ public class TowerController : MonoBehaviour
         }
     }
 
-    void CheckIfAimed()
+    private void CheckIfAimed()
     {
         if (partToRotate == null || target == null) return;
         Vector3 directionToTarget = (target.position - transform.position).normalized;
@@ -267,66 +223,60 @@ public class TowerController : MonoBehaviour
         isAimed = angle <= shootAngleMargin;
     }
 
-    void Shoot()
+    private void Shoot()
     {
-        TowerData tData = towerData as TowerData;
-        if (tData == null || tData.bulletPrefab == null) return;
+        if (towerData == null || towerData.bulletPrefab == null) return;
 
-        // Ustalenie pozycji startowej
-        Vector3 spawnPos = (firePoint != null) ? firePoint.position : transform.position;
-        Quaternion spawnRot = (firePoint != null) ? firePoint.rotation : 
-            (partToRotate != null ? partToRotate.rotation : transform.rotation);
+        Vector3 spawnPos = firePoint != null ? firePoint.position : transform.position;
+        Quaternion spawnRot = firePoint != null ? firePoint.rotation : (partToRotate != null ? partToRotate.rotation : transform.rotation);
 
-        // Instancja
-        GameObject bulletGO = Instantiate(tData.bulletPrefab, spawnPos, spawnRot);
+        GameObject bulletGO = Instantiate(towerData.bulletPrefab, spawnPos, spawnRot);
         ProjectileBase projectile = bulletGO.GetComponent<ProjectileBase>();
 
         if (projectile != null)
         {
-            // 1. Obliczenia Krytyka używając AKTUALNYCH wartości
-            bool isCritical = Random.value * 100f < criticalChance;
-            
-            // 2. Inicjalizacja statystyk
-            // PRZEKAZUJEMY Armor i Magic Pen do pocisku (za chwilę zaktualizujemy pocisk)
-            projectile.Initialize(currentDamage, tData.damageType, tData.effects, isCritical, criticalMultiplier, currentArmorPen, currentMagicPen, criticalChance, towerEntity);
-            // 3. Przygotowanie danych do strzału
-            Vector3 targetPos = Vector3.zero;
-            
+            bool isCritical = Random.value < criticalChance;
+
+            projectile.Initialize(
+                currentDamage,
+                towerData.damageType,
+                towerData.effects,
+                isCritical,
+                criticalMultiplier,
+                currentArmorPen,
+                currentMagicPen,
+                criticalChance,
+                towerEntity
+            );
+
+            Vector3 targetPos;
+
             if (target != null)
             {
                 targetPos = target.position;
             }
             else
             {
-                // CZY STRZELAMY W CHUNK?
-                if (activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk && tData.canShootChunk)
+                if (activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk && towerData.canShootChunk)
                 {
-                    // Uderzamy w sam środek ustawionego Chunku
-                    float hexSize = 35f; // Możesz tu pobrać referencję z mapy, jeśli potrzeba
-                    float padding = 0f;
-                    targetPos = HexGridMath.GetChunkCenterWorld(targetChunkCoord, 4, hexSize, padding);
+                    float hexSize = 35f;
+                    targetPos = HexGridMath.GetChunkCenterWorld(targetChunkCoord, 4, hexSize, 0f);
                 }
                 else
                 {
-                    // Fallback: strzał przed lufę
                     targetPos = spawnPos + (spawnRot * Vector3.forward * 5f);
                 }
             }
 
-            // 4. ODPALENIE - Polimorfizm w akcji
-            // Nie obchodzi nas czy to SimpleBullet, GroundProjectile czy Hitscan.
-            // Każdy pocisk obsłuży te dane po swojemu.
             projectile.Launch(target, targetPos, firePoint);
         }
-        
     }
 
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
         Gizmos.color = canShoot ? Color.cyan : Color.red;
         Gizmos.DrawWireSphere(transform.position, currentRange > 0 ? currentRange : (towerData ? towerData.baseRange : 0));
 
-        // Debug promienia strza�u
         if (partToRotate != null)
         {
             Gizmos.color = Color.yellow;
@@ -342,11 +292,7 @@ public class TowerController : MonoBehaviour
     public float GetBaseRange() => towerData != null ? towerData.baseRange : 0;
     public float GetCurrentFireRate() => currentFireRate;
     public float GetBaseFireRate() => towerData != null ? towerData.fireRate : 0;
-    
-    /// <summary>
-    /// Zmusza wieżę do strzelania w konkretny cel (np. minion "Shade" ściągający aggro).
-    /// Ignoruje wszystkie inne filtry.
-    /// </summary>
+
     public void OverrideTargeting(Transform newTarget)
     {
         forcedTarget = newTarget;
@@ -356,13 +302,13 @@ public class TowerController : MonoBehaviour
     {
         forcedTarget = null;
     }
-    
+
     private List<EnemyStats> ApplyTargetingFilter(List<EnemyStats> list, TargetingMode mode)
     {
         if (list.Count == 0) return list;
 
         List<EnemyStats> result = new List<EnemyStats>();
-        float epsilon = 0.05f; // Mały margines błędu dla floatów
+        float epsilon = 0.05f;
 
         switch (mode)
         {
@@ -386,7 +332,7 @@ public class TowerController : MonoBehaviour
                 result = list.FindAll(e => Mathf.Abs(Vector3.Distance(transform.position, e.transform.position) - maxDistance) <= epsilon);
                 break;
 
-            case TargetingMode.ClosestOnTrack: // Najbliżej bramy (największy indeks ścieżki)
+            case TargetingMode.ClosestOnTrack:
                 int maxProgress = -1;
                 foreach (var e in list)
                 {
@@ -396,7 +342,7 @@ public class TowerController : MonoBehaviour
                 result = list.FindAll(e => { var w = e.GetComponent<EnemyWalker>(); return w != null && w.GetPathProgress() == maxProgress; });
                 break;
 
-            case TargetingMode.FurthestOnTrack: // Najdalej od bramy (świeżo po spawnie, najmniejszy indeks)
+            case TargetingMode.FurthestOnTrack:
                 int minProgress = int.MaxValue;
                 foreach (var e in list)
                 {
@@ -419,7 +365,6 @@ public class TowerController : MonoBehaviour
                 break;
 
             case TargetingMode.HighestThreat:
-                // Boss = 3, Elite = 2, Normal = 1
                 int GetThreat(EnemyRank rank) => rank == EnemyRank.Boss ? 3 : rank == EnemyRank.Elite ? 2 : 1;
                 int highestThreat = -1;
                 foreach (var e in list) { if (GetThreat(e.rank) > highestThreat) highestThreat = GetThreat(e.rank); }
@@ -434,22 +379,21 @@ public class TowerController : MonoBehaviour
                 return list;
         }
 
-        // Zabezpieczenie: jeśli filtr wywalił wszystkich (np. wrogowie nie mają komponentu Walker), zwróć oryginał
         return result.Count > 0 ? result : list;
     }
 
     public TowerStats GetAllStats()
-    { 
-        TowerStats stats = new TowerStats();
-        stats.range = currentRange;
-        stats.damage = currentDamage;
-        stats.fireRate = currentFireRate;
-        stats.criticalChancel = criticalChance;
-        stats.criticalDamageMultiplier = criticalMultiplier;
-        stats.armorPenetration = currentArmorPen;
-        stats.magicPenetration = currentMagicPen;
-        stats.damageType = towerData.damageType;
-
-        return stats;
+    {
+        return new TowerStats
+        {
+            range = currentRange,
+            damage = currentDamage,
+            fireRate = currentFireRate,
+            criticalChancel = criticalChance,
+            criticalDamageMultiplier = criticalMultiplier,
+            armorPenetration = currentArmorPen,
+            magicPenetration = currentMagicPen,
+            damageType = towerData != null ? towerData.damageType : DamageType.Physical
+        };
     }
 }

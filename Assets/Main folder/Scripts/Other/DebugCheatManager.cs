@@ -27,17 +27,57 @@ public class DebugCheatManager : MonoBehaviour
             CheatUnlockScouting();
         }
 
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            AdvancePhaseNormally();
+        }
+
+        if (Input.GetKeyDown(KeyCode.F7))
+        {
+            ForceAdvancePhase();
+        }
+
         HandleRuneCheats();
+    }
+
+    private void AdvancePhaseNormally()
+    {
+        if (TimePhaseManager.Instance == null) return;
+
+        if (TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Morning ||
+            TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Dusk)
+        {
+            TimePhaseManager.Instance.ChangeCurrentPhase();
+        }
+    }
+
+    private void ForceAdvancePhase()
+    {
+        if (TimePhaseManager.Instance == null) return;
+
+        if (TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night)
+        {
+            KillAllEnemies();
+            var spawner = FindAnyObjectByType<EnemySpawner>();
+            if (spawner != null)
+            {
+                spawner.StopAllCoroutines();
+            }
+        }
+
+        TimePhaseManager.Instance.ChangeCurrentPhase();
     }
 
     private void KillAllEnemies()
     {
-        EnemyStats[] allEnemies = FindObjectsOfType<EnemyStats>();
+        EnemyStats[] allEnemies = FindObjectsByType<EnemyStats>(FindObjectsSortMode.None);
 
         foreach (var enemy in allEnemies)
         {
             if (enemy != null)
+            {
                 enemy.TakeDamage(999999f, DamageType.Physical, 100, 100, true, 1000);
+            }
         }
     }
 
@@ -46,7 +86,9 @@ public class DebugCheatManager : MonoBehaviour
         if (ResourceManager.Instance == null) return;
 
         foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
+        {
             ResourceManager.Instance.AddResource(type, 200);
+        }
     }
 
     private void CheatUnlockScouting()

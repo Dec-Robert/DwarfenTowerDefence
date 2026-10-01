@@ -2,25 +2,16 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Thin building coordinator.
-/// Responsible exclusively for:
-/// - creating and linking logical components,
-/// - subscribing to time events (TimePhaseManager),
-/// - delegating calls to appropriate components,
-/// - global building registry (AllBuildings).
-/// All logic for production, fuel, workers, terrain, and upgrades lives in dedicated components.
-/// </summary>
 public class BuildingEntity : MonoBehaviour
 {
-    [Header("Base Data")] 
+    [Header("Base Data")]
     public BuildingData data;
 
-    [Header("Management")] 
+    [Header("Management")]
     public bool isBuildingActive = true;
-    
+    public BuildingPriority upkeepPriority = BuildingPriority.Normal;
+
     [Header("Refund State")]
-    [Tooltip("Has the building been used? If not = 100% refund. If yes = 50% refund.")]
     public bool hasBeenUsed;
 
     private bool isInitialized;
@@ -55,13 +46,14 @@ public class BuildingEntity : MonoBehaviour
 
     public virtual void Initialize(BuildingData buildingData)
     {
-        if (isInitialized)
-        {
-            Debug.LogWarning($"[BuildingEntity] {name} has already been initialized! Skipping subsequent call.");
-            return;
-        }
+        if (isInitialized) return;
 
         data = buildingData;
+
+        if (data != null)
+        {
+            upkeepPriority = data.type == BuildingType.Defense ? BuildingPriority.High : BuildingPriority.Normal;
+        }
 
         CreateComponents();
         Terrain.FindAdjacentResources();
@@ -92,33 +84,38 @@ public class BuildingEntity : MonoBehaviour
     private void SubscribeToPhaseChange()
     {
         if (TimePhaseManager.Instance == null) return;
-        TimePhaseManager.Instance.OnDuskStarted += HandleProduction;
         TimePhaseManager.Instance.OnMorningStarted += HandleDayReset;
     }
 
     private void UnsubscribeFromPhaseChange()
     {
         if (TimePhaseManager.Instance == null) return;
-        TimePhaseManager.Instance.OnDuskStarted -= HandleProduction;
         TimePhaseManager.Instance.OnMorningStarted -= HandleDayReset;
     }
 
-    protected virtual void HandleProduction()
+    public virtual void ProcessUpkeep()
     {
-        if (isBuildingActive) Production.ProcessProduction();
+        if (!isBuildingActive) return;
+        Production?.ProcessUpkeep();
+    }
+
+    public virtual void ProcessProduction()
+    {
+        if (!isBuildingActive) return;
+        Production?.ProcessProduction();
         RefreshInspectorUI();
     }
 
     protected virtual void HandleDayReset()
     {
-        Workers.ResetWorkersForNewDay();
-        if (Terrain != null) Terrain.ProcessDailyTerrainModifiers();
+        Workers?.ResetWorkersForNewDay();
+        Terrain?.ProcessDailyTerrainModifiers();
         RefreshInspectorUI();
     }
 
     public virtual bool TryAddWorker(Race race)
     {
-        if (!isBuildingActive) return false; 
+        if (!isBuildingActive) return false;
 
         var success = Workers.TryAddWorker(race);
         if (success)
@@ -136,20 +133,11 @@ public class BuildingEntity : MonoBehaviour
         RefreshInspectorUI();
     }
 
-    public List<Citizen> GetAssignedCitizens()
-    {
-        return Workers.GetAssignedCitizens();
-    }
+    public List<Citizen> GetAssignedCitizens() => Workers.GetAssignedCitizens();
 
-    public int GetWorkerCount(Race race)
-    {
-        return Workers.GetWorkerCount(race);
-    }
+    public int GetWorkerCount(Race race) => Workers.GetWorkerCount(race);
 
-    public List<BuildingUpgradeSO> GetAvailableUpgrades()
-    {
-        return Upgrades.GetAvailableUpgrades();
-    }
+    public List<BuildingUpgradeSO> GetAvailableUpgrades() => Upgrades.GetAvailableUpgrades();
 
     public void ApplyUpgrade(BuildingUpgradeSO upgrade)
     {
@@ -157,10 +145,7 @@ public class BuildingEntity : MonoBehaviour
         RefreshInspectorUI();
     }
 
-    public Dictionary<ResourceType, float> GetCurrentProduction()
-    {
-        return Production.GetCurrentProduction();
-    }
+    public Dictionary<ResourceType, float> GetCurrentProduction() => Production.GetCurrentProduction();
 
     public void ForceRescan()
     {
@@ -198,28 +183,7 @@ public class BuildingEntity : MonoBehaviour
 
     private void RefreshInspectorUI()
     {
-
     }
 
-    /*
-    public void ToggleBuildingActive()
-    {
-        isBuildingActive = !isBuildingActive;
-
-        if (!isBuildingActive)
-        {
-            var workers = Workers.GetAssignedCitizens();
-            foreach (var w in new List<Citizen>(workers))
-                if (w.workState == WorkState.Assigned)
-                    Workers.RemoveSpecificWorker(w);
-        }
-
-        RefreshInspectorUI();
-    }
-    */
-    
-    public int GetTotalWorkerCount()
-    {
-        return Workers.GetAssignedCitizens().Count;
-    }
+    public int GetTotalWorkerCount() => Workers.GetAssignedCitizens().Count;
 }

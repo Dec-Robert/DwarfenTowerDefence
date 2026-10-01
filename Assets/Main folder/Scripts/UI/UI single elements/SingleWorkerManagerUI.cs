@@ -16,46 +16,57 @@ public class SingleWorkerManagerUI : MonoBehaviour
 
     private void Awake()
     {
-        icon.sprite = raceVisuals.GetIcon(race);
+        if (raceVisuals != null && icon != null)
+        {
+            icon.sprite = raceVisuals.GetIcon(race);
+        }
     }
 
     public void Setup(BuildingEntity currentBuilding)
     {
         this.currentBuilding = currentBuilding;
+
         buttonAdd.onClick.RemoveAllListeners();
         buttonAdd.onClick.AddListener(() =>
         {
             currentBuilding.TryAddWorker(race);
-            
             RefreshUI();
-            
         });
-        
+
         buttonRemove.onClick.RemoveAllListeners();
         buttonRemove.onClick.AddListener(() =>
         {
             currentBuilding.RemoveWorker(race);
-            
             RefreshUI();
         });
 
         RefreshUI();
     }
-    
+
     public void RefreshUI()
     {
         if (currentBuilding == null) return;
-        
+
         int currentWorkers = currentBuilding.GetWorkerCount(race);
         countText.text = currentWorkers.ToString();
-        
-        buttonRemove.interactable = (currentWorkers > 0);
-        
-        bool isBuildingFull = currentBuilding.GetTotalWorkerCount() >= currentBuilding.GetTotalWorkerCount();
-        bool hasFreeCitizen = CitizenManager.Instance.PopulationStats[race].Idle > 0;
-        
-        buttonAdd.interactable = (!isBuildingFull && hasFreeCitizen);
+
+        buttonRemove.interactable = currentWorkers > 0;
+
+        int maxWorkers = currentBuilding.data != null ? currentBuilding.data.baseMaxWorkers : 1;
+        if (currentBuilding.Upgrades != null)
+        {
+            maxWorkers += currentBuilding.Upgrades.LocalBonusWorkers;
+        }
+        if (CityStatsManager.Instance != null)
+        {
+            maxWorkers += CityStatsManager.Instance.globalBonusWorkersPerShift;
+        }
+
+        bool isBuildingFull = currentBuilding.GetTotalWorkerCount() >= maxWorkers;
+        bool hasFreeCitizen = CitizenManager.Instance != null &&
+                              CitizenManager.Instance.PopulationStats.ContainsKey(race) &&
+                              CitizenManager.Instance.PopulationStats[race].Idle > 0;
+
+        buttonAdd.interactable = !isBuildingFull && hasFreeCitizen;
     }
-    
-    
 }

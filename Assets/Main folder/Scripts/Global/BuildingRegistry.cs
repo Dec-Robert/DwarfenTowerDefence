@@ -1,27 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-/// <summary>
-/// Centralny rejestr wszystkich aktywnych budynków na scenie.
-///
-/// Zastępuje statyczne BuildingEntity.AllBuildings.
-/// Budynki same się rejestrują/wyrejestrowują przez OnEnable/OnDisable.
-///
-/// SETUP: Dodaj jako komponent na pustym GameObject "Registry" w scenie.
-/// </summary>
 public class BuildingRegistry : MonoBehaviour
 {
     public static BuildingRegistry Instance { get; private set; }
 
     private readonly List<BuildingEntity> buildings = new List<BuildingEntity>();
 
-    // Zdarzenia – inne systemy mogą reagować na pojawienie/zniknięcie budynku
     public event System.Action<BuildingEntity> OnBuildingRegistered;
     public event System.Action<BuildingEntity> OnBuildingUnregistered;
-
-    // =========================================================================
-    // Cykl życia
-    // =========================================================================
 
     private void Awake()
     {
@@ -33,16 +21,25 @@ public class BuildingRegistry : MonoBehaviour
         Instance = this;
     }
 
+    private void Start()
+    {
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnDuskStarted += ExecuteDuskEconomy;
+            TimePhaseManager.Instance.OnNightStarted += ExecuteNightDefenseUpkeep;
+        }
+    }
+
     private void OnDestroy()
     {
-        // Lista czyści się automatycznie razem z obiektem przy zmianie sceny
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnDuskStarted -= ExecuteDuskEconomy;
+            TimePhaseManager.Instance.OnNightStarted -= ExecuteNightDefenseUpkeep;
+        }
         buildings.Clear();
         Instance = null;
     }
-
-    // =========================================================================
-    // Rejestracja (wywoływana przez BuildingEntity)
-    // =========================================================================
 
     public void Register(BuildingEntity building)
     {
@@ -58,14 +55,39 @@ public class BuildingRegistry : MonoBehaviour
         OnBuildingUnregistered?.Invoke(building);
     }
 
-    // =========================================================================
-    // Odpytywanie
-    // =========================================================================
+    private void ExecuteDuskEconomy()
+    {
+        var activeBuildings = buildings.Where(b => b != null && b.isBuildingActive).ToList();
 
-    /// <summary>Wszystkie aktywne budynki (tylko do odczytu).</summary>
+        var economicBuildings = activeBuildings
+            .Where(b => b.data != null && b.data.type != BuildingType.Defense)
+            .OrderBy(b => b.upkeepPriority)
+            .ToList();
+
+        foreach (var building in economicBuildings)
+        {
+            building.ProcessUpkeep();
+        }
+
+        foreach (var building in economicBuildings)
+        {
+            building.ProcessProduction();
+        }
+    }
+
+    private void ExecuteNightDefenseUpkeep()
+    {
+        var defenseBuildings = buildings
+            .Where(b => b != null && b.isBuildingActive && b.data != null && b.data.type == BuildingType.Defense)
+            .OrderBy(b => b.upkeepPriority)
+            .ToList();
+
+        foreach (var defense in defenseBuildings)
+            defense.ProcessUpkeep();
+    }
+
     public IReadOnlyList<BuildingEntity> AllBuildings => buildings;
 
-    /// <summary>Zwraca wszystkie budynki danego typu.</summary>
     public List<T> GetAllOfType<T>() where T : BuildingEntity
     {
         var result = new List<T>();
@@ -74,7 +96,6 @@ public class BuildingRegistry : MonoBehaviour
         return result;
     }
 
-    /// <summary>Zwraca wszystkie budynki produkujące dany zasób.</summary>
     public List<BuildingEntity> GetProducersOf(ResourceType resource)
     {
         var result = new List<BuildingEntity>();

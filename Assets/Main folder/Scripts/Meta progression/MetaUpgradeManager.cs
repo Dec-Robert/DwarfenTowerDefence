@@ -183,66 +183,7 @@ public class MetaUpgradeManager : MonoBehaviour
             case MetaEffectType.BonusWorkersPerShift:
                 CityStatsManager.Instance?.AddGlobalWorkerSlot(Mathf.RoundToInt(value));
                 break;
-
-            // ── Budynki — continuous modifiers → GlobalModifierRegistry ───────
-            case MetaEffectType.BuildingPassiveEfficiency:
-                GlobalModifierRegistry.Instance?.Register(new StatModifier(
-                    "MetaUpgrade_PassiveEff",
-                    TowerStatType.BuildingPassiveEfficiency,
-                    flat: value));
-                break;
-
-            case MetaEffectType.BuildingWorkerEfficiencyBonus:
-                GlobalModifierRegistry.Instance?.Register(new StatModifier(
-                    "MetaUpgrade_WorkerEff",
-                    TowerStatType.BuildingWorkerEfficiencyBonus,
-                    flat: value));
-                break;
-
-            // ── Wrogowie ──────────────────────────────────────────────────────
-            case MetaEffectType.EliteChanceBoost:
-                GlobalModifierRegistry.Instance?.Register(new StatModifier(
-                    "MetaUpgrade_EliteChance",
-                    TowerStatType.EliteChanceBoost,
-                    flat: value));
-                break;
-
-            case MetaEffectType.EnemySurvivorPenaltyArmor:
-                GlobalModifierRegistry.Instance?.Register(new StatModifier(
-                    "MetaUpgrade_SurvivorArmor",
-                    TowerStatType.EnemySurvivorPenaltyArmor,
-                    flat: value));
-                break;
-
-            case MetaEffectType.EnemySurvivorPenaltySpeed:
-                GlobalModifierRegistry.Instance?.Register(new StatModifier(
-                    "MetaUpgrade_SurvivorSpeed",
-                    TowerStatType.EnemySurvivorPenaltySpeed,
-                    flat: value));
-                break;
-
-            case MetaEffectType.EnemySurvivorPenaltyDodge:
-                GlobalModifierRegistry.Instance?.Register(new StatModifier(
-                    "MetaUpgrade_SurvivorDodge",
-                    TowerStatType.EnemySurvivorPenaltyDodge,
-                    flat: value));
-                break;
-
-            // ── Wieże ─────────────────────────────────────────────────────────
-            case MetaEffectType.TowerNoAmmoNightPenalty:
-                GlobalModifierRegistry.Instance?.Register(new StatModifier(
-                    "MetaUpgrade_NoAmmoPenalty",
-                    TowerStatType.TowerNoAmmoNightPenalty,
-                    multiplier: value));
-                break;
-
-            // ── Eksploracja ───────────────────────────────────────────────────
-            case MetaEffectType.ExpansionCostReduction:
-                GlobalModifierRegistry.Instance?.Register(new StatModifier(
-                    "MetaUpgrade_ExpansionCost",
-                    TowerStatType.ExpansionCostReduction,
-                    flat: value));
-                break;
+            
 
             // ── Miasto ────────────────────────────────────────────────────────
             case MetaEffectType.CityBaseHealth:

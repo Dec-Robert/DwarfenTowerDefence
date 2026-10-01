@@ -3,17 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-/// <summary>
-/// Manages the runtime statistics, combat interactions, and damage resolution pipeline for an enemy unit.
-/// Key Responsibilities:
-/// - Initializes base attributes (Health, Armor, Magic Resist, Dodge, Speed) from EnemyData ScriptableObject.
-/// - Processes incoming attacks through active skills, dodge checks, penetration mitigations, and damage types.
-/// - Handles visual feedback for damage and dodges using renderer color tints.
-/// - Dispatches health update and death lifecycle events to subscribers (UI, Spawner, Session Managers).
-/// </summary>
 public class EnemyStats : MonoBehaviour
 {
-    [Header("Data Preview")] 
+    [Header("Data Preview")]
     public EnemyData data;
     public EnemyRank rank = EnemyRank.Normal;
 
@@ -26,12 +18,12 @@ public class EnemyStats : MonoBehaviour
 
     private List<EnemySkill> skills = new List<EnemySkill>();
 
-    [Header("Visuals")] 
+    [Header("Visuals")]
     public Renderer meshRenderer;
     private Color originalColor;
 
     public event Action<float, float> OnHealthChanged;
-    public event Action<EnemyStats> OnDeath; 
+    public event Action<EnemyStats> OnDeath;
 
     public void Initialize(EnemyData _data)
     {
@@ -47,9 +39,10 @@ public class EnemyStats : MonoBehaviour
 
         maxHealth = data.baseHp;
         currentHealth = maxHealth;
-        currentArmor = data.armor;
-        currentMagicResist = data.magicResist;
-        currentDodge = data.dodgeChance;
+
+        currentArmor = data.armor <= 1f ? data.armor : data.armor / 100f;
+        currentMagicResist = data.magicResist <= 1f ? data.magicResist : data.magicResist / 100f;
+        currentDodge = data.dodgeChance <= 1f ? data.dodgeChance : data.dodgeChance / 100f;
 
         var walker = GetComponent<EnemyWalker>();
         if (walker) walker.speed = data.moveSpeed;
@@ -85,10 +78,7 @@ public class EnemyStats : MonoBehaviour
             if (rawDamage <= 0) return;
         }
 
-        float dodgeRoll = Random.Range(0f, 100f);
-        float finalDamage = CalculateFinalDamage(type, rawDamage, armourPiercing, magicPiercing, isCritical, criticalMultiplier);
-
-        if (dodgeRoll < currentDodge && !isCritical && type != DamageType.True)
+        if (Random.value < currentDodge && !isCritical && type != DamageType.True)
         {
             if (meshRenderer != null)
             {
@@ -97,6 +87,8 @@ public class EnemyStats : MonoBehaviour
             }
             return;
         }
+
+        float finalDamage = CalculateFinalDamage(type, rawDamage, armourPiercing, magicPiercing, isCritical, criticalMultiplier);
 
         currentHealth -= finalDamage;
 
@@ -118,7 +110,7 @@ public class EnemyStats : MonoBehaviour
             Die();
     }
 
-    void ResetColor()
+    private void ResetColor()
     {
         if (meshRenderer == null) return;
         meshRenderer.material.color = (rank == EnemyRank.Elite) ? Color.red : originalColor;
@@ -137,7 +129,7 @@ public class EnemyStats : MonoBehaviour
         }
 
         foreach (var skill in skills) skill.OnDeath();
-        
+
         OnDeath?.Invoke(this);
         Destroy(gameObject);
     }
@@ -145,30 +137,31 @@ public class EnemyStats : MonoBehaviour
     public void GetToBase()
     {
         foreach (var skill in skills) skill.OnDeath();
-        
+
         OnDeath?.Invoke(this);
         Destroy(gameObject);
     }
 
-    float CalculateFinalDamage(DamageType type, float raw, float ap, float mp, bool crit, float critMult)
+    private float CalculateFinalDamage(DamageType type, float raw, float ap, float mp, bool crit, float critMult)
     {
-        float armor = Mathf.Max(0, currentArmor - ap);
-        float mr = Mathf.Max(0, currentMagicResist - mp);
-
         switch (type)
         {
-            case DamageType.Physical: 
-                raw *= (1f - armor / 100f); 
+            case DamageType.Physical:
+                float effectiveArmor = Mathf.Clamp01(currentArmor - ap);
+                raw *= (1f - effectiveArmor);
                 break;
-            case DamageType.Magic: 
-                raw *= (1f - mr / 100f); 
+
+            case DamageType.Magic:
+                float effectiveMR = Mathf.Clamp01(currentMagicResist - mp);
+                raw *= (1f - effectiveMR);
                 break;
-            case DamageType.True: 
+
+            case DamageType.True:
                 break;
         }
 
-        if (crit) 
-            raw *= critMult / 100f;
+        if (crit)
+            raw *= critMult;
 
         return raw;
     }
@@ -182,8 +175,5 @@ public class EnemyStats : MonoBehaviour
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
-    public float GetCurrentHealth()
-    {
-        return currentHealth;
-    }
+    public float GetCurrentHealth() => currentHealth;
 }

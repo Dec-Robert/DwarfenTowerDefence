@@ -4,25 +4,14 @@ using UnityEngine.UI;
 
 public class TimeManagerUI : MonoBehaviour
 {
-    public TextMeshProUGUI dateTimeTxt; 
-    
+    public TextMeshProUGUI dateTimeTxt;
+
     [Header("Time speed Buttons")]
     public Button pauseBtn;
     public Button speedOneBtn;
     public Button speedTwoBtn;
     public Button speedThreeBtn;
     public Button speedFiveBtn;
-
-    void Start()
-    {
-        /*
-        pauseBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(0));
-        speedOneBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(1));
-        speedTwoBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(2));
-        speedThreeBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(3));
-        speedFiveBtn.onClick.AddListener(() =>TimePhaseManager.Instance.SetTimeSpeed(5));
-        */
-    }
 
     private void OnDestroy()
     {
@@ -33,10 +22,9 @@ public class TimeManagerUI : MonoBehaviour
         if (speedFiveBtn != null) speedFiveBtn.onClick.RemoveAllListeners();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (TimePhaseManager.Instance != null)
+        if (TimePhaseManager.Instance != null && dateTimeTxt != null)
         {
             SetTimeTxt();
         }
@@ -44,7 +32,8 @@ public class TimeManagerUI : MonoBehaviour
 
     private void SetTimeTxt()
     {
-
-        dateTimeTxt.text = $"Day: X - MORNING";
+        int day = TimePhaseManager.Instance.CurrentDay;
+        string phase = TimePhaseManager.Instance.CurrentTimePhase.ToString().ToUpper();
+        dateTimeTxt.text = $"Day: {day}\n{phase}";
     }
 }

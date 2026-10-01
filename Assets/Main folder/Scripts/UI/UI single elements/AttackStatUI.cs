@@ -1,11 +1,10 @@
 using System;
-using Microsoft.Unity.VisualStudio.Editor;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AttackStatUI : MonoBehaviour
 {
-    
     public BattleStats stats;
     public TextMeshProUGUI value;
     public Image icon;
@@ -17,114 +16,74 @@ public class AttackStatUI : MonoBehaviour
 
     public void Setup(TowerStats data)
     {
-        
-            
         switch (stats)
         {
             case BattleStats.Range:
-                SetText(data.range);
+                SetText(data.range.ToString("F1"));
                 break;
+
             case BattleStats.Damage:
-                SetText(data.damage);
+                SetText(data.damage.ToString("F1"));
                 break;
+
             case BattleStats.FireRate:
-                SetText(data.fireRate);
+                SetText(data.fireRate.ToString("F2"));
                 break;
+
             case BattleStats.CriticalChancel:
-                SetText(data.criticalChancel);
+                SetText((data.criticalChancel * 100f).ToString("F0") + "%");
                 break;
+
             case BattleStats.CriticalMultiplier:
-                SetText(data.criticalDamageMultiplier);
+                SetText((data.criticalDamageMultiplier * 100f).ToString("F0") + "%");
                 break;
+
             case BattleStats.ArmorPenetration:
-                SetText(data.armorPenetration);
+                SetText((data.armorPenetration * 100f).ToString("F0") + "%");
                 break;
+
             case BattleStats.MagicPenetration:
-                SetText(data.magicPenetration);
+                SetText((data.magicPenetration * 100f).ToString("F0") + "%");
                 break;
+
             case BattleStats.DamageType:
-                SetText(data.damageType);
+                SetDamageTypeText(data.damageType);
                 break;
         }
-        
     }
 
     public void Setup()
     {
-        return;
     }
 
-    private void SetupExtraInfo(TowerData data)
+    private void SetText(string text)
     {
-        SetExtraText(data);
-    }
-
-    private void SetText<T>(T text)
-    {
-        if (text is DamageType)
+        if (value != null)
         {
-            if (text.Equals(DamageType.Magic))
-            {
+            value.text = text;
+        }
+    }
+
+    private void SetDamageTypeText(DamageType damageType)
+    {
+        if (value == null) return;
+
+        switch (damageType)
+        {
+            case DamageType.Magic:
                 value.text = "Magic";
                 value.color = Color.blue;
-            }else if (text.Equals(DamageType.Physical))
-            {
-                value.text = "Physical";
-                value.color = new Color(245,71,39);
-            }
-            else
-            {
-                value.text = "Holy";
-                value.color = Color.black;
-            }
-        }
-        else
-        {
-            switch (stats)
-            {
-                case BattleStats.Range or BattleStats.Damage or BattleStats.FireRate:
-                    value.text = text.ToString();
-                    break;
-                case BattleStats.ArmorPenetration or BattleStats.MagicPenetration or BattleStats.CriticalChancel:
-                    value.text = text.ToString() + "%";
-                    break;
-                case BattleStats.CriticalMultiplier:
-                    value.text = (Convert.ToSingle(text) * 100f).ToString() + "%";
-                    break;
-            }
-            
-        }
-    }
-     
-    private void SetExtraText(TowerData data)
-    {
-        switch (stats)
-        {
-            case BattleStats.Range:
-                SetText(data.baseRange);
                 break;
-            case BattleStats.Damage:
-                SetText(data.baseDamage);
-                break;
-            case BattleStats.FireRate:
-                SetText(data.fireRate);
-                break;
-            case BattleStats.CriticalChancel:
-                SetText(data.criticalChancel);
-                break;
-            case BattleStats.CriticalMultiplier:
-                SetText(data.criticalDamageMultiplier);
-                break;
-            case BattleStats.ArmorPenetration:
-                SetText(data.armorPenetration);
-                break;
-            case BattleStats.MagicPenetration:
-                SetText(data.magicPenetration);
-                break;
-            case BattleStats.DamageType:
-                SetText(data.damageType);
-                break;
-        }
-    }
 
+            case DamageType.Physical:
+                value.text = "Physical";
+                value.color = new Color32(245, 71, 39, 255);
+                break;
+
+            case DamageType.True:
+                value.text = "Holy";
+                value.color = Color.white;
+                break;
+        }
+    }
 }

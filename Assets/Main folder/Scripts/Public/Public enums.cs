@@ -13,6 +13,13 @@ public enum ResourceType
     Hope
 }
 
+public enum BuildingPriority
+{
+    High,
+    Normal,
+    Low
+}
+
 [Serializable]
 public struct ResourceCost
 {

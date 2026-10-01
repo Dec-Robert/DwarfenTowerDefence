@@ -1,27 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-///     Responsible for:
-///     calculating efficency, taking resource need for building, accumulatin buffer
-///     transfering ready products to resoureceManager
-/// </summary>
 public class BuildingProductionComponent
 {
     private readonly Transform buildingTransform;
-
-    // --- Referencje ---
     private readonly BuildingData data;
-
-
-    // --- Stan ---
     private readonly Dictionary<ResourceType, float> productionBuffer = new Dictionary<ResourceType, float>();
-
     private readonly BuildingTerrainComponent terrainComponent;
     private readonly BuildingUpgradeComponent upgradeComponent;
     private readonly BuildingWorkerComponent workerComponent;
 
-    // --- Konstruktor ---
+    private float currentCalculatedEfficiency;
+    private bool isReadyToProduce;
+
     public BuildingProductionComponent(
         BuildingData data,
         BuildingUpgradeComponent upgradeComponent,
@@ -35,122 +26,150 @@ public class BuildingProductionComponent
         this.workerComponent = workerComponent;
         this.buildingTransform = buildingTransform;
     }
-    
 
-    // Public API
-    public bool ProcessProduction()
+    public void ProcessUpkeep()
     {
-        workerComponent.LockWorkers();
-        int workerCount = workerComponent.GetActiveWorkers().Count;
-        if (workerCount == 0) return false;
-        
-        var efficiency = CalculateDynamicEfficiency(workerCount);
-        var production = GetCurrentProduction();
-        var loggedProduction = new Dictionary<ResourceType, float>();
-        
-        
-        // Maintenance Costs
-        if (!ResourceManager.Instance.SpendResources(data.upkeepPerCycle))
+        isReadyToProduce = false;
+        currentCalculatedEfficiency = 0f;
+
+        if (workerComponent != null)
         {
-            efficiency *= 0.5f;
+            workerComponent.LockWorkers();
         }
-        
-        // Final production
-        foreach (var rsc in production)
+
+        int workerCount = workerComponent != null ? workerComponent.GetActiveWorkers().Count : 0;
+
+        float crewEfficiency = 0f;
+        if (workerCount > 0)
         {
-            float resourceAmount = rsc.Value * efficiency;
-            int finalAmountToProduce = 0;
-            
-            float fraction = resourceAmount - Mathf.Floor(resourceAmount);
-
-            if (fraction <= 0.01f || fraction >= 0.99f) finalAmountToProduce = Mathf.RoundToInt(resourceAmount);
-            else finalAmountToProduce = AddToBufferAndGetWhole(rsc.Key, resourceAmount);
-            
-
-            if (finalAmountToProduce > 0) ResourceManager.Instance.AddResource(rsc.Key, finalAmountToProduce);
-            
+            crewEfficiency = 1f + (workerCount - 1) * data.workerScalingFactor;
         }
-        
-        /*
-        if (loggedProduction.Count > 0 && ResourceLogger.Instance != null)
-            ResourceLogger.Instance.LogTransaction($"Produkcja: {data.buildingName}", loggedProduction);
-        */
+        else if (MetaUpgradeManager.Instance != null)
+        {
+            crewEfficiency = MetaUpgradeManager.Instance.GetValue(MetaEffectType.BuildingPassiveEfficiency);
+        }
 
+        if (crewEfficiency <= 0f) return;
 
-        return true;
+        bool hasUpkeep = true;
+        if (data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0 && ResourceManager.Instance != null)
+        {
+            hasUpkeep = ResourceManager.Instance.SpendResources(data.upkeepPerCycle);
+        }
+
+        float upkeepPenalty = hasUpkeep ? 0f : 0.5f;
+        currentCalculatedEfficiency = Mathf.Max(0.1f, crewEfficiency - upkeepPenalty);
+        isReadyToProduce = true;
     }
 
-    // Calculating Efficency from all source
-    //TODO: Calculate additional modifiers
-    private float CalculateDynamicEfficiency(int workerCount)
+    public void ProcessProduction()
     {
-        var scale = data.workerScalingFactor;
-        var eff = 1f;
-        var firstWorkerEff = data.firstWorkerProduction;
-        
-        return workerCount > 1 ? 1f + (workerCount - 1) * scale : firstWorkerEff;
+        if (!isReadyToProduce || currentCalculatedEfficiency <= 0f) return;
+
+        float metaBonus = 0f;
+        if (MetaUpgradeManager.Instance != null)
+        {
+            metaBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
+        }
+
+        float upgradePercent = upgradeComponent != null ? (upgradeComponent.GetGlobalProductionMultiplier() - 1f) : 0f;
+        float finalMultiplier = Mathf.Max(0.1f, 1f + metaBonus + upgradePercent);
+
+        var baseAmounts = GetBaseProductionWithFlats();
+
+        foreach (var kvp in baseAmounts)
+        {
+            float rawProduced = kvp.Value * finalMultiplier * currentCalculatedEfficiency;
+            int wholeProduced = AddToBufferAndGetWhole(kvp.Key, rawProduced);
+
+            if (wholeProduced > 0 && ResourceManager.Instance != null)
+            {
+                ResourceManager.Instance.AddResource(kvp.Key, wholeProduced);
+
+                if (FloatingTextManager.Instance != null)
+                {
+                    FloatingTextManager.Instance.ShowGain(buildingTransform.position, kvp.Key.ToString(), wholeProduced);
+                }
+            }
+        }
+
+        isReadyToProduce = false;
     }
-    
-    /// <summary>
-    ///     Oblicza bieżącą produkcję per cykl (baza + ulepszenia + teren + meta progresja specyficzna).
-    /// </summary>
-    public Dictionary<ResourceType, float> GetCurrentProduction()
+
+    public Dictionary<ResourceType, float> GetBaseProductionWithFlats()
     {
         var total = new Dictionary<ResourceType, float>();
 
-        // 1. Baza z BuildingData
         if (data.productionPerCycle != null)
+        {
             foreach (var res in data.productionPerCycle)
+            {
                 AddToDict(total, res.type, res.amount);
-
-        // 2. Bonusy z ulepszeń w grze (Tier 1 -> Tier 2)
-        var upgradeBonus = upgradeComponent.GetAllProductionBonuses();
-        foreach (var kvp in upgradeBonus)
-            AddToDict(total, kvp.Key, kvp.Value);
-
-        // 3. Bonus terenowy doliczany do głównego surowca
-        var terrainBonus = terrainComponent.CalculateTerrainBonus();
-        if (terrainBonus > 0f
-            && data.productionPerCycle != null
-            && data.productionPerCycle.Count > 0)
-        {
-            var mainRes = data.productionPerCycle[0].type;
-            AddToDict(total, mainRes, terrainBonus);
+            }
         }
 
-        // 4. NOWE: Bonus ze specyficznej Meta-Progresji (tylko dla tego konkretnego budynku)
-        if (MetaUpgradeManager.Instance != null && data.productionPerCycle != null)
+        if (upgradeComponent != null)
         {
-            // Pobieramy wartość. Zwraca np. 0.15 (jeśli daliśmy 15% boosta do Tartaku)
-            var metaSpecificBonus =
-                MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
-
-            if (metaSpecificBonus > 0f)
-                // Aplikujemy bonus (mnożnik) do KAŻDEGO bazowego surowca produkowanego przez ten budynek
-                foreach (var res in data.productionPerCycle)
-                {
-                    var extraAmount = res.amount * metaSpecificBonus;
-                    AddToDict(total, res.type, extraAmount);
-                }
+            var upgradeBonus = upgradeComponent.GetAllProductionBonuses();
+            foreach (var kvp in upgradeBonus)
+            {
+                AddToDict(total, kvp.Key, kvp.Value);
+            }
         }
 
-        var globalUpgradeMulti = upgradeComponent.GetGlobalProductionMultiplier();
-        if (globalUpgradeMulti != 1f)
+        if (terrainComponent != null)
         {
-            var keys = new List<ResourceType>(total.Keys);
-            foreach (var k in keys) total[k] *= globalUpgradeMulti;
+            float terrainBonus = terrainComponent.CalculateTerrainBonus();
+            if (terrainBonus > 0f && data.productionPerCycle != null && data.productionPerCycle.Count > 0)
+            {
+                var mainRes = data.productionPerCycle[0].type;
+                AddToDict(total, mainRes, terrainBonus);
+            }
         }
 
         return total;
     }
-    
-    // --- Helpers ---
+
+    public Dictionary<ResourceType, float> GetCurrentProduction()
+    {
+        int workerCount = workerComponent != null ? workerComponent.GetActiveWorkers().Count : 0;
+
+        float crewEfficiency = 0f;
+        if (workerCount > 0)
+        {
+            crewEfficiency = 1f + (workerCount - 1) * data.workerScalingFactor;
+        }
+        else if (MetaUpgradeManager.Instance != null)
+        {
+            crewEfficiency = MetaUpgradeManager.Instance.GetValue(MetaEffectType.BuildingPassiveEfficiency);
+        }
+
+        float metaBonus = 0f;
+        if (MetaUpgradeManager.Instance != null)
+        {
+            metaBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
+        }
+
+        float upgradePercent = upgradeComponent != null ? (upgradeComponent.GetGlobalProductionMultiplier() - 1f) : 0f;
+        float finalMultiplier = Mathf.Max(0.1f, 1f + metaBonus + upgradePercent);
+
+        var baseAmounts = GetBaseProductionWithFlats();
+        var result = new Dictionary<ResourceType, float>();
+
+        foreach (var kvp in baseAmounts)
+        {
+            result[kvp.Key] = kvp.Value * finalMultiplier * crewEfficiency;
+        }
+
+        return result;
+    }
+
     private void AddToDict(Dictionary<ResourceType, float> dict, ResourceType type, float amount)
     {
         if (dict.ContainsKey(type)) dict[type] += amount;
         else dict.Add(type, amount);
     }
-    
+
     private int AddToBufferAndGetWhole(ResourceType type, float amount)
     {
         int wholePart = Mathf.FloorToInt(amount);
@@ -160,9 +179,9 @@ public class BuildingProductionComponent
         {
             productionBuffer[type] = 0f;
         }
-    
+
         productionBuffer[type] += fractionPart;
-        
+
         if (productionBuffer[type] >= 1f)
         {
             wholePart += 1;
@@ -171,6 +190,4 @@ public class BuildingProductionComponent
 
         return wholePart;
     }
-
-    
 }

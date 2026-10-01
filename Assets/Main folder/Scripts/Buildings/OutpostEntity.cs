@@ -53,10 +53,6 @@ public class OutpostEntity : BuildingEntity
         }
     }
 
-    protected override void HandleProduction()
-    {
-    }
-
     public void CompleteSettlement()
     {
         transformAvailable = true;
