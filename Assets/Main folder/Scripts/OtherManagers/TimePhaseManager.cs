@@ -11,6 +11,8 @@ public class TimePhaseManager : MonoBehaviour
     public event Action OnMorningStarted;
     public event Action OnDuskStarted;
     public event Action OnNightStarted;
+
+    public event Action<float> OnGameSpeedChange;
     
 
     private void Awake()
@@ -35,6 +37,30 @@ public class TimePhaseManager : MonoBehaviour
         
     }
 
+    public void PauseWave()
+    {
+        Time.timeScale = 0f;
+        OnGameSpeedChange.Invoke(Time.timeScale);
+    }
+
+    public void ContinueWave()
+    {
+        Time.timeScale = 1f;
+        OnGameSpeedChange.Invoke(Time.timeScale);
+    }
+
+    public void SpeedUpWave()
+    {
+        if (Time.timeScale < 3f) Time.timeScale += 1;
+        else if (Time.timeScale == 3f) Time.timeScale = 5f;
+        else Time.timeScale = 1f;
+        
+        OnGameSpeedChange.Invoke(Time.timeScale);
+        
+    }
+    
+    
+
     public void ChangeCurrentPhase()
     {
         int timePhaseIndex = (int)CurrentTimePhase + 1;
@@ -53,6 +79,7 @@ public class TimePhaseManager : MonoBehaviour
                 break;
             case TimePhases.Night:
                 OnNightStarted?.Invoke();
+                OnGameSpeedChange.Invoke(Time.timeScale);
                 break;
         }
         
