@@ -44,26 +44,28 @@ public class ExpeditionCenterEntity : BuildingEntity
 
     private void TryReserveElf()
     {
-        if (CitizenManager.Instance == null) return;
-
-        reservedElf = CitizenManager.Instance.citizens.Find(c => c.race == Race.Elves && c.workState == WorkState.Idle);
-
-        if (reservedElf != null)
-        {
-            reservedElf.workState = WorkState.Assigned;
-            elfAssigned = true;
-        }
-        else
-        {
-            elfAssigned = false;
-        }
+        reservedElf = null;
+        elfAssigned = WorkforceManager.Instance != null &&
+                      WorkforceManager.Instance.TryAssignWorker(Race.Elves, this, out reservedElf);
     }
 
     private void ReleaseElf()
     {
         if (reservedElf == null || !elfAssigned) return;
 
-        reservedElf.workState = WorkState.Idle;
+        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorker(reservedElf);
+        reservedElf = null;
+        elfAssigned = false;
+    }
+
+    public override void HandleWorkerLost(Citizen citizen)
+    {
+        if (citizen != reservedElf)
+        {
+            base.HandleWorkerLost(citizen);
+            return;
+        }
+
         reservedElf = null;
         elfAssigned = false;
     }

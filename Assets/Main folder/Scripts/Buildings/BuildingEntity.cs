@@ -67,6 +67,7 @@ public class BuildingEntity : MonoBehaviour
         Upgrades = new BuildingUpgradeComponent(data);
 
         Workers = new BuildingWorkerComponent(
+            this,
             data,
             Upgrades,
             () => CityStatsManager.Instance?.globalBonusWorkersPerShift ?? 0);
@@ -133,6 +134,12 @@ public class BuildingEntity : MonoBehaviour
         RefreshInspectorUI();
     }
 
+    public virtual void HandleWorkerLost(Citizen citizen)
+    {
+        Workers?.ForgetWorker(citizen);
+        RefreshInspectorUI();
+    }
+
     public List<Citizen> GetAssignedCitizens() => Workers.GetAssignedCitizens();
 
     public int GetWorkerCount(Race race) => Workers.GetWorkerCount(race);
@@ -153,7 +160,7 @@ public class BuildingEntity : MonoBehaviour
         if (this is TowerEntity tower) tower.RecalculateStats();
     }
 
-    public void Demolish()
+    public virtual void Demolish()
     {
         Workers.ReleaseAllWorkers();
 

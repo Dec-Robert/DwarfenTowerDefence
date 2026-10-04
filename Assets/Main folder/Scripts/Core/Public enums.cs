@@ -58,6 +58,13 @@ public enum WorkState
     Locked, //Assigned to work, cannot be changed
 }
 
+public enum DeathReason
+{
+    Demolition,
+    Starvation,
+    Other
+}
+
 public enum DamageType
 {
     Physical, // Physical dmg

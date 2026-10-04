@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.HID;
 
 public class PopulationDisplayUI : MonoBehaviour
@@ -29,17 +30,40 @@ public class PopulationDisplayUI : MonoBehaviour
     [SerializeField]
     List<MenuTextForRaces> citizens = new List<MenuTextForRaces>();
     
+    private bool isSubscribed;
+
+    public void OnEnable()
+    {
+        Subscribe();
+    }
+
     public void Start()
     {
-        CitizenManager.Instance.PopulationChange += RefreshRaceStats;
+        Subscribe();
     }
 
     public void OnDisable()
     {
-        CitizenManager.Instance.PopulationChange -= RefreshRaceStats;
+        if (!isSubscribed) return;
+
+        if (WorkforceManager.Instance != null)
+            WorkforceManager.Instance.OnWorkforceStatsChanged -= RefreshRaceStats;
+
+        isSubscribed = false;
     }
 
-    private void RefreshRaceStats(CitizenManager.RaceStats raceStats, Race race)
+    private void Subscribe()
+    {
+        if (isSubscribed || WorkforceManager.Instance == null) return;
+
+        WorkforceManager.Instance.OnWorkforceStatsChanged += RefreshRaceStats;
+        isSubscribed = true;
+
+        foreach (MenuTextForRaces citizen in citizens)
+            RefreshRaceStats(citizen.race, WorkforceManager.Instance.GetStats(citizen.race));
+    }
+
+    private void RefreshRaceStats(Race race, WorkforceManager.WorkforceStats raceStats)
     {
         foreach (MenuTextForRaces citizen in citizens)
         {
@@ -69,12 +93,15 @@ public class PopulationDisplayUI : MonoBehaviour
     {
         
         //Todo: Usunać po debugu
-        if (Input.GetKeyDown(KeyCode.F4))
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
+        if (keyboard.f4Key.wasPressedThisFrame)
         {
             hideExtendedPanel();
         }
 
-        if (Input.GetKeyUp(KeyCode.F4))
+        if (keyboard.f4Key.wasReleasedThisFrame)
         {
             showExtendedPanel();
         }

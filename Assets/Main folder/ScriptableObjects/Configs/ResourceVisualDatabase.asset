@@ -28,20 +28,20 @@ MonoBehaviour:
   - type: 7
     icon: {fileID: 21300000, guid: 499b482285607f3498de42562e035c33, type: 3}
   statVisuals:
+  - stat: 0
+    icon: {fileID: 21300000, guid: 377f821829c2528469e49c00468b19b6, type: 3}
   - stat: 1
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 3b9779f8092fd404ca8dbb4402550919, type: 3}
   - stat: 2
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 340e72d689393ec43b3142a918516370, type: 3}
   - stat: 3
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: c74f63af2482b7444a0b8575c4358de9, type: 3}
   - stat: 4
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 7b39247d688d11549b9a4e9f20476fce, type: 3}
   - stat: 5
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: a035db47244b79e4788333cc6ca2f93a, type: 3}
   - stat: 6
-    icon: {fileID: 0}
-  - stat: 6
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 8ef720a46238fc84ba67a73f15b2ba3a, type: 3}
   raceVisuals:
   - race: 0
     icon: {fileID: 21300000, guid: 88ec3e3f5c5873b49a364b493ec7302b, type: 3}

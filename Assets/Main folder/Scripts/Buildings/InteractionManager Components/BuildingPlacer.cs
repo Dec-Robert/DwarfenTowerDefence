@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -84,9 +84,8 @@ public class BuildingPlacer
 
         if (data.requiresSpecificCitizen)
         {
-            bool hasFreeCitizen = CitizenManager.Instance != null &&
-                                 CitizenManager.Instance.citizens.Exists(c =>
-                                     c.race == data.requiredCitizenRace && c.workState == WorkState.Idle);
+            bool hasFreeCitizen = WorkforceManager.Instance != null &&
+                                 WorkforceManager.Instance.HasIdleWorker(data.requiredCitizenRace);
 
             if (!hasFreeCitizen)
             {

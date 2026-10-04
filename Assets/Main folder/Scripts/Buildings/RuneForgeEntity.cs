@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -53,25 +53,28 @@ public class RuneForgeEntity : BuildingEntity
 
     private void TryReserveDwarf()
     {
-        if (CitizenManager.Instance == null) return;
-
-        reservedDwarf = CitizenManager.Instance.citizens.Find(c => c.race == Race.Dwarves && c.workState == WorkState.Idle);
-
-        if (reservedDwarf != null)
-        {
-            reservedDwarf.workState = WorkState.Assigned;
-            dwarfAssigned = true;
-        }
-        else
-        {
-            dwarfAssigned = false;
-        }
+        reservedDwarf = null;
+        dwarfAssigned = WorkforceManager.Instance != null &&
+                        WorkforceManager.Instance.TryAssignWorker(Race.Dwarves, this, out reservedDwarf);
     }
 
     private void ReleaseDwarf()
     {
         if (reservedDwarf == null || !dwarfAssigned) return;
-        reservedDwarf.workState = WorkState.Idle;
+
+        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorker(reservedDwarf);
+        reservedDwarf = null;
+        dwarfAssigned = false;
+    }
+
+    public override void HandleWorkerLost(Citizen citizen)
+    {
+        if (citizen != reservedDwarf)
+        {
+            base.HandleWorkerLost(citizen);
+            return;
+        }
+
         reservedDwarf = null;
         dwarfAssigned = false;
     }

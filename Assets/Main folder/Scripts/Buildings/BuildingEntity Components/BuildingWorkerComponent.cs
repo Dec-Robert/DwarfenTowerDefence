@@ -12,16 +12,19 @@ public class BuildingWorkerComponent
     private readonly List<Citizen> assignedCitizens = new();
 
     // --- Referencje ---
+    private readonly BuildingEntity owner;
     private readonly BuildingData data;
     private readonly Func<int> getGlobalBonusWorkers;
     private readonly BuildingUpgradeComponent upgradeComponent;
 
     // --- Konstruktor ---
     public BuildingWorkerComponent(
+        BuildingEntity owner,
         BuildingData data,
         BuildingUpgradeComponent upgradeComponent,
         Func<int> getGlobalBonusWorkers)
     {
+        this.owner = owner;
         this.data = data;
         this.upgradeComponent = upgradeComponent;
         this.getGlobalBonusWorkers = getGlobalBonusWorkers;
@@ -34,9 +37,9 @@ public class BuildingWorkerComponent
     {
         var maxWorkers = data.baseMaxWorkers + upgradeComponent.LocalBonusWorkers + (getGlobalBonusWorkers?.Invoke() ?? 0);
         if (assignedCitizens.Count >= maxWorkers) return false;
+        if (WorkforceManager.Instance == null) return false;
 
-        var newWorker = CitizenManager.Instance.FindAndAssignCitizen(race, null);
-        if (newWorker == null) return false;
+        if (!WorkforceManager.Instance.TryAssignWorker(race, owner, out var newWorker)) return false;
 
         assignedCitizens.Add(newWorker);
         return true;
@@ -49,8 +52,8 @@ public class BuildingWorkerComponent
 
         if (workerToRemove == null) return;
 
-        workerToRemove.RemoveFromWorkplace();
         assignedCitizens.Remove(workerToRemove);
+        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorker(workerToRemove);
     }
 
     /// <summary>Zwraca listę aktywnych pracowników (Assigned lub Working).</summary>
@@ -79,10 +82,10 @@ public class BuildingWorkerComponent
     /// <summary>Zwalnia wszystkich pracowników (np. przy rozbiórce budynku).</summary>
     public void ReleaseAllWorkers()
     {
-        foreach (var citizen in new List<Citizen>(assignedCitizens))
-            citizen.RemoveFromWorkplace();
-
+        var released = new List<Citizen>(assignedCitizens);
         assignedCitizens.Clear();
+
+        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorkers(released);
     }
 
     // --- Gettery ---
@@ -99,11 +102,14 @@ public class BuildingWorkerComponent
     
     public void RemoveSpecificWorker(Citizen worker)
     {
-        if (assignedCitizens.Contains(worker))
-        {
-            worker.RemoveFromWorkplace();
-            assignedCitizens.Remove(worker);
-        }
+        if (!assignedCitizens.Remove(worker)) return;
+
+        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorker(worker);
+    }
+
+    public void ForgetWorker(Citizen worker)
+    {
+        assignedCitizens.Remove(worker);
     }
 
 

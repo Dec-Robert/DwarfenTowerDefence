@@ -63,9 +63,7 @@ public class SingleWorkerManagerUI : MonoBehaviour
         }
 
         bool isBuildingFull = currentBuilding.GetTotalWorkerCount() >= maxWorkers;
-        bool hasFreeCitizen = CitizenManager.Instance != null &&
-                              CitizenManager.Instance.PopulationStats.ContainsKey(race) &&
-                              CitizenManager.Instance.PopulationStats[race].Idle > 0;
+        bool hasFreeCitizen = WorkforceManager.Instance != null && WorkforceManager.Instance.HasIdleWorker(race);
 
         buttonAdd.interactable = !isBuildingFull && hasFreeCitizen;
     }

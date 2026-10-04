@@ -59,8 +59,8 @@ public class HousingEntity : BuildingEntity
         for (var i = 0; i < finalStartPop; i++)
         {
             if (residents.Count >= GetEffectiveMaxResidents()) break;
-            var newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
-            residents.Add(newC);
+            if (PopLifeCycleManager.Instance == null) break;
+            PopLifeCycleManager.Instance.BirthCitizen(housingData.housingRace, this);
         }
 
         if (TimePhaseManager.Instance != null)
@@ -131,10 +131,29 @@ public class HousingEntity : BuildingEntity
     {
         var required = CalculateRequiredGrowthTicks();
         if (currentGrowthProgress < required) return;
+        if (PopLifeCycleManager.Instance == null) return;
 
-        var newC = CitizenManager.Instance.SpawnNewCitizen(housingData.housingRace, this);
-        residents.Add(newC);
+        PopLifeCycleManager.Instance.BirthCitizen(housingData.housingRace, this);
         currentGrowthProgress = 0;
+    }
+
+    public void AddResident(Citizen citizen)
+    {
+        if (citizen == null || residents.Contains(citizen)) return;
+        residents.Add(citizen);
+    }
+
+    public void RemoveResident(Citizen citizen)
+    {
+        residents.Remove(citizen);
+    }
+
+    public override void Demolish()
+    {
+        if (PopLifeCycleManager.Instance != null)
+            PopLifeCycleManager.Instance.KillAllResidents(this, DeathReason.Demolition);
+
+        base.Demolish();
     }
 
     public int GetEffectiveMaxResidents()

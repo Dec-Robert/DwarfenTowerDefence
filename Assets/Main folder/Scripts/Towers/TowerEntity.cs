@@ -147,5 +147,11 @@ public class TowerEntity : BuildingEntity
         RecalculateStats();
     }
 
+    public override void HandleWorkerLost(Citizen citizen)
+    {
+        base.HandleWorkerLost(citizen);
+        RecalculateStats();
+    }
+
     public float[] GetEfficencyTable() => efficiencyTable;
 }
