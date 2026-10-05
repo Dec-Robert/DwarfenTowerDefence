@@ -13,11 +13,14 @@ MonoBehaviour:
   m_Name: 4. Crucible of Cinders
   m_EditorClassIdentifier: 
   buildingName: "Tygiel Po\u017Cogi"
-  description: 
+  description: "Wie\u017Ca zasilana cz\u0105stk\u0105 \u015Bwi\u0119tego p\u0142omienia
+    bastionu. Po\u0142\u0105czenie krasnoludzkiego tygla i elfickiej magii \u017Cywio\u0142\xF3w,
+    obracaj\u0105ce w popi\xF3\u0142 wszelk\u0105 spaczon\u0105 mg\u0142\u0105 abominacj\u0119."
   icon: {fileID: 21300000, guid: b35b0aeb601ca3248b4529d94239d3cb, type: 3}
   type: 1
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 0600000001000000030000000500000000000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
@@ -45,8 +48,7 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseMaxWorkers: 1
   isUnlocked: 1
   baseRange: 5
   baseDamage: 10

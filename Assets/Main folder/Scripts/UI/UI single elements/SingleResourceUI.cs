@@ -16,9 +16,26 @@ public class SingleResourceUI : MonoBehaviour
         icon.sprite = ResourceVisuals.GetIcon(resourceType);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Setup(ResourceType type, float value, ResourceVisualsSO visuals = null)
     {
-        
+        if (visuals != null) ResourceVisuals = visuals;
+        resourceType = type;
+
+        if (ammount != null)
+        {
+            ammount.text = Mathf.RoundToInt(value).ToString();
+        }
+
+        if (icon != null && ResourceVisuals != null)
+        {
+            icon.color = Color.white;
+            icon.sprite = ResourceVisuals.GetIcon(resourceType);
+        }
     }
+
+    public void Setup(ResourceType type, int value, ResourceVisualsSO visuals = null)
+    {
+        Setup(type, (float)value, visuals);
+    }
+    
 }

@@ -13,12 +13,19 @@ MonoBehaviour:
   m_Name: Quarry
   m_EditorClassIdentifier: 
   buildingName: Quarry
-  description: 
+  description: "Wydobywa surowy kamie\u0144 z ods\u0142oni\u0119tych grani kotliny.
+    Dzi\u0119ki krasnoludzkiej technice i ludzkiemu trudowi dostarcza blok\xF3w na
+    mury i fundamenty wie\u017C obronnych."
   icon: {fileID: 21300000, guid: ab4ae92fb8900154d9583961da916687, type: 3}
   type: 0
   workerScalingFactor: 0.25
+  firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 0300000000000000
   requiresOccupiedSpace: 0
+  requiresSpecificCitizen: 0
+  requiredCitizenRace: 1
+  isOutpost: 0
   constructionCost:
   - type: 0
     amount: 5
@@ -36,10 +43,10 @@ MonoBehaviour:
   prefab: {fileID: 6524460908731403753, guid: aaac537b19e66e145902f1bec629cd9a, type: 3}
   bonusRule:
     requiredFeature: 0
-    range: 0
+    searchRadius: 0
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseMaxWorkers: 1
+  isUnlocked: 1

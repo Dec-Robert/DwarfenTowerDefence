@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: RuneSmith
   m_EditorClassIdentifier: 
   buildingName: Rune smith
-  description: 
+  description: "Warsztat krasnoludzkich mistrz\xF3w run, w kt\xF3rym pradawne znaki
+    wykuwane s\u0105 w \u017Celazie, nadaj\u0105c wie\u017Com obronnym nadnaturaln\u0105
+    pot\u0119g\u0119."
   icon: {fileID: 0}
   type: 3
   workerScalingFactor: 0
+  firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 000000000100000002000000030000000400000005000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 1
@@ -42,5 +46,5 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 0
-  baseWorkersPerShift: 0
+  baseMaxWorkers: 1
+  isUnlocked: 1

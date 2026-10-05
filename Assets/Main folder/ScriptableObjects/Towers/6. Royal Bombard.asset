@@ -13,11 +13,14 @@ MonoBehaviour:
   m_Name: 6. Royal Bombard
   m_EditorClassIdentifier: 
   buildingName: Bombarda
-  description: 
+  description: "Ci\u0119\u017Cka artyleria obl\u0119\u017Cnicza odlana ze zbrojonego
+    \u017Celaza. Wystrzeliwuje pot\u0119\u017Cne kule burz\u0105ce, zdolne skruszy\u0107
+    pancerz i ko\u015Bci najwi\u0119kszych bestii zrodzonych w oparach."
   icon: {fileID: 21300000, guid: 1afd990cd1c03164fae2d9c0068fd288, type: 3}
   type: 1
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 00000000010000000300000005000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
@@ -41,8 +44,7 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseMaxWorkers: 1
   isUnlocked: 1
   baseRange: 9
   baseDamage: 100

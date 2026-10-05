@@ -13,12 +13,14 @@ MonoBehaviour:
   m_Name: 1. Sentinel Arbalest
   m_EditorClassIdentifier: 
   buildingName: Arbalet
-  description: "Solidny i nie zawodny mechanizm kt\xF3ry broni\u0142 miasta przez
-    milenia przed nico\u015Bci\u0105."
+  description: "Solidna, klasyczna machina krasnoludzkiej konstrukcji wspomagana
+    elfickim ci\u0119ciwem. Niezawodny fundament obrony przeciw pierwszym falom potwor\xF3w
+    z mg\u0142y."
   icon: {fileID: 21300000, guid: 966fcf7d12ef7d743ac842b2d6d43888, type: 3}
   type: 1
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 0600000001000000030000000500000000000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
@@ -44,8 +46,7 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseMaxWorkers: 1
   isUnlocked: 1
   baseRange: 15
   baseDamage: 25

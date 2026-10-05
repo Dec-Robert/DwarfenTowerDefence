@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: ExpeditionCenter
   m_EditorClassIdentifier: 
   buildingName: Expedition center
-  description: 
+  description: "Punkt wypadowy ludzkich uczonych i elfickich zwiadowc\xF3w. St\u0105d
+    wyruszaj\u0105 \u015Bmia\u0142kowie w g\u0142\u0105b nieznanej mg\u0142y \u2013
+    w ostatecznym krzyku nadziei na ocalenie \u015Bwiata."
   icon: {fileID: 21300000, guid: 966fcf7d12ef7d743ac842b2d6d43888, type: 3}
   type: 3
   workerScalingFactor: 0.25
+  firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 000000000100000002000000030000000400000005000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 1
@@ -31,10 +35,10 @@ MonoBehaviour:
   prefab: {fileID: 1253841588521944598, guid: 24bb6747c09a7b047bca852207347540, type: 3}
   bonusRule:
     requiredFeature: 0
-    range: 0
+    searchRadius: 0
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseMaxWorkers: 1
+  isUnlocked: 1

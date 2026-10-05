@@ -13,12 +13,19 @@ MonoBehaviour:
   m_Name: Retort
   m_EditorClassIdentifier: 
   buildingName: Retorta
-  description: 
+  description: "Wzniesione przez ludzkich rzemie\u015Blnik\xF3w piece do suchej destylacji
+    drewna. Zapewniaj\u0105 sta\u0142e dostawy w\u0119gla dla wie\u017C parowych
+    i piec\xF3w w okresach niedoboru surowca z g\xF3r."
   icon: {fileID: 21300000, guid: 12219056c2c89e14c88e6dfd5d7e56d9, type: 3}
   type: 0
   workerScalingFactor: 0.25
+  firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 000000000100000002000000
   requiresOccupiedSpace: 0
+  requiresSpecificCitizen: 0
+  requiredCitizenRace: 1
+  isOutpost: 0
   constructionCost:
   - type: 0
     amount: 10
@@ -36,10 +43,10 @@ MonoBehaviour:
   prefab: {fileID: 4011031713050108421, guid: 07c2962ef65bb134394603a64ca2250e, type: 3}
   bonusRule:
     requiredFeature: 0
-    range: 0
+    searchRadius: 0
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseMaxWorkers: 1
+  isUnlocked: 1

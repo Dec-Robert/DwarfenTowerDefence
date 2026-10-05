@@ -13,11 +13,14 @@ MonoBehaviour:
   m_Name: 7. Soul Monolith
   m_EditorClassIdentifier: 
   buildingName: Monolit dusz
-  description: 
+  description: "Staro\u017Cytny elficki g\u0142az opleciony ochronnymi runami krasnolud\xF3w.
+    Przebudzone duchy przodk\xF3w atakuj\u0105 sam\u0105 esencj\u0119 \u017Cyciow\u0105
+    potwor\xF3w, wysysaj\u0105c z nich si\u0142\u0119 do ataku."
   icon: {fileID: 21300000, guid: b35b0aeb601ca3248b4529d94239d3cb, type: 3}
   type: 1
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 0600000001000000030000000500000000000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
@@ -39,8 +42,7 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseMaxWorkers: 1
   isUnlocked: 1
   baseRange: 5
   baseDamage: 50

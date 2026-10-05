@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: RuneSmithTower
   m_EditorClassIdentifier: 
   buildingName: Rune tower
-  description: 
+  description: "Wie\u017Ce s\u0142u\u017C\u0105ce do wzmacniani ku\u017Ani runicznych."
   icon: {fileID: 0}
   type: 3
   workerScalingFactor: 0
+  firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 000000000100000002000000030000000400000005000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
@@ -24,7 +26,7 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 0
-    amount: 0
+    amount: 200
   productionPerCycle: []
   upkeepPerCycle: []
   tier1Upgrades: []
@@ -36,5 +38,5 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 0
-  baseWorkersPerShift: 0
+  baseMaxWorkers: 1
+  isUnlocked: 1

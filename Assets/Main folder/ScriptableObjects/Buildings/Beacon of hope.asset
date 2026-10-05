@@ -13,13 +13,30 @@ MonoBehaviour:
   m_Name: Beacon of hope
   m_EditorClassIdentifier: 
   buildingName: Beacon of hope
-  description: 
+  description: "Serce ostatniego bastionu. \u015Awi\u0119ty p\u0142omie\u0144 zrodzony
+    z magii elf\xF3w, run krasnolud\xF3w i po\u015Bwi\u0119cenia ludzi \u2013 jedyna
+    bariera powstrzymuj\u0105ca potok zab\xF3jczej mg\u0142y."
   icon: {fileID: 0}
   type: 3
+  workerScalingFactor: 0.25
+  firstWorkerProduction: 0.7
+  shiftEffectivenese: []
   allowedTerrain: 
   requiresOccupiedSpace: 0
+  requiresSpecificCitizen: 0
+  requiredCitizenRace: 1
+  isOutpost: 0
   constructionCost: []
   productionPerCycle: []
   upkeepPerCycle: []
   tier1Upgrades: []
   prefab: {fileID: 0}
+  bonusRule:
+    requiredFeature: 0
+    searchRadius: 0
+    baseBonusPerHex: 0
+    penaltyPerUser: 0
+    minBonus: 0
+    onTopProductionBonus: 0
+  baseMaxWorkers: 1
+  isUnlocked: 1
