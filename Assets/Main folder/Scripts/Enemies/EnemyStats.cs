@@ -20,10 +20,62 @@ public class EnemyStats : MonoBehaviour
 
     [Header("Visuals")]
     public Renderer meshRenderer;
-    private Color originalColor;
+    [SerializeField] private Renderer[] renderers;
+    private Color originalColor = Color.white;
+
+    private static MaterialPropertyBlock sharedPropertyBlock;
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int ColorId = Shader.PropertyToID("_Color");
+
+    public EnemyWalker Walker { get; private set; }
 
     public event Action<float, float> OnHealthChanged;
     public event Action<EnemyStats> OnDeath;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        sharedPropertyBlock = null;
+    }
+
+    private void Awake()
+    {
+        Walker = GetComponent<EnemyWalker>();
+        if (meshRenderer == null)
+            meshRenderer = GetComponentInChildren<Renderer>();
+        if (renderers == null || renderers.Length == 0)
+            renderers = GetComponentsInChildren<Renderer>();
+    }
+
+    private void OnEnable()
+    {
+        EnemyRegistry.Register(this);
+        if (rank == EnemyRank.Elite)
+        {
+            ApplyVisualColor(Color.red);
+        }
+        else
+        {
+            ResetColor();
+        }
+    }
+
+    private void OnDisable()
+    {
+        EnemyRegistry.Unregister(this);
+        CancelInvoke(nameof(ResetColor));
+        if (renderers != null)
+        {
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer r = renderers[i];
+                if (r != null)
+                {
+                    r.SetPropertyBlock(null);
+                }
+            }
+        }
+    }
 
     public void Initialize(EnemyData _data)
     {
@@ -32,10 +84,25 @@ public class EnemyStats : MonoBehaviour
         if (meshRenderer == null)
             meshRenderer = GetComponentInChildren<Renderer>();
 
-        if (meshRenderer != null)
-            originalColor = meshRenderer.material.color;
+        if (renderers == null || renderers.Length == 0)
+            renderers = GetComponentsInChildren<Renderer>();
 
-        rank = EnemyRank.Normal;
+        if (meshRenderer != null && meshRenderer.sharedMaterial != null)
+        {
+            if (meshRenderer.sharedMaterial.HasProperty(BaseColorId))
+                originalColor = meshRenderer.sharedMaterial.GetColor(BaseColorId);
+            else if (meshRenderer.sharedMaterial.HasProperty(ColorId))
+                originalColor = meshRenderer.sharedMaterial.GetColor(ColorId);
+            else
+                originalColor = Color.white;
+        }
+        else
+        {
+            originalColor = Color.white;
+        }
+
+        if (rank != EnemyRank.Elite && rank != EnemyRank.Boss)
+            rank = EnemyRank.Normal;
 
         maxHealth = data.baseHp;
         currentHealth = maxHealth;
@@ -44,13 +111,20 @@ public class EnemyStats : MonoBehaviour
         currentMagicResist = data.magicResist <= 1f ? data.magicResist : data.magicResist / 100f;
         currentDodge = data.dodgeChance <= 1f ? data.dodgeChance : data.dodgeChance / 100f;
 
-        var walker = GetComponent<EnemyWalker>();
-        if (walker) walker.speed = data.moveSpeed;
+        if (Walker == null)
+            Walker = GetComponent<EnemyWalker>();
+
+        if (Walker != null)
+            Walker.speed = data.moveSpeed;
 
         if (rank == EnemyRank.Elite)
         {
             transform.localScale *= 1.2f;
-            if (meshRenderer) meshRenderer.material.color = Color.red;
+            ApplyVisualColor(Color.red);
+        }
+        else
+        {
+            ResetColor();
         }
 
         if (_data.skillPrefabs != null)
@@ -80,11 +154,7 @@ public class EnemyStats : MonoBehaviour
 
         if (Random.value < currentDodge && !isCritical && type != DamageType.True)
         {
-            if (meshRenderer != null)
-            {
-                meshRenderer.material.color = Color.yellow;
-                Invoke(nameof(ResetColor), 0.1f);
-            }
+            FlashColor(Color.yellow, 0.1f);
             return;
         }
 
@@ -92,11 +162,7 @@ public class EnemyStats : MonoBehaviour
 
         currentHealth -= finalDamage;
 
-        if (meshRenderer != null)
-        {
-            meshRenderer.material.color = Color.white;
-            Invoke(nameof(ResetColor), 0.1f);
-        }
+        FlashColor(Color.white, 0.1f);
 
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
@@ -110,10 +176,51 @@ public class EnemyStats : MonoBehaviour
             Die();
     }
 
-    private void ResetColor()
+    private void FlashColor(Color color, float duration)
     {
-        if (meshRenderer == null) return;
-        meshRenderer.material.color = (rank == EnemyRank.Elite) ? Color.red : originalColor;
+        ApplyVisualColor(color);
+        CancelInvoke(nameof(ResetColor));
+        Invoke(nameof(ResetColor), duration);
+    }
+
+    private void ApplyVisualColor(Color color)
+    {
+        if (renderers == null || renderers.Length == 0) return;
+        if (sharedPropertyBlock == null)
+            sharedPropertyBlock = new MaterialPropertyBlock();
+
+        sharedPropertyBlock.SetColor(BaseColorId, color);
+        sharedPropertyBlock.SetColor(ColorId, color);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer r = renderers[i];
+            if (r != null)
+            {
+                r.SetPropertyBlock(sharedPropertyBlock);
+            }
+        }
+    }
+
+    public void ResetColor()
+    {
+        if (renderers == null || renderers.Length == 0) return;
+
+        if (rank == EnemyRank.Elite)
+        {
+            ApplyVisualColor(Color.red);
+        }
+        else
+        {
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer r = renderers[i];
+                if (r != null)
+                {
+                    r.SetPropertyBlock(null);
+                }
+            }
+        }
     }
 
     private void Die()

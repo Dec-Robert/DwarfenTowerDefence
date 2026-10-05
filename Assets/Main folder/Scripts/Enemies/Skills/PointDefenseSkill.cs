@@ -9,7 +9,10 @@ public class PointDefenseSkill : EnemySkill
     public float cooldown = 4f;
     public GameObject blastVFX;
 
+    [SerializeField] private LayerMask layerMask = ~0;
+
     private float timer = 0f;
+    private static readonly Collider[] hitBuffer = new Collider[64];
 
     void Update()
     {
@@ -24,15 +27,18 @@ public class PointDefenseSkill : EnemySkill
 
     private void BlastProjectiles()
     {
-        // Uwaga: Wszystkie pociski MUSZĄ mieć przypisany jakiś Tag lub Layer, by Overlap działał wydajnie.
-        // Najlepiej stwórz tag "Projectile" i przypisz go do bazowych prefabów pocisków (Simple, Linear, Ground).
-        
-        Collider[] hits = Physics.OverlapSphere(transform.position, radius);
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, radius, hitBuffer, layerMask);
         bool hitAnything = false;
 
-        foreach (var hit in hits)
+        for (int i = 0; i < hitCount; i++)
         {
+            Collider hit = hitBuffer[i];
+            if (hit == null) continue;
+
             ProjectileBase bullet = hit.GetComponent<ProjectileBase>();
+            if (bullet == null) bullet = hit.GetComponentInParent<ProjectileBase>();
+            if (bullet == null) bullet = hit.GetComponentInChildren<ProjectileBase>();
+
             if (bullet != null)
             {
                 // Hitscan ignorujemy, bo on zadaje DMG natychmiast, a Linear niszczymy przed kontaktem.
@@ -40,6 +46,7 @@ public class PointDefenseSkill : EnemySkill
                 hitAnything = true;
             }
         }
+        System.Array.Clear(hitBuffer, 0, hitCount);
 
         if (hitAnything)
         {

@@ -38,6 +38,10 @@ public class TowerController : MonoBehaviour
 
     private Transform forcedTarget = null;
 
+    private readonly List<EnemyStats> candidateBufferA = new List<EnemyStats>(64);
+    private readonly List<EnemyStats> candidateBufferB = new List<EnemyStats>(64);
+    private const float FilterEpsilon = 0.05f;
+
     public event System.Action OnStatsChanged;
 
     private void Awake()
@@ -141,33 +145,57 @@ public class TowerController : MonoBehaviour
             }
         }
 
-        EnemyStats[] allEnemies = FindObjectsByType<EnemyStats>(FindObjectsSortMode.None);
-        List<EnemyStats> candidates = new List<EnemyStats>();
+        List<EnemyStats> current = candidateBufferA;
+        List<EnemyStats> next = candidateBufferB;
+        current.Clear();
+        next.Clear();
 
-        foreach (EnemyStats enemy in allEnemies)
+        List<EnemyStats> allEnemies = EnemyRegistry.ActiveEnemies;
+        Vector3 towerPos = transform.position;
+        float rangeSqr = currentRange * currentRange;
+
+        for (int i = 0; i < allEnemies.Count; i++)
         {
-            if (Vector3.Distance(transform.position, enemy.transform.position) <= currentRange)
-                candidates.Add(enemy);
+            EnemyStats enemy = allEnemies[i];
+            if (enemy == null) continue;
+            if ((towerPos - enemy.transform.position).sqrMagnitude <= rangeSqr)
+            {
+                current.Add(enemy);
+            }
         }
 
-        if (candidates.Count == 0)
+        if (current.Count == 0)
         {
             target = null;
             return;
         }
 
-        foreach (var mode in activeTargetingRules)
+        for (int r = 0; r < activeTargetingRules.Count; r++)
         {
-            if (candidates.Count <= 1) break;
-            candidates = ApplyTargetingFilter(candidates, mode);
+            if (current.Count <= 1) break;
+            ApplyFilter(current, next, activeTargetingRules[r]);
+            if (next.Count > 0)
+            {
+                var temp = current;
+                current = next;
+                next = temp;
+            }
         }
 
-        if (candidates.Count > 1)
+        if (current.Count > 1)
         {
-            candidates = ApplyTargetingFilter(candidates, TargetingMode.ClosestOnTrack);
+            ApplyFilter(current, next, TargetingMode.ClosestOnTrack);
+            if (next.Count > 0)
+            {
+                var temp = current;
+                current = next;
+                next = temp;
+            }
         }
 
-        target = candidates.Count > 0 ? candidates[0].transform : null;
+        target = current.Count > 0 ? current[0].transform : null;
+        candidateBufferA.Clear();
+        candidateBufferB.Clear();
     }
 
     private void Update()
@@ -303,83 +331,194 @@ public class TowerController : MonoBehaviour
         forcedTarget = null;
     }
 
-    private List<EnemyStats> ApplyTargetingFilter(List<EnemyStats> list, TargetingMode mode)
+    private void ApplyFilter(List<EnemyStats> input, List<EnemyStats> output, TargetingMode mode)
     {
-        if (list.Count == 0) return list;
+        output.Clear();
+        if (input.Count == 0) return;
 
-        List<EnemyStats> result = new List<EnemyStats>();
-        float epsilon = 0.05f;
+        Vector3 towerPos = transform.position;
 
         switch (mode)
         {
             case TargetingMode.Closest:
+            {
                 float minDistance = float.MaxValue;
-                foreach (var e in list)
+                for (int i = 0; i < input.Count; i++)
                 {
-                    float d = Vector3.Distance(transform.position, e.transform.position);
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    float d = Vector3.Distance(towerPos, e.transform.position);
                     if (d < minDistance) minDistance = d;
                 }
-                result = list.FindAll(e => Mathf.Abs(Vector3.Distance(transform.position, e.transform.position) - minDistance) <= epsilon);
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    if (Mathf.Abs(Vector3.Distance(towerPos, e.transform.position) - minDistance) <= FilterEpsilon)
+                    {
+                        output.Add(e);
+                    }
+                }
                 break;
+            }
 
             case TargetingMode.Furthest:
+            {
                 float maxDistance = float.MinValue;
-                foreach (var e in list)
+                for (int i = 0; i < input.Count; i++)
                 {
-                    float d = Vector3.Distance(transform.position, e.transform.position);
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    float d = Vector3.Distance(towerPos, e.transform.position);
                     if (d > maxDistance) maxDistance = d;
                 }
-                result = list.FindAll(e => Mathf.Abs(Vector3.Distance(transform.position, e.transform.position) - maxDistance) <= epsilon);
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    if (Mathf.Abs(Vector3.Distance(towerPos, e.transform.position) - maxDistance) <= FilterEpsilon)
+                    {
+                        output.Add(e);
+                    }
+                }
                 break;
+            }
 
             case TargetingMode.ClosestOnTrack:
+            {
                 int maxProgress = -1;
-                foreach (var e in list)
+                for (int i = 0; i < input.Count; i++)
                 {
-                    var walker = e.GetComponent<EnemyWalker>();
-                    if (walker != null && walker.GetPathProgress() > maxProgress) maxProgress = walker.GetPathProgress();
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    EnemyWalker walker = e.Walker != null ? e.Walker : e.GetComponent<EnemyWalker>();
+                    if (walker != null && walker.GetPathProgress() > maxProgress)
+                    {
+                        maxProgress = walker.GetPathProgress();
+                    }
                 }
-                result = list.FindAll(e => { var w = e.GetComponent<EnemyWalker>(); return w != null && w.GetPathProgress() == maxProgress; });
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    EnemyWalker walker = e.Walker != null ? e.Walker : e.GetComponent<EnemyWalker>();
+                    if (walker != null && walker.GetPathProgress() == maxProgress)
+                    {
+                        output.Add(e);
+                    }
+                }
                 break;
+            }
 
             case TargetingMode.FurthestOnTrack:
+            {
                 int minProgress = int.MaxValue;
-                foreach (var e in list)
+                for (int i = 0; i < input.Count; i++)
                 {
-                    var walker = e.GetComponent<EnemyWalker>();
-                    if (walker != null && walker.GetPathProgress() < minProgress) minProgress = walker.GetPathProgress();
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    EnemyWalker walker = e.Walker != null ? e.Walker : e.GetComponent<EnemyWalker>();
+                    if (walker != null && walker.GetPathProgress() < minProgress)
+                    {
+                        minProgress = walker.GetPathProgress();
+                    }
                 }
-                result = list.FindAll(e => { var w = e.GetComponent<EnemyWalker>(); return w != null && w.GetPathProgress() == minProgress; });
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    EnemyWalker walker = e.Walker != null ? e.Walker : e.GetComponent<EnemyWalker>();
+                    if (walker != null && walker.GetPathProgress() == minProgress)
+                    {
+                        output.Add(e);
+                    }
+                }
                 break;
+            }
 
             case TargetingMode.MostHP:
+            {
                 float maxHP = float.MinValue;
-                foreach (var e in list) { if (e.GetCurrentHealth() > maxHP) maxHP = e.GetCurrentHealth(); }
-                result = list.FindAll(e => Mathf.Abs(e.GetCurrentHealth() - maxHP) <= epsilon);
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    float hp = e.GetCurrentHealth();
+                    if (hp > maxHP) maxHP = hp;
+                }
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    if (Mathf.Abs(e.GetCurrentHealth() - maxHP) <= FilterEpsilon)
+                    {
+                        output.Add(e);
+                    }
+                }
                 break;
+            }
 
             case TargetingMode.LeastHP:
+            {
                 float minHP = float.MaxValue;
-                foreach (var e in list) { if (e.GetCurrentHealth() < minHP) minHP = e.GetCurrentHealth(); }
-                result = list.FindAll(e => Mathf.Abs(e.GetCurrentHealth() - minHP) <= epsilon);
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    float hp = e.GetCurrentHealth();
+                    if (hp < minHP) minHP = hp;
+                }
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    if (Mathf.Abs(e.GetCurrentHealth() - minHP) <= FilterEpsilon)
+                    {
+                        output.Add(e);
+                    }
+                }
                 break;
+            }
 
             case TargetingMode.HighestThreat:
-                int GetThreat(EnemyRank rank) => rank == EnemyRank.Boss ? 3 : rank == EnemyRank.Elite ? 2 : 1;
+            {
                 int highestThreat = -1;
-                foreach (var e in list) { if (GetThreat(e.rank) > highestThreat) highestThreat = GetThreat(e.rank); }
-                result = list.FindAll(e => GetThreat(e.rank) == highestThreat);
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    int threat = GetThreat(e.rank);
+                    if (threat > highestThreat) highestThreat = threat;
+                }
+                for (int i = 0; i < input.Count; i++)
+                {
+                    EnemyStats e = input[i];
+                    if (e == null) continue;
+                    if (GetThreat(e.rank) == highestThreat)
+                    {
+                        output.Add(e);
+                    }
+                }
                 break;
+            }
 
             case TargetingMode.Random:
-                result.Add(list[Random.Range(0, list.Count)]);
+            {
+                if (input.Count > 0)
+                {
+                    output.Add(input[Random.Range(0, input.Count)]);
+                }
                 break;
+            }
 
             default:
-                return list;
+                break;
         }
+    }
 
-        return result.Count > 0 ? result : list;
+    private static int GetThreat(EnemyRank rank)
+    {
+        return rank == EnemyRank.Boss ? 3 : rank == EnemyRank.Elite ? 2 : 1;
     }
 
     public TowerStats GetAllStats()

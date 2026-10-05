@@ -1,5 +1,5 @@
-﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class MaddeningGazeSkill : EnemySkill
 {
@@ -7,17 +7,33 @@ public class MaddeningGazeSkill : EnemySkill
     [Tooltip("Promień, w jakim wieże wpadają w panikę (Zmniejszona wydajność)")]
     public float auraRadius = 25f;
 
-    private List<TowerController> fearedTowers = new List<TowerController>();
+    [SerializeField] private LayerMask layerMask = ~0;
+
+    private readonly List<TowerController> fearedTowers = new List<TowerController>();
+    private readonly HashSet<TowerController> currentTowersInRadius = new HashSet<TowerController>();
+    private static readonly Collider[] hitBuffer = new Collider[64];
+
+    private float scanTimer = 0f;
+    private const float ScanInterval = 0.2f;
 
     void Update()
     {
-        // 1. Skanujemy teren co klatkę (lub z timerem by oszczędzić CPU) szukając wież
-        Collider[] hits = Physics.OverlapSphere(transform.position, auraRadius);
-        List<TowerController> currentTowersInRadius = new List<TowerController>();
+        scanTimer += Time.deltaTime;
+        if (scanTimer < ScanInterval) return;
+        scanTimer = 0f;
 
-        foreach (var hit in hits)
+        currentTowersInRadius.Clear();
+
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, auraRadius, hitBuffer, layerMask);
+        for (int i = 0; i < hitCount; i++)
         {
+            Collider hit = hitBuffer[i];
+            if (hit == null) continue;
+
             TowerController tower = hit.GetComponent<TowerController>();
+            if (tower == null) tower = hit.GetComponentInChildren<TowerController>();
+            if (tower == null) tower = hit.GetComponentInParent<TowerController>();
+
             if (tower != null)
             {
                 currentTowersInRadius.Add(tower);
@@ -26,31 +42,35 @@ public class MaddeningGazeSkill : EnemySkill
                     // Nakładamy Aurę
                     tower.isFeared = true;
                     fearedTowers.Add(tower);
-                    
+
                     // Wymuszamy przeliczenie statystyk wieży by uwzględnić karę!
                     tower.GetComponent<TowerEntity>()?.RecalculateStats();
                 }
             }
         }
+        System.Array.Clear(hitBuffer, 0, hitCount);
 
-        // 2. Szukamy wież, które uciekły z aury (boss sobie poszedł), by zdjąć im karę
+        // Szukamy wież, które uciekły z aury (boss sobie poszedł), by zdjąć im karę
         for (int i = fearedTowers.Count - 1; i >= 0; i--)
         {
-            if (!currentTowersInRadius.Contains(fearedTowers[i]))
+            TowerController tower = fearedTowers[i];
+            if (tower == null || !currentTowersInRadius.Contains(tower))
             {
-                var escapedTower = fearedTowers[i];
-                escapedTower.isFeared = false;
-                escapedTower.GetComponent<TowerEntity>()?.RecalculateStats(); // Wracają do sił
+                if (tower != null)
+                {
+                    tower.isFeared = false;
+                    tower.GetComponent<TowerEntity>()?.RecalculateStats();
+                }
                 fearedTowers.RemoveAt(i);
             }
         }
     }
 
-    public override void OnDeath()
+    private void RemoveFearFromAll()
     {
-        // Zdejmujemy aurę ze wszystkich przy śmierci!
-        foreach (var tower in fearedTowers)
+        for (int i = 0; i < fearedTowers.Count; i++)
         {
+            TowerController tower = fearedTowers[i];
             if (tower != null)
             {
                 tower.isFeared = false;
@@ -58,6 +78,17 @@ public class MaddeningGazeSkill : EnemySkill
             }
         }
         fearedTowers.Clear();
+        currentTowersInRadius.Clear();
+    }
+
+    public override void OnDeath()
+    {
+        RemoveFearFromAll();
+    }
+
+    private void OnDisable()
+    {
+        RemoveFearFromAll();
     }
 
     void OnDrawGizmosSelected()
