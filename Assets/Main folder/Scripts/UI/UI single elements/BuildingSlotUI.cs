@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class BuildingSlotUI : MonoBehaviour
+public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     private BuildingData buildingData;
 
@@ -55,8 +56,37 @@ public class BuildingSlotUI : MonoBehaviour
         StartCoroutine(DelayedLayoutRefresh());
     }
 
+    private void OnDisable()
+    {
+        if (Tooltip_BuildingExtraInfo.Instance != null)
+        {
+            Tooltip_BuildingExtraInfo.Instance.HideTooltip();
+        }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (Tooltip_BuildingExtraInfo.Instance != null && buildingData != null)
+        {
+            Tooltip_BuildingExtraInfo.Instance.ShowTooltip(buildingData);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (Tooltip_BuildingExtraInfo.Instance != null)
+        {
+            Tooltip_BuildingExtraInfo.Instance.HideTooltip();
+        }
+    }
+
     private void OnSlotClicked()
     {
+        if (Tooltip_BuildingExtraInfo.Instance != null)
+        {
+            Tooltip_BuildingExtraInfo.Instance.HideTooltip();
+        }
+
         if (buildingData != null)
         {
             InteractionManager.Instance?.SelectBuildingToBuild(buildingData);

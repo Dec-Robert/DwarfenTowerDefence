@@ -8658,6 +8658,7 @@ GameObject:
   - component: {fileID: 1397092788}
   - component: {fileID: 1397092787}
   - component: {fileID: 1397092786}
+  - component: {fileID: 1397092791}
   m_Layer: 0
   m_Name: Pnl_BuildingMenu_Tooltip
   m_TagString: Untagged
@@ -8705,6 +8706,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 2
+--- !u!114 &1397092791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1397092784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cc6a4322ff34fa1b48632d0d02298de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tooltip_BuildingExtraInfo
+  tooltipRoot: {fileID: 1397092784}
+  tooltipRect: {fileID: 1397092785}
+  parentCanvas: {fileID: 1327989118}
+  pnlShared: {fileID: 338977448}
+  txtName: {fileID: 1756492835}
+  txtDescription: {fileID: 1994536385}
+  pnlBuildingCost: {fileID: 1976194606}
+  costContainer: {fileID: 2048944145}
+  pnlUpkeep: {fileID: 1011838777}
+  upkeepContainer: {fileID: 1184570066}
+  pnlTowers: {fileID: 2125896244}
+  statsContainer: {fileID: 2053277609}
+  pnlProduction: {fileID: 436490793}
+  productionContainer: {fileID: 1925335170}
+  txtBonusForPlacing: {fileID: 606218729}
+  txtBonusForSurround: {fileID: 1727838340}
+  pnlHousing: {fileID: 2023238574}
+  txtPop: {fileID: 1825954092}
+  txtGrowthCycles: {fileID: 746691057}
+  txtToSurvive: {fileID: 1960345159}
+  txtToGrow: {fileID: 731612323}
+  pnlSpecial: {fileID: 214419504}
+  txtSpecial: {fileID: 1008387007}
+  txtSpecialDesc: {fileID: 1157845991}
+  pnlSingleResourcePrefab: {fileID: 100100000, guid: 99cc2448f8796904cbf4c44b2265d9be, type: 3}
+  pnlSingleStatPrefab: {fileID: 100100000, guid: 8618466f9d541ae4696b335cda15ecc5, type: 3}
+  resourceVisualsDB: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
+  maxCostSlots: 5
+  maxUpkeepSlots: 5
+  maxProductionSlots: 5
+  maxStatSlots: 8
+  followCursor: 1
+  cursorOffset: {x: 25, y: -25}
+  padding: {x: 15, y: 15}
 --- !u!114 &1397092787
 MonoBehaviour:
   m_ObjectHideFlags: 0
