@@ -115,16 +115,14 @@ public class InteractionManager : MonoBehaviour
 
     private void HandleClick()
     {
-        
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (!Physics.Raycast(ray, out var hit, 1000f))
         {
             Debug.Log("[Interaction] Attempt to interact");
-            EnemyInfoUI.Instance.CloseWindow();
+            EnemyInfoUI.Instance?.CloseWindow();
             DeselectAll();
             return;
         }
-
 
         if (hit.collider.TryGetComponent<EnemyStats>(out var stats))
         {
@@ -132,14 +130,13 @@ public class InteractionManager : MonoBehaviour
             return;
         }
         
-        if(hit.collider.TryGetComponent<HexCell>(out var cell))
+        var cell = hit.collider.GetComponentInParent<HexCell>();
+        if (cell != null)
         {
-            EnemyInfoUI.Instance.CloseWindow();
+            EnemyInfoUI.Instance?.CloseWindow();
             if (SelectedBuilding != null) HandleBuildClick(cell);
             else HandleInspectClick(cell);
-            
         } 
-        
     }
 
     private void HandleBuildClick(HexCell cell)
@@ -148,7 +145,7 @@ public class InteractionManager : MonoBehaviour
 
         var success = placer.TryBuild(cell, SelectedBuilding);
 
-        if (success) TelemetryManager.Instance.addBuilding(SelectedBuilding.buildingName);
+        if (success && TelemetryManager.Instance != null) TelemetryManager.Instance.addBuilding(SelectedBuilding.buildingName);
         
         if (success && !Input.GetKey(KeyCode.LeftShift))
             CancelBuilding();
@@ -164,11 +161,10 @@ public class InteractionManager : MonoBehaviour
             Debug.Log("[Interaction] Inspecting"+cell.chunkCoord);
             building = cell.GetComponentInChildren<BuildingEntity>();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             building = null;
         }
-        
 
         if (building == null)
         {
@@ -177,15 +173,14 @@ public class InteractionManager : MonoBehaviour
             return;
         }
 
-
         DeselectAll();
             
-            Debug.Log("[Interaction]" + building.GetType());
+        Debug.Log("[Interaction]" + building.GetType());
         
         //Interaction for towers
         if (building is TowerEntity towerEntity)
         {
-            CenterInfoPanelControllerUI.Instance.Setup(building);
+            CenterInfoPanelControllerUI.Instance?.Setup(building);
             lastSelectedTower = towerEntity.controller;
             lastSelectedTower?.ShowRangeIndicator(true);
         }
@@ -194,9 +189,9 @@ public class InteractionManager : MonoBehaviour
         {
             //TODO: Add centerPanelUI interaction for housingEntity
         }
-        else if (building.data.type == BuildingType.Economic)
+        else if (building.data != null && building.data.type == BuildingType.Economic)
         {
-            CenterInfoPanelControllerUI.Instance.Setup(building);
+            CenterInfoPanelControllerUI.Instance?.Setup(building);
             lastSelectedTower?.ShowRangeIndicator(false);
             lastSelectedTower = null;
         }
@@ -219,17 +214,14 @@ public class InteractionManager : MonoBehaviour
             lastSelectedTower = null;
         }
 
-        CenterInfoPanelControllerUI.Instance.HideAll();
+        CenterInfoPanelControllerUI.Instance?.HideAll();
         highlighter.Clear();
     }
-
-
 
     private void HandleEnemyClick(EnemyStats stats)
     {
         Debug.Log("[Interaction] Interaction with " + stats.name);
         DeselectAll();
-        EnemyInfoUI.Instance.OpenWindow(stats);
-        
+        EnemyInfoUI.Instance?.OpenWindow(stats);
     }
 }

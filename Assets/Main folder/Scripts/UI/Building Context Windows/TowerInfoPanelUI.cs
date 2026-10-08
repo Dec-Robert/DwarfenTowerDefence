@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+// TODO: usunąć (zastąpione przez TowerContextWindowUI)
 public class TowerInfoPanelUI : MonoBehaviour
 {
     public GameObject focusArray;

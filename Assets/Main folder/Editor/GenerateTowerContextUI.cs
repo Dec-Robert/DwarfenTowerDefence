@@ -5,6 +5,62 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
+public static class SetupTowerContextWindowComponent
+{
+    [MenuItem("Tools/Attach TowerContextWindowUI To Scene")]
+    public static void AttachAndConfigure()
+    {
+        string scenePath = "Assets/Main folder/_Scenes/TESTSCENE_UI.unity";
+        var scene = EditorSceneManager.GetActiveScene();
+        if (scene.path != scenePath)
+        {
+            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+        }
+
+        GameObject root = GameObject.Find("Canvas_ContextWindows/Pnl_TowerContext");
+        if (root == null)
+        {
+            Debug.LogError("[TowerContextUI] Nie znaleziono Pnl_TowerContext w Canvas_ContextWindows!");
+            return;
+        }
+
+        TowerContextWindowUI ui = root.GetComponent<TowerContextWindowUI>();
+        if (ui == null)
+        {
+            ui = root.AddComponent<TowerContextWindowUI>();
+        }
+
+        ui.AutoBindReferences();
+
+        CenterInfoPanelControllerUI centerController = Object.FindAnyObjectByType<CenterInfoPanelControllerUI>();
+        if (centerController == null)
+        {
+            GameObject canvas = GameObject.Find("Canvas_ContextWindows");
+            if (canvas != null)
+            {
+                centerController = canvas.GetComponent<CenterInfoPanelControllerUI>();
+                if (centerController == null)
+                {
+                    centerController = canvas.AddComponent<CenterInfoPanelControllerUI>();
+                }
+            }
+        }
+
+        if (centerController != null)
+        {
+            centerController.towerPanel = root;
+        }
+
+        EditorUtility.SetDirty(root);
+        if (centerController != null) EditorUtility.SetDirty(centerController);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        AssetDatabase.SaveAssets();
+
+        Debug.Log("[TowerContextUI] Pomyślnie podpięto TowerContextWindowUI do Pnl_TowerContext i skonfigurowano CenterInfoPanelControllerUI!");
+    }
+}
+
 public static class GenerateTowerContextUI
 {
     [MenuItem("Tools/Generate Tower Context UI")]
