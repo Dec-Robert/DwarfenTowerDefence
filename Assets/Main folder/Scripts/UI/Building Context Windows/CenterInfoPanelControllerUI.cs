@@ -32,6 +32,49 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
             if (pnl != null) towerPanel = pnl.gameObject;
         }
 
+        if (productionPanel == null)
+        {
+            var pnl = transform.Find("Pnl_ProductionContext");
+            if (pnl != null) productionPanel = pnl.gameObject;
+        }
+
+        HideAll();
+    }
+
+    private void Start()
+    {
+        PrewarmPanels();
+    }
+
+    /// <summary>
+    /// Wstępna inicjalizacja i przeliczenie układu UI obu paneli na początku gry,
+    /// dzięki czemu przy pierwszym kliknięciu gracza panele renderują się natychmiast poprawnie.
+    /// </summary>
+    private void PrewarmPanels()
+    {
+        if (towerPanel != null)
+        {
+            towerPanel.SetActive(true);
+            var towerUI = towerPanel.GetComponent<TowerContextWindowUI>();
+            if (towerUI != null)
+            {
+                towerUI.AutoBindReferences();
+                towerUI.ForceRebuildImmediate();
+            }
+        }
+
+        if (productionPanel != null)
+        {
+            productionPanel.SetActive(true);
+            var prodUI = productionPanel.GetComponent<ProductionContextWindowUI>();
+            if (prodUI != null)
+            {
+                prodUI.AutoBindReferences();
+                prodUI.ForceRebuildImmediate();
+            }
+        }
+
+        Canvas.ForceUpdateCanvases();
         HideAll();
     }
 
@@ -62,7 +105,15 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
             if (productionPanel != null)
             {
                 productionPanel.SetActive(true);
-                productionPanel.GetComponent<ProductionInfoPanelUI>()?.Setup(buildingEntity);
+                var prodContextUI = productionPanel.GetComponent<ProductionContextWindowUI>();
+                if (prodContextUI != null)
+                {
+                    prodContextUI.Setup(buildingEntity);
+                }
+                else
+                {
+                    productionPanel.GetComponent<ProductionInfoPanelUI>()?.Setup(buildingEntity);
+                }
             }
         }
     }

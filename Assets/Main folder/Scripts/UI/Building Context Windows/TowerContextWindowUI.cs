@@ -111,8 +111,15 @@ public class TowerContextWindowUI : MonoBehaviour
         AutoBindReferences();
     }
 
+    private Coroutine layoutCoroutine;
+
     private void OnDisable()
     {
+        if (layoutCoroutine != null)
+        {
+            StopCoroutine(layoutCoroutine);
+            layoutCoroutine = null;
+        }
         UnsubscribeEvents();
     }
 
@@ -457,6 +464,9 @@ public class TowerContextWindowUI : MonoBehaviour
         RefreshWorkersUI();
         RefreshCombatStatsAndEfficiency();
         RefreshPrioritiesUI();
+
+        // Wymuś przebudowę układu
+        ForceRebuildLayout();
     }
 
     // ── Utrzymanie (Upkeep) ───────────────────────────────────────────────────
@@ -488,7 +498,7 @@ public class TowerContextWindowUI : MonoBehaviour
             else
             {
                 // Utwórz kolejny kafelek klonując pierwszy
-                itemTr = Instantiate(pnlUpkeepResources.GetChild(0), pnlUpkeepResources);
+                itemTr = Instantiate(pnlUpkeepResources.GetChild(0), pnlUpkeepResources, false);
                 itemTr.gameObject.SetActive(true);
             }
 
@@ -564,15 +574,14 @@ public class TowerContextWindowUI : MonoBehaviour
         // Nagłówek statusu
         if (txtCurrentThresholdStatus != null)
         {
-            string labelExtra = currentThresholdLevel == 0 ? " (tryb bezobsługowy)" : "";
-            txtCurrentThresholdStatus.text = $"Poziom {currentThresholdLevel}: {Mathf.RoundToInt(currentEffVal * 100f)}%{labelExtra}";
+            txtCurrentThresholdStatus.text = $"Poziom {currentThresholdLevel}: {Mathf.RoundToInt(currentEffVal * 100f)}%";
         }
 
         // Upewnij się, że mamy odpowiednią liczbę segmentów w kontenerze (od poziomu 0 do maxWorkers)
         int requiredSegments = maxWorkers + 1;
         while (thresholdSegments.Count < requiredSegments && thresholdSegments.Count > 0)
         {
-            GameObject newSegObj = Instantiate(thresholdSegments[0].rootObject, pnlThresholdBarsContainer);
+            GameObject newSegObj = Instantiate(thresholdSegments[0].rootObject, pnlThresholdBarsContainer, false);
             AutoBindThresholdSegments();
         }
 
@@ -1022,5 +1031,53 @@ public class TowerContextWindowUI : MonoBehaviour
         {
             InteractionManager.Instance.DeselectAll();
         }
+    }
+
+    // =========================================================================
+    // PRZEBUDOWA UKŁADU (LAYOUT REBUILD)
+    // =========================================================================
+
+    public void ForceRebuildLayout()
+    {
+        if (gameObject.activeInHierarchy)
+        {
+            if (layoutCoroutine != null) StopCoroutine(layoutCoroutine);
+            layoutCoroutine = StartCoroutine(RebuildLayoutRoutine());
+        }
+        else
+        {
+            ForceRebuildImmediate();
+        }
+    }
+
+    private System.Collections.IEnumerator RebuildLayoutRoutine()
+    {
+        ForceRebuildImmediate();
+        yield return null;
+        ForceRebuildImmediate();
+        layoutCoroutine = null;
+    }
+
+    public void ForceRebuildImmediate()
+    {
+        var rt = transform as RectTransform;
+        if (rt == null) return;
+
+        Canvas.ForceUpdateCanvases();
+
+        var layoutGroups = rt.GetComponentsInChildren<LayoutGroup>(true);
+        for (int i = layoutGroups.Length - 1; i >= 0; i--)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(layoutGroups[i].GetComponent<RectTransform>());
+        }
+
+        var fitters = rt.GetComponentsInChildren<ContentSizeFitter>(true);
+        for (int i = fitters.Length - 1; i >= 0; i--)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(fitters[i].GetComponent<RectTransform>());
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+        Canvas.ForceUpdateCanvases();
     }
 }

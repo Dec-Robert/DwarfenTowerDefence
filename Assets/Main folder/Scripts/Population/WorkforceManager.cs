@@ -46,6 +46,11 @@ public class WorkforceManager : MonoBehaviour
             isSubscribed = true;
         }
 
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnMorningStarted += HandleMorningReset;
+        }
+
         RefreshStats();
     }
 
@@ -55,6 +60,11 @@ public class WorkforceManager : MonoBehaviour
         {
             PopLifeCycleManager.Instance.OnCitizenBorn -= HandleCitizenBorn;
             PopLifeCycleManager.Instance.OnCitizenDied -= HandleCitizenDied;
+        }
+
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnMorningStarted -= HandleMorningReset;
         }
 
         if (Instance == this) Instance = null;
@@ -71,19 +81,19 @@ public class WorkforceManager : MonoBehaviour
         return true;
     }
 
-    public void UnassignWorker(Citizen worker)
+    public void UnassignWorker(Citizen worker, bool keepLocked = false)
     {
-        if (!ReleaseWorker(worker)) return;
+        if (!ReleaseWorker(worker, keepLocked)) return;
         RefreshStats();
     }
 
-    public void UnassignWorkers(IEnumerable<Citizen> workers)
+    public void UnassignWorkers(IEnumerable<Citizen> workers, bool keepLocked = false)
     {
         if (workers == null) return;
 
         var anyReleased = false;
         foreach (var worker in workers)
-            anyReleased |= ReleaseWorker(worker);
+            anyReleased |= ReleaseWorker(worker, keepLocked);
 
         if (anyReleased) RefreshStats();
     }
@@ -93,12 +103,17 @@ public class WorkforceManager : MonoBehaviour
     public int GetWorkingCount(Race race) => GetStats(race).Working;
     public bool HasIdleWorker(Race race) => GetIdleCount(race) > 0;
 
-    private bool ReleaseWorker(Citizen worker)
+    private bool ReleaseWorker(Citizen worker, bool keepLocked = false)
     {
         if (worker == null || worker.workState == WorkState.Idle) return false;
 
+        var wasLocked = worker.workState == WorkState.Locked;
         var workplace = worker.currentWorkplace;
         worker.RemoveFromWorkplace();
+        if (keepLocked && wasLocked)
+        {
+            worker.workState = WorkState.Locked;
+        }
         OnWorkerUnassigned?.Invoke(worker, workplace);
         return true;
     }
@@ -114,6 +129,21 @@ public class WorkforceManager : MonoBehaviour
         return null;
     }
 
+    private void HandleMorningReset()
+    {
+        if (PopLifeCycleManager.Instance != null)
+        {
+            foreach (var citizen in PopLifeCycleManager.Instance.Citizens)
+            {
+                if (citizen.currentWorkplace == null && citizen.workState == WorkState.Locked)
+                {
+                    citizen.workState = WorkState.Idle;
+                }
+            }
+        }
+        RefreshStats();
+    }
+
     private void HandleCitizenBorn(Citizen citizen) => RefreshStats();
 
     private void HandleCitizenDied(Citizen citizen, DeathReason reason)
@@ -125,7 +155,7 @@ public class WorkforceManager : MonoBehaviour
         RefreshStats();
     }
 
-    private void RefreshStats()
+    public void RefreshStats()
     {
         foreach (var s in stats.Values)
             s.Total = s.Idle = s.Working = 0;

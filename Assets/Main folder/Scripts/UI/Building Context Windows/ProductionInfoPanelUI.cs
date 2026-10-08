@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using UnityEngine.Android;
 
+// TODO: usunąć (zastąpione przez ProductionContextWindowUI)
 public class ProductionInfoPanelUI : MonoBehaviour
 {
     public GameObject shiftPanels;

@@ -77,7 +77,9 @@ public class BuildingTerrainComponent
         }
     }
 
-    public float CalculateTerrainBonus()
+    public float GetOnTopBonus() => cachedOnTopBonus;
+
+    public float GetAdjacentBonus()
     {
         if (data.bonusRule.requiredFeature == HexFeatureType.None) return 0f;
 
@@ -87,15 +89,6 @@ public class BuildingTerrainComponent
         }
 
         float myFlatBonus = upgrades != null ? upgrades.GetTotalTerrainFlatBonus() : 0f;
-        float myPercentBonus = upgrades != null ? (upgrades.GetTotalTerrainMultiplier() - 1f) : 0f;
-
-        float metaTerrainBonus = 0f;
-        if (MetaUpgradeManager.Instance != null)
-        {
-            metaTerrainBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.BuildingTerrainBonusMultiplier, data);
-        }
-
-        float terrainMultiplier = Mathf.Max(0.1f, 1f + myPercentBonus + metaTerrainBonus);
         float totalAdjacentYield = 0f;
 
         foreach (var cell in adjacentResourceHexes)
@@ -117,7 +110,36 @@ public class BuildingTerrainComponent
             }
         }
 
-        return (cachedOnTopBonus + totalAdjacentYield) * terrainMultiplier;
+        return totalAdjacentYield;
+    }
+
+    public float GetTerrainMultiplier()
+    {
+        if (upgrades != null && upgrades.HasSpecialEffect("MINE_MOUNTAIN_CHAIN"))
+        {
+            return 1f;
+        }
+
+        float myPercentBonus = upgrades != null ? (upgrades.GetTotalTerrainMultiplier() - 1f) : 0f;
+        float metaTerrainBonus = 0f;
+        if (MetaUpgradeManager.Instance != null)
+        {
+            metaTerrainBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.BuildingTerrainBonusMultiplier, data);
+        }
+
+        return Mathf.Max(0.1f, 1f + myPercentBonus + metaTerrainBonus);
+    }
+
+    public float CalculateTerrainBonus()
+    {
+        if (data.bonusRule.requiredFeature == HexFeatureType.None) return 0f;
+
+        if (upgrades != null && upgrades.HasSpecialEffect("MINE_MOUNTAIN_CHAIN"))
+        {
+            return mountainChainSize * (data.bonusRule.baseBonusPerHex * 0.8f);
+        }
+
+        return (GetOnTopBonus() + GetAdjacentBonus()) * GetTerrainMultiplier();
     }
 
     public void ReleaseAll()

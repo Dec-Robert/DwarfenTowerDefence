@@ -66,15 +66,7 @@ public class BuildingProductionComponent
     {
         if (!isReadyToProduce || currentCalculatedEfficiency <= 0f) return;
 
-        float metaBonus = 0f;
-        if (MetaUpgradeManager.Instance != null)
-        {
-            metaBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
-        }
-
-        float upgradePercent = upgradeComponent != null ? (upgradeComponent.GetGlobalProductionMultiplier() - 1f) : 0f;
-        float finalMultiplier = Mathf.Max(0.1f, 1f + metaBonus + upgradePercent);
-
+        float finalMultiplier = GetGlobalMultiplier();
         var baseAmounts = GetBaseProductionWithFlats();
 
         foreach (var kvp in baseAmounts)
@@ -94,6 +86,34 @@ public class BuildingProductionComponent
         }
 
         isReadyToProduce = false;
+    }
+
+    public float GetGlobalMultiplier()
+    {
+        float metaBonus = 0f;
+        if (MetaUpgradeManager.Instance != null)
+        {
+            metaBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
+        }
+
+        float upgradePercent = upgradeComponent != null ? (upgradeComponent.GetGlobalProductionMultiplier() - 1f) : 0f;
+        return Mathf.Max(0.1f, 1f + metaBonus + upgradePercent);
+    }
+
+    public float GetCrewEfficiency()
+    {
+        int workerCount = workerComponent != null ? workerComponent.GetActiveWorkers().Count : 0;
+
+        if (workerCount > 0)
+        {
+            return 1f + (workerCount - 1) * data.workerScalingFactor;
+        }
+        else if (MetaUpgradeManager.Instance != null)
+        {
+            return MetaUpgradeManager.Instance.GetValue(MetaEffectType.BuildingPassiveEfficiency);
+        }
+
+        return 0f;
     }
 
     public Dictionary<ResourceType, float> GetBaseProductionWithFlats()
@@ -132,26 +152,8 @@ public class BuildingProductionComponent
 
     public Dictionary<ResourceType, float> GetCurrentProduction()
     {
-        int workerCount = workerComponent != null ? workerComponent.GetActiveWorkers().Count : 0;
-
-        float crewEfficiency = 0f;
-        if (workerCount > 0)
-        {
-            crewEfficiency = 1f + (workerCount - 1) * data.workerScalingFactor;
-        }
-        else if (MetaUpgradeManager.Instance != null)
-        {
-            crewEfficiency = MetaUpgradeManager.Instance.GetValue(MetaEffectType.BuildingPassiveEfficiency);
-        }
-
-        float metaBonus = 0f;
-        if (MetaUpgradeManager.Instance != null)
-        {
-            metaBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
-        }
-
-        float upgradePercent = upgradeComponent != null ? (upgradeComponent.GetGlobalProductionMultiplier() - 1f) : 0f;
-        float finalMultiplier = Mathf.Max(0.1f, 1f + metaBonus + upgradePercent);
+        float crewEfficiency = GetCrewEfficiency();
+        float finalMultiplier = GetGlobalMultiplier();
 
         var baseAmounts = GetBaseProductionWithFlats();
         var result = new Dictionary<ResourceType, float>();

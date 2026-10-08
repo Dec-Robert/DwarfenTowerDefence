@@ -79,13 +79,13 @@ public class BuildingWorkerComponent
                 worker.workState = WorkState.Assigned;
     }
 
-    /// <summary>Zwalnia wszystkich pracowników (np. przy rozbiórce budynku).</summary>
-    public void ReleaseAllWorkers()
+    /// <summary>Zwalnia wszystkich pracowników (np. przy wstrzymaniu lub rozbiórce budynku).</summary>
+    public void ReleaseAllWorkers(bool preserveLockedState = false)
     {
         var released = new List<Citizen>(assignedCitizens);
         assignedCitizens.Clear();
 
-        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorkers(released);
+        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorkers(released, preserveLockedState);
     }
 
     // --- Gettery ---
