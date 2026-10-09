@@ -21,6 +21,8 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
     public GameObject productionPanel;
     public GameObject housingPanel;
     public GameObject towerPanel;
+    public GameObject runeForgePanel;
+    public GameObject runeTowerSelectionModal;
     
     void Awake()
     {
@@ -36,6 +38,24 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             var pnl = transform.Find("Pnl_ProductionContext");
             if (pnl != null) productionPanel = pnl.gameObject;
+        }
+
+        if (housingPanel == null)
+        {
+            var pnl = transform.Find("Pnl_HousingContext");
+            if (pnl != null) housingPanel = pnl.gameObject;
+        }
+
+        if (runeForgePanel == null)
+        {
+            var pnl = transform.Find("Pnl_RuneForgeFullscreen");
+            if (pnl != null) runeForgePanel = pnl.gameObject;
+        }
+
+        if (runeTowerSelectionModal == null)
+        {
+            var pnl = transform.Find("Pnl_RuneTowerSelectionModal");
+            if (pnl != null) runeTowerSelectionModal = pnl.gameObject;
         }
 
         HideAll();
@@ -123,5 +143,7 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         if (productionPanel != null) productionPanel.SetActive(false);
         if (housingPanel != null) housingPanel.SetActive(false);
         if (towerPanel != null) towerPanel.SetActive(false);
+        if (runeForgePanel != null) runeForgePanel.SetActive(false);
+        if (runeTowerSelectionModal != null) runeTowerSelectionModal.SetActive(false);
     }
 }
