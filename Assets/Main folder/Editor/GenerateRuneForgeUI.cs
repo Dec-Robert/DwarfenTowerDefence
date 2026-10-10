@@ -64,6 +64,15 @@ public static class GenerateRuneForgeUI
         // 5. Zbuduj Pełnoekranowy Warsztat Kuźni Runicznej
         GameObject forgeFullscreen = BuildForgeFullscreenHierarchy(canvasObj.transform, font);
 
+        // 5b. Dołącz komponenty skryptowe UI i zbierz referencje
+        var modalScript = selectionModal.GetComponent<RuneTowerSelectionModalUI>();
+        if (modalScript == null) modalScript = selectionModal.AddComponent<RuneTowerSelectionModalUI>();
+        modalScript.AutoBindReferences();
+
+        var forgeScript = forgeFullscreen.GetComponent<RuneForgeWindowUI>();
+        if (forgeScript == null) forgeScript = forgeFullscreen.AddComponent<RuneForgeWindowUI>();
+        forgeScript.AutoBindReferences();
+
         // 6. Podepnij do CenterInfoPanelControllerUI
         CenterInfoPanelControllerUI centerController = Object.FindAnyObjectByType<CenterInfoPanelControllerUI>();
         if (centerController == null)
@@ -93,7 +102,65 @@ public static class GenerateRuneForgeUI
         EditorSceneManager.SaveScene(currentScene);
         AssetDatabase.SaveAssets();
 
-        Debug.Log("[RuneForgeUI] Pomyślnie wygenerowano Pnl_RuneForgeFullscreen i Pnl_RuneTowerSelectionModal!");
+        Debug.Log("[RuneForgeUI] Pomyślnie wygenerowano Pnl_RuneForgeFullscreen i Pnl_RuneTowerSelectionModal z podpiętymi skryptami!");
+    }
+
+    [MenuItem("Tools/Attach RuneForgeWindowUI To Scene")]
+    public static void AttachScriptsToScene()
+    {
+        Debug.Log("[RuneForgeUI] Podpinanie skryptów RuneForgeWindowUI i RuneTowerSelectionModalUI do sceny...");
+
+        var currentScene = EditorSceneManager.GetActiveScene();
+        if (currentScene.path != ScenePath)
+        {
+            currentScene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+        }
+
+        GameObject canvasObj = GameObject.Find("Canvas_ContextWindows");
+        if (canvasObj == null)
+        {
+            Debug.LogError("[RuneForgeUI] Nie znaleziono Canvas_ContextWindows na scenie!");
+            return;
+        }
+
+        Transform selectionModal = canvasObj.transform.Find("Pnl_RuneTowerSelectionModal");
+        if (selectionModal != null)
+        {
+            var modalScript = selectionModal.GetComponent<RuneTowerSelectionModalUI>();
+            if (modalScript == null) modalScript = selectionModal.gameObject.AddComponent<RuneTowerSelectionModalUI>();
+            modalScript.AutoBindReferences();
+            EditorUtility.SetDirty(selectionModal.gameObject);
+        }
+        else
+        {
+            Debug.LogWarning("[RuneForgeUI] Nie znaleziono Pnl_RuneTowerSelectionModal!");
+        }
+
+        Transform forgeFullscreen = canvasObj.transform.Find("Pnl_RuneForgeFullscreen");
+        if (forgeFullscreen != null)
+        {
+            var forgeScript = forgeFullscreen.GetComponent<RuneForgeWindowUI>();
+            if (forgeScript == null) forgeScript = forgeFullscreen.gameObject.AddComponent<RuneForgeWindowUI>();
+            forgeScript.AutoBindReferences();
+            EditorUtility.SetDirty(forgeFullscreen.gameObject);
+        }
+        else
+        {
+            Debug.LogWarning("[RuneForgeUI] Nie znaleziono Pnl_RuneForgeFullscreen!");
+        }
+
+        CenterInfoPanelControllerUI centerController = Object.FindAnyObjectByType<CenterInfoPanelControllerUI>();
+        if (centerController != null)
+        {
+            if (forgeFullscreen != null) centerController.runeForgePanel = forgeFullscreen.gameObject;
+            if (selectionModal != null) centerController.runeTowerSelectionModal = selectionModal.gameObject;
+            EditorUtility.SetDirty(centerController);
+        }
+
+        EditorSceneManager.MarkSceneDirty(currentScene);
+        EditorSceneManager.SaveScene(currentScene);
+        AssetDatabase.SaveAssets();
+        Debug.Log("[RuneForgeUI] Pomyślnie podpięto komponenty RuneForgeWindowUI i RuneTowerSelectionModalUI do sceny!");
     }
 
     // =========================================================================

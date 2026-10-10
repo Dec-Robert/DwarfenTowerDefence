@@ -5,6 +5,62 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
+public static class SetupHousingContextWindowComponent
+{
+    [MenuItem("Tools/Attach HousingContextWindowUI To Scene")]
+    public static void AttachAndConfigure()
+    {
+        string scenePath = "Assets/Main folder/_Scenes/TESTSCENE_UI.unity";
+        var scene = EditorSceneManager.GetActiveScene();
+        if (scene.path != scenePath)
+        {
+            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+        }
+
+        GameObject root = GameObject.Find("Canvas_ContextWindows/Pnl_HousingContext");
+        if (root == null)
+        {
+            Debug.LogError("[HousingContextUI] Nie znaleziono Pnl_HousingContext w Canvas_ContextWindows!");
+            return;
+        }
+
+        HousingContextWindowUI ui = root.GetComponent<HousingContextWindowUI>();
+        if (ui == null)
+        {
+            ui = root.AddComponent<HousingContextWindowUI>();
+        }
+
+        ui.AutoBindReferences();
+
+        CenterInfoPanelControllerUI centerController = Object.FindAnyObjectByType<CenterInfoPanelControllerUI>();
+        if (centerController == null)
+        {
+            GameObject canvas = GameObject.Find("Canvas_ContextWindows");
+            if (canvas != null)
+            {
+                centerController = canvas.GetComponent<CenterInfoPanelControllerUI>();
+                if (centerController == null)
+                {
+                    centerController = canvas.AddComponent<CenterInfoPanelControllerUI>();
+                }
+            }
+        }
+
+        if (centerController != null)
+        {
+            centerController.housingPanel = root;
+        }
+
+        EditorUtility.SetDirty(root);
+        if (centerController != null) EditorUtility.SetDirty(centerController);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        AssetDatabase.SaveAssets();
+
+        Debug.Log("[HousingContextUI] Pomyślnie podpięto HousingContextWindowUI do Pnl_HousingContext i skonfigurowano CenterInfoPanelControllerUI!");
+    }
+}
+
 [InitializeOnLoad]
 public static class GenerateHousingContextUI
 {
@@ -61,7 +117,16 @@ public static class GenerateHousingContextUI
         // 4. Zbuduj całe okno Pnl_HousingContext
         GameObject housingContext = BuildHousingContextHierarchy(canvasObj.transform, font);
 
-        // 5. Podepnij do CenterInfoPanelControllerUI
+        // 5. Podepnij i skonfiguruj HousingContextWindowUI
+        HousingContextWindowUI housingUI = housingContext.GetComponent<HousingContextWindowUI>();
+        if (housingUI == null)
+        {
+            housingUI = housingContext.AddComponent<HousingContextWindowUI>();
+        }
+        housingUI.AutoBindReferences();
+        EditorUtility.SetDirty(housingContext);
+
+        // 6. Podepnij do CenterInfoPanelControllerUI
         CenterInfoPanelControllerUI centerController = Object.FindAnyObjectByType<CenterInfoPanelControllerUI>();
         if (centerController == null)
         {

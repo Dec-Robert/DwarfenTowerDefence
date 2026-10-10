@@ -187,7 +187,15 @@ public class InteractionManager : MonoBehaviour
         //Interaction for houses
         else if (building is HousingEntity housingEntity)
         {
-            //TODO: Add centerPanelUI interaction for housingEntity
+            CenterInfoPanelControllerUI.Instance?.Setup(building);
+            lastSelectedTower?.ShowRangeIndicator(false);
+            lastSelectedTower = null;
+        }
+        else if (building is RuneForgeEntity runeForgeEntity)
+        {
+            CenterInfoPanelControllerUI.Instance?.Setup(building);
+            lastSelectedTower?.ShowRangeIndicator(false);
+            lastSelectedTower = null;
         }
         else if (building.data != null && building.data.type == BuildingType.Economic)
         {

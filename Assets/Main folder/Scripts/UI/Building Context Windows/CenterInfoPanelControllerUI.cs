@@ -94,6 +94,38 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
             }
         }
 
+        if (housingPanel != null)
+        {
+            housingPanel.SetActive(true);
+            var housingUI = housingPanel.GetComponent<HousingContextWindowUI>();
+            if (housingUI != null)
+            {
+                housingUI.AutoBindReferences();
+                housingUI.ForceRebuildImmediate();
+            }
+        }
+
+        if (runeForgePanel != null)
+        {
+            runeForgePanel.SetActive(true);
+            var runeForgeUI = runeForgePanel.GetComponent<RuneForgeWindowUI>();
+            if (runeForgeUI != null)
+            {
+                runeForgeUI.AutoBindReferences();
+            }
+        }
+
+        if (runeTowerSelectionModal != null)
+        {
+            runeTowerSelectionModal.SetActive(true);
+            var modalUI = runeTowerSelectionModal.GetComponent<RuneTowerSelectionModalUI>();
+            if (modalUI != null)
+            {
+                modalUI.AutoBindReferences();
+                modalUI.InitializeTowers();
+            }
+        }
+
         Canvas.ForceUpdateCanvases();
         HideAll();
     }
@@ -134,6 +166,59 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
                 {
                     productionPanel.GetComponent<ProductionInfoPanelUI>()?.Setup(buildingEntity);
                 }
+            }
+        }
+
+        if (buildingEntity is HousingEntity housingEntity)
+        {
+            if (housingPanel != null)
+            {
+                housingPanel.SetActive(true);
+                var housingUI = housingPanel.GetComponent<HousingContextWindowUI>();
+                if (housingUI != null)
+                {
+                    housingUI.Setup(housingEntity);
+                }
+            }
+        }
+
+        if (buildingEntity is RuneForgeEntity runeForgeEntity)
+        {
+            if (runeForgeEntity.infusedTowerData == null)
+            {
+                OpenRuneTowerSelectionModal(runeForgeEntity);
+            }
+            else
+            {
+                OpenRuneForge(runeForgeEntity);
+            }
+        }
+    }
+
+    public void OpenRuneForge(RuneForgeEntity forge)
+    {
+        HideAll();
+        if (runeForgePanel != null)
+        {
+            runeForgePanel.SetActive(true);
+            var runeForgeUI = runeForgePanel.GetComponent<RuneForgeWindowUI>();
+            if (runeForgeUI != null)
+            {
+                runeForgeUI.Setup(forge);
+            }
+        }
+    }
+
+    public void OpenRuneTowerSelectionModal(RuneForgeEntity forge)
+    {
+        HideAll();
+        if (runeTowerSelectionModal != null)
+        {
+            runeTowerSelectionModal.SetActive(true);
+            var modalUI = runeTowerSelectionModal.GetComponent<RuneTowerSelectionModalUI>();
+            if (modalUI != null)
+            {
+                modalUI.Setup(forge);
             }
         }
     }

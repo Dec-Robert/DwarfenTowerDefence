@@ -14,12 +14,12 @@ public class RuneForgeEntity : BuildingEntity
     public TowerData infusedTowerData;
 
     [Header("Stan")] 
-    [SerializeField] private bool dwarfAssigned;
+    public List<Citizen> assignedDwarves = new();
+    public bool dwarfAssigned => assignedDwarves.Count > 0;
 
     public List<RuneItem> equippedRunes = new();
 
     private string myRegistrySourceID;
-    private Citizen reservedDwarf;
 
     protected override void OnDestroy()
     {
@@ -41,7 +41,7 @@ public class RuneForgeEntity : BuildingEntity
         base.Initialize(buildingData);
         myRegistrySourceID = SOURCE_PREFIX + gameObject.GetInstanceID();
 
-        TryReserveDwarf();
+        TryReserveInitialDwarf();
         RecalculateSlotsAndModifiers();
     }
 
@@ -51,39 +51,41 @@ public class RuneForgeEntity : BuildingEntity
         RecalculateSlotsAndModifiers();
     }
 
-    private void TryReserveDwarf()
+    private void TryReserveInitialDwarf()
     {
-        reservedDwarf = null;
-        dwarfAssigned = WorkforceManager.Instance != null &&
-                        WorkforceManager.Instance.TryAssignWorker(Race.Dwarves, this, out reservedDwarf);
+        if (assignedDwarves.Count == 0)
+        {
+            TryAddRunesmith();
+        }
     }
 
     private void ReleaseDwarf()
     {
-        if (reservedDwarf == null || !dwarfAssigned) return;
-
-        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorker(reservedDwarf);
-        reservedDwarf = null;
-        dwarfAssigned = false;
+        if (WorkforceManager.Instance != null)
+        {
+            foreach (var dwarf in assignedDwarves)
+            {
+                if (dwarf != null) WorkforceManager.Instance.UnassignWorker(dwarf);
+            }
+        }
+        assignedDwarves.Clear();
     }
 
     public override void HandleWorkerLost(Citizen citizen)
     {
-        if (citizen != reservedDwarf)
+        if (assignedDwarves.Contains(citizen))
         {
-            base.HandleWorkerLost(citizen);
+            assignedDwarves.Remove(citizen);
+            RecalculateSlotsAndModifiers();
             return;
         }
 
-        reservedDwarf = null;
-        dwarfAssigned = false;
+        base.HandleWorkerLost(citizen);
     }
 
-    public int GetMaxSlots()
+    public int GetNeighboringRuneTowersCount()
     {
-        var baseSlots = 1;
         var runeTowersCount = 0;
-
         var myCell = GetComponentInParent<HexCell>();
         if (myCell != null && HexMapVisualizer.Instance != null)
         {
@@ -96,8 +98,52 @@ public class RuneForgeEntity : BuildingEntity
                         runeTowersCount++;
             }
         }
+        return runeTowersCount;
+    }
 
-        return Mathf.Min(4, baseSlots + runeTowersCount);
+    public int GetMaxSlots()
+    {
+        var baseSlots = 1;
+        return Mathf.Min(5, baseSlots + GetNeighboringRuneTowersCount());
+    }
+
+    public int GetMaxRunesmiths()
+    {
+        return GetMaxSlots();
+    }
+
+    public int GetActiveRuneSlots()
+    {
+        return Mathf.Min(GetMaxSlots(), assignedDwarves.Count);
+    }
+
+    public bool TryAddRunesmith()
+    {
+        if (assignedDwarves.Count >= GetMaxRunesmiths()) return false;
+        if (WorkforceManager.Instance == null) return false;
+
+        if (WorkforceManager.Instance.TryAssignWorker(Race.Dwarves, this, out var citizen))
+        {
+            assignedDwarves.Add(citizen);
+            RecalculateSlotsAndModifiers();
+            return true;
+        }
+        return false;
+    }
+
+    public bool TryRemoveRunesmith()
+    {
+        if (assignedDwarves.Count == 0) return false;
+
+        var citizen = assignedDwarves[assignedDwarves.Count - 1];
+        assignedDwarves.RemoveAt(assignedDwarves.Count - 1);
+        if (WorkforceManager.Instance != null && citizen != null)
+        {
+            WorkforceManager.Instance.UnassignWorker(citizen);
+        }
+
+        RecalculateSlotsAndModifiers();
+        return true;
     }
 
     public bool CanModifyRunes()
@@ -110,8 +156,8 @@ public class RuneForgeEntity : BuildingEntity
     public bool EquipRune(RuneItem rune)
     {
         if (!CanModifyRunes()) return false;
-        if (equippedRunes.Count >= GetMaxSlots()) return false;
-        if (!RuneManager.Instance.playerRunes.Contains(rune)) return false;
+        if (equippedRunes.Count >= GetActiveRuneSlots()) return false;
+        if (RuneManager.Instance == null || !RuneManager.Instance.playerRunes.Contains(rune)) return false;
 
         RuneManager.Instance.playerRunes.Remove(rune);
         equippedRunes.Add(rune);
@@ -127,10 +173,13 @@ public class RuneForgeEntity : BuildingEntity
         if (!equippedRunes.Contains(rune)) return false;
 
         equippedRunes.Remove(rune);
-        RuneManager.Instance.playerRunes.Add(rune);
+        if (RuneManager.Instance != null)
+        {
+            RuneManager.Instance.playerRunes.Add(rune);
+            RuneManager.Instance.NotifyInventoryChanged();
+        }
 
         RecalculateSlotsAndModifiers();
-        RuneManager.Instance.NotifyInventoryChanged();
         return true;
     }
 
@@ -142,8 +191,8 @@ public class RuneForgeEntity : BuildingEntity
 
     private void RecalculateSlotsAndModifiers()
     {
-        var maxSlots = GetMaxSlots();
-        while (equippedRunes.Count > maxSlots)
+        var maxActive = GetActiveRuneSlots();
+        while (equippedRunes.Count > maxActive)
         {
             var runeToEject = equippedRunes.Last();
             equippedRunes.Remove(runeToEject);
