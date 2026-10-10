@@ -109,6 +109,7 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             runeForgePanel.SetActive(true);
             var runeForgeUI = runeForgePanel.GetComponent<RuneForgeWindowUI>();
+            if (runeForgeUI == null) runeForgeUI = runeForgePanel.AddComponent<RuneForgeWindowUI>();
             if (runeForgeUI != null)
             {
                 runeForgeUI.AutoBindReferences();
@@ -119,6 +120,7 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             runeTowerSelectionModal.SetActive(true);
             var modalUI = runeTowerSelectionModal.GetComponent<RuneTowerSelectionModalUI>();
+            if (modalUI == null) modalUI = runeTowerSelectionModal.AddComponent<RuneTowerSelectionModalUI>();
             if (modalUI != null)
             {
                 modalUI.AutoBindReferences();
@@ -202,6 +204,7 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             runeForgePanel.SetActive(true);
             var runeForgeUI = runeForgePanel.GetComponent<RuneForgeWindowUI>();
+            if (runeForgeUI == null) runeForgeUI = runeForgePanel.AddComponent<RuneForgeWindowUI>();
             if (runeForgeUI != null)
             {
                 runeForgeUI.Setup(forge);
@@ -216,6 +219,7 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             runeTowerSelectionModal.SetActive(true);
             var modalUI = runeTowerSelectionModal.GetComponent<RuneTowerSelectionModalUI>();
+            if (modalUI == null) modalUI = runeTowerSelectionModal.AddComponent<RuneTowerSelectionModalUI>();
             if (modalUI != null)
             {
                 modalUI.Setup(forge);

@@ -196,8 +196,12 @@ public class RuneManager : MonoBehaviour
         OnInventoryChanged?.Invoke();
 
         Debug.Log($"[RuneManager] Fuzja udana! Otrzymano: {newRune.GetPrimaryText()} ({newRune.definition.rarity})");
-        HopeSessionManager.Instance.OnRuneCrafted();
-        HopeSessionManager.Instance.OnRuneObtained(newRune.definition.rarity);
+        if (HopeSessionManager.Instance != null)
+        {
+            HopeSessionManager.Instance.OnRuneCrafted();
+            HopeSessionManager.Instance.OnRuneObtained(newRune.definition.rarity);
+        }
+        
         return true;
     }
 

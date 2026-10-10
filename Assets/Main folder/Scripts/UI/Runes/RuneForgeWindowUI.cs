@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,14 +7,17 @@ using UnityEngine.UI;
 /// <summary>
 /// Główny kontroler pełnoekranowego panelu Kuźni Runicznej (Pnl_RuneForgeFullscreen).
 /// Obsługuje:
-/// 1. Zakładkę Osadzania Run (View_Socketing) – sloty zależne od kowali i sąsiednich wież runicznych,
+/// 1. Zakładkę Osadzania Run (View_Socketing) z modularnymi slotami Card_RunesmithSlot,
+///    obsługującymi zarówno Drag & Drop jak i szybkie kliknięcia,
 /// 2. Zakładkę Fuzji Run (View_Fusion) – łączenie 2 run tego samego poziomu w 1 wyższą,
 /// 3. Zakładkę Transmutacji Run (View_Transmutation) – wymianę 3 run tego samego poziomu na losową wyższą,
-/// 4. Prawy panel ekwipunku gracza z filtrami rzadkości,
-/// 5. Dolny panel podsumowania statystyk nasycanej wieży oraz przydział kowali.
+/// 4. Prawy panel ekwipunku gracza z filtrami TMP_Dropdown (rzadkość oraz statystyka),
+/// 5. Dolny panel podsumowania 8 statystyk bojowych (Pnl_CombatStatItem) oraz przydział kowali w Pnl_RaceControllers.
 /// </summary>
 public class RuneForgeWindowUI : MonoBehaviour
 {
+    public static RuneForgeWindowUI Instance { get; private set; }
+
     public enum RuneForgeTab
     {
         Socketing,
@@ -21,10 +25,20 @@ public class RuneForgeWindowUI : MonoBehaviour
         Transmutation
     }
 
+    [System.Serializable]
+    public class CombatStatItemView
+    {
+        public BattleStats statType;
+        public GameObject rootObject;
+        public Image imgIcon;
+        public TextMeshProUGUI txtName;
+        public TextMeshProUGUI txtBaseValue;
+        public TextMeshProUGUI txtCurrentValue;
+    }
+
     // ── 1. Górna Belka ──────────────────────────────────────────────────────
     [Header("Górna Belka")]
     [SerializeField] private TextMeshProUGUI txtForgeTitle;
-    [SerializeField] private TextMeshProUGUI txtSubTitle;
     [SerializeField] private Button btnClose;
 
     // ── 2. Lewy Panel Nawigacji ─────────────────────────────────────────────
@@ -34,20 +48,19 @@ public class RuneForgeWindowUI : MonoBehaviour
     [SerializeField] private Button btnTabTransmutation;
     [SerializeField] private TextMeshProUGUI txtRuneTowersDesc;
 
-    // ── 3. Środkowy Panel Akcji ─────────────────────────────────────────────
+    // ── 3. Środkowe Widoki ──────────────────────────────────────────────────
     [Header("Środkowe Widoki")]
     [SerializeField] private GameObject viewSocketing;
     [SerializeField] private GameObject viewFusion;
     [SerializeField] private GameObject viewTransmutation;
 
-    // ── Widok 1: Osadzanie Run ──────────────────────────────────────────────
+    // ── Widok 1: Osadzanie ──────────────────────────────────────────────────
     [Header("Widok 1: Osadzanie")]
     [SerializeField] private Image imgTowerHeaderIcon;
     [SerializeField] private TextMeshProUGUI txtTowerHeaderName;
-    [SerializeField] private TextMeshProUGUI txtTowerSubTitle;
     [SerializeField] private Transform pnlSlotsRow;
 
-    // ── Widok 2: Fuzja Run ──────────────────────────────────────────────────
+    // ── Widok 2: Fuzja ──────────────────────────────────────────────────────
     [Header("Widok 2: Fuzja")]
     [SerializeField] private Button btnFusionBackToTower;
     [SerializeField] private Transform slotFusion1;
@@ -56,7 +69,7 @@ public class RuneForgeWindowUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI txtFusionReqHeader;
     [SerializeField] private Button btnCraftFusion;
 
-    // ── Widok 3: Transmutacja Run ───────────────────────────────────────────
+    // ── Widok 3: Transmutacja ───────────────────────────────────────────────
     [Header("Widok 3: Transmutacja")]
     [SerializeField] private Button btnTransmuteBackToTower;
     [SerializeField] private Transform slotTransmute1;
@@ -69,24 +82,29 @@ public class RuneForgeWindowUI : MonoBehaviour
     // ── 4. Prawy Panel Ekwipunku ────────────────────────────────────────────
     [Header("Prawy Panel Ekwipunku")]
     [SerializeField] private TextMeshProUGUI txtInvCount;
-    [SerializeField] private Button btnFilterAll;
-    [SerializeField] private Button btnFilterCommon;
-    [SerializeField] private Button btnFilterRare;
-    [SerializeField] private Button btnFilterLegendary;
+    [SerializeField] private TMP_Dropdown ddRarity;
+    [SerializeField] private TMP_Dropdown ddStat;
     [SerializeField] private Transform inventoryContent;
+    [SerializeField] private ResourceVisualsSO resourceVisualsDB;
+
+    public ResourceVisualsSO ResourceVisualsDB => resourceVisualsDB;
 
     // ── 5. Dolny Panel: Statystyki i Kowale ─────────────────────────────────
     [Header("Dolny Panel")]
     [SerializeField] private Transform pnlStatsGrid;
-    [SerializeField] private TextMeshProUGUI txtSmithsCount;
-    [SerializeField] private Button btnRemoveSmith;
-    [SerializeField] private Button btnAddSmith;
-    [SerializeField] private Transform pnlStationsRow;
+    [SerializeField] private List<CombatStatItemView> combatStatViews = new List<CombatStatItemView>();
+
+    [Header("Sekcja Kowali (Dwarf Controller)")]
+    [SerializeField] private GameObject pnlRaceDwarves;
+    [SerializeField] private TextMeshProUGUI txtDwarfTitle;
+    [SerializeField] private TextMeshProUGUI txtDwarfFree;
+    [SerializeField] private TextMeshProUGUI txtDwarfCount;
+    [SerializeField] private Button btnDwarfMinus;
+    [SerializeField] private Button btnDwarfPlus;
 
     // ── Stan Bieżącej Kuźni ─────────────────────────────────────────────────
     private RuneForgeEntity currentForge;
     private RuneForgeTab currentTab = RuneForgeTab.Socketing;
-    private RuneRarity? currentFilter = null;
 
     // Stan rzemiosła (Fuzja i Transmutacja)
     private RuneItem fusionRune1;
@@ -102,6 +120,7 @@ public class RuneForgeWindowUI : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
         AutoBindReferences();
     }
 
@@ -117,6 +136,7 @@ public class RuneForgeWindowUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Instance == this) Instance = null;
         UnsubscribeEvents();
     }
 
@@ -126,50 +146,47 @@ public class RuneForgeWindowUI : MonoBehaviour
 
     public void AutoBindReferences()
     {
+        Transform forgeRoot = transform.Find("Pnl_RuneForge") ?? transform;
+
         // 1. Górna Belka
         if (txtForgeTitle == null)
-            txtForgeTitle = transform.Find("Pnl_TopBar/Txt_ForgeTitle")?.GetComponent<TextMeshProUGUI>();
-
-        if (txtSubTitle == null)
-            txtSubTitle = transform.Find("Pnl_TopBar/Txt_SubTitle")?.GetComponent<TextMeshProUGUI>();
+            txtForgeTitle = forgeRoot.Find("Pnl_TopBar/Txt_ForgeTitle")?.GetComponent<TextMeshProUGUI>();
 
         if (btnClose == null)
-            btnClose = transform.Find("Pnl_TopBar/Btn_Close")?.GetComponent<Button>();
+            btnClose = forgeRoot.Find("Pnl_TopBar/Btn_Close")?.GetComponent<Button>();
 
         // 2. Lewy Panel
         if (btnTabSocketing == null)
-            btnTabSocketing = transform.Find("Pnl_BodyRow/Pnl_LeftNav/Btn_TabSocketing")?.GetComponent<Button>();
+            btnTabSocketing = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Btn_TabSocketing")?.GetComponent<Button>();
 
         if (btnTabFusion == null)
-            btnTabFusion = transform.Find("Pnl_BodyRow/Pnl_LeftNav/Btn_TabFusion")?.GetComponent<Button>();
+            btnTabFusion = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Btn_TabFusion")?.GetComponent<Button>();
 
         if (btnTabTransmutation == null)
-            btnTabTransmutation = transform.Find("Pnl_BodyRow/Pnl_LeftNav/Btn_TabTransmutation")?.GetComponent<Button>();
+            btnTabTransmutation = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Btn_TabTransmutation")?.GetComponent<Button>();
 
         if (txtRuneTowersDesc == null)
-            txtRuneTowersDesc = transform.Find("Pnl_BodyRow/Pnl_LeftNav/Pnl_RuneTowersStatus/Txt_InfoDesc")?.GetComponent<TextMeshProUGUI>();
+            txtRuneTowersDesc = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Pnl_RuneTowersStatus/Txt_InfoDesc")?.GetComponent<TextMeshProUGUI>();
 
         // 3. Widoki Środkowe
         if (viewSocketing == null)
-            viewSocketing = transform.Find("Pnl_BodyRow/Pnl_CenterAction/View_Socketing")?.gameObject;
+            viewSocketing = forgeRoot.Find("Pnl_BodyRow/Pnl_CenterAction/View_Socketing")?.gameObject;
 
         if (viewFusion == null)
-            viewFusion = transform.Find("Pnl_BodyRow/Pnl_CenterAction/View_Fusion")?.gameObject;
+            viewFusion = forgeRoot.Find("Pnl_BodyRow/Pnl_CenterAction/View_Fusion")?.gameObject;
 
         if (viewTransmutation == null)
-            viewTransmutation = transform.Find("Pnl_BodyRow/Pnl_CenterAction/View_Transmutation")?.gameObject;
+            viewTransmutation = forgeRoot.Find("Pnl_BodyRow/Pnl_CenterAction/View_Transmutation")?.gameObject;
 
         // Widok 1: Osadzanie
         if (viewSocketing != null)
         {
             if (imgTowerHeaderIcon == null)
-                imgTowerHeaderIcon = viewSocketing.transform.Find("Pnl_TowerHeaderCard/Img_TowerIconFrame/Img_TowerIcon")?.GetComponent<Image>();
+                imgTowerHeaderIcon = viewSocketing.transform.Find("Pnl_TowerHeaderCard/Img_TowerIconFrame/Img_TowerIcon")?.GetComponent<Image>()
+                                  ?? viewSocketing.transform.Find("Pnl_TowerHeaderCard/Img_TowerIconFrame")?.GetComponent<Image>();
 
             if (txtTowerHeaderName == null)
                 txtTowerHeaderName = viewSocketing.transform.Find("Pnl_TowerHeaderCard/Txt_TowerHeaderName")?.GetComponent<TextMeshProUGUI>();
-
-            if (txtTowerSubTitle == null)
-                txtTowerSubTitle = viewSocketing.transform.Find("Pnl_TowerHeaderCard/Txt_TowerSubTitle")?.GetComponent<TextMeshProUGUI>();
 
             if (pnlSlotsRow == null)
                 pnlSlotsRow = viewSocketing.transform.Find("Pnl_SlotsRow");
@@ -201,61 +218,141 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (viewTransmutation != null)
         {
             if (btnTransmuteBackToTower == null)
-                btnTransmuteBackToTower = viewTransmutation.transform.Find("Pnl_TransmuteTopBar/Btn_BackToTower")?.GetComponent<Button>();
+                btnTransmuteBackToTower = viewTransmutation.transform.Find("Pnl_TransmutationTopBar/Btn_BackToTower")?.GetComponent<Button>()
+                                       ?? viewTransmutation.transform.Find("Pnl_TransmuteTopBar/Btn_BackToTower")?.GetComponent<Button>();
 
             if (slotTransmute1 == null)
-                slotTransmute1 = viewTransmutation.transform.Find("Pnl_AnvilTransmute/Pnl_TransmuteInputs/Slot_Transmute_1");
+                slotTransmute1 = viewTransmutation.transform.Find("Pnl_AnvilFusion/Pnl_InputSlots/Slot_Transmutation_1")
+                              ?? viewTransmutation.transform.Find("Pnl_AnvilTransmute/Pnl_TransmuteInputs/Slot_Transmute_1");
 
             if (slotTransmute2 == null)
-                slotTransmute2 = viewTransmutation.transform.Find("Pnl_AnvilTransmute/Pnl_TransmuteInputs/Slot_Transmute_2");
+                slotTransmute2 = viewTransmutation.transform.Find("Pnl_AnvilFusion/Pnl_InputSlots/Slot_Transmutation_2")
+                              ?? viewTransmutation.transform.Find("Pnl_AnvilTransmute/Pnl_TransmuteInputs/Slot_Transmute_2");
 
             if (slotTransmute3 == null)
-                slotTransmute3 = viewTransmutation.transform.Find("Pnl_AnvilTransmute/Pnl_TransmuteInputs/Slot_Transmute_3");
+                slotTransmute3 = viewTransmutation.transform.Find("Pnl_AnvilFusion/Pnl_InputSlots/Slot_Transmutation_3")
+                              ?? viewTransmutation.transform.Find("Pnl_AnvilTransmute/Pnl_TransmuteInputs/Slot_Transmute_3");
 
             if (slotTransmuteResult == null)
-                slotTransmuteResult = viewTransmutation.transform.Find("Pnl_AnvilTransmute/Slot_Transmute_Result");
+                slotTransmuteResult = viewTransmutation.transform.Find("Pnl_AnvilFusion/Slot_Fusion_Result")
+                                   ?? viewTransmutation.transform.Find("Pnl_AnvilTransmute/Slot_Transmute_Result");
 
             if (txtTransmuteReqHeader == null)
-                txtTransmuteReqHeader = viewTransmutation.transform.Find("Pnl_TransmuteReqs/Txt_ReqHeader")?.GetComponent<TextMeshProUGUI>();
+                txtTransmuteReqHeader = viewTransmutation.transform.Find("Pnl_FusionReqs/Txt_ReqHeader")?.GetComponent<TextMeshProUGUI>()
+                                     ?? viewTransmutation.transform.Find("Pnl_TransmuteReqs/Txt_ReqHeader")?.GetComponent<TextMeshProUGUI>();
 
             if (btnCraftTransmute == null)
-                btnCraftTransmute = viewTransmutation.transform.Find("Btn_CraftTransmute")?.GetComponent<Button>();
+                btnCraftTransmute = viewTransmutation.transform.Find("Btn_CraftTransmutation")?.GetComponent<Button>()
+                                 ?? viewTransmutation.transform.Find("Btn_CraftTransmute")?.GetComponent<Button>();
         }
 
         // 4. Ekwipunek
         if (txtInvCount == null)
-            txtInvCount = transform.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_InvHeader/Txt_InvCount")?.GetComponent<TextMeshProUGUI>();
+            txtInvCount = forgeRoot.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_InvHeader/Txt_InvTitle")?.GetComponent<TextMeshProUGUI>()
+                       ?? forgeRoot.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_InvHeader/Txt_InvCount")?.GetComponent<TextMeshProUGUI>();
 
-        if (btnFilterAll == null)
-            btnFilterAll = transform.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_FilterRow/Btn_Filter_All")?.GetComponent<Button>();
+        if (ddRarity == null)
+            ddRarity = forgeRoot.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_FilterRow/Dd_Rarity")?.GetComponent<TMP_Dropdown>();
 
-        if (btnFilterCommon == null)
-            btnFilterCommon = transform.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_FilterRow/Btn_Filter_Common")?.GetComponent<Button>();
-
-        if (btnFilterRare == null)
-            btnFilterRare = transform.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_FilterRow/Btn_Filter_Rare")?.GetComponent<Button>();
-
-        if (btnFilterLegendary == null)
-            btnFilterLegendary = transform.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_FilterRow/Btn_Filter_Legendary")?.GetComponent<Button>();
+        if (ddStat == null)
+            ddStat = forgeRoot.Find("Pnl_BodyRow/Pnl_RightInventory/Pnl_FilterRow/Dd_Stat")?.GetComponent<TMP_Dropdown>();
 
         if (inventoryContent == null)
-            inventoryContent = transform.Find("Pnl_BodyRow/Pnl_RightInventory/Scroll_Inventory/Viewport/Content");
+            inventoryContent = forgeRoot.Find("Pnl_BodyRow/Pnl_RightInventory/Scroll_Inventory/Viewport/Content");
 
-        // 5. Dolny Panel
+#if UNITY_EDITOR
+        if (resourceVisualsDB == null)
+        {
+            resourceVisualsDB = UnityEditor.AssetDatabase.LoadAssetAtPath<ResourceVisualsSO>("Assets/Main folder/ScriptableObjects/Configs/ResourceVisualDatabase.asset");
+        }
+#endif
+
+        // 5. Dolny Panel: Statystyki
         if (pnlStatsGrid == null)
-            pnlStatsGrid = transform.Find("Pnl_BottomPanel/Sec_TowerStats/Pnl_StatsGrid");
+            pnlStatsGrid = forgeRoot.Find("Pnl_BottomPanel/Sec_TowerStats/Pnl_StatsGrid");
 
-        if (txtSmithsCount == null)
-            txtSmithsCount = transform.Find("Pnl_BottomPanel/Sec_Runesmiths/Pnl_SmithsStepper/Txt_SmithsCount")?.GetComponent<TextMeshProUGUI>();
+        AutoBindCombatStats();
 
-        if (btnRemoveSmith == null)
-            btnRemoveSmith = transform.Find("Pnl_BottomPanel/Sec_Runesmiths/Pnl_SmithsStepper/Btn_RemoveSmith")?.GetComponent<Button>();
+        // 6. Dolny Panel: Sekcja Kowali (Pnl_RaceControllers)
+        Transform raceControllers = forgeRoot.Find("Pnl_BottomPanel/Sec_RuneSmith/Pnl_RaceControllers")
+                                 ?? forgeRoot.Find("Pnl_BottomPanel/Sec_Runesmiths/Pnl_RaceControllers");
 
-        if (btnAddSmith == null)
-            btnAddSmith = transform.Find("Pnl_BottomPanel/Sec_Runesmiths/Pnl_SmithsStepper/Btn_AddSmith")?.GetComponent<Button>();
+        if (raceControllers != null)
+        {
+            Transform humans = raceControllers.Find("Pnl_Race_HUMANS") ?? raceControllers.Find("Pnl_Race_Humans");
+            if (humans != null) humans.gameObject.SetActive(false);
 
-        if (pnlStationsRow == null)
-            pnlStationsRow = transform.Find("Pnl_BottomPanel/Sec_Runesmiths/Pnl_StationsRow");
+            Transform elves = raceControllers.Find("Pnl_Race_ELVES") ?? raceControllers.Find("Pnl_Race_Elves");
+            if (elves != null) elves.gameObject.SetActive(false);
+
+            Transform dwarves = raceControllers.Find("Pnl_Race_DWARVES") ?? raceControllers.Find("Pnl_Race_Dwarves");
+            if (dwarves != null)
+            {
+                pnlRaceDwarves = dwarves.gameObject;
+                pnlRaceDwarves.SetActive(true);
+
+                if (txtDwarfTitle == null) txtDwarfTitle = dwarves.Find("Txt_RaceTitle")?.GetComponent<TextMeshProUGUI>();
+                if (txtDwarfFree == null) txtDwarfFree = dwarves.Find("Txt_FreeWorkers")?.GetComponent<TextMeshProUGUI>();
+
+                Transform btnRow = dwarves.Find("Pnl_Buttons");
+                if (btnRow != null)
+                {
+                    if (btnDwarfMinus == null) btnDwarfMinus = btnRow.Find("Btn_Minus")?.GetComponent<Button>();
+                    if (txtDwarfCount == null) txtDwarfCount = btnRow.Find("Txt_Count")?.GetComponent<TextMeshProUGUI>();
+                    if (btnDwarfPlus == null) btnDwarfPlus = btnRow.Find("Btn_Plus")?.GetComponent<Button>();
+                }
+            }
+        }
+
+        // Kontroler Drag & Drop
+        if (GetComponent<RuneDragDropController>() == null)
+        {
+            gameObject.AddComponent<RuneDragDropController>();
+        }
+    }
+
+    private void AutoBindCombatStats()
+    {
+        if (pnlStatsGrid == null) return;
+
+        if (combatStatViews == null) combatStatViews = new List<CombatStatItemView>();
+        combatStatViews.Clear();
+
+        var canonicalStats = new (BattleStats stat, string label)[]
+        {
+            (BattleStats.Damage, "Obrażenia"),
+            (BattleStats.FireRate, "Szybkostrzelność"),
+            (BattleStats.Range, "Zasięg"),
+            (BattleStats.DamageType, "Typ obrażeń"),
+            (BattleStats.CriticalChancel, "Szansa na krytyk"),
+            (BattleStats.CriticalMultiplier, "Mnożnik krytyczny"),
+            (BattleStats.ArmorPenetration, "Przebicie pancerza"),
+            (BattleStats.MagicPenetration, "Przebicie magii")
+        };
+
+        for (int i = 0; i < pnlStatsGrid.childCount; i++)
+        {
+            if (i >= canonicalStats.Length) break;
+
+            Transform itemTr = pnlStatsGrid.GetChild(i);
+            var (statType, defaultLabel) = canonicalStats[i];
+
+            Transform valuesTr = itemTr.Find("Pnl_Values");
+            var nameTmp = itemTr.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>();
+            if (nameTmp != null) nameTmp.text = defaultLabel;
+
+            CombatStatItemView statView = new CombatStatItemView
+            {
+                statType = statType,
+                rootObject = itemTr.gameObject,
+                imgIcon = itemTr.Find("Img_StatIcon")?.GetComponent<Image>(),
+                txtName = nameTmp,
+                txtBaseValue = valuesTr?.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>(),
+                txtCurrentValue = valuesTr?.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>()
+            };
+
+            combatStatViews.Add(statView);
+        }
     }
 
     // =========================================================================
@@ -274,10 +371,9 @@ public class RuneForgeWindowUI : MonoBehaviour
 
         SubscribeEvents();
         RegisterButtons();
+        InitializeFilterDropdowns();
 
-        // Domyślnie otwieramy zakładkę osadzania
         SwitchTab(RuneForgeTab.Socketing);
-
         RefreshAll();
         ForceRebuildImmediate();
     }
@@ -361,31 +457,6 @@ public class RuneForgeWindowUI : MonoBehaviour
             btnTransmuteBackToTower.onClick.AddListener(() => SwitchTab(RuneForgeTab.Socketing));
         }
 
-        // Filtry inwentarza
-        if (btnFilterAll != null)
-        {
-            btnFilterAll.onClick.RemoveAllListeners();
-            btnFilterAll.onClick.AddListener(() => SetRarityFilter(null));
-        }
-
-        if (btnFilterCommon != null)
-        {
-            btnFilterCommon.onClick.RemoveAllListeners();
-            btnFilterCommon.onClick.AddListener(() => SetRarityFilter(RuneRarity.Common));
-        }
-
-        if (btnFilterRare != null)
-        {
-            btnFilterRare.onClick.RemoveAllListeners();
-            btnFilterRare.onClick.AddListener(() => SetRarityFilter(RuneRarity.Rare));
-        }
-
-        if (btnFilterLegendary != null)
-        {
-            btnFilterLegendary.onClick.RemoveAllListeners();
-            btnFilterLegendary.onClick.AddListener(() => SetRarityFilter(RuneRarity.Legendary));
-        }
-
         // Rzemiosło
         if (btnCraftFusion != null)
         {
@@ -399,17 +470,52 @@ public class RuneForgeWindowUI : MonoBehaviour
             btnCraftTransmute.onClick.AddListener(ExecuteTransmutation);
         }
 
-        // Przydział kowali
-        if (btnRemoveSmith != null)
+        // Kowale w Pnl_Race_DWARVES
+        if (btnDwarfMinus != null)
         {
-            btnRemoveSmith.onClick.RemoveAllListeners();
-            btnRemoveSmith.onClick.AddListener(HandleRemoveSmith);
+            btnDwarfMinus.onClick.RemoveAllListeners();
+            btnDwarfMinus.onClick.AddListener(HandleRemoveSmith);
         }
 
-        if (btnAddSmith != null)
+        if (btnDwarfPlus != null)
         {
-            btnAddSmith.onClick.RemoveAllListeners();
-            btnAddSmith.onClick.AddListener(HandleAddSmith);
+            btnDwarfPlus.onClick.RemoveAllListeners();
+            btnDwarfPlus.onClick.AddListener(HandleAddSmith);
+        }
+    }
+
+    private void InitializeFilterDropdowns()
+    {
+        if (ddRarity != null)
+        {
+            ddRarity.ClearOptions();
+            ddRarity.AddOptions(new List<string> {
+                "Wszystkie rzadkości",
+                "Zwykłe (Common)",
+                "Niepospolite (Uncommon)",
+                "Rzadkie (Rare)",
+                "Legendarne (Legendary)",
+                "Przeklęte (Cursed)"
+            });
+            ddRarity.onValueChanged.RemoveAllListeners();
+            ddRarity.onValueChanged.AddListener(_ => RefreshInventoryView());
+        }
+
+        if (ddStat != null)
+        {
+            ddStat.ClearOptions();
+            ddStat.AddOptions(new List<string> {
+                "Wszystkie statystyki",
+                "Obrażenia",
+                "Zasięg",
+                "Szybkostrzelność",
+                "Przebicie pancerza",
+                "Przebicie magii",
+                "Szansa na krytyk",
+                "Mnożnik krytyczny"
+            });
+            ddStat.onValueChanged.RemoveAllListeners();
+            ddStat.onValueChanged.AddListener(_ => RefreshInventoryView());
         }
     }
 
@@ -463,7 +569,7 @@ public class RuneForgeWindowUI : MonoBehaviour
 
         UpdateTabButtonStyles();
 
-        // Czyścimy sloty rzemiosła przy przełączaniu
+        // Czyścimy kowadło przy przełączaniu
         if (tab == RuneForgeTab.Fusion)
         {
             fusionRune1 = null;
@@ -517,7 +623,7 @@ public class RuneForgeWindowUI : MonoBehaviour
     {
         if (txtForgeTitle != null)
         {
-            string towerName = currentForge.infusedTowerData != null ? currentForge.infusedTowerData.buildingName.ToUpper() : "BRAK WIEŻY";
+            string towerName = currentForge.infusedTowerData != null ? currentForge.infusedTowerData.buildingName.ToUpper() : "BRAK PRZYPISANEJ WIEŻY";
             txtForgeTitle.text = $"KUŹNIA RUNICZNA — [{towerName}]";
         }
     }
@@ -527,7 +633,8 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (txtRuneTowersDesc != null && currentForge != null)
         {
             int towersCount = currentForge.GetNeighboringRuneTowersCount();
-            txtRuneTowersDesc.text = $"Sąsiedztwo: {towersCount} z 4 wież\nOdblokowują sloty i kowali.";
+            int maxSlots = currentForge.GetMaxSlots();
+            txtRuneTowersDesc.text = $"Sąsiednie wieże runiczne: <b>{towersCount}/4</b>\nOdblokowane sloty: <b>{maxSlots}/5</b>";
         }
     }
 
@@ -547,7 +654,7 @@ public class RuneForgeWindowUI : MonoBehaviour
             imgTowerHeaderIcon.color = tower != null && tower.icon != null ? Color.white : new Color(0.96f, 0.78f, 0.28f, 0.8f);
         }
 
-        // Sloty na runy
+        // Sloty na runy (Card_RunesmithSlot)
         if (pnlSlotsRow != null)
         {
             int maxSlots = currentForge.GetMaxSlots();
@@ -556,104 +663,117 @@ public class RuneForgeWindowUI : MonoBehaviour
 
             for (int i = 0; i < pnlSlotsRow.childCount; i++)
             {
-                int slotIndex = i; // 0-indexed
+                int slotIndex = i;
                 Transform slotTr = pnlSlotsRow.GetChild(i);
                 slotTr.gameObject.SetActive(true);
 
                 bool isUnlockedByTower = slotIndex < maxSlots;
                 bool hasSmith = slotIndex < activeSlots;
+                RuneItem currentRune = slotIndex < equipped.Count ? equipped[slotIndex] : null;
 
-                // Baner braku kowala
-                Transform badge = slotTr.Find("Badge_MissingSmith");
-                if (badge != null)
-                {
-                    badge.gameObject.SetActive(isUnlockedByTower && !hasSmith);
-                }
-
-                // Tło slotu
-                Image slotBg = slotTr.GetComponent<Image>();
-                if (slotBg != null)
-                {
-                    slotBg.color = (isUnlockedByTower && hasSmith)
-                        ? new Color(0.13f, 0.15f, 0.2f, 0.95f)
-                        : new Color(0.08f, 0.09f, 0.11f, 0.85f);
-                }
-
-                // Ikona i tekst
-                Image iconImg = slotTr.Find("Img_SocketIcon")?.GetComponent<Image>() ?? slotTr.Find("Img_LockIcon")?.GetComponent<Image>();
+                // Elementy prefabu Card_RunesmithSlot
+                Transform badgeMissingSmith = slotTr.Find("Badge_MissingSmith");
+                Transform lockObj = slotTr.Find("Img_locked");
+                Transform socketIconRoot = slotTr.Find("Img_SocketIcon");
+                Image iconImg = slotTr.Find("Img_SocketIcon/Img_SocketIcon")?.GetComponent<Image>()
+                             ?? socketIconRoot?.GetComponentInChildren<Image>(true)
+                             ?? socketIconRoot?.GetComponent<Image>()
+                             ?? slotTr.Find("Img_Icon")?.GetComponent<Image>();
                 TextMeshProUGUI lblTmp = slotTr.Find("Txt_SlotLabel")?.GetComponent<TextMeshProUGUI>();
 
-                if (isUnlockedByTower && hasSmith)
+                // Komponent interaktywny Drag & Drop + Click
+                var slotScript = slotTr.GetComponent<RuneSocketSlotUI>();
+                if (slotScript == null) slotScript = slotTr.gameObject.AddComponent<RuneSocketSlotUI>();
+                slotScript.Setup(slotIndex, currentRune, isUnlockedByTower, hasSmith, this);
+
+                if (!isUnlockedByTower)
                 {
-                    if (slotIndex < equipped.Count)
-                    {
-                        // Runa osadzona w tym slocie
-                        var rune = equipped[slotIndex];
-                        if (iconImg != null)
-                        {
-                            iconImg.sprite = rune.definition != null ? rune.definition.icon : null;
-                            iconImg.color = GetRarityColor(rune.definition != null ? rune.definition.rarity : RuneRarity.Common);
-                        }
-
-                        if (lblTmp != null)
-                        {
-                            lblTmp.text = $"<color=white><b>{rune.definition?.runeName}</b></color>\n<size=10>{rune.GetPrimaryText()}</size>";
-                        }
-                    }
-                    else
-                    {
-                        // Wolny odblokowany slot
-                        if (iconImg != null)
-                        {
-                            iconImg.sprite = null;
-                            iconImg.color = new Color(0.96f, 0.78f, 0.28f, 0.8f);
-                        }
-
-                        if (lblTmp != null)
-                        {
-                            lblTmp.text = $"SLOT {slotIndex + 1}\n<size=10><color=#999999>WOLNY SLOT</color></size>";
-                        }
-                    }
-                }
-                else if (isUnlockedByTower && !hasSmith)
-                {
-                    // Odblokowany przez wieżę, ale brak kowala
-                    if (iconImg != null)
-                    {
-                        iconImg.sprite = null;
-                        iconImg.color = new Color(0.96f, 0.78f, 0.28f, 0.4f);
-                    }
-
+                    // 1. Zablokowany (brak wieży)
+                    if (lockObj != null) lockObj.gameObject.SetActive(true);
+                    if (badgeMissingSmith != null) badgeMissingSmith.gameObject.SetActive(false);
+                    if (iconImg != null) iconImg.gameObject.SetActive(false);
                     if (lblTmp != null)
                     {
-                        lblTmp.text = $"SLOT {slotIndex + 1}\n<size=10><color=#FFCC66>WYMAGA KOWALA</color></size>";
+                        lblTmp.text = $"<color=#666666>SLOT {slotIndex + 1}</color>\n<size=10><color=#555555>WYMAGA WIEŻY</color></size>";
+                    }
+                }
+                else if (!hasSmith)
+                {
+                    // 2. Odblokowany przez wieżę, ale brak kowala
+                    if (lockObj != null) lockObj.gameObject.SetActive(false);
+                    if (badgeMissingSmith != null) badgeMissingSmith.gameObject.SetActive(true);
+                    if (iconImg != null)
+                    {
+                        if (currentRune != null)
+                        {
+                            iconImg.gameObject.SetActive(true);
+                            iconImg.sprite = currentRune.definition?.icon;
+                            iconImg.color = currentRune.definition?.icon != null ? new Color(1f, 1f, 1f, 0.45f) : new Color(0.96f, 0.78f, 0.28f, 0.45f);
+                            iconImg.preserveAspect = true;
+                        }
+                        else
+                        {
+                            iconImg.gameObject.SetActive(true);
+                            iconImg.sprite = null;
+                            iconImg.color = new Color(0.96f, 0.78f, 0.28f, 0.35f);
+                        }
+                    }
+                    if (lblTmp != null)
+                    {
+                        lblTmp.text = $"<color=#CCCCCC>SLOT {slotIndex + 1}</color>\n<size=10><color=#FFCC66>WYMAGA KOWALA</color></size>";
                     }
                 }
                 else
                 {
-                    // Zablokowany (wymaga wieży runicznej)
-                    if (iconImg != null)
-                    {
-                        iconImg.sprite = null;
-                        iconImg.color = new Color(0.55f, 0.58f, 0.65f, 0.4f);
-                    }
+                    // 3. Aktywny slot (z kowalem)
+                    if (lockObj != null) lockObj.gameObject.SetActive(false);
+                    if (badgeMissingSmith != null) badgeMissingSmith.gameObject.SetActive(false);
 
-                    if (lblTmp != null)
+                    if (currentRune != null)
                     {
-                        lblTmp.text = $"SLOT {slotIndex + 1}\n<size=10><color=#666666>WYMAGA WIEŻY</color></size>";
+                        // Runa osadzona - żółta ikonka zamienia się w ikonkę osadzonej runy
+                        if (iconImg != null)
+                        {
+                            iconImg.gameObject.SetActive(true);
+                            iconImg.sprite = currentRune.definition?.icon;
+                            iconImg.color = currentRune.definition?.icon != null ? Color.white : GetRarityColor(currentRune.definition != null ? currentRune.definition.rarity : RuneRarity.Common);
+                            iconImg.preserveAspect = true;
+                        }
+
+                        if (lblTmp != null)
+                        {
+                            string labelText = $"<b>{currentRune.definition?.runeName}</b>\n<size=10>{currentRune.GetPrimaryText()}</size>";
+                            if (currentRune.hasPenalty)
+                            {
+                                labelText += $"\n<size=9>{currentRune.GetPenaltyText()}</size>";
+                            }
+                            lblTmp.text = labelText;
+                        }
+                    }
+                    else
+                    {
+                        // Wolny slot - domyślna żółta ikonka pustego slotu
+                        if (iconImg != null)
+                        {
+                            iconImg.gameObject.SetActive(true);
+                            iconImg.sprite = null;
+                            iconImg.color = new Color(0.96f, 0.78f, 0.28f, 0.8f);
+                        }
+                        if (lblTmp != null)
+                        {
+                            lblTmp.text = $"<color=white>SLOT {slotIndex + 1}</color>\n<size=10><color=#888888>WOLNY</color></size>";
+                        }
                     }
                 }
-
-                // Podpięcie kliknięcia w slot (do zdjęcia osadzonej runy)
-                Button slotBtn = slotTr.GetComponent<Button>();
-                if (slotBtn == null) slotBtn = slotTr.gameObject.AddComponent<Button>();
-                slotBtn.onClick.RemoveAllListeners();
-                slotBtn.onClick.AddListener(() => OnSlotClicked(slotIndex));
             }
         }
     }
 
-    private void OnSlotClicked(int slotIndex)
+    // =========================================================================
+    // OBSŁUGA INTERAKCJI: SLOTY WIEŻY
+    // =========================================================================
+
+    public void OnSlotClicked(int slotIndex)
     {
         if (currentForge == null) return;
         var equipped = currentForge.equippedRunes;
@@ -665,14 +785,79 @@ public class RuneForgeWindowUI : MonoBehaviour
         }
     }
 
+    public void OnRuneDroppedOnSlot(int targetSlotIndex, RuneItem rune, RuneDragSource source, int sourceIndex)
+    {
+        if (currentForge == null || rune == null) return;
+
+        if (source == RuneDragSource.Inventory)
+        {
+            // Jeśli slot ma już runę, zdejmij starą i wstaw nową
+            if (targetSlotIndex < currentForge.equippedRunes.Count)
+            {
+                var oldRune = currentForge.equippedRunes[targetSlotIndex];
+                currentForge.UnequipRune(oldRune);
+            }
+
+            currentForge.EquipRune(rune);
+            RefreshAll();
+        }
+        else if (source == RuneDragSource.Socket)
+        {
+            // Zamiana miejsc między slotami
+            if (sourceIndex >= 0 && sourceIndex < currentForge.equippedRunes.Count && targetSlotIndex < currentForge.equippedRunes.Count)
+            {
+                var temp = currentForge.equippedRunes[targetSlotIndex];
+                currentForge.equippedRunes[targetSlotIndex] = currentForge.equippedRunes[sourceIndex];
+                currentForge.equippedRunes[sourceIndex] = temp;
+                currentForge.ForceRescan();
+                RefreshAll();
+            }
+        }
+        else if (source == RuneDragSource.Fusion || source == RuneDragSource.Transmutation)
+        {
+            // Usunięcie z kowadła i wstawienie do slotu
+            ClearCraftSlot(source, sourceIndex);
+            if (targetSlotIndex < currentForge.equippedRunes.Count)
+            {
+                var oldRune = currentForge.equippedRunes[targetSlotIndex];
+                currentForge.UnequipRune(oldRune);
+            }
+            currentForge.EquipRune(rune);
+            RefreshAll();
+        }
+    }
+
     // =========================================================================
-    // PRAWE MENU EKWIPUNKU
+    // OBSŁUGA INTERAKCJI: EKWIPUNEK
     // =========================================================================
 
-    public void SetRarityFilter(RuneRarity? rarity)
+    public void OnInventoryRuneClicked(RuneItem rune)
     {
-        currentFilter = rarity;
-        RefreshInventoryView();
+        if (rune == null) return;
+
+        if (currentTab == RuneForgeTab.Socketing)
+        {
+            if (currentForge != null)
+            {
+                currentForge.EquipRune(rune);
+                RefreshAll();
+            }
+        }
+        else if (currentTab == RuneForgeTab.Fusion)
+        {
+            if (fusionRune1 == null) fusionRune1 = rune;
+            else if (fusionRune2 == null && rune != fusionRune1) fusionRune2 = rune;
+            RefreshCraftingSlots();
+            RefreshInventoryView();
+        }
+        else if (currentTab == RuneForgeTab.Transmutation)
+        {
+            if (transmuteRune1 == null) transmuteRune1 = rune;
+            else if (transmuteRune2 == null && rune != transmuteRune1) transmuteRune2 = rune;
+            else if (transmuteRune3 == null && rune != transmuteRune1 && rune != transmuteRune2) transmuteRune3 = rune;
+            RefreshCraftingSlots();
+            RefreshInventoryView();
+        }
     }
 
     private void RefreshInventoryView()
@@ -682,22 +867,29 @@ public class RuneForgeWindowUI : MonoBehaviour
         var allRunes = RuneManager.Instance.playerRunes ?? new List<RuneItem>();
         var filtered = new List<RuneItem>();
 
+        RuneRarity? selectedRarity = GetSelectedRarityFilter();
+        RuneStatType? selectedStat = GetSelectedStatFilter();
+
         foreach (var r in allRunes)
         {
             if (r == null || r.definition == null) continue;
-            // Pomijamy runy aktualnie umieszczone na kowadle fuzji/transmutacji
+
+            // Pomiń runy leżące aktualnie na kowadle
             if (r == fusionRune1 || r == fusionRune2) continue;
             if (r == transmuteRune1 || r == transmuteRune2 || r == transmuteRune3) continue;
 
-            if (currentFilter == null || r.definition.rarity == currentFilter.Value)
-            {
-                filtered.Add(r);
-            }
+            if (selectedRarity.HasValue && r.definition.rarity != selectedRarity.Value)
+                continue;
+
+            if (selectedStat.HasValue && r.definition.primaryStat != selectedStat.Value)
+                continue;
+
+            filtered.Add(r);
         }
 
         if (txtInvCount != null)
         {
-            txtInvCount.text = $"{allRunes.Count} / 30";
+            txtInvCount.text = $"EKWIPUNEK RUN ({filtered.Count}/{allRunes.Count})";
         }
 
         int activeCount = 0;
@@ -735,79 +927,64 @@ public class RuneForgeWindowUI : MonoBehaviour
     {
         if (itemTr == null || rune == null) return;
 
-        Color rarityColor = GetRarityColor(rune.definition != null ? rune.definition.rarity : RuneRarity.Common);
-
-        Image itemBg = itemTr.GetComponent<Image>();
-        if (itemBg != null) itemBg.color = new Color(0.14f, 0.16f, 0.2f, 0.95f);
-
-        Image iconImg = itemTr.Find("Img_RuneIcon")?.GetComponent<Image>();
-        if (iconImg != null)
-        {
-            iconImg.sprite = rune.definition != null ? rune.definition.icon : null;
-            iconImg.color = rarityColor;
-        }
-
-        TextMeshProUGUI valTmp = itemTr.Find("Txt_Val")?.GetComponent<TextMeshProUGUI>();
-        if (valTmp != null)
-        {
-            valTmp.text = rune.GetPrimaryText();
-            valTmp.color = Color.white;
-        }
-
-        Button itemBtn = itemTr.GetComponent<Button>();
-        if (itemBtn == null) itemBtn = itemTr.gameObject.AddComponent<Button>();
-        itemBtn.onClick.RemoveAllListeners();
-        itemBtn.onClick.AddListener(() => OnInventoryRuneClicked(rune));
+        var cardScript = itemTr.GetComponent<RuneCardItemUI>();
+        if (cardScript == null) cardScript = itemTr.gameObject.AddComponent<RuneCardItemUI>();
+        cardScript.Setup(rune, this, resourceVisualsDB);
     }
 
-    private void OnInventoryRuneClicked(RuneItem rune)
+    private RuneRarity? GetSelectedRarityFilter()
     {
-        if (rune == null) return;
+        if (ddRarity == null || ddRarity.value == 0) return null;
 
-        if (currentTab == RuneForgeTab.Socketing)
+        return ddRarity.value switch
         {
-            if (currentForge != null)
-            {
-                currentForge.EquipRune(rune);
-                RefreshAll();
-            }
-        }
-        else if (currentTab == RuneForgeTab.Fusion)
+            1 => RuneRarity.Common,
+            2 => RuneRarity.Uncommon,
+            3 => RuneRarity.Rare,
+            4 => RuneRarity.Legendary,
+            5 => RuneRarity.Cursed,
+            _ => null
+        };
+    }
+
+    private RuneStatType? GetSelectedStatFilter()
+    {
+        if (ddStat == null || ddStat.value == 0) return null;
+
+        return ddStat.value switch
         {
-            if (fusionRune1 == null) fusionRune1 = rune;
-            else if (fusionRune2 == null && rune != fusionRune1) fusionRune2 = rune;
-            RefreshCraftingSlots();
-            RefreshInventoryView();
-        }
-        else if (currentTab == RuneForgeTab.Transmutation)
-        {
-            if (transmuteRune1 == null) transmuteRune1 = rune;
-            else if (transmuteRune2 == null && rune != transmuteRune1) transmuteRune2 = rune;
-            else if (transmuteRune3 == null && rune != transmuteRune1 && rune != transmuteRune2) transmuteRune3 = rune;
-            RefreshCraftingSlots();
-            RefreshInventoryView();
-        }
+            1 => RuneStatType.Damage,
+            2 => RuneStatType.Range,
+            3 => RuneStatType.FireRate,
+            4 => RuneStatType.ArmorPenetration,
+            5 => RuneStatType.MagicPenetration,
+            6 => RuneStatType.CriticalChance,
+            7 => RuneStatType.CriticalDamage,
+            _ => null
+        };
     }
 
     // =========================================================================
-    // FUZJA I TRANSMUTACJA
+    // OBSŁUGA KOWADŁA: FUZJA I TRANSMUTACJA
     // =========================================================================
 
     private void RefreshCraftingSlots()
     {
         // ── 1. Fuzja ────────────────────────────────────────────────────────
-        SetupCraftSlot(slotFusion1, fusionRune1, () => { fusionRune1 = null; RefreshCraftingSlots(); RefreshInventoryView(); });
-        SetupCraftSlot(slotFusion2, fusionRune2, () => { fusionRune2 = null; RefreshCraftingSlots(); RefreshInventoryView(); });
+        SetupCraftSlot(slotFusion1, RuneDragSource.Fusion, 0, fusionRune1);
+        SetupCraftSlot(slotFusion2, RuneDragSource.Fusion, 1, fusionRune2);
 
         bool canFuse = fusionRune1 != null && fusionRune2 != null &&
                        fusionRune1.definition.rarity == fusionRune2.definition.rarity &&
                        fusionRune1.definition.primaryStat == fusionRune2.definition.primaryStat &&
                        fusionRune1.definition.rarity != RuneRarity.Cursed;
 
+        SetupResultSlot(slotFusionResult, canFuse, canFuse ? GetNextRarity(fusionRune1.definition.rarity) : null);
+
         if (txtFusionReqHeader != null)
         {
             int placed = (fusionRune1 != null ? 1 : 0) + (fusionRune2 != null ? 1 : 0);
-            txtFusionReqHeader.text = $"WYMAGANIA FUZJI: <color={(canFuse ? "#45f375" : "#FFCC66")}>{placed} / 2 RUN</color>";
+            txtFusionReqHeader.text = $"WYMAGANIA FUZJI: <color={(canFuse ? "#45F375" : "#FFCC66")}>{placed}/2 RUN (TA SAMA STATYSTYKA I RZADKOŚĆ)</color>";
         }
 
         if (btnCraftFusion != null)
@@ -816,19 +993,21 @@ public class RuneForgeWindowUI : MonoBehaviour
         }
 
         // ── 2. Transmutacja ──────────────────────────────────────────────────
-        SetupCraftSlot(slotTransmute1, transmuteRune1, () => { transmuteRune1 = null; RefreshCraftingSlots(); RefreshInventoryView(); });
-        SetupCraftSlot(slotTransmute2, transmuteRune2, () => { transmuteRune2 = null; RefreshCraftingSlots(); RefreshInventoryView(); });
-        SetupCraftSlot(slotTransmute3, transmuteRune3, () => { transmuteRune3 = null; RefreshCraftingSlots(); RefreshInventoryView(); });
+        SetupCraftSlot(slotTransmute1, RuneDragSource.Transmutation, 0, transmuteRune1);
+        SetupCraftSlot(slotTransmute2, RuneDragSource.Transmutation, 1, transmuteRune2);
+        SetupCraftSlot(slotTransmute3, RuneDragSource.Transmutation, 2, transmuteRune3);
 
         bool canTransmute = transmuteRune1 != null && transmuteRune2 != null && transmuteRune3 != null &&
                             transmuteRune1.definition.rarity == transmuteRune2.definition.rarity &&
                             transmuteRune1.definition.rarity == transmuteRune3.definition.rarity &&
                             transmuteRune1.definition.rarity != RuneRarity.Cursed;
 
+        SetupResultSlot(slotTransmuteResult, canTransmute, canTransmute ? GetNextRarity(transmuteRune1.definition.rarity) : null);
+
         if (txtTransmuteReqHeader != null)
         {
             int placed = (transmuteRune1 != null ? 1 : 0) + (transmuteRune2 != null ? 1 : 0) + (transmuteRune3 != null ? 1 : 0);
-            txtTransmuteReqHeader.text = $"WYMAGANIA TRANSMUTACJI: <color={(canTransmute ? "#45f375" : "#FFCC66")}>{placed} / 3 RUN</color>";
+            txtTransmuteReqHeader.text = $"WYMAGANIA TRANSMUTACJI: <color={(canTransmute ? "#45F375" : "#FFCC66")}>{placed}/3 RUN (TA SAMA RZADKOŚĆ)</color>";
         }
 
         if (btnCraftTransmute != null)
@@ -837,35 +1016,124 @@ public class RuneForgeWindowUI : MonoBehaviour
         }
     }
 
-    private void SetupCraftSlot(Transform slotTr, RuneItem rune, System.Action onRemove)
+    private void SetupCraftSlot(Transform slotTr, RuneDragSource craftType, int index, RuneItem rune)
     {
         if (slotTr == null) return;
 
-        TextMeshProUGUI lblTmp = slotTr.Find("Txt_SlotLabel")?.GetComponent<TextMeshProUGUI>();
-        Image iconImg = slotTr.Find("Img_SocketIcon")?.GetComponent<Image>();
-        Button slotBtn = slotTr.GetComponent<Button>();
-        if (slotBtn == null) slotBtn = slotTr.gameObject.AddComponent<Button>();
+        TextMeshProUGUI lblTmp = slotTr.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                              ?? slotTr.Find("Txt_SlotLabel")?.GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI plusTmp = slotTr.Find("Txt_Plus")?.GetComponent<TextMeshProUGUI>();
+        Image iconImg = slotTr.Find("Img_SocketIcon/Img_SocketIcon")?.GetComponent<Image>()
+                     ?? slotTr.Find("Img_SocketIcon")?.GetComponentInChildren<Image>(true)
+                     ?? slotTr.Find("Img_SocketIcon")?.GetComponent<Image>()
+                     ?? slotTr.Find("Img_Icon")?.GetComponent<Image>();
 
-        slotBtn.onClick.RemoveAllListeners();
+        var craftScript = slotTr.GetComponent<RuneCraftSlotUI>();
+        if (craftScript == null) craftScript = slotTr.gameObject.AddComponent<RuneCraftSlotUI>();
+        craftScript.Setup(craftType, index, rune, this);
 
         if (rune != null)
         {
+            if (plusTmp != null) plusTmp.gameObject.SetActive(false);
             if (lblTmp != null) lblTmp.text = $"{rune.definition?.runeName}\n<size=10>{rune.GetPrimaryText()}</size>";
             if (iconImg != null)
             {
+                iconImg.gameObject.SetActive(true);
                 iconImg.sprite = rune.definition?.icon;
-                iconImg.color = GetRarityColor(rune.definition != null ? rune.definition.rarity : RuneRarity.Common);
+                iconImg.color = rune.definition?.icon != null ? Color.white : GetRarityColor(rune.definition != null ? rune.definition.rarity : RuneRarity.Common);
+                iconImg.preserveAspect = true;
             }
-            if (onRemove != null) slotBtn.onClick.AddListener(() => onRemove());
         }
         else
         {
-            if (lblTmp != null) lblTmp.text = "WOLNY SLOT\n<size=10><color=#999999>KLIKNIJ RUNĘ</color></size>";
+            if (plusTmp != null) plusTmp.gameObject.SetActive(true);
+            if (lblTmp != null) lblTmp.text = "WOLNY SLOT\n<size=10><color=#888888>PRZECIĄGNIJ / KLIKNIJ</color></size>";
             if (iconImg != null)
             {
-                iconImg.sprite = null;
-                iconImg.color = new Color(0.96f, 0.78f, 0.28f, 0.4f);
+                iconImg.gameObject.SetActive(false);
             }
+        }
+    }
+
+    private void SetupResultSlot(Transform slotTr, bool isReady, RuneRarity? nextRarity)
+    {
+        if (slotTr == null) return;
+
+        TextMeshProUGUI lblTmp = slotTr.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                              ?? slotTr.Find("Txt_SlotLabel")?.GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI plusTmp = slotTr.Find("Txt_Plus")?.GetComponent<TextMeshProUGUI>();
+        Image iconImg = slotTr.Find("Img_SocketIcon/Img_SocketIcon")?.GetComponent<Image>()
+                     ?? slotTr.Find("Img_SocketIcon")?.GetComponentInChildren<Image>(true)
+                     ?? slotTr.Find("Img_SocketIcon")?.GetComponent<Image>()
+                     ?? slotTr.Find("Img_Icon")?.GetComponent<Image>();
+
+        if (isReady && nextRarity.HasValue)
+        {
+            if (plusTmp != null) plusTmp.gameObject.SetActive(false);
+            if (lblTmp != null) lblTmp.text = $"REZULTAT:\n<color=#FFD700>Poziom {nextRarity.Value}</color>";
+            if (iconImg != null)
+            {
+                iconImg.gameObject.SetActive(true);
+                iconImg.color = GetRarityColor(nextRarity.Value);
+            }
+        }
+        else
+        {
+            if (plusTmp != null) plusTmp.gameObject.SetActive(true);
+            if (lblTmp != null) lblTmp.text = "REZULTAT\n<size=10><color=#888888>OCZEKIWANIE</color></size>";
+            if (iconImg != null) iconImg.gameObject.SetActive(false);
+        }
+    }
+
+    public void OnCraftSlotClicked(RuneDragSource craftType, int index)
+    {
+        ClearCraftSlot(craftType, index);
+        RefreshCraftingSlots();
+        RefreshInventoryView();
+    }
+
+    public void OnRuneDroppedOnCraftSlot(RuneDragSource craftType, int targetIndex, RuneItem rune, RuneDragSource source, int sourceIndex)
+    {
+        if (rune == null) return;
+
+        // Jeśli runa pochodziła ze slotu wieży, zdejmij ją najpierw
+        if (source == RuneDragSource.Socket && currentForge != null)
+        {
+            currentForge.UnequipRune(rune);
+        }
+        else if (source == RuneDragSource.Fusion || source == RuneDragSource.Transmutation)
+        {
+            ClearCraftSlot(source, sourceIndex);
+        }
+
+        // Wstawienie do kowadła
+        if (craftType == RuneDragSource.Fusion)
+        {
+            if (targetIndex == 0) fusionRune1 = rune;
+            else if (targetIndex == 1) fusionRune2 = rune;
+        }
+        else if (craftType == RuneDragSource.Transmutation)
+        {
+            if (targetIndex == 0) transmuteRune1 = rune;
+            else if (targetIndex == 1) transmuteRune2 = rune;
+            else if (targetIndex == 2) transmuteRune3 = rune;
+        }
+
+        RefreshAll();
+    }
+
+    private void ClearCraftSlot(RuneDragSource craftType, int index)
+    {
+        if (craftType == RuneDragSource.Fusion)
+        {
+            if (index == 0) fusionRune1 = null;
+            else if (index == 1) fusionRune2 = null;
+        }
+        else if (craftType == RuneDragSource.Transmutation)
+        {
+            if (index == 0) transmuteRune1 = null;
+            else if (index == 1) transmuteRune2 = null;
+            else if (index == 2) transmuteRune3 = null;
         }
     }
 
@@ -892,84 +1160,128 @@ public class RuneForgeWindowUI : MonoBehaviour
         }
     }
 
+    private RuneRarity? GetNextRarity(RuneRarity rarity)
+    {
+        return rarity switch
+        {
+            RuneRarity.Common => RuneRarity.Uncommon,
+            RuneRarity.Uncommon => RuneRarity.Rare,
+            RuneRarity.Rare => RuneRarity.Legendary,
+            _ => null
+        };
+    }
+
     // =========================================================================
-    // DOLNY PANEL: STATYSTYKI I KOWALE
+    // DOLNY PANEL: STATYSTYKI BOJOWE (Pnl_CombatStatItem)
     // =========================================================================
 
     private void RefreshBottomStats()
     {
-        if (currentForge == null || currentForge.infusedTowerData == null || pnlStatsGrid == null) return;
+        if (currentForge == null || currentForge.infusedTowerData == null || combatStatViews == null) return;
 
         var tower = currentForge.infusedTowerData;
         var equipped = currentForge.equippedRunes ?? new List<RuneItem>();
 
-        // Agregacja modyfikatorów z wyposażonych run
+        // Agregacja modyfikatorów ze wszystkich osadzonych run
         float dmgFlat = 0, dmgPct = 0;
         float rngFlat = 0, rngPct = 0;
         float frFlat = 0, frPct = 0;
         float apFlat = 0, apPct = 0;
+        float mpFlat = 0, mpPct = 0;
         float ccFlat = 0, ccPct = 0;
         float cdFlat = 0, cdPct = 0;
 
         foreach (var r in equipped)
         {
+            if (r == null || r.definition == null) continue;
+
             AddStatContribution(r.definition.primaryStat, r.definition.valueType, r.primaryValue,
                 ref dmgFlat, ref dmgPct, ref rngFlat, ref rngPct, ref frFlat, ref frPct,
-                ref apFlat, ref apPct, ref ccFlat, ref ccPct, ref cdFlat, ref cdPct);
+                ref apFlat, ref apPct, ref mpFlat, ref mpPct, ref ccFlat, ref ccPct, ref cdFlat, ref cdPct);
 
             if (r.hasPenalty)
             {
                 AddStatContribution(r.penaltyStat, r.penaltyValueType, r.penaltyValue,
                     ref dmgFlat, ref dmgPct, ref rngFlat, ref rngPct, ref frFlat, ref frPct,
-                    ref apFlat, ref apPct, ref ccFlat, ref ccPct, ref cdFlat, ref cdPct);
+                    ref apFlat, ref apPct, ref mpFlat, ref mpPct, ref ccFlat, ref ccPct, ref cdFlat, ref cdPct);
             }
         }
 
-        // Wyliczenie zmodyfikowanych wartości
-        float baseDmg = tower.baseDamage;
-        float modDmg = (baseDmg + dmgFlat) * (1f + dmgPct / 100f);
-
-        float baseRng = tower.baseRange;
-        float modRng = (baseRng + rngFlat) * (1f + rngPct / 100f);
-
-        float baseFr = tower.fireRate;
-        float modFr = (baseFr + frFlat) * (1f + frPct / 100f);
-
-        float baseAp = tower.armorPenetration;
-        float modAp = (baseAp + apFlat) * (1f + apPct / 100f);
-
-        float baseCc = tower.criticalChancel;
-        float modCc = (baseCc + ccFlat) * (1f + ccPct / 100f);
-
-        float baseCd = tower.criticalDamageMultiplier;
-        float modCd = (baseCd + cdFlat) * (1f + cdPct / 100f);
-
-        // Ustawienie tekstów w wierszach statystyk
-        UpdateStatRow("Col_Left/Row_Obrażenia", $"{baseDmg:0.#}", $"{modDmg:0.#}", modDmg - baseDmg);
-        UpdateStatRow("Col_Left/Row_Zasięg", $"{baseRng:0.#}", $"{modRng:0.#}", modRng - baseRng);
-        UpdateStatRow("Col_Left/Row_Szybkostrzelność", $"{baseFr:0.##}/s", $"{modFr:0.##}/s", modFr - baseFr);
-
-        UpdateStatRow("Col_Right/Row_Przebicie_pancerza", $"{baseAp:0.#}%", $"{modAp:0.#}%", modAp - baseAp);
-        UpdateStatRow("Col_Right/Row_Szansa_na_krytyk", $"{baseCc:0.#}%", $"{modCc:0.#}%", modCc - baseCc);
-        UpdateStatRow("Col_Right/Row_Mnożnik_krytyczny", $"{baseCd:0.#}%", $"{modCd:0.#}%", modCd - baseCd);
-    }
-
-    private void UpdateStatRow(string path, string baseVal, string modVal, float diff)
-    {
-        var row = pnlStatsGrid.Find(path);
-        if (row == null) return;
-
-        var valTmp = row.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>();
-        if (valTmp != null)
+        foreach (var view in combatStatViews)
         {
-            string diffStr = Mathf.Abs(diff) > 0.01f ? $" ({(diff > 0 ? "+" : "")}{diff:0.#})" : "";
-            valTmp.text = $"<color=#888888>{baseVal}</color> → <color={(diff >= 0 ? "#45f375" : "#FF6666")}>{modVal}{diffStr}</color>";
+            if (view == null || view.rootObject == null) continue;
+
+            float baseVal = 0;
+            float modVal = 0;
+            string unit = "";
+
+            switch (view.statType)
+            {
+                case BattleStats.Damage:
+                    baseVal = tower.baseDamage;
+                    modVal = (baseVal + dmgFlat) * (1f + dmgPct / 100f);
+                    break;
+
+                case BattleStats.FireRate:
+                    baseVal = tower.fireRate;
+                    modVal = (baseVal + frFlat) * (1f + frPct / 100f);
+                    unit = "/s";
+                    break;
+
+                case BattleStats.Range:
+                    baseVal = tower.baseRange;
+                    modVal = (baseVal + rngFlat) * (1f + rngPct / 100f);
+                    break;
+
+                case BattleStats.DamageType:
+                    if (view.txtBaseValue != null) view.txtBaseValue.text = $"{tower.damageType}";
+                    if (view.txtCurrentValue != null) view.txtCurrentValue.text = $"{tower.damageType}";
+                    continue;
+
+                case BattleStats.CriticalChancel:
+                    baseVal = tower.criticalChancel;
+                    modVal = (baseVal + ccFlat) * (1f + ccPct / 100f);
+                    unit = "%";
+                    break;
+
+                case BattleStats.CriticalMultiplier:
+                    baseVal = tower.criticalDamageMultiplier;
+                    modVal = (baseVal + cdFlat) * (1f + cdPct / 100f);
+                    unit = "%";
+                    break;
+
+                case BattleStats.ArmorPenetration:
+                    baseVal = tower.armorPenetration;
+                    modVal = (baseVal + apFlat) * (1f + apPct / 100f);
+                    unit = "%";
+                    break;
+
+                case BattleStats.MagicPenetration:
+                    baseVal = tower.magicPenetration;
+                    modVal = (baseVal + mpFlat) * (1f + mpPct / 100f);
+                    unit = "%";
+                    break;
+            }
+
+            float diff = modVal - baseVal;
+
+            if (view.txtBaseValue != null)
+            {
+                view.txtBaseValue.text = $"{baseVal:0.#}{unit}";
+            }
+
+            if (view.txtCurrentValue != null)
+            {
+                string colorHex = Mathf.Abs(diff) < 0.01f ? "#FFFFFF" : (diff > 0 ? "#45F375" : "#FF5555");
+                string diffStr = Mathf.Abs(diff) >= 0.05f ? $" ({(diff > 0 ? "+" : "")}{diff:0.#})" : "";
+                view.txtCurrentValue.text = $"<color={colorHex}>{modVal:0.#}{unit}{diffStr}</color>";
+            }
         }
     }
 
     private void AddStatContribution(RuneStatType stat, RuneValueType vType, float val,
         ref float dmgF, ref float dmgP, ref float rngF, ref float rngP, ref float frF, ref float frP,
-        ref float apF, ref float apP, ref float ccF, ref float ccP, ref float cdF, ref float cdP)
+        ref float apF, ref float apP, ref float mpF, ref float mpP, ref float ccF, ref float ccP, ref float cdF, ref float cdP)
     {
         switch (stat)
         {
@@ -985,6 +1297,9 @@ public class RuneForgeWindowUI : MonoBehaviour
             case RuneStatType.ArmorPenetration:
                 if (vType == RuneValueType.Flat) apF += val; else apP += val;
                 break;
+            case RuneStatType.MagicPenetration:
+                if (vType == RuneValueType.Flat) mpF += val; else mpP += val;
+                break;
             case RuneStatType.CriticalChance:
                 if (vType == RuneValueType.Flat) ccF += val; else ccP += val;
                 break;
@@ -994,55 +1309,35 @@ public class RuneForgeWindowUI : MonoBehaviour
         }
     }
 
+    // =========================================================================
+    // DOLNY PANEL: SEKCJA KOWALI (Pnl_RaceControllers)
+    // =========================================================================
+
     private void RefreshRunesmiths()
     {
         if (currentForge == null) return;
 
         int assigned = currentForge.assignedDwarves != null ? currentForge.assignedDwarves.Count : 0;
         int maxSmiths = currentForge.GetMaxRunesmiths();
+        int freeDwarves = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(Race.Dwarves) : 0;
 
-        if (txtSmithsCount != null)
+        if (txtDwarfTitle != null)
         {
-            txtSmithsCount.text = $"Kowale: {assigned} / {maxSmiths}";
+            txtDwarfTitle.text = "KOWALE RUN (KRASNOLUDY)";
         }
 
-        if (btnRemoveSmith != null) btnRemoveSmith.interactable = assigned > 0;
-        if (btnAddSmith != null) btnAddSmith.interactable = assigned < maxSmiths;
-
-        // Stanowiska robocze
-        if (pnlStationsRow != null)
+        if (txtDwarfFree != null)
         {
-            for (int i = 0; i < pnlStationsRow.childCount; i++)
-            {
-                int stationIdx = i; // 0-indexed
-                Transform stationTr = pnlStationsRow.GetChild(i);
-                stationTr.gameObject.SetActive(true);
-
-                bool isUnlocked = stationIdx < maxSmiths;
-                bool hasSmith = stationIdx < assigned;
-
-                Image stImg = stationTr.GetComponent<Image>();
-                if (stImg != null)
-                {
-                    stImg.color = hasSmith
-                        ? new Color(0.18f, 0.28f, 0.18f, 0.95f)
-                        : (isUnlocked ? new Color(0.14f, 0.16f, 0.2f, 0.95f) : new Color(0.08f, 0.09f, 0.11f, 0.85f));
-                }
-
-                Image icon = stationTr.Find("Img_StationIcon")?.GetComponent<Image>();
-                if (icon != null)
-                {
-                    icon.color = hasSmith ? new Color(0.45f, 0.95f, 0.55f, 1f) : new Color(0.5f, 0.52f, 0.6f, 0.6f);
-                }
-
-                TextMeshProUGUI lbl = stationTr.Find("Txt_StationLbl")?.GetComponent<TextMeshProUGUI>();
-                if (lbl != null)
-                {
-                    lbl.text = hasSmith ? $"Kowal {stationIdx + 1}" : (isUnlocked ? "Wolny" : "Zablok.");
-                    lbl.color = hasSmith ? new Color(0.45f, 0.95f, 0.55f, 1f) : new Color(0.6f, 0.62f, 0.68f, 1f);
-                }
-            }
+            txtDwarfFree.text = $"Wolni: {freeDwarves}";
         }
+
+        if (txtDwarfCount != null)
+        {
+            txtDwarfCount.text = $"{assigned} / {maxSmiths}";
+        }
+
+        if (btnDwarfMinus != null) btnDwarfMinus.interactable = assigned > 0;
+        if (btnDwarfPlus != null) btnDwarfPlus.interactable = assigned < maxSmiths && freeDwarves > 0;
     }
 
     private void HandleAddSmith()
@@ -1106,15 +1401,15 @@ public class RuneForgeWindowUI : MonoBehaviour
         Canvas.ForceUpdateCanvases();
     }
 
-    private Color GetRarityColor(RuneRarity rarity)
+    public Color GetRarityColor(RuneRarity rarity)
     {
         return rarity switch
         {
-            RuneRarity.Common => new Color(0.8f, 0.8f, 0.8f, 1f),
+            RuneRarity.Common => new Color(0.85f, 0.85f, 0.85f, 1f),
             RuneRarity.Uncommon => new Color(0.35f, 0.85f, 0.45f, 1f),
             RuneRarity.Rare => new Color(0.3f, 0.65f, 0.95f, 1f),
             RuneRarity.Legendary => new Color(0.96f, 0.78f, 0.28f, 1f),
-            RuneRarity.Cursed => new Color(0.85f, 0.35f, 0.95f, 1f),
+            RuneRarity.Cursed => new Color(0.92f, 0.28f, 0.28f, 1f),
             _ => Color.white
         };
     }

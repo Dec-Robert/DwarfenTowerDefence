@@ -63,6 +63,21 @@ public class ResourceVisualsSO : ScriptableObject
         return null;
     }
 
+    public Sprite GetIcon(RuneStatType stat)
+    {
+        return stat switch
+        {
+            RuneStatType.Damage => GetIcon(BattleStats.Damage),
+            RuneStatType.Range => GetIcon(BattleStats.Range),
+            RuneStatType.FireRate => GetIcon(BattleStats.FireRate),
+            RuneStatType.CriticalChance => GetIcon(BattleStats.CriticalChancel),
+            RuneStatType.CriticalDamage => GetIcon(BattleStats.CriticalMultiplier),
+            RuneStatType.ArmorPenetration => GetIcon(BattleStats.ArmorPenetration),
+            RuneStatType.MagicPenetration => GetIcon(BattleStats.MagicPenetration),
+            _ => null
+        };
+    }
+
     public Sprite GetIcon(Race race)
     {
         foreach (var res in raceVisuals)

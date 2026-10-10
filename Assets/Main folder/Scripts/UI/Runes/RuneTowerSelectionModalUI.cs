@@ -5,9 +5,9 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Kontroler modalu wyboru wieży dla Kuźni Runicznej (Pnl_RuneTowerSelectionModal).
-/// Zgodnie z zasadami gry:
-/// - Wyświetla wyłącznie wieże obronne, które nie są aktualnie przypisane do żadnej innej Kuźni w twierdzy,
-/// - Po zatwierdzeniu wyboru nasyca wieżę w RuneForgeEntity i otwiera główny panel Kuźni.
+/// - Wyświetla wieże obronne nieprzypisane jeszcze do żadnej innej Kuźni na mapie.
+/// - Korzysta ze zaktualizowanego layoutu kart (Card_BuildingChoice.prefab).
+/// - Obsługuje okno dialogowe z potwierdzeniem wyboru (Pnl_ConfirmWarningDialog).
 /// </summary>
 public class RuneTowerSelectionModalUI : MonoBehaviour
 {
@@ -16,10 +16,18 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
     [SerializeField] private Button btnClose;
     [SerializeField] private Transform towersContainer;
 
+    [Header("Okno Potwierdzenia")]
+    [SerializeField] private GameObject pnlConfirmWarningDialog;
+    [SerializeField] private TextMeshProUGUI txtWarningTitle;
+    [SerializeField] private TextMeshProUGUI txtWarningMessage;
+    [SerializeField] private Button btnConfirmChoice;
+    [SerializeField] private Button btnCancelChoice;
+
     [Header("Baza Dostępnych Wież")]
     [SerializeField] private List<TowerData> allTowersDatabase = new List<TowerData>();
 
     private RuneForgeEntity currentForge;
+    private TowerData pendingSelectedTower;
 
     public List<TowerData> AllTowersDatabase => allTowersDatabase;
 
@@ -43,13 +51,38 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
     public void AutoBindReferences()
     {
         if (txtTitle == null)
-            txtTitle = transform.Find("Pnl_ModalWindow/Pnl_ModalTopBar/Txt_Title")?.GetComponent<TextMeshProUGUI>();
+            txtTitle = transform.Find("Pnl_ModalWindow/Pnl_ModalTopBar/Txt_Title")?.GetComponent<TextMeshProUGUI>()
+                    ?? transform.Find("Pnl_ModalTopBar/Txt_Title")?.GetComponent<TextMeshProUGUI>();
 
         if (btnClose == null)
-            btnClose = transform.Find("Pnl_ModalWindow/Pnl_ModalTopBar/Btn_Close")?.GetComponent<Button>();
+            btnClose = transform.Find("Pnl_ModalWindow/Pnl_ModalTopBar/Btn_Close")?.GetComponent<Button>()
+                    ?? transform.Find("Pnl_ModalTopBar/Btn_Close")?.GetComponent<Button>();
 
         if (towersContainer == null)
-            towersContainer = transform.Find("Pnl_ModalWindow/Scroll_Towers/Viewport/Content");
+            towersContainer = transform.Find("Pnl_ModalWindow/Scroll_Towers/Viewport/Content")
+                           ?? transform.Find("Scroll_Towers/Viewport/Content");
+
+        // Okno potwierdzenia
+        if (pnlConfirmWarningDialog == null)
+        {
+            var dialogTr = transform.Find("Pnl_ConfirmWarningDialog");
+            if (dialogTr != null) pnlConfirmWarningDialog = dialogTr.gameObject;
+        }
+
+        if (pnlConfirmWarningDialog != null)
+        {
+            if (txtWarningTitle == null)
+                txtWarningTitle = pnlConfirmWarningDialog.transform.Find("Pnl_DialogBox/Txt_WarningTitle")?.GetComponent<TextMeshProUGUI>();
+
+            if (txtWarningMessage == null)
+                txtWarningMessage = pnlConfirmWarningDialog.transform.Find("Pnl_DialogBox/Txt_WarningMessage")?.GetComponent<TextMeshProUGUI>();
+
+            if (btnConfirmChoice == null)
+                btnConfirmChoice = pnlConfirmWarningDialog.transform.Find("Pnl_DialogBox/Pnl_ButtonRow/Btn_ConfirmChoice")?.GetComponent<Button>();
+
+            if (btnCancelChoice == null)
+                btnCancelChoice = pnlConfirmWarningDialog.transform.Find("Pnl_DialogBox/Pnl_ButtonRow/Btn_CancelChoice")?.GetComponent<Button>();
+        }
 
         InitializeTowersDatabase();
     }
@@ -94,9 +127,6 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Pełna inicjalizacja wież na samym początku gry (tworzenie i wstępne wypełnienie kart wież).
-    /// </summary>
     public void InitializeTowers()
     {
         AutoBindReferences();
@@ -113,6 +143,13 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
     {
         AutoBindReferences();
         currentForge = forge;
+        pendingSelectedTower = null;
+
+        if (pnlConfirmWarningDialog != null)
+        {
+            pnlConfirmWarningDialog.SetActive(false);
+        }
+
         gameObject.SetActive(true);
 
         if (btnClose != null)
@@ -121,11 +158,28 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
             btnClose.onClick.AddListener(Close);
         }
 
+        if (btnConfirmChoice != null)
+        {
+            btnConfirmChoice.onClick.RemoveAllListeners();
+            btnConfirmChoice.onClick.AddListener(OnConfirmSelection);
+        }
+
+        if (btnCancelChoice != null)
+        {
+            btnCancelChoice.onClick.RemoveAllListeners();
+            btnCancelChoice.onClick.AddListener(OnCancelSelection);
+        }
+
         RefreshTowersList();
     }
 
     public void Close()
     {
+        if (pnlConfirmWarningDialog != null)
+        {
+            pnlConfirmWarningDialog.SetActive(false);
+        }
+
         gameObject.SetActive(false);
 
         if (currentForge != null && currentForge.infusedTowerData == null)
@@ -184,7 +238,6 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
                 else break;
             }
 
-            // Skonfiguruj zawartość karty
             SetupCard(cardTr, tower);
             activeCards++;
         }
@@ -200,15 +253,18 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
     {
         if (cardTr == null || tower == null) return;
 
-        // Ikona
-        Image iconImg = cardTr.Find("Pnl_IconFrame/Img_TowerIcon")?.GetComponent<Image>();
+        // Ikona wieży (obsługuje Card_BuildingChoice: Pnl_IconFrame/Img_BuildingIcon lub fallback Pnl_IconFrame/Img_TowerIcon)
+        Image iconImg = cardTr.Find("Pnl_IconFrame/Img_BuildingIcon")?.GetComponent<Image>()
+                     ?? cardTr.Find("Pnl_IconFrame/Img_TowerIcon")?.GetComponent<Image>()
+                     ?? cardTr.Find("Img_TowerIcon")?.GetComponent<Image>();
+
         if (iconImg != null)
         {
             iconImg.sprite = tower.icon;
             iconImg.color = tower.icon != null ? Color.white : new Color(0.96f, 0.78f, 0.28f, 0.8f);
         }
 
-        // Nazwa
+        // Nazwa wieży
         TextMeshProUGUI nameTmp = cardTr.Find("Txt_TowerName")?.GetComponent<TextMeshProUGUI>();
         if (nameTmp != null)
         {
@@ -229,31 +285,70 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
             descTmp.text = string.IsNullOrEmpty(tower.description) ? "Ciężka konstrukcja obronna twierdzy." : tower.description;
         }
 
-        // Przycisk wyboru
-        Button selectBtn = cardTr.Find("Btn_SelectTower")?.GetComponent<Button>();
+        // Przycisk wyboru (obsługuje Btn_SelectBuilding lub Btn_SelectTower)
+        Button selectBtn = cardTr.Find("Btn_SelectBuilding")?.GetComponent<Button>()
+                        ?? cardTr.Find("Btn_SelectTower")?.GetComponent<Button>();
+
         if (selectBtn != null)
         {
             selectBtn.onClick.RemoveAllListeners();
-            selectBtn.onClick.AddListener(() => OnTowerSelected(tower));
+            selectBtn.onClick.AddListener(() => OnTowerCardClicked(tower));
 
             TextMeshProUGUI btnTxt = selectBtn.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (btnTxt != null)
             {
-                btnTxt.text = "WYBIERZ WIEŻĘ";
+                btnTxt.text = "WYBIERZ";
             }
         }
     }
 
-    private void OnTowerSelected(TowerData selectedTower)
+    private void OnTowerCardClicked(TowerData tower)
     {
-        if (currentForge == null || selectedTower == null) return;
+        if (tower == null) return;
+        pendingSelectedTower = tower;
 
-        currentForge.SetInfusedTower(selectedTower);
+        if (pnlConfirmWarningDialog != null)
+        {
+            if (txtWarningMessage != null)
+            {
+                txtWarningMessage.text = $"Czy na pewno chcesz poświęcić tę Kuźnię dla: <b><color=#FFD700>{tower.buildingName.ToUpper()}</color></b>?\n\n" +
+                                         $"Wszystkie osadzone tu runy będą nasycać wyłącznie wybraną konstrukcję w całej twierdzy. " +
+                                         $"<b>Tej decyzji nie można cofnąć!</b>";
+            }
+            pnlConfirmWarningDialog.SetActive(true);
+        }
+        else
+        {
+            // Jeśli okno dialogowe nie jest obecne na scenie, zatwierdź natychmiast
+            OnConfirmSelection();
+        }
+    }
+
+    private void OnConfirmSelection()
+    {
+        if (currentForge == null || pendingSelectedTower == null) return;
+
+        currentForge.SetInfusedTower(pendingSelectedTower);
+
+        if (pnlConfirmWarningDialog != null)
+        {
+            pnlConfirmWarningDialog.SetActive(false);
+        }
+
         gameObject.SetActive(false);
 
         if (CenterInfoPanelControllerUI.Instance != null)
         {
             CenterInfoPanelControllerUI.Instance.OpenRuneForge(currentForge);
+        }
+    }
+
+    private void OnCancelSelection()
+    {
+        pendingSelectedTower = null;
+        if (pnlConfirmWarningDialog != null)
+        {
+            pnlConfirmWarningDialog.SetActive(false);
         }
     }
 }
