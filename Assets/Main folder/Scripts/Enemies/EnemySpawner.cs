@@ -172,6 +172,77 @@ public class EnemySpawner : MonoBehaviour
         TimePhaseManager.Instance?.ChangeCurrentPhase();
     }
 
+    public bool SpawnEnemyByName(string enemyName, int count = 1)
+    {
+        if (availableEnemies == null || availableEnemies.Count == 0) return false;
+
+        EnemyData data = availableEnemies.Find(e => 
+            e != null && (
+                string.Equals(e.enemyName, enemyName, System.StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(e.name, enemyName, System.StringComparison.OrdinalIgnoreCase)
+            ));
+
+        if (data == null)
+        {
+            data = availableEnemies.Find(e => 
+                e != null && (
+                    (!string.IsNullOrEmpty(e.enemyName) && e.enemyName.IndexOf(enemyName, System.StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    e.name.IndexOf(enemyName, System.StringComparison.OrdinalIgnoreCase) >= 0
+                ));
+        }
+
+        if (data == null) return false;
+
+        if (activeRoutes.Count == 0)
+        {
+            RecalculateActiveRoutes();
+        }
+
+        if (activeRoutes.Count == 0 && allPotentialRoutes.Count > 0)
+        {
+            // Fallback: create temporary route from potential route if none active
+            activeRoutes.Add(new SpawnRoute
+            {
+                name = allPotentialRoutes[0].name,
+                currentSpawnChance = 100f,
+                fullPath = allPotentialRoutes[0].fullPath,
+                currentSpawnPoint = allPotentialRoutes[0].fullPath[0],
+                currentActivePath = allPotentialRoutes[0].fullPath,
+                fullLength = allPotentialRoutes[0].fullLength
+            });
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            SpawnEnemy(data);
+        }
+
+        return true;
+    }
+
+    public void ForceCompleteWave()
+    {
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+            spawnCoroutine = null;
+        }
+
+        enemiesToSpawnQueue.Clear();
+
+        var enemies = new List<EnemyStats>(activeEnemies);
+        foreach (var enemy in enemies)
+        {
+            if (enemy != null)
+            {
+                enemy.TakeDamage(999999f, DamageType.Physical, 100, 100, true, 1000);
+            }
+        }
+        activeEnemies.Clear();
+
+        FinishWave();
+    }
+
     void SpawnEnemy(EnemyData data)
     {
         if (activeRoutes.Count == 0 || data?.prefab == null) return;

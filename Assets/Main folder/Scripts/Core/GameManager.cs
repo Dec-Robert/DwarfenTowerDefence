@@ -37,8 +37,12 @@ public class GameManager : MonoBehaviour
         }
     }
     
+    public bool isInvincible { get; set; } = false;
+
     public void ModifyBaseHealth(int amount)
     {
+        if (isInvincible && amount < 0) return;
+
         mainGateHP += amount;
 
         Debug.Log($"Zycie bazy zmienione o: {amount}. Aktualne: {mainGateHP}");
@@ -48,6 +52,18 @@ public class GameManager : MonoBehaviour
         if (mainGateHP <= 0)
         {
             mainGateHP = 0;
+            EndGame();
+        }
+    }
+
+    public void SetBaseHealth(int value)
+    {
+        mainGateHP = Mathf.Max(0, value);
+        Debug.Log($"Zycie bazy ustawione na: {mainGateHP}");
+        OnHealthChanged?.Invoke(mainGateHP);
+
+        if (mainGateHP <= 0)
+        {
             EndGame();
         }
     }

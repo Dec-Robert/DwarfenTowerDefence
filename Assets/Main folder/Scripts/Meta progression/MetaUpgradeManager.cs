@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement; // Wymagane do wykrywania zmiany sceny
 using System.Collections.Generic;
 using System.Linq;
@@ -274,6 +274,15 @@ public class MetaUpgradeManager : MonoBehaviour
     public int GetHousingStartPopulationBonus()
         => Mathf.RoundToInt(GetValue(MetaEffectType.HousingStartPopulation));
     
+    /// <summary>
+    /// Przelicza i ponownie aplikuje wszystkie odblokowane meta-upgrady w runtime.
+    /// </summary>
+    public void ReapplyAllUpgrades()
+    {
+        CollectValues();
+        ApplyAllEffects();
+    }
+
     // =========================================================================
     // DEBUG
     // =========================================================================

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public class RuneManager : MonoBehaviour
@@ -261,6 +261,48 @@ public class RuneManager : MonoBehaviour
         if (pool == null) return null;
         return pool.Find(r => r.primaryStat == stat && r.valueType == vType);
     }
+    public RuneItem GenerateRuneWithStat(RuneRarity rarity, RuneStatType stat)
+    {
+        List<RuneDefinitionSO> pool = rarity switch
+        {
+            RuneRarity.Common => config.commonRunes,
+            RuneRarity.Uncommon => config.uncommonRunes,
+            RuneRarity.Rare => config.rareRunes,
+            RuneRarity.Legendary => config.legendaryRunes,
+            RuneRarity.Cursed => config.cursedRunes,
+            _ => null
+        };
+
+        if (pool == null || pool.Count == 0) return null;
+
+        var matchingDefs = pool.FindAll(r => r.primaryStat == stat);
+        if (matchingDefs.Count == 0) return null;
+
+        RuneDefinitionSO definition = matchingDefs[Random.Range(0, matchingDefs.Count)];
+        float primaryVal = Random.Range(definition.primaryValueRange.x, definition.primaryValueRange.y);
+        primaryVal = FormatValue(primaryVal, definition.valueType);
+
+        RuneItem rune = new RuneItem(definition, primaryVal);
+
+        if (rarity == RuneRarity.Cursed && definition.possiblePenalties != null && definition.possiblePenalties.Count > 0)
+        {
+            var penalty = definition.possiblePenalties[Random.Range(0, definition.possiblePenalties.Count)];
+            float penVal = Random.Range(penalty.penaltyRange.x, penalty.penaltyRange.y);
+            penVal = FormatValue(penVal, penalty.valueType);
+            rune.SetPenalty(penalty.stat, penalty.valueType, -penVal);
+        }
+
+        playerRunes.Add(rune);
+        OnInventoryChanged?.Invoke();
+        return rune;
+    }
+
+    public void ClearInventory()
+    {
+        playerRunes.Clear();
+        OnInventoryChanged?.Invoke();
+    }
+
     public void NotifyInventoryChanged()
     {
         OnInventoryChanged?.Invoke();

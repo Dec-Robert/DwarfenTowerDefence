@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -44,6 +44,15 @@ public class HopeSessionManager : MonoBehaviour
     // =========================================================================
     // API DO ZARZĄDZANIA WYNIKIEM
     // =========================================================================
+
+    public void AddRawHope(int amount)
+    {
+        earnedHopeList.Add(new HopeRecord { reason = "Debug Console", amount = amount });
+        if (ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.AddResource(ResourceType.Hope, amount);
+        }
+    }
 
     public void AddMultiplier(float value)
     {
