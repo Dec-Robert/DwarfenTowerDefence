@@ -8,13 +8,15 @@ using UnityEngine.UI;
 [InitializeOnLoad]
 public static class GenerateHearthUI
 {
-    private const string SessionKey = "HearthUI_Built_v1";
+    private const string SessionKey = "HearthUI_Built_v2";
     private const string ScenePath = "Assets/Main folder/_Scenes/TESTSCENE_UI.unity";
     private const string PrefabFolder = "Assets/Main folder/Prefabs/UI";
     private const string LevelCardPrefabPath = "Assets/Main folder/Prefabs/UI/Card_HearthLevel.prefab";
     private const string EffectItemPrefabPath = "Assets/Main folder/Prefabs/UI/Pnl_HearthEffectItem.prefab";
     private const string SingleResourceSmallPrefabPath = "Assets/Main folder/Prefabs/UI/Pnl_SingleResource_Small.prefab";
     private const string VisualsDBPath = "Assets/Main folder/ScriptableObjects/Configs/ResourceVisualDatabase.asset";
+    private const string HearthConfigAssetPath = "Assets/Main folder/ScriptableObjects/Buildings/Special/HearthConfig.asset";
+    private const string BeaconPrefabPath = "Assets/Main folder/Prefabs/Buildings/Beacon of hope.prefab";
     private const string FreeWorkerIconPath = "Assets/Main folder/Icons/Citizen State/free.png";
     private const string RoundedSpritePath = "Assets/Main folder/Icons/PlaceHolders/kwadrat zaokrolony gid512px.png";
     private const string FontPath = "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset";
@@ -34,12 +36,16 @@ public static class GenerateHearthUI
     [MenuItem("Tools/Generate Hearth UI")]
     public static void BuildAll()
     {
-        Debug.Log("[HearthUI] Rozpoczynanie generowania UI Wielkiego Paleniska Twierdzy...");
+        Debug.Log("[HearthUI] Rozpoczynanie generowania i podpinania skryptów Wielkiego Paleniska Twierdzy...");
 
         if (!Directory.Exists(PrefabFolder))
         {
             Directory.CreateDirectory(PrefabFolder);
         }
+
+        // 0. Utwórz / zaktualizuj HearthConfig.asset oraz podepnij do Beacon of hope.prefab
+        HearthConfigSO hearthConfig = EnsureHearthConfigAsset();
+        AssignConfigToBeaconPrefab(hearthConfig);
 
         // 1. Otwórz scenę TESTSCENE_UI
         var currentScene = EditorSceneManager.GetActiveScene();
@@ -93,16 +99,71 @@ public static class GenerateHearthUI
             effectItemPrefab
         );
 
+        // 6. Dodaj i zbindowaj komponent HearthWindowUI oraz podepnij do CenterInfoPanelControllerUI
+        HearthWindowUI hearthUI = hearthWindow.GetComponent<HearthWindowUI>();
+        if (hearthUI == null) hearthUI = hearthWindow.AddComponent<HearthWindowUI>();
+        hearthUI.AutoBindReferences();
+        hearthUI.RefreshAllUI();
+        EditorUtility.SetDirty(hearthUI);
+
+        CenterInfoPanelControllerUI centerController = canvasObj.GetComponent<CenterInfoPanelControllerUI>();
+        if (centerController == null) centerController = Object.FindFirstObjectByType<CenterInfoPanelControllerUI>();
+        if (centerController != null)
+        {
+            centerController.hearthWindowPanel = hearthWindow;
+            EditorUtility.SetDirty(centerController);
+        }
+
         // Domyślnie ukryj okno (tak jak pozostałe okna w Canvas_ContextWindows)
         hearthWindow.SetActive(false);
 
-        // 6. Zapisz scenę i assety
+        // 7. Zapisz scenę i assety
         Undo.RegisterCreatedObjectUndo(hearthWindow, "Generate Hearth UI");
         EditorSceneManager.MarkSceneDirty(currentScene);
         EditorSceneManager.SaveScene(currentScene);
         AssetDatabase.SaveAssets();
 
-        Debug.Log("[HearthUI] Pomyślnie wygenerowano Card_HearthLevel.prefab, Pnl_HearthEffectItem.prefab oraz Pnl_HearthWindow (1500x900) na scenie TESTSCENE_UI!");
+        Debug.Log("[HearthUI] Pomyślnie wygenerowano i oskryptowano Pnl_HearthWindow, HearthConfig.asset oraz Beacon of hope.prefab!");
+    }
+
+    private static HearthConfigSO EnsureHearthConfigAsset()
+    {
+        string folder = Path.GetDirectoryName(HearthConfigAssetPath);
+        if (!string.IsNullOrEmpty(folder) && !Directory.Exists(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+        HearthConfigSO config = AssetDatabase.LoadAssetAtPath<HearthConfigSO>(HearthConfigAssetPath);
+        if (config == null)
+        {
+            config = ScriptableObject.CreateInstance<HearthConfigSO>();
+            config.EnsureDefaultLevels();
+            AssetDatabase.CreateAsset(config, HearthConfigAssetPath);
+        }
+        else
+        {
+            config.EnsureDefaultLevels();
+            EditorUtility.SetDirty(config);
+        }
+
+        return config;
+    }
+
+    private static void AssignConfigToBeaconPrefab(HearthConfigSO config)
+    {
+        if (config == null) return;
+
+        GameObject beaconPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(BeaconPrefabPath);
+        if (beaconPrefab == null) return;
+
+        BeaconEntity beacon = beaconPrefab.GetComponent<BeaconEntity>();
+        if (beacon != null)
+        {
+            beacon.hearthConfig = config;
+            EditorUtility.SetDirty(beacon);
+            PrefabUtility.SavePrefabAsset(beaconPrefab);
+        }
     }
 
     // =========================================================================

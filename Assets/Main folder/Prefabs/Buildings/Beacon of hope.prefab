@@ -62,6 +62,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -83,9 +85,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &5529113572165789622
 BoxCollider:
@@ -154,15 +158,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 1929da448be256343a44138d68cdb096, type: 2}
-  currentTier: 0
-  appliedUpgrades: []
-  shiftStartHour: 6
-  shiftLength: 10
-  maxShifts: 1
-  maxWorkersPerShift: 2
-  assignedCitizens: []
-  maxFuel: 100
-  currentFuel: 60
-  coalToFuelRatio: 5
-  fuelConsumptionPerLevel: 050000000a0000000f0000001400000019000000
-  dailyCoalInput: 0
+  isBuildingActive: 1
+  upkeepPriority: 1
+  hasBeenUsed: 0
+  hearthConfig: {fileID: 11400000, guid: 04c28520b8d80a240ae198009fb560fa, type: 2}

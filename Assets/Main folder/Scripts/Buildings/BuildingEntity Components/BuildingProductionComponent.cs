@@ -97,7 +97,8 @@ public class BuildingProductionComponent
         }
 
         float upgradePercent = upgradeComponent != null ? (upgradeComponent.GetGlobalProductionMultiplier() - 1f) : 0f;
-        return Mathf.Max(0.1f, 1f + metaBonus + upgradePercent);
+        float hearthBonus = BeaconEntity.GetActiveDayProductionBonus();
+        return Mathf.Max(0.1f, 1f + metaBonus + upgradePercent + hearthBonus);
     }
 
     public float GetCrewEfficiency()

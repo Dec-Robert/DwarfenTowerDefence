@@ -23,6 +23,7 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
     public GameObject towerPanel;
     public GameObject runeForgePanel;
     public GameObject runeTowerSelectionModal;
+    public GameObject hearthWindowPanel;
     
     void Awake()
     {
@@ -56,6 +57,12 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             var pnl = transform.Find("Pnl_RuneTowerSelectionModal");
             if (pnl != null) runeTowerSelectionModal = pnl.gameObject;
+        }
+
+        if (hearthWindowPanel == null)
+        {
+            var pnl = transform.Find("Pnl_HearthWindow");
+            if (pnl != null) hearthWindowPanel = pnl.gameObject;
         }
 
         HideAll();
@@ -128,6 +135,18 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
             }
         }
 
+        if (hearthWindowPanel != null)
+        {
+            hearthWindowPanel.SetActive(true);
+            var hearthUI = hearthWindowPanel.GetComponent<HearthWindowUI>();
+            if (hearthUI == null) hearthUI = hearthWindowPanel.AddComponent<HearthWindowUI>();
+            if (hearthUI != null)
+            {
+                hearthUI.AutoBindReferences();
+                hearthUI.ForceRebuildImmediate();
+            }
+        }
+
         Canvas.ForceUpdateCanvases();
         HideAll();
     }
@@ -195,6 +214,33 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
                 OpenRuneForge(runeForgeEntity);
             }
         }
+
+        if (buildingEntity is BeaconEntity)
+        {
+            bool previewOnly = TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase != TimePhases.Dusk;
+            OpenHearthWindow(previewOnly);
+        }
+    }
+
+    public bool OpenHearthWindow(bool isPreviewOnly = false)
+    {
+        if (hearthWindowPanel == null)
+        {
+            var pnl = transform.Find("Pnl_HearthWindow");
+            if (pnl != null) hearthWindowPanel = pnl.gameObject;
+        }
+
+        if (hearthWindowPanel == null) return false;
+
+        HideAll();
+        hearthWindowPanel.SetActive(true);
+        var hearthUI = hearthWindowPanel.GetComponent<HearthWindowUI>();
+        if (hearthUI == null) hearthUI = hearthWindowPanel.AddComponent<HearthWindowUI>();
+        if (hearthUI != null)
+        {
+            hearthUI.Setup(isPreviewOnly);
+        }
+        return true;
     }
 
     public void OpenRuneForge(RuneForgeEntity forge)
@@ -234,5 +280,6 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         if (towerPanel != null) towerPanel.SetActive(false);
         if (runeForgePanel != null) runeForgePanel.SetActive(false);
         if (runeTowerSelectionModal != null) runeTowerSelectionModal.SetActive(false);
+        if (hearthWindowPanel != null) hearthWindowPanel.SetActive(false);
     }
 }

@@ -197,6 +197,12 @@ public class InteractionManager : MonoBehaviour
             lastSelectedTower?.ShowRangeIndicator(false);
             lastSelectedTower = null;
         }
+        else if (building is BeaconEntity)
+        {
+            CenterInfoPanelControllerUI.Instance?.Setup(building);
+            lastSelectedTower?.ShowRangeIndicator(false);
+            lastSelectedTower = null;
+        }
         else if (building.data != null && building.data.type == BuildingType.Economic)
         {
             CenterInfoPanelControllerUI.Instance?.Setup(building);

@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 695ad8f81ef9e1249b47c8eb5d51e135, type: 3}
+  m_Name: HearthConfig
+  m_EditorClassIdentifier: Assembly-CSharp::HearthConfigSO
+  levels:
+  - levelIndex: 1
+    title: "Wygas\u0142y Popi\xF3\u0142"
+    tagText: "RYZYKO / \u0141UPY"
+    accentColor: {r: 0.58, g: 0.36, b: 0.82, a: 1}
+    levelIcon: {fileID: 0}
+    coalCost: 0
+    towerDamageBonus: -0.2
+    towerRangeAndRateBonus: -0.2
+    enemyStatsBonus: 0.15
+    runeDropAndRarityBonus: 0.35
+    nextDayProductionBonus: -0.25
+  - levelIndex: 2
+    title: "Tl\u0105cy si\u0119 \u017Bar"
+    tagText: "OSZCZ\u0118DNO\u015A\u0106"
+    accentColor: {r: 0.75, g: 0.42, b: 0.32, a: 1}
+    levelIcon: {fileID: 0}
+    coalCost: 15
+    towerDamageBonus: -0.1
+    towerRangeAndRateBonus: -0.1
+    enemyStatsBonus: 0.05
+    runeDropAndRarityBonus: 0.15
+    nextDayProductionBonus: -0.1
+  - levelIndex: 3
+    title: "Zr\xF3wnowa\u017Cony P\u0142omie\u0144"
+    tagText: NEUTRALNY
+    accentColor: {r: 0.28, g: 0.56, b: 0.78, a: 1}
+    levelIcon: {fileID: 0}
+    coalCost: 35
+    towerDamageBonus: 0
+    towerRangeAndRateBonus: 0
+    enemyStatsBonus: 0
+    runeDropAndRarityBonus: 0
+    nextDayProductionBonus: 0
+  - levelIndex: 4
+    title: "Jasny Ogie\u0144"
+    tagText: WZMOCNIENIE
+    accentColor: {r: 0.85, g: 0.62, b: 0.18, a: 1}
+    levelIcon: {fileID: 0}
+    coalCost: 65
+    towerDamageBonus: 0.15
+    towerRangeAndRateBonus: 0.15
+    enemyStatsBonus: -0.05
+    runeDropAndRarityBonus: -0.1
+    nextDayProductionBonus: 0.15
+  - levelIndex: 5
+    title: Palenisko Magmy
+    tagText: MAKS. MOC
+    accentColor: {r: 0.95, g: 0.36, b: 0.12, a: 1}
+    levelIcon: {fileID: 0}
+    coalCost: 110
+    towerDamageBonus: 0.35
+    towerRangeAndRateBonus: 0.35
+    enemyStatsBonus: -0.15
+    runeDropAndRarityBonus: -0.25
+    nextDayProductionBonus: 0.35

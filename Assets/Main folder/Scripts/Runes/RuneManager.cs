@@ -27,14 +27,15 @@ public class RuneManager : MonoBehaviour
     {
         if (config == null) return;
 
+        float hearthRuneMult = BeaconEntity.GetActiveNightRuneMultiplier();
         int runesToDrop = 0;
         switch (rank)
         {
             case EnemyRank.Normal:
-                if (Random.Range(0f, 100f) <= config.dropChanceNormal) runesToDrop = 1;
+                if (Random.Range(0f, 100f) <= config.dropChanceNormal * hearthRuneMult) runesToDrop = 1;
                 break;
             case EnemyRank.Elite:
-                if (Random.Range(0f, 100f) <= config.dropChanceElite) runesToDrop = 1;
+                if (Random.Range(0f, 100f) <= config.dropChanceElite * hearthRuneMult) runesToDrop = 1;
                 break;
             case EnemyRank.Boss:
                 runesToDrop = Random.Range(config.minRunesFromBoss, config.maxRunesFromBoss + 1);
@@ -94,11 +95,12 @@ public class RuneManager : MonoBehaviour
 
     private RuneRarity RollRarity()
     {
+        float hearthRuneMult = BeaconEntity.GetActiveNightRuneMultiplier();
         float wCommon = config.weightCommon;
-        float wUnc = config.weightUncommon + GetMetaBonus(MetaEffectType.RuneDropChance_Uncommon);
-        float wRare = config.weightRare + GetMetaBonus(MetaEffectType.RuneDropChance_Rare);
-        float wLeg = config.weightLegendary + GetMetaBonus(MetaEffectType.RuneDropChance_Legendary);
-        float wCursed = config.weightCursed + GetMetaBonus(MetaEffectType.RuneDropChance_Cursed);
+        float wUnc = Mathf.Max(0f, (config.weightUncommon + GetMetaBonus(MetaEffectType.RuneDropChance_Uncommon)) * hearthRuneMult);
+        float wRare = Mathf.Max(0f, (config.weightRare + GetMetaBonus(MetaEffectType.RuneDropChance_Rare)) * hearthRuneMult);
+        float wLeg = Mathf.Max(0f, (config.weightLegendary + GetMetaBonus(MetaEffectType.RuneDropChance_Legendary)) * hearthRuneMult);
+        float wCursed = Mathf.Max(0f, (config.weightCursed + GetMetaBonus(MetaEffectType.RuneDropChance_Cursed)) * hearthRuneMult);
 
         float totalBonus = (wUnc - config.weightUncommon) + (wRare - config.weightRare) + 
                            (wLeg - config.weightLegendary) + (wCursed - config.weightCursed);

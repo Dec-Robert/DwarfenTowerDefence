@@ -104,7 +104,8 @@ public class EnemyStats : MonoBehaviour
         if (rank != EnemyRank.Elite && rank != EnemyRank.Boss)
             rank = EnemyRank.Normal;
 
-        maxHealth = data.baseHp;
+        float hearthEnemyMult = BeaconEntity.GetActiveNightEnemyMultiplier();
+        maxHealth = Mathf.Max(1f, data.baseHp * hearthEnemyMult);
         currentHealth = maxHealth;
 
         currentArmor = data.armor <= 1f ? data.armor : data.armor / 100f;
@@ -115,7 +116,7 @@ public class EnemyStats : MonoBehaviour
             Walker = GetComponent<EnemyWalker>();
 
         if (Walker != null)
-            Walker.speed = data.moveSpeed;
+            Walker.speed = Mathf.Max(0.1f, data.moveSpeed * hearthEnemyMult);
 
         if (rank == EnemyRank.Elite)
         {

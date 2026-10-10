@@ -44,13 +44,29 @@ public class TimeUI : MonoBehaviour
             btnPause.onClick.AddListener(TimePhaseManager.Instance.PauseWave);
             btnPlay.onClick.AddListener(TimePhaseManager.Instance.ContinueWave);
             btnFast.onClick.AddListener(TimePhaseManager.Instance.SpeedUpWave);
-            btnNextPhase.onClick.AddListener(TimePhaseManager.Instance.ChangeCurrentPhase);
+            btnNextPhase.onClick.AddListener(OnNextPhaseButtonClicked);
             
             TimePhaseManager.Instance.OnGameSpeedChange += SetNightText;
             
         }
 
         ChangeToMorning();
+    }
+
+    private void OnNextPhaseButtonClicked()
+    {
+        if (TimePhaseManager.Instance == null) return;
+
+        if (TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Dusk)
+        {
+            if (CenterInfoPanelControllerUI.Instance != null &&
+                CenterInfoPanelControllerUI.Instance.OpenHearthWindow(isPreviewOnly: false))
+            {
+                return;
+            }
+        }
+
+        TimePhaseManager.Instance.ChangeCurrentPhase();
     }
     
     private void OnDestroy()
