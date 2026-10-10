@@ -34,12 +34,11 @@ public class ProductionContextWindowUI : MonoBehaviour
         public TextMeshProUGUI txtPercentage;
     }
 
-    public class ProductionCardItemView
+    public class ResourceColumnView
     {
         public GameObject rootObject;
+        public RectTransform rectTransform;
         public Image imgResourceIcon;
-        public TextMeshProUGUI txtResourceName;
-        public TextMeshProUGUI txtTotalProduction;
 
         public GameObject rowBase;
         public TextMeshProUGUI txtBaseValue;
@@ -55,9 +54,6 @@ public class ProductionContextWindowUI : MonoBehaviour
 
         public GameObject rowCrewEfficiency;
         public TextMeshProUGUI txtCrewEfficiencyValue;
-
-        public GameObject rowNetSummary;
-        public TextMeshProUGUI txtNetSummaryValue;
     }
 
     // ── Główne referencje okna ───────────────────────────────────────────────
@@ -85,11 +81,21 @@ public class ProductionContextWindowUI : MonoBehaviour
     [SerializeField] private Transform pnlThresholdBarsContainer;
     [SerializeField] private List<ThresholdSegmentView> thresholdSegments = new List<ThresholdSegmentView>();
 
-    // ── Sekcja Bilansu Produkcji ──────────────────────────────────────────────
+    // ── Sekcja Bilansu Produkcji (Tabela Kolumn Surowców) ────────────────────
     [Header("Bilans Produkcji")]
-    [SerializeField] private GameObject secProduction;
-    [SerializeField] private Transform pnlProductionCardsContainer;
-    [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private GameObject pnlProductionResourceCard;
+    [SerializeField] private Transform pnlModifiersList;
+    [SerializeField] private Transform pnlStaticText;
+    [SerializeField] private GameObject resourceColumnPrefab;
+    [SerializeField] private Transform rowNetSummary;
+    [SerializeField] private TextMeshProUGUI txtNetSummaryLabel;
+
+    // Etykiety wierszy w Pnl_StaticText
+    [SerializeField] private GameObject lblRowBase;
+    [SerializeField] private GameObject lblRowOnTopBonus;
+    [SerializeField] private GameObject lblRowAdjacentBonus;
+    [SerializeField] private GameObject lblRowExternalMult;
+    [SerializeField] private GameObject lblRowCrewEfficiency;
 
     // ── Dolna Belka i Nakładka Wstrzymania ────────────────────────────────────
     [Header("Akcje i Wstrzymanie")]
@@ -105,7 +111,18 @@ public class ProductionContextWindowUI : MonoBehaviour
     // ── Stan bieżącego budynku ────────────────────────────────────────────────
     private BuildingEntity currentBuilding;
     private bool isDemolishConfirming;
-    private readonly List<ProductionCardItemView> cachedCardViews = new List<ProductionCardItemView>();
+    private readonly List<ResourceColumnView> cachedResourceColumns = new List<ResourceColumnView>();
+    private readonly List<TextMeshProUGUI> cachedNetSummaryValues = new List<TextMeshProUGUI>();
+
+    // Kolory wartości w kolumnach
+    private readonly Color colBaseColor = new Color(1f, 0.85f, 0.3f, 1f);
+    private readonly Color colOnTopColor = new Color(0.45f, 0.75f, 1f, 1f);
+    private readonly Color colSurroundingColor = new Color(0.4f, 0.85f, 0.45f, 1f);
+    private readonly Color colExtMultColor = new Color(0.4f, 0.85f, 0.45f, 1f);
+    private readonly Color colEfficiencyColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+    private readonly Color colNeutralDashColor = new Color(0.55f, 0.58f, 0.62f, 0.75f);
+    private readonly Color netActiveColor = new Color(0.35f, 0.9f, 0.45f, 1f);
+    private readonly Color netStoppedColor = new Color(0.7f, 0.7f, 0.7f, 0.8f);
 
     // Kolory przycisków
     private readonly Color pauseActiveBg = new Color(0.28f, 0.22f, 0.12f, 0.95f);
@@ -209,18 +226,44 @@ public class ProductionContextWindowUI : MonoBehaviour
             AutoBindThresholdSegments();
         }
 
-        // 5. Produkcja (Sec_Production)
-        if (secProduction == null)
-            secProduction = transform.Find("Pnl_ColumnsContainer/Pnl_RightColumn/Sec_Production")?.gameObject;
+        // 5. Produkcja (Pnl_ProductionResourceCard + Pnl_ModifiersList + Row_NetSummary)
+        if (pnlProductionResourceCard == null)
+            pnlProductionResourceCard = transform.Find("Pnl_ColumnsContainer/Pnl_RightColumn/Pnl_ProductionResourceCard")?.gameObject;
 
-        if (pnlProductionCardsContainer == null)
-            pnlProductionCardsContainer = transform.Find("Pnl_ColumnsContainer/Pnl_RightColumn/Sec_Production/Pnl_ProductionCardsContainer");
+        if (pnlProductionResourceCard != null)
+        {
+            if (pnlModifiersList == null)
+                pnlModifiersList = pnlProductionResourceCard.transform.Find("Pnl_ModifiersList");
 
-        if (cardPrefab == null)
+            if (pnlModifiersList != null && pnlStaticText == null)
+                pnlStaticText = pnlModifiersList.Find("Pnl_StaticText");
+
+            if (pnlStaticText != null)
+            {
+                if (lblRowBase == null)
+                    lblRowBase = pnlStaticText.Find("Txt_Base")?.gameObject;
+                if (lblRowOnTopBonus == null)
+                    lblRowOnTopBonus = pnlStaticText.Find("Txt_OnTopBonus")?.gameObject;
+                if (lblRowAdjacentBonus == null)
+                    lblRowAdjacentBonus = pnlStaticText.Find("Txt_AdjacentBonus")?.gameObject;
+                if (lblRowExternalMult == null)
+                    lblRowExternalMult = pnlStaticText.Find("Txt_ExternalMult")?.gameObject;
+                if (lblRowCrewEfficiency == null)
+                    lblRowCrewEfficiency = (pnlStaticText.Find("Txt_CrewEfficency") ?? pnlStaticText.Find("Txt_CrewEfficiency"))?.gameObject;
+            }
+
+            if (rowNetSummary == null)
+                rowNetSummary = pnlProductionResourceCard.transform.Find("Row_NetSummary");
+
+            if (rowNetSummary != null && txtNetSummaryLabel == null)
+                txtNetSummaryLabel = rowNetSummary.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+        }
+
+        if (resourceColumnPrefab == null)
         {
 #if UNITY_EDITOR
-            cardPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/Main folder/Prefabs/UI/Pnl_ProductionResourceCard.prefab");
+            resourceColumnPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Main folder/Prefabs/UI/Pnl_ResourceColumn.prefab");
 #endif
         }
 
@@ -459,7 +502,7 @@ public class ProductionContextWindowUI : MonoBehaviour
         // 4. Załoga i progi
         RefreshWorkersUI();
 
-        // 5. Bilans produkcji (kafelki surowców)
+        // 5. Bilans produkcji (kolumny surowców i podsumowanie netto)
         RefreshProductionCards();
 
         // Wymuś przebudowę układu
@@ -695,212 +738,364 @@ public class ProductionContextWindowUI : MonoBehaviour
         }
     }
 
-    // ── Bilans Produkcji (Kafelki Surowców) ────────────────────────────────────
+    // ── Bilans Produkcji (Tabela Pnl_ResourceColumn + Row_NetSummary) ─────────
     private void RefreshProductionCards()
     {
-        if (secProduction == null || currentBuilding == null || currentBuilding.data == null) return;
+        if (pnlProductionResourceCard == null || currentBuilding == null || currentBuilding.data == null) return;
 
         var prodList = currentBuilding.data.productionPerCycle;
         if (prodList == null || prodList.Count == 0)
         {
-            secProduction.SetActive(false);
+            pnlProductionResourceCard.SetActive(false);
             return;
         }
 
-        secProduction.SetActive(true);
-        if (pnlProductionCardsContainer == null) return;
+        pnlProductionResourceCard.SetActive(true);
+        if (pnlModifiersList == null) return;
 
-        // Upewnij się, że mamy kafelki w kontenerze
-        int requiredCards = prodList.Count;
-        EnsureCardViewsCount(requiredCards);
+        // Zbuduj listę produkowanych surowców (bazowe + ewentualne z ulepszeń)
+        List<(ResourceType type, float baseAmount)> resourcesToDisplay = new List<(ResourceType, float)>();
+        Dictionary<ResourceType, float> upgradeBonuses = currentBuilding.Upgrades != null
+            ? currentBuilding.Upgrades.GetAllProductionBonuses()
+            : null;
+
+        for (int i = 0; i < prodList.Count; i++)
+        {
+            var cost = prodList[i];
+            float flatBonus = 0f;
+            if (upgradeBonuses != null && upgradeBonuses.TryGetValue(cost.type, out float val))
+            {
+                flatBonus = val;
+            }
+            resourcesToDisplay.Add((cost.type, cost.amount + flatBonus));
+        }
+
+        if (upgradeBonuses != null)
+        {
+            foreach (var kvp in upgradeBonuses)
+            {
+                if (kvp.Value <= 0f) continue;
+                bool exists = false;
+                for (int i = 0; i < resourcesToDisplay.Count; i++)
+                {
+                    if (resourcesToDisplay[i].type == kvp.Key)
+                    {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists)
+                {
+                    resourcesToDisplay.Add((kvp.Key, kvp.Value));
+                }
+            }
+        }
+
+        int requiredColumns = resourcesToDisplay.Count;
+        EnsureResourceColumnsCount(requiredColumns);
+        EnsureNetSummaryValuesCount(requiredColumns);
+
+        // Obliczenia wspólne i terenowe dla budynku
+        float terrainMult = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetTerrainMultiplier() : 1f;
+        float rawOnTopBonus = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetOnTopBonus() : 0f;
+        float rawAdjacentBonus = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetAdjacentBonus() : 0f;
+        float effectiveOnTopBonus = rawOnTopBonus * terrainMult;
+        float effectiveAdjacentBonus = rawAdjacentBonus * terrainMult;
 
         float externalMultiplier = currentBuilding.Production != null ? currentBuilding.Production.GetGlobalMultiplier() : 1f;
         float crewEff = currentBuilding.Production != null ? currentBuilding.Production.GetCrewEfficiency() : 0f;
 
-        for (int i = 0; i < cachedCardViews.Count; i++)
+        // Globalna widoczność wierszy tabeli (spójna dla Pnl_StaticText i każdej kolumny Pnl_ResourceColumn)
+        bool showBase = true;
+        bool showOnTop = effectiveOnTopBonus > 0.001f;
+        bool showAdjacent = effectiveAdjacentBonus > 0.001f;
+        bool showExtMult = !Mathf.Approximately(externalMultiplier, 1.0f);
+        bool showCrewEff = true;
+
+        if (lblRowBase != null) lblRowBase.SetActive(showBase);
+        if (lblRowOnTopBonus != null) lblRowOnTopBonus.SetActive(showOnTop);
+        if (lblRowAdjacentBonus != null) lblRowAdjacentBonus.SetActive(showAdjacent);
+        if (lblRowExternalMult != null) lblRowExternalMult.SetActive(showExtMult);
+        if (lblRowCrewEfficiency != null) lblRowCrewEfficiency.SetActive(showCrewEff);
+
+        // Parametry wymiarowe do idealnego wyrównania kolumn Pnl_ResourceColumn i pól Txt_Value w Row_NetSummary
+        RectTransform staticRt = pnlStaticText as RectTransform;
+        float staticWidth = staticRt != null && staticRt.sizeDelta.x > 0f ? staticRt.sizeDelta.x : 150f;
+        float staticHeight = staticRt != null && staticRt.sizeDelta.y > 0f ? staticRt.sizeDelta.y : 200f;
+        const float columnWidth = 50f;
+
+        if (rowNetSummary != null)
         {
-            var cardView = cachedCardViews[i];
-            if (i >= requiredCards)
+            rowNetSummary.gameObject.SetActive(true);
+            var hlg = rowNetSummary.GetComponent<HorizontalLayoutGroup>();
+            if (hlg != null)
             {
-                cardView.rootObject.SetActive(false);
+                hlg.spacing = 0f;
+            }
+            if (txtNetSummaryLabel != null)
+            {
+                var lblRt = txtNetSummaryLabel.rectTransform;
+                lblRt.sizeDelta = new Vector2(staticWidth, lblRt.sizeDelta.y);
+            }
+        }
+
+        // Wypełnianie kolumn surowców oraz odpowiadających im wartości w Row_NetSummary
+        for (int i = 0; i < cachedResourceColumns.Count; i++)
+        {
+            var colView = cachedResourceColumns[i];
+            if (colView == null || colView.rootObject == null) continue;
+
+            if (i >= requiredColumns)
+            {
+                colView.rootObject.SetActive(false);
                 continue;
             }
 
-            cardView.rootObject.SetActive(true);
-            var prodCost = prodList[i];
-            ResourceType resType = prodCost.type;
-            float baseAmount = prodCost.amount;
+            colView.rootObject.SetActive(true);
+
+            // Pozycjonowanie kolumny na osi X (tuż za Pnl_StaticText, co 50 px)
+            if (colView.rectTransform != null)
+            {
+                colView.rectTransform.anchorMin = new Vector2(0f, 1f);
+                colView.rectTransform.anchorMax = new Vector2(0f, 1f);
+                colView.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                colView.rectTransform.sizeDelta = new Vector2(columnWidth, staticHeight);
+                colView.rectTransform.anchoredPosition = new Vector2(
+                    staticWidth + i * columnWidth + columnWidth * 0.5f,
+                    -staticHeight * 0.5f);
+            }
+
+            ResourceType resType = resourcesToDisplay[i].type;
+            float baseAmountWithUpgrade = resourcesToDisplay[i].baseAmount;
 
             // Premie terenowe dotyczą pierwszego/głównego produkowanego surowca
             bool isPrimary = (i == 0);
-            float onTopBonus = isPrimary && currentBuilding.Terrain != null ? currentBuilding.Terrain.GetOnTopBonus() : 0f;
-            float adjacentBonus = isPrimary && currentBuilding.Terrain != null ? currentBuilding.Terrain.GetAdjacentBonus() : 0f;
+            float colOnTop = isPrimary ? effectiveOnTopBonus : 0f;
+            float colAdjacent = isPrimary ? effectiveAdjacentBonus : 0f;
 
-            // Premie z ulepszeń budynku
-            float upgradeFlat = 0f;
-            if (currentBuilding.Upgrades != null)
-            {
-                var bonuses = currentBuilding.Upgrades.GetAllProductionBonuses();
-                if (bonuses != null && bonuses.TryGetValue(resType, out float val))
-                {
-                    upgradeFlat = val;
-                }
-            }
-
-            float baseWithFlats = baseAmount + onTopBonus + adjacentBonus + upgradeFlat;
+            float baseWithFlats = baseAmountWithUpgrade + colOnTop + colAdjacent;
             float netTotal = currentBuilding.isBuildingActive ? (baseWithFlats * externalMultiplier * crewEff) : 0f;
 
-            // Nagłówek kafelka
-            if (cardView.imgResourceIcon != null && resourceVisualsSO != null)
+            // Ikona surowca w nagłówku kolumny (Spacer)
+            if (colView.imgResourceIcon != null && resourceVisualsSO != null)
             {
-                cardView.imgResourceIcon.sprite = resourceVisualsSO.GetIcon(resType);
-                cardView.imgResourceIcon.color = cardView.imgResourceIcon.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0.4f);
-            }
-
-            if (cardView.txtResourceName != null)
-            {
-                cardView.txtResourceName.text = resType.ToString().ToUpper();
-            }
-
-            if (cardView.txtTotalProduction != null)
-            {
-                if (currentBuilding.isBuildingActive)
-                {
-                    cardView.txtTotalProduction.text = $"+{netTotal:0.0} / cykl";
-                    cardView.txtTotalProduction.color = new Color(0.35f, 0.85f, 0.4f, 1f);
-                }
-                else
-                {
-                    cardView.txtTotalProduction.text = "0.0 / cykl";
-                    cardView.txtTotalProduction.color = new Color(0.7f, 0.7f, 0.7f, 0.8f);
-                }
+                colView.imgResourceIcon.enabled = true;
+                colView.imgResourceIcon.sprite = resourceVisualsSO.GetIcon(resType);
+                colView.imgResourceIcon.color = colView.imgResourceIcon.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0.4f);
             }
 
             // 1. Wartość bazowa
-            if (cardView.rowBase != null)
+            if (colView.rowBase != null)
             {
-                cardView.rowBase.SetActive(baseAmount > 0f);
-                if (cardView.txtBaseValue != null)
-                    cardView.txtBaseValue.text = $"+{baseAmount:0.#}";
-            }
-
-            // 2. Bonus za złoże pod budynkiem (tylko gdy > 0)
-            if (cardView.rowOnTopBonus != null)
-            {
-                bool showOnTop = onTopBonus > 0.001f;
-                cardView.rowOnTopBonus.SetActive(showOnTop);
-                if (showOnTop && cardView.txtOnTopValue != null)
-                    cardView.txtOnTopValue.text = $"+{onTopBonus:0.#}";
-            }
-
-            // 3. Bonus za złoża w pobliżu (tylko gdy > 0)
-            if (cardView.rowAdjacentBonus != null)
-            {
-                bool showAdj = adjacentBonus > 0.001f;
-                cardView.rowAdjacentBonus.SetActive(showAdj);
-                if (showAdj && cardView.txtAdjacentValue != null)
-                    cardView.txtAdjacentValue.text = $"+{adjacentBonus:0.#}";
-            }
-
-            // 4. Mnożnik ulepszeń / badań (tylko gdy != 1.0)
-            if (cardView.rowExternalMultipliers != null)
-            {
-                bool showExt = !Mathf.Approximately(externalMultiplier, 1.0f);
-                cardView.rowExternalMultipliers.SetActive(showExt);
-                if (showExt && cardView.txtExternalMultiplierValue != null)
-                    cardView.txtExternalMultiplierValue.text = $"x{externalMultiplier:0.##}";
-            }
-
-            // 5. Wydajność załogi (zawsze)
-            if (cardView.rowCrewEfficiency != null)
-            {
-                cardView.rowCrewEfficiency.SetActive(true);
-                if (cardView.txtCrewEfficiencyValue != null)
-                    cardView.txtCrewEfficiencyValue.text = $"{Mathf.RoundToInt(crewEff * 100f)}%";
-            }
-
-            // 6. Podsumowanie netto
-            if (cardView.rowNetSummary != null)
-            {
-                cardView.rowNetSummary.SetActive(true);
-                if (cardView.txtNetSummaryValue != null)
+                colView.rowBase.SetActive(showBase);
+                if (colView.txtBaseValue != null)
                 {
-                    if (currentBuilding.isBuildingActive)
+                    colView.txtBaseValue.text = $"+{baseAmountWithUpgrade:0.#}";
+                    colView.txtBaseValue.color = colBaseColor;
+                }
+            }
+
+            // 2. Złoże pod budynkiem
+            if (colView.rowOnTopBonus != null)
+            {
+                colView.rowOnTopBonus.SetActive(showOnTop);
+                if (showOnTop && colView.txtOnTopValue != null)
+                {
+                    if (colOnTop > 0.001f)
                     {
-                        cardView.txtNetSummaryValue.text = $"+{netTotal:0.0} / cykl";
-                        cardView.txtNetSummaryValue.color = new Color(0.35f, 0.9f, 0.45f, 1f);
+                        colView.txtOnTopValue.text = $"+{colOnTop:0.#}";
+                        colView.txtOnTopValue.color = colOnTopColor;
                     }
                     else
                     {
-                        cardView.txtNetSummaryValue.text = "0.0 / cykl (Wstrzymano)";
-                        cardView.txtNetSummaryValue.color = new Color(0.7f, 0.7f, 0.7f, 0.8f);
+                        colView.txtOnTopValue.text = "-";
+                        colView.txtOnTopValue.color = colNeutralDashColor;
                     }
                 }
+            }
+
+            // 3. Złoża w pobliżu
+            if (colView.rowAdjacentBonus != null)
+            {
+                colView.rowAdjacentBonus.SetActive(showAdjacent);
+                if (showAdjacent && colView.txtAdjacentValue != null)
+                {
+                    if (colAdjacent > 0.001f)
+                    {
+                        colView.txtAdjacentValue.text = $"+{colAdjacent:0.#}";
+                        colView.txtAdjacentValue.color = colSurroundingColor;
+                    }
+                    else
+                    {
+                        colView.txtAdjacentValue.text = "-";
+                        colView.txtAdjacentValue.color = colNeutralDashColor;
+                    }
+                }
+            }
+
+            // 4. Mnożnik ulepszeń / badań
+            if (colView.rowExternalMultipliers != null)
+            {
+                colView.rowExternalMultipliers.SetActive(showExtMult);
+                if (showExtMult && colView.txtExternalMultiplierValue != null)
+                {
+                    colView.txtExternalMultiplierValue.text = $"x{externalMultiplier:0.##}";
+                    colView.txtExternalMultiplierValue.color = colExtMultColor;
+                }
+            }
+
+            // 5. Wydajność pracowników
+            if (colView.rowCrewEfficiency != null)
+            {
+                colView.rowCrewEfficiency.SetActive(showCrewEff);
+                if (colView.txtCrewEfficiencyValue != null)
+                {
+                    colView.txtCrewEfficiencyValue.text = $"{Mathf.RoundToInt(crewEff * 100f)}%";
+                    colView.txtCrewEfficiencyValue.color = colEfficiencyColor;
+                }
+            }
+
+            // 6. Odpowiadająca wartość w Row_NetSummary
+            if (i < cachedNetSummaryValues.Count && cachedNetSummaryValues[i] != null)
+            {
+                TextMeshProUGUI netTmp = cachedNetSummaryValues[i];
+                netTmp.gameObject.SetActive(true);
+                netTmp.alignment = TextAlignmentOptions.Center;
+
+                RectTransform netRt = netTmp.rectTransform;
+                netRt.sizeDelta = new Vector2(columnWidth, netRt.sizeDelta.y);
+
+                LayoutElement netLe = netTmp.GetComponent<LayoutElement>();
+                if (netLe != null)
+                {
+                    netLe.preferredWidth = columnWidth;
+                }
+
+                if (currentBuilding.isBuildingActive)
+                {
+                    netTmp.text = $"+{netTotal:0.0}";
+                    netTmp.color = netActiveColor;
+                }
+                else
+                {
+                    netTmp.text = "0.0";
+                    netTmp.color = netStoppedColor;
+                }
+            }
+        }
+
+        // Ukryj nadmiarowe wartości w Row_NetSummary (gdy budynek ma mniej surowców niż wcześniej otwarty)
+        for (int i = requiredColumns; i < cachedNetSummaryValues.Count; i++)
+        {
+            if (cachedNetSummaryValues[i] != null)
+            {
+                cachedNetSummaryValues[i].gameObject.SetActive(false);
             }
         }
     }
 
-    private void EnsureCardViewsCount(int count)
+    private void EnsureResourceColumnsCount(int count)
     {
-        if (pnlProductionCardsContainer == null) return;
+        if (pnlModifiersList == null) return;
 
-        // Jeśli lista jest pusta, przeskanuj dzieci kontenera
-        if (cachedCardViews.Count == 0)
+        cachedResourceColumns.RemoveAll(c => c == null || c.rootObject == null);
+
+        // Jeśli lista jest pusta, przeskanuj istniejące kolumny w Pnl_ModifiersList (pomijając Pnl_StaticText)
+        if (cachedResourceColumns.Count == 0)
         {
-            for (int i = 0; i < pnlProductionCardsContainer.childCount; i++)
+            for (int i = 0; i < pnlModifiersList.childCount; i++)
             {
-                var view = BindCardView(pnlProductionCardsContainer.GetChild(i).gameObject);
-                if (view != null) cachedCardViews.Add(view);
+                Transform child = pnlModifiersList.GetChild(i);
+                if (child == pnlStaticText || child.name == "Pnl_StaticText") continue;
+
+                var view = BindColumnView(child.gameObject);
+                if (view != null) cachedResourceColumns.Add(view);
             }
         }
 
-        // Jeśli brakuje, utwórz nowe kafelki klonując prefab lub pierwszy kafelek
-        while (cachedCardViews.Count < count)
+        // Jeśli brakuje kolumn, utwórz nowe klonując prefab Pnl_ResourceColumn lub pierwszą kolumnę
+        while (cachedResourceColumns.Count < count)
         {
             GameObject newObj = null;
-            if (cardPrefab != null)
+            if (resourceColumnPrefab != null)
             {
-                newObj = Instantiate(cardPrefab, pnlProductionCardsContainer, false);
+                newObj = Instantiate(resourceColumnPrefab, pnlModifiersList, false);
             }
-            else if (cachedCardViews.Count > 0)
+            else if (cachedResourceColumns.Count > 0)
             {
-                newObj = Instantiate(cachedCardViews[0].rootObject, pnlProductionCardsContainer, false);
+                newObj = Instantiate(cachedResourceColumns[0].rootObject, pnlModifiersList, false);
             }
 
             if (newObj == null) break;
 
-            var newView = BindCardView(newObj);
-            cachedCardViews.Add(newView);
+            newObj.name = $"Pnl_ResourceColumn_{cachedResourceColumns.Count}";
+            var newView = BindColumnView(newObj);
+            cachedResourceColumns.Add(newView);
         }
     }
 
-    private ProductionCardItemView BindCardView(GameObject cardObj)
+    private void EnsureNetSummaryValuesCount(int count)
     {
-        Transform cardTr = cardObj.transform;
-        ProductionCardItemView view = new ProductionCardItemView
+        if (rowNetSummary == null) return;
+
+        cachedNetSummaryValues.RemoveAll(t => t == null);
+
+        // Przeskanuj istniejące dzieci Row_NetSummary (pomijając Txt_Label)
+        if (cachedNetSummaryValues.Count == 0)
         {
-            rootObject = cardObj,
-            imgResourceIcon = cardTr.Find("Pnl_CardHeader/Img_ResourceIcon")?.GetComponent<Image>(),
-            txtResourceName = cardTr.Find("Pnl_CardHeader/Txt_ResourceName")?.GetComponent<TextMeshProUGUI>(),
-            txtTotalProduction = cardTr.Find("Pnl_CardHeader/Txt_TotalProduction")?.GetComponent<TextMeshProUGUI>(),
+            for (int i = 0; i < rowNetSummary.childCount; i++)
+            {
+                Transform child = rowNetSummary.GetChild(i);
+                if ((txtNetSummaryLabel != null && child == txtNetSummaryLabel.transform) || child.name == "Txt_Label")
+                    continue;
 
-            rowBase = cardTr.Find("Pnl_ModifiersList/Row_Base")?.gameObject,
-            txtBaseValue = cardTr.Find("Pnl_ModifiersList/Row_Base/Txt_Value")?.GetComponent<TextMeshProUGUI>(),
+                TextMeshProUGUI tmp = child.GetComponent<TextMeshProUGUI>();
+                if (tmp != null) cachedNetSummaryValues.Add(tmp);
+            }
+        }
 
-            rowOnTopBonus = cardTr.Find("Pnl_ModifiersList/Row_OnTopBonus")?.gameObject,
-            txtOnTopValue = cardTr.Find("Pnl_ModifiersList/Row_OnTopBonus/Txt_Value")?.GetComponent<TextMeshProUGUI>(),
+        // Jeśli brakuje pól Txt_Value dla kolejnych surowców, sklonuj pierwsze pole Txt_Value
+        while (cachedNetSummaryValues.Count < count && cachedNetSummaryValues.Count > 0)
+        {
+            GameObject cloneObj = Instantiate(cachedNetSummaryValues[0].gameObject, rowNetSummary, false);
+            cloneObj.name = $"Txt_Value_{cachedNetSummaryValues.Count}";
+            TextMeshProUGUI cloneTmp = cloneObj.GetComponent<TextMeshProUGUI>();
+            if (cloneTmp == null) break;
+            cachedNetSummaryValues.Add(cloneTmp);
+        }
+    }
 
-            rowAdjacentBonus = cardTr.Find("Pnl_ModifiersList/Row_AdjacentBonus")?.gameObject,
-            txtAdjacentValue = cardTr.Find("Pnl_ModifiersList/Row_AdjacentBonus/Txt_Value")?.GetComponent<TextMeshProUGUI>(),
+    private ResourceColumnView BindColumnView(GameObject colObj)
+    {
+        if (colObj == null) return null;
 
-            rowExternalMultipliers = cardTr.Find("Pnl_ModifiersList/Row_ExternalMultipliers")?.gameObject,
-            txtExternalMultiplierValue = cardTr.Find("Pnl_ModifiersList/Row_ExternalMultipliers/Txt_Value")?.GetComponent<TextMeshProUGUI>(),
+        Transform colTr = colObj.transform;
+        Transform baseTr = colTr.Find("Txt_Value_Base");
+        Transform onTopTr = colTr.Find("Txt_Value_OnTop");
+        Transform surrTr = colTr.Find("Txt_Value_Surrouding") ?? colTr.Find("Txt_Value_Surrounding");
+        Transform extMultTr = colTr.Find("Txt_Value_ExternalMult");
+        Transform effTr = colTr.Find("Txt_Value_Efficency") ?? colTr.Find("Txt_Value_Efficiency");
 
-            rowCrewEfficiency = cardTr.Find("Pnl_ModifiersList/Row_CrewEfficiency")?.gameObject,
-            txtCrewEfficiencyValue = cardTr.Find("Pnl_ModifiersList/Row_CrewEfficiency/Txt_Value")?.GetComponent<TextMeshProUGUI>(),
+        ResourceColumnView view = new ResourceColumnView
+        {
+            rootObject = colObj,
+            rectTransform = colObj.GetComponent<RectTransform>(),
+            imgResourceIcon = colTr.Find("Spacer")?.GetComponent<Image>(),
 
-            rowNetSummary = cardTr.Find("Row_NetSummary")?.gameObject,
-            txtNetSummaryValue = cardTr.Find("Row_NetSummary/Txt_Value")?.GetComponent<TextMeshProUGUI>()
+            rowBase = baseTr?.gameObject,
+            txtBaseValue = baseTr?.GetComponent<TextMeshProUGUI>(),
+
+            rowOnTopBonus = onTopTr?.gameObject,
+            txtOnTopValue = onTopTr?.GetComponent<TextMeshProUGUI>(),
+
+            rowAdjacentBonus = surrTr?.gameObject,
+            txtAdjacentValue = surrTr?.GetComponent<TextMeshProUGUI>(),
+
+            rowExternalMultipliers = extMultTr?.gameObject,
+            txtExternalMultiplierValue = extMultTr?.GetComponent<TextMeshProUGUI>(),
+
+            rowCrewEfficiency = effTr?.gameObject,
+            txtCrewEfficiencyValue = effTr?.GetComponent<TextMeshProUGUI>()
         };
 
         return view;
