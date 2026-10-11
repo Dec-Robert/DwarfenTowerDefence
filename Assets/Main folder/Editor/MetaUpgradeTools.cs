@@ -31,7 +31,7 @@ using System.Linq;
 /// </summary>
 public static class MetaUpgradeTools
 {
-    private const string SCAN_PATH = "Assets/Main folder/ScriptableObjects/Meta";
+    public const string SCAN_PATH = "Assets/Main folder/ScriptableObjects/Meta";
 
     // =========================================================================
     // MENU ITEMS
@@ -64,6 +64,7 @@ public static class MetaUpgradeTools
                 if (seenIds.ContainsKey(upgrade.id))
                 {
                     // Duplikat — wyczyść żeby w drugiej pętli dostał nowe ID
+                    Undo.RecordObject(upgrade, "Napraw duplikat ID MetaUpgrade");
                     upgrade.id = "";
                     conflicts++;
                 }
@@ -92,6 +93,7 @@ public static class MetaUpgradeTools
                 suffix++;
             }
 
+            Undo.RecordObject(upgrade, "Nadaj ID MetaUpgrade");
             upgrade.id   = finalId;
             seenIds[finalId] = upgrade;
 
@@ -132,7 +134,7 @@ public static class MetaUpgradeTools
             manager = Selection.activeGameObject.GetComponent<MetaUpgradeManager>();
 
         if (manager == null)
-            manager = Object.FindObjectOfType<MetaUpgradeManager>();
+            manager = Object.FindFirstObjectByType<MetaUpgradeManager>();
 
         if (manager == null)
         {
@@ -145,21 +147,7 @@ public static class MetaUpgradeTools
             return;
         }
 
-        // Sortuj wg ścieżki (= alphabetycznie = tier I przed II przed III)
-        upgrades.Sort((a, b) =>
-        {
-            string pathA = AssetDatabase.GetAssetPath(a);
-            string pathB = AssetDatabase.GetAssetPath(b);
-            return string.Compare(pathA, pathB, System.StringComparison.Ordinal);
-        });
-
-        Undo.RecordObject(manager, "Przypisz MetaUpgradeSO do Manager");
-        manager.allUpgrades = upgrades;
-        EditorUtility.SetDirty(manager);
-
-        // Zapisz scenę (żeby lista nie zniknęła po zamknięciu bez save)
-        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
-            manager.gameObject.scene);
+        SyncManagerUpgrades(manager, upgrades);
 
         string summary =
             $"Przypisano {upgrades.Count} upgradów\n" +
@@ -171,6 +159,32 @@ public static class MetaUpgradeTools
 
         // Zaznacz manager w Hierarchy
         Selection.activeGameObject = manager.gameObject;
+    }
+
+    /// <summary>
+    /// Synchronizuje listę allUpgrades w podanym MetaUpgradeManagerze z plikami z folderu (bez modalnego okna).
+    /// </summary>
+    public static void SyncManagerUpgrades(MetaUpgradeManager manager, List<MetaUpgradeSO> upgrades = null)
+    {
+        if (manager == null) return;
+        if (upgrades == null) upgrades = LoadAllUpgrades(quiet: true);
+
+        upgrades.Sort((a, b) =>
+        {
+            string pathA = AssetDatabase.GetAssetPath(a);
+            string pathB = AssetDatabase.GetAssetPath(b);
+            return string.Compare(pathA, pathB, System.StringComparison.Ordinal);
+        });
+
+        Undo.RecordObject(manager, "Synchronizuj MetaUpgradeSO z Managerem");
+        manager.allUpgrades = new List<MetaUpgradeSO>(upgrades);
+        EditorUtility.SetDirty(manager);
+
+        if (manager.gameObject.scene.IsValid())
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
+                manager.gameObject.scene);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -210,13 +224,14 @@ public static class MetaUpgradeTools
     /// <summary>
     /// Ładuje wszystkie MetaUpgradeSO z folderu SCAN_PATH (rekurencyjnie).
     /// </summary>
-    public static List<MetaUpgradeSO> LoadAllUpgrades()
+    public static List<MetaUpgradeSO> LoadAllUpgrades(bool quiet = false)
     {
         var result = new List<MetaUpgradeSO>();
 
         if (!AssetDatabase.IsValidFolder(SCAN_PATH))
         {
-            Debug.LogWarning($"[MetaUpgradeTools] Folder nie istnieje: {SCAN_PATH}");
+            if (!quiet)
+                Debug.LogWarning($"[MetaUpgradeTools] Folder nie istnieje: {SCAN_PATH}");
             return result;
         }
 
@@ -231,7 +246,8 @@ public static class MetaUpgradeTools
                 result.Add(upgrade);
         }
 
-        Debug.Log($"[MetaUpgradeTools] Znaleziono {result.Count} MetaUpgradeSO w '{SCAN_PATH}'.");
+        if (!quiet)
+            Debug.Log($"[MetaUpgradeTools] Znaleziono {result.Count} MetaUpgradeSO w '{SCAN_PATH}'.");
         return result;
     }
 

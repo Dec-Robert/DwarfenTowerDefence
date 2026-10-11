@@ -14605,6 +14605,7 @@ GameObject:
   - component: {fileID: 9167516338143776676}
   - component: {fileID: 7265845161116424592}
   - component: {fileID: 4477504317611174267}
+  - component: {fileID: 4477504317611174268}
   m_Layer: 0
   m_Name: Pnl_HousingContext
   m_TagString: Untagged
@@ -14714,6 +14715,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 2
+--- !u!114 &4477504317611174268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2689034958487444063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e8ce8c51caf8184f8522eeb14f1141c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HousingContextWindowUI
+  txtBuildingName: {fileID: 137350885649265566}
+  btnClose: {fileID: 5652070679782940131}
+  resourceVisualsSO: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
+  secPopulation: {fileID: 5864341899770828899}
+  imgRaceIcon: {fileID: 7118535610859534163}
+  txtRaceName: {fileID: 6446857777216963073}
+  txtPopulationCount: {fileID: 5917770899499720349}
+  imgCapacityFill: {fileID: 1629697521826390083}
+  secUpkeep: {fileID: 6266716600831512737}
+  pnlResidentUpkeepItems: {fileID: 4572241775741619391}
+  txtResidentUpkeepTotal: {fileID: 3964637720070769748}
+  btnToggleGrowth: {fileID: 6683547304926861255}
+  txtGrowthStatusLabel: {fileID: 2344081894084427187}
+  imgGrowthStatusBackground: {fileID: 5617971892688395056}
+  pnlGrowthCostItems: {fileID: 8060626554227756873}
+  secGrowthProgress: {fileID: 1364402943665943203}
+  txtCyclesRequired: {fileID: 5650288987651482622}
+  imgGrowthProgressFill: {fileID: 4942047979771041288}
+  txtProgressStatus: {fileID: 1801618517989689049}
+  txtProgressRate: {fileID: 251292297026711081}
+  btnDemolish: {fileID: 7504997481894305600}
+  txtDemolishLabel: {fileID: 5327409470967523267}
+  imgDemolishBackground: {fileID: 5437006805741323213}
 --- !u!1 &2743417910040821174
 GameObject:
   m_ObjectHideFlags: 0

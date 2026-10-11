@@ -1,35 +1,35 @@
-using UnityEngine;
-using UnityEditor;
+ï»¿#if UNITY_EDITOR
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
-// Ten atrybut ³¹czy edytor ze skryptem TowerData
 [CustomEditor(typeof(TowerData))]
 public class TowerDataEditor : Editor
 {
-    // Lista nazw zmiennych z BuildingData, które chcesz ukryæ
-    // Upewnij siê, ¿e wpisujesz tu dok³adne nazwy zmiennych (nie etykiet z Header!)
-    private readonly string[] _fieldsToHide = new string[]
+    private readonly string[] _fieldsToHide =
     {
-        "productionPerCycle",     // Przyk³ad: zmienna odpowiadaj¹ca za "ProductionPerCycle"
-        "terrainProductionRules", // Przyk³ad: zmienna od "Zasady produkcji terenowej"
-        "resourceType",           // Inne pola z BuildingData do ukrycia
-        "anotherUnwantedField"
+        "productionPerCycle",
+        "terrainProductionRules",
+        "resourceType",
+        "bonusRule"
     };
 
     public override void OnInspectorGUI()
     {
-        // Pobiera aktualny obiekt
+        TowerData tData = (TowerData)target;
+        if (tData != null)
+        {
+            tData.EnsureDefaultEfficiencyTable();
+        }
+
         serializedObject.Update();
 
-        // Pobiera iterator po w³aœciwoœciach
         SerializedProperty prop = serializedObject.GetIterator();
 
-        // Wchodzi w pierwszy element (zazwyczaj m_Script)
         if (prop.NextVisible(true))
         {
             do
             {
-                // Zawsze rysuj pole "Script" (choæ zazwyczaj jest wyszarzone)
                 if (prop.name == "m_Script")
                 {
                     using (new EditorGUI.DisabledScope(true))
@@ -39,19 +39,24 @@ public class TowerDataEditor : Editor
                     continue;
                 }
 
-                // SprawdŸ, czy nazwa pola znajduje siê na liœcie do ukrycia
                 if (_fieldsToHide.Contains(prop.name))
                 {
-                    continue; // Pomiñ rysowanie tego pola
+                    continue;
                 }
 
-                // Rysuj wszystkie pozosta³e pola normalnie
-                EditorGUILayout.PropertyField(prop, true);
+                if (prop.name == "efficiencyTable")
+                {
+                    BuildingDataEditor.DrawEfficiencySummaryBox(tData);
+                    EditorGUILayout.PropertyField(prop, new GUIContent("Tabela WydajnoÅ›ci (Surowe wartoÅ›ci)"), true);
+                    continue;
+                }
 
-            } while (prop.NextVisible(false)); // Przechodzi do kolejnych pól na tym samym poziomie
+                EditorGUILayout.PropertyField(prop, true);
+            }
+            while (prop.NextVisible(false));
         }
 
-        // Zatwierdza zmiany
         serializedObject.ApplyModifiedProperties();
     }
 }
+#endif

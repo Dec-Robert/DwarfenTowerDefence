@@ -37,18 +37,7 @@ public class BuildingProductionComponent
             workerComponent.LockWorkers();
         }
 
-        int workerCount = workerComponent != null ? workerComponent.GetActiveWorkers().Count : 0;
-
-        float crewEfficiency = 0f;
-        if (workerCount > 0)
-        {
-            crewEfficiency = 1f + (workerCount - 1) * data.workerScalingFactor;
-        }
-        else if (MetaUpgradeManager.Instance != null)
-        {
-            crewEfficiency = MetaUpgradeManager.Instance.GetValue(MetaEffectType.BuildingPassiveEfficiency);
-        }
-
+        float crewEfficiency = GetCrewEfficiency();
         if (crewEfficiency <= 0f) return;
 
         bool hasUpkeep = true;
@@ -104,17 +93,7 @@ public class BuildingProductionComponent
     public float GetCrewEfficiency()
     {
         int workerCount = workerComponent != null ? workerComponent.GetActiveWorkers().Count : 0;
-
-        if (workerCount > 0)
-        {
-            return 1f + (workerCount - 1) * data.workerScalingFactor;
-        }
-        else if (MetaUpgradeManager.Instance != null)
-        {
-            return MetaUpgradeManager.Instance.GetValue(MetaEffectType.BuildingPassiveEfficiency);
-        }
-
-        return 0f;
+        return data != null ? data.GetEffectiveEfficiencyForWorkers(workerCount) : 0f;
     }
 
     public Dictionary<ResourceType, float> GetBaseProductionWithFlats()

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -25,6 +25,7 @@ public class BuildingRegistry : MonoBehaviour
     {
         if (TimePhaseManager.Instance != null)
         {
+            TimePhaseManager.Instance.OnMorningStarted += ExecuteMorningHousingEconomy;
             TimePhaseManager.Instance.OnDuskStarted += ExecuteDuskEconomy;
             TimePhaseManager.Instance.OnNightStarted += ExecuteNightDefenseUpkeep;
         }
@@ -34,6 +35,7 @@ public class BuildingRegistry : MonoBehaviour
     {
         if (TimePhaseManager.Instance != null)
         {
+            TimePhaseManager.Instance.OnMorningStarted -= ExecuteMorningHousingEconomy;
             TimePhaseManager.Instance.OnDuskStarted -= ExecuteDuskEconomy;
             TimePhaseManager.Instance.OnNightStarted -= ExecuteNightDefenseUpkeep;
         }
@@ -55,12 +57,37 @@ public class BuildingRegistry : MonoBehaviour
         OnBuildingUnregistered?.Invoke(building);
     }
 
+    private void ExecuteMorningHousingEconomy()
+    {
+        var housingBuildings = buildings
+            .OfType<HousingEntity>()
+            .Where(h => h != null && h.isBuildingActive && h.housingData != null)
+            .OrderBy(h => h.upkeepPriority)
+            .ThenBy(h => h.GetDaysRemaining())
+            .ToList();
+
+        foreach (var housing in housingBuildings)
+        {
+            housing.ProcessMorningProduction();
+        }
+
+        foreach (var housing in housingBuildings)
+        {
+            housing.ProcessMorningSurvival();
+        }
+
+        foreach (var housing in housingBuildings)
+        {
+            housing.ProcessMorningGrowth();
+        }
+    }
+
     private void ExecuteDuskEconomy()
     {
         var activeBuildings = buildings.Where(b => b != null && b.isBuildingActive).ToList();
 
         var economicBuildings = activeBuildings
-            .Where(b => b.data != null && b.data.type != BuildingType.Defense)
+            .Where(b => b.data != null && b.data.type != BuildingType.Defense && b.data.type != BuildingType.Housing && !(b is HousingEntity))
             .OrderBy(b => b.upkeepPriority)
             .ToList();
 

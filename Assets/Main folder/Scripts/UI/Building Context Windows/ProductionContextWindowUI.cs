@@ -644,21 +644,8 @@ public class ProductionContextWindowUI : MonoBehaviour
     {
         if (secEfficiencyThresholds == null || currentBuilding == null || currentBuilding.data == null) return;
 
-        float scalingFactor = currentBuilding.data.workerScalingFactor;
-        float passiveEff = 0f;
-        if (MetaUpgradeManager.Instance != null)
-        {
-            passiveEff = MetaUpgradeManager.Instance.GetValue(MetaEffectType.BuildingPassiveEfficiency);
-        }
-
         int requiredSegments = maxWorkers + 1;
-        float[] effTable = new float[requiredSegments];
-        effTable[0] = passiveEff;
-        if (requiredSegments > 1) effTable[1] = 1.0f;
-        for (int i = 2; i < requiredSegments; i++)
-        {
-            effTable[i] = 1f + (i - 1) * scalingFactor;
-        }
+        float[] effTable = currentBuilding.data.GetEffectiveEfficiencyTable(requiredSegments);
 
         int currentThresholdLevel = Mathf.Clamp(totalWorkers, 0, maxWorkers);
         float currentEffVal = currentThresholdLevel < effTable.Length ? effTable[currentThresholdLevel] : effTable[effTable.Length - 1];

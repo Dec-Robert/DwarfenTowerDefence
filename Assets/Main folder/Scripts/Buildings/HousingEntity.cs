@@ -18,17 +18,11 @@ public class HousingEntity : BuildingEntity
     [Header("Sterowanie Graczem")] 
     public bool stopGrowth;
 
+    private bool lastSurvivalPaid;
+
+    public event System.Action OnHousingStateChanged;
+
     public HousingBuildingData housingData => data as HousingBuildingData;
-
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-
-        if (TimePhaseManager.Instance != null)
-        {
-            TimePhaseManager.Instance.OnMorningStarted -= HandleMorningRoutine;
-        }
-    }
 
     private CityBaseConfigSO GetConfig()
     {
@@ -62,15 +56,22 @@ public class HousingEntity : BuildingEntity
             if (PopLifeCycleManager.Instance == null) break;
             PopLifeCycleManager.Instance.BirthCitizen(housingData.housingRace, this);
         }
-
-        if (TimePhaseManager.Instance != null)
-        {
-            TimePhaseManager.Instance.OnMorningStarted += HandleMorningRoutine;
-        }
     }
 
-    private void HandleMorningRoutine()
+    public override void ProcessUpkeep()
     {
+        // Domy mieszkalne rozliczają się wyłącznie o Świcie przez BuildingRegistry
+    }
+
+    public override void ProcessProduction()
+    {
+        // Domy mieszkalne rozliczają się wyłącznie o Świcie przez BuildingRegistry
+    }
+
+    public void ProcessMorningProduction()
+    {
+        if (!isBuildingActive || housingData == null) return;
+
         if (!hasBeenUsed)
         {
             foreach (var citizen in residents)
@@ -84,18 +85,35 @@ public class HousingEntity : BuildingEntity
         }
 
         ProducePerResident();
+    }
+
+    public void ProcessMorningSurvival()
+    {
+        if (!isBuildingActive || housingData == null)
+        {
+            lastSurvivalPaid = false;
+            return;
+        }
 
         var survivalCost = CalculateSurvivalCost();
-        var survivalPaid = ResourceManager.Instance.SpendResources(survivalCost);
+        lastSurvivalPaid = ResourceManager.Instance != null && ResourceManager.Instance.SpendResources(survivalCost);
 
-        if (!survivalPaid)
+        if (!lastSurvivalPaid)
         {
             if (currentGrowthProgress > 0) currentGrowthProgress--;
         }
-        else if (!stopGrowth)
+    }
+
+    public void ProcessMorningGrowth()
+    {
+        if (!isBuildingActive || housingData == null) return;
+
+        if (lastSurvivalPaid && !stopGrowth)
         {
             TryGrow();
         }
+
+        OnHousingStateChanged?.Invoke();
     }
 
     private void ProducePerResident()
@@ -195,18 +213,25 @@ public class HousingEntity : BuildingEntity
         return Mathf.FloorToInt(housingData.baseGrowthTicks + residents.Count * housingData.growthDifficultyMultiplier);
     }
 
-    private List<ResourceCost> CalculateSurvivalCost()
+    public List<ResourceCost> CalculateSurvivalCost()
     {
         var totalDict = new Dictionary<ResourceType, int>();
-        
-        foreach (var c in housingData.baseDailyUpkeep)
+        if (housingData == null) return new List<ResourceCost>();
+
+        if (housingData.baseDailyUpkeep != null)
         {
-            AddToDict(totalDict, c.type, Mathf.FloorToInt(c.amount));
+            foreach (var c in housingData.baseDailyUpkeep)
+            {
+                AddToDict(totalDict, c.type, Mathf.FloorToInt(c.amount));
+            }
         }
-        
-        foreach (var c in housingData.upkeepPerResident)
+
+        if (housingData.upkeepPerResident != null)
         {
-            AddToDict(totalDict, c.type, Mathf.FloorToInt(c.amount * residents.Count));
+            foreach (var c in housingData.upkeepPerResident)
+            {
+                AddToDict(totalDict, c.type, Mathf.FloorToInt(c.amount * residents.Count));
+            }
         }
 
         var resultList = new List<ResourceCost>();
@@ -218,10 +243,11 @@ public class HousingEntity : BuildingEntity
         return resultList;
     }
 
-    private List<ResourceCost> CalculateGrowthCost()
+    public List<ResourceCost> CalculateGrowthCost()
     {
         var totalDict = new Dictionary<ResourceType, int>();
-        
+        if (housingData == null || housingData.growthSurplusCost == null) return new List<ResourceCost>();
+
         foreach (var c in housingData.growthSurplusCost)
         {
             AddToDict(totalDict, c.type, Mathf.FloorToInt(c.amount));
@@ -258,8 +284,7 @@ public class HousingEntity : BuildingEntity
     public int GetProjectedUpkeep()
     {
         int total = 0;
-        foreach (var cost in housingData.baseDailyUpkeep) total += Mathf.FloorToInt(cost.amount);
-        foreach (var cost in housingData.upkeepPerResident) total += Mathf.FloorToInt(cost.amount * residents.Count);
+        foreach (var cost in CalculateSurvivalCost()) total += cost.amount;
         return total;
     }
 
@@ -268,9 +293,26 @@ public class HousingEntity : BuildingEntity
         if (residents.Count >= GetEffectiveMaxResidents()) return "PEŁNY";
         if (stopGrowth) return "WSTRZYMANY";
 
-        foreach (var cost in CalculateSurvivalCost())
+        var survivalCosts = CalculateSurvivalCost();
+        if (ResourceManager.Instance != null)
         {
-            if (!ResourceManager.Instance.CanAfford(cost.type, Mathf.FloorToInt(cost.amount))) return "BRAK ZASOBÓW";
+            foreach (var cost in survivalCosts)
+            {
+                if (!ResourceManager.Instance.CanAfford(cost.type, cost.amount))
+                    return "GŁÓD (-1 CYKL)";
+            }
+
+            var combinedDict = new Dictionary<ResourceType, int>();
+            foreach (var cost in survivalCosts)
+                AddToDict(combinedDict, cost.type, cost.amount);
+            foreach (var cost in CalculateGrowthCost())
+                AddToDict(combinedDict, cost.type, cost.amount);
+
+            foreach (var kvp in combinedDict)
+            {
+                if (!ResourceManager.Instance.CanAfford(kvp.Key, kvp.Value))
+                    return "BRAK NADWYŻKI";
+            }
         }
 
         return "ROSNĄCY";

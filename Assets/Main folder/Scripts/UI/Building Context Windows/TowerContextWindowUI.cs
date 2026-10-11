@@ -568,8 +568,7 @@ public class TowerContextWindowUI : MonoBehaviour
         if (effTable == null || effTable.Length == 0) return;
 
         int currentThresholdLevel = Mathf.Clamp(totalWorkers, 0, maxWorkers);
-        float currentEffVal = totalWorkers < effTable.Length ? effTable[totalWorkers] : effTable[effTable.Length - 1];
-        if (!currentTower.hasSupplies) currentEffVal = Mathf.Max(0.1f, currentEffVal - 0.5f);
+        float currentEffVal = currentTower.GetCurrentEfficiency();
 
         // Nagłówek statusu
         if (txtCurrentThresholdStatus != null)
@@ -662,10 +661,7 @@ public class TowerContextWindowUI : MonoBehaviour
         TowerData tData = currentTower.controller.towerData;
 
         // Aktualizacja procentu wydajności w nagłówku
-        int workerCount = currentTower.GetTotalWorkerCount();
-        float[] effTable = currentTower.GetEfficencyTable();
-        float curEff = workerCount < effTable.Length ? effTable[workerCount] : effTable[effTable.Length - 1];
-        if (!currentTower.hasSupplies) curEff = Mathf.Max(0.1f, curEff - 0.5f);
+        float curEff = currentTower.GetCurrentEfficiency();
 
         if (txtEfficiencyPercentage != null)
         {

@@ -267,6 +267,11 @@ public class HousingContextWindowUI : MonoBehaviour
         {
             ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
         }
+
+        if (currentHousing != null)
+        {
+            currentHousing.OnHousingStateChanged += HandleMorningStarted;
+        }
     }
 
     private void UnsubscribeEvents()
@@ -286,6 +291,11 @@ public class HousingContextWindowUI : MonoBehaviour
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
+        }
+
+        if (currentHousing != null)
+        {
+            currentHousing.OnHousingStateChanged -= HandleMorningStarted;
         }
     }
 
@@ -446,29 +456,13 @@ public class HousingContextWindowUI : MonoBehaviour
         if (txtResidentUpkeepTotal != null)
         {
             var summaryList = new List<string>();
-            var totalDict = new Dictionary<ResourceType, int>();
+            var survivalCosts = currentHousing.CalculateSurvivalCost();
 
-            if (data.baseDailyUpkeep != null)
+            foreach (var cost in survivalCosts)
             {
-                foreach (var b in data.baseDailyUpkeep)
+                if (cost.amount > 0)
                 {
-                    AddToDict(totalDict, b.type, Mathf.FloorToInt(b.amount));
-                }
-            }
-
-            if (data.upkeepPerResident != null)
-            {
-                foreach (var p in data.upkeepPerResident)
-                {
-                    AddToDict(totalDict, p.type, Mathf.FloorToInt(p.amount * currentPop));
-                }
-            }
-
-            foreach (var kvp in totalDict)
-            {
-                if (kvp.Value > 0)
-                {
-                    summaryList.Add($"-{kvp.Value} {GetResourcePolishName(kvp.Key)}");
+                    summaryList.Add($"-{cost.amount} {GetResourcePolishName(cost.type)}");
                 }
             }
 
@@ -625,9 +619,13 @@ public class HousingContextWindowUI : MonoBehaviour
                 int percentage = Mathf.RoundToInt(progressRatio * 100f);
                 string growthStatus = currentHousing.GetGrowthStatus();
 
-                if (growthStatus == "BRAK ZASOBÓW")
+                if (growthStatus == "GŁÓD (-1 CYKL)" || growthStatus == "BRAK ZASOBÓW")
                 {
-                    txtProgressStatus.text = $"Postęp: {currentTicks} z {requiredTicks} cykli ({percentage}%) - <color=#FF6666>BRAK ZASOBÓW</color>";
+                    txtProgressStatus.text = $"Postęp: {currentTicks} z {requiredTicks} cykli ({percentage}%) - <color=#FF6666>{growthStatus}</color>";
+                }
+                else if (growthStatus == "BRAK NADWYŻKI")
+                {
+                    txtProgressStatus.text = $"Postęp: {currentTicks} z {requiredTicks} cykli ({percentage}%) - <color=#FF9944>BRAK NADWYŻKI</color>";
                 }
                 else if (growthStatus == "WSTRZYMANY")
                 {

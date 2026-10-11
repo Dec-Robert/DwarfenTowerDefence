@@ -20,7 +20,14 @@ MonoBehaviour:
   type: 0
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
-  shiftEffectivenese: []
+  efficiencyTable:
+  - 0
+  - 1
+  - 1.25
+  - 1.5
+  - 1.75
+  - 2
+  - 2.15
   allowedTerrain: 0000000005000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0

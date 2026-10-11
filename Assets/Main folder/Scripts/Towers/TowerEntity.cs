@@ -7,42 +7,37 @@ public class TowerEntity : BuildingEntity
     public TowerController controller;
 
     public bool hasSupplies = true;
-    private bool isOverdriven = false;
 
     private static readonly float[] efficiencyTable = new float[] { 0.2f, 1.0f, 1.1f, 1.2f, 1.3f, 1.35f, 1.4f };
-    private static readonly float overdriveMod = 1.2f;
-    private List<ResourceCost> overdriveCost;
 
     protected override void Start()
     {
         if (controller == null) controller = GetComponent<TowerController>();
         base.Start();
 
-        if (TimePhaseManager.Instance != null)
-        {
-            TimePhaseManager.Instance.OnMorningStarted += EndOverdrive;
-        }
-
-        if (controller != null && controller.towerData != null)
-        {
-            overdriveCost = controller.towerData.upkeepPerCycle;
-        }
-
         RecalculateStats();
     }
 
-    protected override void OnDestroy()
+    protected override void HandleDayReset()
     {
-        if (TimePhaseManager.Instance != null)
-        {
-            TimePhaseManager.Instance.OnMorningStarted -= EndOverdrive;
-        }
-        base.OnDestroy();
+        base.HandleDayReset();
+        hasSupplies = true;
+        RecalculateStats();
     }
 
     public override void ProcessUpkeep()
     {
         if (!isBuildingActive) return;
+
+        int crewCount = GetTotalWorkerCount();
+        if (crewCount <= 0)
+        {
+            hasSupplies = false;
+            RecalculateStats();
+            return;
+        }
+
+        Workers?.LockWorkers();
 
         if (data != null && data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0)
         {
@@ -56,34 +51,30 @@ public class TowerEntity : BuildingEntity
         RecalculateStats();
     }
 
-    public void StartOverdrive()
+    public float GetCurrentEfficiency()
     {
-        if (isOverdriven) return;
+        int crewCount = GetTotalWorkerCount();
+        BuildingData bData = controller != null && controller.towerData != null ? controller.towerData : data;
 
-        if (ResourceManager.Instance != null && ResourceManager.Instance.SpendResources(overdriveCost))
+        float crewEfficiency;
+        if (bData != null)
         {
-            isOverdriven = true;
-            RecalculateStats();
+            crewEfficiency = bData.GetEffectiveEfficiencyForWorkers(crewCount);
         }
-    }
-
-    public void RevokeOverdrive()
-    {
-        if (!isOverdriven) return;
-
-        if (ResourceManager.Instance != null)
+        else
         {
-            ResourceManager.Instance.AddResources(overdriveCost);
+            crewEfficiency = crewCount < efficiencyTable.Length
+                ? efficiencyTable[crewCount]
+                : efficiencyTable[efficiencyTable.Length - 1];
         }
 
-        isOverdriven = false;
-        RecalculateStats();
-    }
+        if (crewCount <= 0)
+        {
+            return crewEfficiency;
+        }
 
-    private void EndOverdrive()
-    {
-        isOverdriven = false;
-        RecalculateStats();
+        float supplyPenalty = hasSupplies ? 0f : 0.5f;
+        return Mathf.Max(0.1f, crewEfficiency - supplyPenalty);
     }
 
     public void RecalculateStats()
@@ -91,18 +82,7 @@ public class TowerEntity : BuildingEntity
         TowerData tData = controller != null ? controller.towerData : data as TowerData;
         if (tData == null) return;
 
-        int crewCount = GetAssignedCitizens().Count;
-        float crewEfficiency = crewCount < efficiencyTable.Length
-            ? efficiencyTable[crewCount]
-            : efficiencyTable[efficiencyTable.Length - 1];
-
-        float supplyPenalty = hasSupplies ? 0f : 0.5f;
-        float finalEfficiency = Mathf.Max(0.1f, crewEfficiency - supplyPenalty);
-
-        if (isOverdriven)
-        {
-            finalEfficiency *= overdriveMod;
-        }
+        float finalEfficiency = GetCurrentEfficiency();
 
         var registry = GlobalModifierRegistry.Instance;
 
@@ -124,7 +104,7 @@ public class TowerEntity : BuildingEntity
             damage = (tData.baseDamage + flatDamage) * damageMulti * finalEfficiency,
             range = (tData.baseRange + flatRange) * rangeMulti,
             fireRate = (tData.fireRate + flatFireRate) * fireRateMulti * finalEfficiency,
-            criticalChancel = Mathf.Clamp01(tData.criticalChancel + flatCritChan + (isOverdriven ? 0.1f : 0f)),
+            criticalChancel = Mathf.Clamp01(tData.criticalChancel + flatCritChan),
             criticalDamageMultiplier = Mathf.Max(1.0f, tData.criticalDamageMultiplier + flatCritDmg),
             armorPenetration = Mathf.Clamp01(tData.armorPenetration + flatArmorPen),
             magicPenetration = Mathf.Clamp01(tData.magicPenetration + flatMagicPen),
@@ -137,7 +117,14 @@ public class TowerEntity : BuildingEntity
     public override bool TryAddWorker(Race race)
     {
         bool success = base.TryAddWorker(race);
-        if (success) RecalculateStats();
+        if (success)
+        {
+            if (TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night)
+            {
+                Workers?.LockWorkers();
+            }
+            RecalculateStats();
+        }
         return success;
     }
 
@@ -153,5 +140,16 @@ public class TowerEntity : BuildingEntity
         RecalculateStats();
     }
 
-    public float[] GetEfficencyTable() => efficiencyTable;
+    public float[] GetEfficencyTable()
+    {
+        BuildingData bData = controller != null && controller.towerData != null ? controller.towerData : data;
+        if (bData != null)
+        {
+            int maxWorkers = bData.baseMaxWorkers
+                + (Upgrades != null ? Upgrades.LocalBonusWorkers : 0)
+                + (CityStatsManager.Instance != null ? CityStatsManager.Instance.globalBonusWorkersPerShift : 0);
+            return bData.GetEffectiveEfficiencyTable(maxWorkers + 1);
+        }
+        return efficiencyTable;
+    }
 }
