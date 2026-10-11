@@ -140,10 +140,9 @@ public class RuneManager : MonoBehaviour
 
     private float FormatValue(float val, RuneValueType type)
     {
-        // Jeśli wartość procentowa - zostawiamy równe liczby całkowite (np. 15%)
-        if (type == RuneValueType.Percent) return Mathf.Round(val);
+        // Wartości procentowe oraz stałe punkty procentowe (>= 1) zaokrąglamy do pełnych liczb całkowitych
+        if (type == RuneValueType.Percent || Mathf.Abs(val) >= 1f) return Mathf.Round(val);
         
-        // ZMIANA: Jeśli flat (np. Zasięg, Obrażenia) - zaokrąglamy do 1 miejsca po przecinku (np. 9.2)
         return (float)System.Math.Round(val, 1);
     }
 
@@ -265,7 +264,8 @@ public class RuneManager : MonoBehaviour
         };
 
         if (pool == null) return null;
-        return pool.Find(r => r.primaryStat == stat && r.valueType == vType);
+        return pool.Find(r => r != null && r.primaryStat == stat && r.valueType == vType)
+            ?? pool.Find(r => r != null && r.primaryStat == stat);
     }
     public RuneItem GenerateRuneWithStat(RuneRarity rarity, RuneStatType stat)
     {

@@ -115,7 +115,7 @@ public class MetaUpgradeManager : MonoBehaviour
 
         foreach (var upgrade in allUpgrades)
         {
-            if (!upgrade.isUnlocked)           continue;
+            if (upgrade == null || !upgrade.isUnlocked) continue;
             if (upgrade.effectType == MetaEffectType.None) continue;
 
             if (upgrade.RequiresTargetBuilding && upgrade.targetBuilding != null)
@@ -127,6 +127,8 @@ public class MetaUpgradeManager : MonoBehaviour
                     buildingSpecificValues[key] += upgrade.effectValue;
                 else
                     buildingSpecificValues[key] = upgrade.effectValue;
+
+                Debug.Log($"[MetaUpgradeManager] Dodano efekt budynkowy ({upgrade.targetBuilding.name}): {upgrade.effectType} o wartości {upgrade.effectValue}. Suma: {buildingSpecificValues[key]}");
             }
             else
             {
@@ -135,8 +137,9 @@ public class MetaUpgradeManager : MonoBehaviour
                     appliedValues[upgrade.effectType] += upgrade.effectValue;
                 else
                     appliedValues[upgrade.effectType] = upgrade.effectValue;
+
+                Debug.Log($"[MetaUpgradeManager] Dodano efekt: {upgrade.effectType} o wartości {upgrade.effectValue}. Suma: {appliedValues[upgrade.effectType]}");
             }
-            Debug.Log($"[MetaUpgradeManager] Dodano efekt: {upgrade.effectType} o wartości {upgrade.effectValue}. Suma: {appliedValues[upgrade.effectType]}");
         }
 
         Debug.Log($"[MetaUpgradeManager] Zebrano zsumowane efekty. Globalne: {appliedValues.Count}, Specyficzne dla budynków: {buildingSpecificValues.Count}.");
@@ -222,6 +225,7 @@ public class MetaUpgradeManager : MonoBehaviour
             // ── Efekty budynkowe (targetBuilding) — odpytywane z zewnątrz ─────
             case MetaEffectType.BuildingTerrainBonusMultiplier:
             case MetaEffectType.SpecificBuildingUpgradeCostReduction:
+            case MetaEffectType.SpecificBuildingProductionBonus:
                 // Obsługiwane przez buildingSpecificValues, odpytywane przez GetBuildingValue()
                 break;
 

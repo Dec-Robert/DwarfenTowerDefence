@@ -24,6 +24,7 @@ public class LinearProjectile : ProjectileBase
         moveDirection.y = 0;
         moveDirection.Normalize();
         launched = true;
+        Destroy(gameObject, lifeTime);
     }
 
     void Update()

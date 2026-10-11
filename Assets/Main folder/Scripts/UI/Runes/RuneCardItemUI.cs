@@ -82,7 +82,7 @@ public class RuneCardItemUI : MonoBehaviour, IPointerClickHandler, IBeginDragHan
         {
             row1.gameObject.SetActive(true);
             Sprite icon = GetStatIcon(runeData.definition.primaryStat);
-            string valText = FormatStatValue(runeData.primaryValue, runeData.definition.valueType, isBuff: true);
+            string valText = FormatStatValue(runeData.primaryValue, runeData.definition.primaryStat, runeData.definition.valueType, isBuff: true);
             ConfigureStatRow(row1, icon, valText, new Color(0.92f, 0.92f, 0.92f, 1f));
         }
 
@@ -94,7 +94,7 @@ public class RuneCardItemUI : MonoBehaviour, IPointerClickHandler, IBeginDragHan
             {
                 row2.gameObject.SetActive(true);
                 Sprite icon = GetStatIcon(runeData.penaltyStat);
-                string valText = FormatStatValue(runeData.penaltyValue, runeData.penaltyValueType, isBuff: false);
+                string valText = FormatStatValue(runeData.penaltyValue, runeData.penaltyStat, runeData.penaltyValueType, isBuff: false);
                 ConfigureStatRow(row2, icon, valText, new Color(0.95f, 0.28f, 0.28f, 1f));
             }
         }
@@ -162,14 +162,15 @@ public class RuneCardItemUI : MonoBehaviour, IPointerClickHandler, IBeginDragHan
         return null;
     }
 
-    private string FormatStatValue(float value, RuneValueType valType, bool isBuff)
+    private string FormatStatValue(float value, RuneStatType stat, RuneValueType valType, bool isBuff)
     {
         string sign = isBuff ? "+" : "-";
         float absVal = Mathf.Abs(value);
+        bool isPct = RuneItem.IsPercentageStat(stat, valType);
 
         string numStr = (absVal % 1 == 0) ? absVal.ToString("F0") : absVal.ToString("F1");
 
-        return valType == RuneValueType.Percent ? $"{sign}{numStr}%" : $"{sign}{numStr}";
+        return isPct ? $"{sign}{numStr}%" : $"{sign}{numStr}";
     }
 
     private Sprite GetStatIcon(RuneStatType stat)

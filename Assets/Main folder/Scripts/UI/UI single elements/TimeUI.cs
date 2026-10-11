@@ -107,13 +107,20 @@ public class TimeUI : MonoBehaviour
 
     private void SetPhaseVisuals(Color bgColor, Color txtColor, string phaseName)
     {
-        background.color = bgColor;
+        if (background != null) background.color = bgColor;
         
-        phaseText.color = txtColor;
-        phaseText.text = phaseName;
+        if (phaseText != null)
+        {
+            phaseText.color = txtColor;
+            phaseText.text = phaseName;
+        }
         
-        dayText.color = txtColor;
-        
+        if (dayText != null)
+        {
+            dayText.color = txtColor;
+            int day = TimePhaseManager.Instance != null ? Mathf.Max(1, TimePhaseManager.Instance.CurrentDay) : 1;
+            dayText.text = $"Day {day}";
+        }
     }
 
     private void ChangeHangingPhase(bool isNight)

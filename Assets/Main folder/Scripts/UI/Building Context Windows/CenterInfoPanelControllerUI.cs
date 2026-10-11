@@ -166,10 +166,6 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
                 {
                     newContextUI.Setup(towerEntity);
                 }
-                else
-                {
-                    towerPanel.GetComponent<TowerInfoPanelUI>()?.Setup(towerEntity);
-                }
             }
         }
 
@@ -182,10 +178,6 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
                 if (prodContextUI != null)
                 {
                     prodContextUI.Setup(buildingEntity);
-                }
-                else
-                {
-                    productionPanel.GetComponent<ProductionInfoPanelUI>()?.Setup(buildingEntity);
                 }
             }
         }

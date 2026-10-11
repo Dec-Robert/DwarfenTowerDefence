@@ -1239,28 +1239,43 @@ public class RuneForgeWindowUI : MonoBehaviour
                     continue;
 
                 case BattleStats.CriticalChancel:
-                    baseVal = tower.criticalChancel;
-                    modVal = (baseVal + ccFlat) * (1f + ccPct / 100f);
+                {
+                    float rawCrit = tower.criticalChancel > 1f ? tower.criticalChancel / 100f : tower.criticalChancel;
+                    float flatCrit = Mathf.Abs(ccFlat) >= 1f ? ccFlat / 100f : ccFlat;
+                    baseVal = rawCrit * 100f;
+                    modVal = Mathf.Clamp01((rawCrit + flatCrit) * (1f + ccPct / 100f)) * 100f;
                     unit = "%";
                     break;
+                }
 
                 case BattleStats.CriticalMultiplier:
-                    baseVal = tower.criticalDamageMultiplier;
-                    modVal = (baseVal + cdFlat) * (1f + cdPct / 100f);
+                {
+                    float flatCd = Mathf.Abs(cdFlat) >= 1f ? cdFlat / 100f : cdFlat;
+                    baseVal = tower.criticalDamageMultiplier * 100f;
+                    modVal = Mathf.Max(1f, (tower.criticalDamageMultiplier + flatCd) * (1f + cdPct / 100f)) * 100f;
                     unit = "%";
                     break;
+                }
 
                 case BattleStats.ArmorPenetration:
-                    baseVal = tower.armorPenetration;
-                    modVal = (baseVal + apFlat) * (1f + apPct / 100f);
+                {
+                    float rawAp = tower.armorPenetration > 1f ? tower.armorPenetration / 100f : tower.armorPenetration;
+                    float flatAp = Mathf.Abs(apFlat) >= 1f ? apFlat / 100f : apFlat;
+                    baseVal = rawAp * 100f;
+                    modVal = Mathf.Clamp01((rawAp + flatAp) * (1f + apPct / 100f)) * 100f;
                     unit = "%";
                     break;
+                }
 
                 case BattleStats.MagicPenetration:
-                    baseVal = tower.magicPenetration;
-                    modVal = (baseVal + mpFlat) * (1f + mpPct / 100f);
+                {
+                    float rawMp = tower.magicPenetration > 1f ? tower.magicPenetration / 100f : tower.magicPenetration;
+                    float flatMp = Mathf.Abs(mpFlat) >= 1f ? mpFlat / 100f : mpFlat;
+                    baseVal = rawMp * 100f;
+                    modVal = Mathf.Clamp01((rawMp + flatMp) * (1f + mpPct / 100f)) * 100f;
                     unit = "%";
                     break;
+                }
             }
 
             float diff = modVal - baseVal;

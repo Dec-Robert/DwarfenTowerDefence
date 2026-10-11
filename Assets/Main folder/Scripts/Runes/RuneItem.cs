@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [System.Serializable]
 public class RuneItem
@@ -29,14 +29,23 @@ public class RuneItem
         this.penaltyValue = pValue; // Powinno być na minusie
     }
 
+    public static bool IsPercentageStat(RuneStatType stat, RuneValueType valType)
+    {
+        if (valType == RuneValueType.Percent) return true;
+        return stat == RuneStatType.CriticalChance
+            || stat == RuneStatType.CriticalDamage
+            || stat == RuneStatType.ArmorPenetration
+            || stat == RuneStatType.MagicPenetration;
+    }
+
     public string GetPrimaryText()
     {
         string sign = primaryValue > 0 ? "+" : "";
-        string symbol = definition.valueType == RuneValueType.Percent ? "%" : "";
-        
-        // ZMIANA: Formatowanie z jednym miejscem po przecinku (jeśli to Flat) lub bez (jeśli Percent)
-        string valString = definition.valueType == RuneValueType.Percent 
-            ? primaryValue.ToString("0") 
+        bool isPct = IsPercentageStat(definition.primaryStat, definition.valueType);
+        string symbol = isPct ? "%" : "";
+
+        string valString = (isPct || primaryValue % 1f == 0f)
+            ? primaryValue.ToString("0")
             : primaryValue.ToString("0.0");
 
         return $"{sign}{valString}{symbol} {definition.primaryStat}";
@@ -45,10 +54,11 @@ public class RuneItem
     public string GetPenaltyText()
     {
         if (!hasPenalty) return "";
-        string symbol = penaltyValueType == RuneValueType.Percent ? "%" : "";
-        
-        string valString = penaltyValueType == RuneValueType.Percent 
-            ? penaltyValue.ToString("0") 
+        bool isPct = IsPercentageStat(penaltyStat, penaltyValueType);
+        string symbol = isPct ? "%" : "";
+
+        string valString = (isPct || penaltyValue % 1f == 0f)
+            ? penaltyValue.ToString("0")
             : penaltyValue.ToString("0.0");
 
         return $"<color=red>{valString}{symbol} {penaltyStat}</color>";

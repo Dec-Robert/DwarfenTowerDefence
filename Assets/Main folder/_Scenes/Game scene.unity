@@ -834,12 +834,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapGenerator: {fileID: 1837610582}
   fogManager: {fileID: 1837610585}
-  waveConfig: {fileID: 11400000, guid: 8f80e59d19b6b7f409fe05da66a1c109, type: 2}
   availableEnemies:
   - {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
   - {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
   - {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
   predefinedWaves:
+  - {fileID: 11400000, guid: 1a7f43213ef54a34f88709c518929801, type: 2}
+  - {fileID: 11400000, guid: 1a7f43213ef54a34f88709c518929802, type: 2}
+  - {fileID: 11400000, guid: 1a7f43213ef54a34f88709c518929803, type: 2}
+  - {fileID: 11400000, guid: 1a7f43213ef54a34f88709c518929804, type: 2}
   - {fileID: 11400000, guid: 0f7f43213ef54a34f88709c518929875, type: 2}
   nightSpawnInterval: 1
   baseFormulaConst: 10

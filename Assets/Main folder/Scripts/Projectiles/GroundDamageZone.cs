@@ -8,19 +8,19 @@ public class GroundDamageZone : MonoBehaviour
     [SerializeField] private DamageType damageType;
     [SerializeField] private List<TowerEffectSO> effects;
 
-    [SerializeField] private float armourPiercing; // Wartość od 0 do 100, reprezentuj�ca procent obra�e� ignoruj�cych pancerz
-    [SerializeField] private float magicPiercing;  // Warto�� od 0 do 100, reprezentuj�ca procent obra�e� ignoruj�cych odporno�� magiczn�
+    [SerializeField] private float armourPiercing;
+    [SerializeField] private float magicPiercing;
     [SerializeField] private float criticalMultiplier;
     [SerializeField] private float criticalChance;
 
     [SerializeField] private float tickInterval;
     [SerializeField] private float duration;
 
-    // Lista wrog�w aktualnie stoj�cych w strefie
     private List<EnemyStats> enemiesInZone = new List<EnemyStats>();
     private float tickTimer = 0f;
+    private TowerEntity sourceTower;
 
-    public void Setup(float _dmg, DamageType _type, List<TowerEffectSO> _fx, float _interval, float _dur, float _arPier, float _mgPier, float _crMult, float _crChan)
+    public void Setup(float _dmg, DamageType _type, List<TowerEffectSO> _fx, float _interval, float _dur, float _arPier, float _mgPier, float _crMult, float _crChan, TowerEntity _sourceTower = null)
     {
         damage = _dmg;
         damageType = _type;
@@ -31,14 +31,13 @@ public class GroundDamageZone : MonoBehaviour
         magicPiercing = _mgPier;
         criticalMultiplier = _crMult;
         criticalChance = _crChan;
+        sourceTower = _sourceTower;
 
-        // Autodestrukcja po czasie trwania
         Destroy(gameObject, duration);
     }
 
     void Update()
     {
-        // Odliczanie do ticka (np. co 1 sekund�)
         tickTimer += Time.deltaTime;
 
         if (tickTimer >= tickInterval)
@@ -50,24 +49,21 @@ public class GroundDamageZone : MonoBehaviour
 
     void ApplyDamageToAll()
     {
-        // Czy�cimy list� z "nulli" (wrog�w, kt�rzy zgin�li w mi�dzyczasie)
         enemiesInZone.RemoveAll(x => x == null);
+
+        float effectiveCritChance = criticalChance > 1f ? criticalChance / 100f : criticalChance;
 
         foreach (var enemy in enemiesInZone)
         {
-            bool isCritical = Random.value < criticalChance / 100f;
-            // Zadajemy obra�enia
-            enemy.TakeDamage(damage, damageType,armourPiercing,magicPiercing,isCritical,criticalMultiplier);
+            bool isCritical = Random.value < effectiveCritChance;
+            enemy.TakeDamage(damage, damageType, armourPiercing, magicPiercing, isCritical, criticalMultiplier, sourceTower, true);
 
-            // Nak�adamy efekty (np. spowolnienie, podpalenie)
             if (effects != null)
             {
                 foreach (var effect in effects) effect.ApplyEffect(enemy);
             }
         }
     }
-
-    // --- DETEKCJA WROG�W ---
 
     private void OnTriggerEnter(Collider other)
     {

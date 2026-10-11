@@ -75,7 +75,7 @@ public class GroundProjectile : ProjectileBase
             if (zone != null)
             {
                 // Używamy "damage" z klasy bazowej ProjectileBase
-                zone.Setup(damage, damageType, effects, tickInterval, duration, armourPiercing, magicPiercing, criticalMultiplier, zoneCritChance);
+                zone.Setup(damage, damageType, effects, tickInterval, duration, armourPiercing, magicPiercing, criticalMultiplier, zoneCritChance, sourceTower);
             }
         }
         Destroy(gameObject); 

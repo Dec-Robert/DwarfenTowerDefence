@@ -77,7 +77,7 @@ public class EnemyStats : MonoBehaviour
         }
     }
 
-    public void Initialize(EnemyData _data)
+    public void Initialize(EnemyData _data, float waveHpMult = 1f, float waveSpeedMult = 1f)
     {
         data = _data;
 
@@ -105,7 +105,10 @@ public class EnemyStats : MonoBehaviour
             rank = EnemyRank.Normal;
 
         float hearthEnemyMult = BeaconEntity.GetActiveNightEnemyMultiplier();
-        maxHealth = Mathf.Max(1f, data.baseHp * hearthEnemyMult);
+        float eliteHpMult = (rank == EnemyRank.Elite && data.eliteHpMultiplier > 0f) ? data.eliteHpMultiplier : 1f;
+        float eliteSpeedMult = (rank == EnemyRank.Elite && data.eliteSpeedMultiplier > 0f) ? data.eliteSpeedMultiplier : 1f;
+
+        maxHealth = Mathf.Max(1f, data.baseHp * hearthEnemyMult * Mathf.Max(0.01f, waveHpMult) * eliteHpMult);
         currentHealth = maxHealth;
 
         currentArmor = data.armor <= 1f ? data.armor : data.armor / 100f;
@@ -116,7 +119,7 @@ public class EnemyStats : MonoBehaviour
             Walker = GetComponent<EnemyWalker>();
 
         if (Walker != null)
-            Walker.speed = Mathf.Max(0.1f, data.moveSpeed * hearthEnemyMult);
+            Walker.speed = Mathf.Max(0.1f, data.moveSpeed * hearthEnemyMult * Mathf.Max(0.01f, waveSpeedMult) * eliteSpeedMult);
 
         if (rank == EnemyRank.Elite)
         {

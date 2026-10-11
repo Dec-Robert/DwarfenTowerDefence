@@ -5,8 +5,8 @@ public class TimePhaseManager : MonoBehaviour
 {
     public static TimePhaseManager Instance { get; private set; }
 
-    public TimePhases CurrentTimePhase { get; private set; }
-    public int CurrentDay { get; private set; } 
+    public TimePhases CurrentTimePhase { get; private set; } = TimePhases.Morning;
+    public int CurrentDay { get; private set; } = 1;
 
     public event Action OnMorningStarted;
     public event Action OnDuskStarted;
@@ -18,7 +18,11 @@ public class TimePhaseManager : MonoBehaviour
     private void Awake()
     {
         if (Instance != null && Instance != this) Destroy(gameObject);
-        else Instance = this;
+        else
+        {
+            Instance = this;
+            if (CurrentDay < 1) CurrentDay = 1;
+        }
     }
 
     private void Start()

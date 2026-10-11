@@ -89,6 +89,10 @@ public class TowerEntity : BuildingEntity
         float rangeMulti = registry != null ? registry.GetMultiplier(TowerStatType.Range, this) : 1f;
         float damageMulti = registry != null ? registry.GetMultiplier(TowerStatType.Damage, this) : 1f;
         float fireRateMulti = registry != null ? registry.GetMultiplier(TowerStatType.FireRate, this) : 1f;
+        float armorPenMulti = registry != null ? registry.GetMultiplier(TowerStatType.ArmorPenetration, this) : 1f;
+        float magicPenMulti = registry != null ? registry.GetMultiplier(TowerStatType.MagicPenetration, this) : 1f;
+        float critChanMulti = registry != null ? registry.GetMultiplier(TowerStatType.CriticalChance, this) : 1f;
+        float critDmgMulti = registry != null ? registry.GetMultiplier(TowerStatType.CriticalDamage, this) : 1f;
 
         float flatRange = registry != null ? registry.GetFlat(TowerStatType.Range, this) : 0f;
         float flatDamage = registry != null ? registry.GetFlat(TowerStatType.Damage, this) : 0f;
@@ -99,18 +103,30 @@ public class TowerEntity : BuildingEntity
         float flatCritChan = registry != null ? registry.GetFlat(TowerStatType.CriticalChance, this) : 0f;
         float flatCritDmg = registry != null ? registry.GetFlat(TowerStatType.CriticalDamage, this) : 0f;
 
+        float baseCritChance = tData.criticalChancel > 1f ? tData.criticalChancel / 100f : tData.criticalChancel;
+        float baseArmorPen = tData.armorPenetration > 1f ? tData.armorPenetration / 100f : tData.armorPenetration;
+        float baseMagicPen = tData.magicPenetration > 1f ? tData.magicPenetration / 100f : tData.magicPenetration;
+        float normFlatCrit = Mathf.Abs(flatCritChan) >= 1f ? flatCritChan / 100f : flatCritChan;
+        float normFlatCritDmg = Mathf.Abs(flatCritDmg) >= 1f ? flatCritDmg / 100f : flatCritDmg;
+        float normFlatArmorPen = Mathf.Abs(flatArmorPen) >= 1f ? flatArmorPen / 100f : flatArmorPen;
+        float normFlatMagicPen = Mathf.Abs(flatMagicPen) >= 1f ? flatMagicPen / 100f : flatMagicPen;
+
         TowerStats calculatedStats = new TowerStats
         {
             damage = (tData.baseDamage + flatDamage) * damageMulti * finalEfficiency,
             range = (tData.baseRange + flatRange) * rangeMulti,
             fireRate = (tData.fireRate + flatFireRate) * fireRateMulti * finalEfficiency,
-            criticalChancel = Mathf.Clamp01(tData.criticalChancel + flatCritChan),
-            criticalDamageMultiplier = Mathf.Max(1.0f, tData.criticalDamageMultiplier + flatCritDmg),
-            armorPenetration = Mathf.Clamp01(tData.armorPenetration + flatArmorPen),
-            magicPenetration = Mathf.Clamp01(tData.magicPenetration + flatMagicPen),
+            criticalChancel = Mathf.Clamp01((baseCritChance + normFlatCrit) * critChanMulti),
+            criticalDamageMultiplier = Mathf.Max(1.0f, (tData.criticalDamageMultiplier + normFlatCritDmg) * critDmgMulti),
+            armorPenetration = Mathf.Clamp01((baseArmorPen + normFlatArmorPen) * armorPenMulti),
+            magicPenetration = Mathf.Clamp01((baseMagicPen + normFlatMagicPen) * magicPenMulti),
             damageType = tData.damageType
         };
 
+        if (controller != null)
+        {
+            controller.canShoot = isBuildingActive;
+        }
         controller?.ApplyCalculatedStats(calculatedStats, finalEfficiency);
     }
 

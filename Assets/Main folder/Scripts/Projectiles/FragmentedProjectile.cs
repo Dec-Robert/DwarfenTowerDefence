@@ -31,14 +31,19 @@ public class FragmentedProjectile : ProjectileBase
         // 2. SZUKANIE DODATKOWYCH CELÓW
         List<Transform> potentialTargets = new List<Transform>();
         Vector3 searchCenter = mainTarget != null ? mainTarget.position : fallbackPos;
+        float radiusSq = spreadRadius * spreadRadius;
 
-        Collider[] hits = Physics.OverlapSphere(searchCenter, spreadRadius);
-        foreach (var hit in hits)
+        var activeEnemies = EnemyRegistry.ActiveEnemies;
+        for (int i = 0; i < activeEnemies.Count; i++)
         {
-            if (hit.CompareTag(targetTag))
+            EnemyStats enemy = activeEnemies[i];
+            if (enemy == null) continue;
+            Transform enemyTr = enemy.transform;
+            if (mainTarget != null && enemyTr == mainTarget) continue;
+
+            if ((enemyTr.position - searchCenter).sqrMagnitude <= radiusSq)
             {
-                if (mainTarget != null && hit.transform == mainTarget) continue;
-                if (hit.GetComponent<EnemyStats>() != null) potentialTargets.Add(hit.transform);
+                potentialTargets.Add(enemyTr);
             }
         }
 
@@ -68,7 +73,7 @@ public class FragmentedProjectile : ProjectileBase
         
         if (bullet != null)
         {
-            bullet.Initialize(damage, damageType, effects, isCritical, criticalMultiplier);
+            bullet.Initialize(damage, damageType, effects, isCritical, criticalMultiplier, armourPiercing, magicPiercing, 0f, sourceTower);
             bullet.Launch(target, target.position, null);
         }
     }

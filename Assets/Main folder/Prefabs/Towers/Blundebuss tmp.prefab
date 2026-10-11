@@ -279,7 +279,7 @@ MonoBehaviour:
   turnSpeed: 10
   shootAngleMargin: 10
   rangeIndicatorPrefab: {fileID: 66276893048416449, guid: 46d23b10a158dfb4fb030960fb034997, type: 3}
-  canShoot: 0
+  canShoot: 1
   currentRange: 0
   currentDamage: 0
   currentFireRate: 0

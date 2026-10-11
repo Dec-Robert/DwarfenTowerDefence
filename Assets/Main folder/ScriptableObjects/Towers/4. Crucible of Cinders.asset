@@ -60,7 +60,7 @@ MonoBehaviour:
   baseRange: 5
   baseDamage: 10
   fireRate: 0.5
-  criticalChancel: 2
+  criticalChancel: 0.02
   criticalDamageMultiplier: 1.5
   armorPenetration: 0
   magicPenetration: 0

@@ -36,7 +36,10 @@ public class HitscanProjectile : ProjectileBase
             lineRenderer.SetPosition(0, startPos);
             lineRenderer.SetPosition(1, enemy.transform.position);
 
-            lineRenderer.material.mainTextureOffset = new Vector2(Random.Range(0f, 1f), 0f);
+            if (lineRenderer.sharedMaterial != null)
+            {
+                lineRenderer.material.mainTextureOffset = new Vector2(Random.Range(0f, 1f), 0f);
+            }
 
             ApplyDamageAndEffects(enemy);
             StartCoroutine(FadeAndDestroy());
@@ -56,8 +59,11 @@ public class HitscanProjectile : ProjectileBase
         while (timer < visualDuration)
         {
             timer += Time.deltaTime;
-            float offset = Time.time * textureScrollSpeed;
-            lineRenderer.material.SetTextureOffset("_MainTex", new Vector2(offset, 0));
+            if (lineRenderer.sharedMaterial != null)
+            {
+                float offset = Time.time * textureScrollSpeed;
+                lineRenderer.material.SetTextureOffset("_MainTex", new Vector2(offset, 0));
+            }
             float progress = timer / visualDuration;
             lineRenderer.widthMultiplier = Mathf.Lerp(initialWidth, 0f, progress);
             yield return null;
