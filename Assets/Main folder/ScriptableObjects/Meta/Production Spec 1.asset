@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
+  m_Name: Production Spec 1
+  m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
+  id: production_spec_1
+  upgradeName: Production Spec 1
+  description: "Budynke specjalistyczn 1 (gracz wybiera 1 z \npo\u015Br\xF3d 3 -rasowych-
+    budynk\xF3w specjalistyczny)\n[do przemy\u015Blenia co tutaj wrzucic]"
+  icon: {fileID: 0}
+  cost: 100
+  isUnlocked: 0
+  prerequisites:
+  - {fileID: 11400000, guid: b41d2389d6978e543977692a013c25ed, type: 2}
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

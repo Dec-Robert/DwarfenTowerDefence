@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
+  m_Name: Elfy Chunki 2
+  m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
+  id: elfy_chunki_2
+  upgradeName: Elfy Chunki 2
+  description: "Expedycje maj\u0105 sznase na znalezienie\nspecjalnego chunka: JEZIORO"
+  icon: {fileID: 0}
+  cost: 100
+  isUnlocked: 0
+  prerequisites:
+  - {fileID: 11400000, guid: 2d2bc264cd199e043ac829059b91b8b8, type: 2}
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

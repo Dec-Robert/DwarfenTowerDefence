@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
+  m_Name: Elfy Expedition Final
+  m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
+  id: elfy_expedition_final
+  upgradeName: Elfy Expedition Final
+  description: "Ekspedycje maj\u0105 szanse na znalezienie\ndodatkowego terenu specjalnego\n(je\u015Bli
+    gdzie\u015B na chunki jest nizina zostanie ona \nzamieniona na dowolny teren
+    z jakiej\u015B puli)"
+  icon: {fileID: 0}
+  cost: 100
+  isUnlocked: 0
+  prerequisites:
+  - {fileID: 11400000, guid: 17def5d32065e23408687b0044c5863d, type: 2}
+  - {fileID: 11400000, guid: 8a0a8d11f06c43940a215e3d2819d466, type: 2}
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
+  m_Name: Krasnoludy 3
+  m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
+  id: krasnoludy_3
+  upgradeName: Krasnoludy 3
+  description: "Krasnoludy zapewniaj\u0105 dodatkowe bonusy rasowe\nprzy niekt\xF3rych
+    czynno\u015Bciach"
+  icon: {fileID: 0}
+  cost: 100
+  isUnlocked: 0
+  prerequisites:
+  - {fileID: 11400000, guid: e5da765f6db25504397ce62b03da2fb8, type: 2}
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}
