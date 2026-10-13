@@ -18,10 +18,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0
-  prerequisites:
-  - {fileID: 11400000, guid: e946c1fb136782e4f8b48cd04745e547, type: 2}
-  - {fileID: 11400000, guid: 4fb1fedd6132a454a8a4d604d795a1e8, type: 2}
-  - {fileID: 11400000, guid: b41d2389d6978e543977692a013c25ed, type: 2}
+  prerequisites: []
   effectType: 0
   effectValue: 0
   effectValue2: 0

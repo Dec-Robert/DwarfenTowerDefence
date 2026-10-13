@@ -44,6 +44,20 @@ public enum ChunkState
     Settled
 }
 
+public enum ScoutingMissionType
+{
+    Survey, // Pełna wyprawa kolonizacyjna/odsłaniająca chunk
+    Recon   // Krótki zwiad wstępny badający heksy
+}
+
+public enum ReconAbundance
+{
+    None,
+    Scarce,    // Znikome (1-2)
+    Moderate,  // Umiarkowane (3-5)
+    Abundant   // Obfite (6+)
+}
+
 public enum Race
 {
     Humans,
@@ -56,6 +70,7 @@ public enum WorkState
     Idle, //Not assigned
     Assigned, //Assigned to work, can be changed
     Locked, //Assigned to work, cannot be changed
+    OnExpedition //Wysłany na zwiad/ekspedycję
 }
 
 public enum DeathReason

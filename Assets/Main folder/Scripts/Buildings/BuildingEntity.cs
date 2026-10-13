@@ -160,8 +160,12 @@ public class BuildingEntity : MonoBehaviour
         if (this is TowerEntity tower) tower.RecalculateStats();
     }
 
+    public virtual bool CanDemolish() => true;
+
     public virtual void Demolish()
     {
+        if (!CanDemolish()) return;
+
         Workers.ReleaseAllWorkers();
 
         if (data != null && data.constructionCost != null && ResourceManager.Instance != null)

@@ -103,6 +103,51 @@ public class WorkforceManager : MonoBehaviour
     public int GetWorkingCount(Race race) => GetStats(race).Working;
     public bool HasIdleWorker(Race race) => GetIdleCount(race) > 0;
 
+    public bool TryAssignExpeditionWorkers(int count, out List<Citizen> assignedElves)
+    {
+        assignedElves = new List<Citizen>();
+        if (count <= 0) return true;
+        if (PopLifeCycleManager.Instance == null) return false;
+        if (GetIdleCount(Race.Elves) < count) return false;
+
+        foreach (var citizen in PopLifeCycleManager.Instance.Citizens)
+        {
+            if (citizen.race == Race.Elves && citizen.workState == WorkState.Idle)
+            {
+                citizen.workState = WorkState.OnExpedition;
+                assignedElves.Add(citizen);
+                if (assignedElves.Count == count) break;
+            }
+        }
+
+        if (assignedElves.Count < count)
+        {
+            foreach (var c in assignedElves) c.workState = WorkState.Idle;
+            assignedElves.Clear();
+            return false;
+        }
+
+        RefreshStats();
+        return true;
+    }
+
+    public void ReleaseExpeditionWorkers(IEnumerable<Citizen> workers)
+    {
+        if (workers == null) return;
+
+        bool anyReleased = false;
+        foreach (var citizen in workers)
+        {
+            if (citizen != null && citizen.workState == WorkState.OnExpedition)
+            {
+                citizen.workState = WorkState.Idle;
+                anyReleased = true;
+            }
+        }
+
+        if (anyReleased) RefreshStats();
+    }
+
     private bool ReleaseWorker(Citizen worker, bool keepLocked = false)
     {
         if (worker == null || worker.workState == WorkState.Idle) return false;

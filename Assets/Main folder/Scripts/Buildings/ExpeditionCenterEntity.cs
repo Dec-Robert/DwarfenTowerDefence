@@ -1,96 +1,72 @@
 using UnityEngine;
 
+/// <summary>
+/// Budynek: Centrum Ekspedycyjne / Obóz Zwiadowców.
+/// Pasywnie zapewnia określoną liczbę ekwipunku zwiadowczego (bazowo +1).
+/// Ekwipunek zasila globalną pulę osady w MapExpansionManager.
+/// Blokuje rozbiórkę, jeśli jego ekwipunek jest aktualnie w terenie na misjach.
+/// </summary>
 public class ExpeditionCenterEntity : BuildingEntity
 {
-    [SerializeField] private bool elfAssigned;
-    [SerializeField] private bool missionActive;
-    [SerializeField] private Vector2Int currentMissionTarget = new Vector2Int(-999, -999);
+    [Header("Ekwipunek Zwiadowczy")]
+    [SerializeField] private int equipmentProvided = 1;
 
-    private Citizen reservedElf;
+    public int EquipmentProvided => (isBuildingActive && gameObject.activeInHierarchy) ? equipmentProvided : 0;
 
-    public bool HasElf => elfAssigned;
-    public bool IsBusy => missionActive;
-    public bool CanSendMission => elfAssigned && !missionActive;
-    public Vector2Int ActiveTarget => currentMissionTarget;
+    public bool CanSendMission => MapExpansionManager.Instance != null && MapExpansionManager.Instance.AvailableEquipment >= 2;
 
     public override void Initialize(BuildingData buildingData)
     {
         base.Initialize(buildingData);
+        RegisterToExpansionManager();
+    }
 
-        TryReserveElf();
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        RegisterToExpansionManager();
+    }
 
-        if (MapExpansionManager.Instance != null)
-        {
-            MapExpansionManager.Instance.OnChunkStateChanged += HandleChunkStateChanged;
-        }
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        UnregisterFromExpansionManager();
     }
 
     protected override void OnDestroy()
     {
         base.OnDestroy();
+        UnregisterFromExpansionManager();
+    }
 
+    private void RegisterToExpansionManager()
+    {
         if (MapExpansionManager.Instance != null)
         {
-            MapExpansionManager.Instance.OnChunkStateChanged -= HandleChunkStateChanged;
-
-            if (missionActive && currentMissionTarget.x != -999)
-            {
-                MapExpansionManager.Instance.SetChunkBaseState(currentMissionTarget, ChunkState.Borderlands);
-            }
+            MapExpansionManager.Instance.RegisterExpeditionCenter(this);
         }
-
-        ReleaseElf();
     }
 
-    private void TryReserveElf()
+    private void UnregisterFromExpansionManager()
     {
-        reservedElf = null;
-        elfAssigned = WorkforceManager.Instance != null &&
-                      WorkforceManager.Instance.TryAssignWorker(Race.Elves, this, out reservedElf);
-    }
-
-    private void ReleaseElf()
-    {
-        if (reservedElf == null || !elfAssigned) return;
-
-        if (WorkforceManager.Instance != null) WorkforceManager.Instance.UnassignWorker(reservedElf);
-        reservedElf = null;
-        elfAssigned = false;
-    }
-
-    public override void HandleWorkerLost(Citizen citizen)
-    {
-        if (citizen != reservedElf)
+        if (MapExpansionManager.Instance != null)
         {
-            base.HandleWorkerLost(citizen);
-            return;
+            MapExpansionManager.Instance.UnregisterExpeditionCenter(this);
         }
-
-        reservedElf = null;
-        elfAssigned = false;
     }
 
-    public bool StartMission(Vector2Int targetChunk, int daysRequired)
+    public override bool CanDemolish()
     {
-        if (!CanSendMission) return false;
+        if (MapExpansionManager.Instance == null) return true;
+        return MapExpansionManager.Instance.CanDemolishCenter(this);
+    }
+
+    /// <summary>
+    /// Metoda pomocnicza dla wysyłania misji (np. z poziomu UI budynku).
+    /// </summary>
+    public bool StartMission(Vector2Int targetChunk, int elfCount = 2)
+    {
         if (MapExpansionManager.Instance == null) return false;
-
-        bool started = MapExpansionManager.Instance.TryStartSurvey(targetChunk, daysRequired);
-        if (!started) return false;
-
-        currentMissionTarget = targetChunk;
-        missionActive = true;
-        return true;
-    }
-
-    private void HandleChunkStateChanged(Vector2Int coord, ChunkState newState)
-    {
-        if (!missionActive || coord != currentMissionTarget) return;
-
-        if (newState == ChunkState.Outskirts)
-        {
-            missionActive = false;
-            currentMissionTarget = new Vector2Int(-999, -999);
-        }
+        return MapExpansionManager.Instance.TryStartSurvey(targetChunk, elfCount);
     }
 }

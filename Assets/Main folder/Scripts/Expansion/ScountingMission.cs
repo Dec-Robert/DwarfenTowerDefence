@@ -1,34 +1,86 @@
-﻿using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// Dane jednej aktywnej misji zwiadowczej.
-/// Tworzony przez MapExpansionManager, przechowywany w activeMissions.
-/// Tickowany raz na dzień przez GameManager.
+/// Dane jednej aktywnej misji zwiadowczej (Survey lub Recon).
+/// Tworzona i zarządzana przez MapExpansionManager w activeMissions.
+/// Tickowana raz na dzień podczas poranka (TimePhaseManager.OnMorningStarted).
 /// </summary>
 [System.Serializable]
 public class ScoutingMission
 {
-    // ─── Cel ─────────────────────────────────────────────────────────────────
+    // ─── Typ misji i cel ─────────────────────────────────────────────────────
+    public ScoutingMissionType missionType = ScoutingMissionType.Survey;
     public Vector2Int targetChunk;
 
     // ─── Czas ────────────────────────────────────────────────────────────────
-    /// <summary>Łączna liczba dni misji (1-7).</summary>
     public int totalDays;
-    /// <summary>Ile dni pozostało.</summary>
     public int daysRemaining;
 
-    // ─── Zasoby zapłacone przy wysłaniu ──────────────────────────────────────
+    // ─── Zasoby i siła robocza ────────────────────────────────────────────────
+    public int elfCount;
+    public int equipmentUsed;
+    public List<Citizen> assignedElves = new List<Citizen>();
+
     public float goldPaid;
     public float foodPaid;
 
-    // ─── Powiązany budynek ────────────────────────────────────────────────────
-    /// <summary>Centrum Ekspedycyjne które wysłało tę misję.</summary>
+    // ─── Powiązany budynek (opcjonalny, zachowany dla kompatybilności) ───────
     public ExpeditionCenterEntity sourceCenter;
 
     // ─── Stan ─────────────────────────────────────────────────────────────────
     public bool IsComplete => daysRemaining <= 0;
 
-    // ─── Fabryka ─────────────────────────────────────────────────────────────
+    // ─── Fabryki ─────────────────────────────────────────────────────────────
+    public static ScoutingMission CreateSurvey(
+        Vector2Int target,
+        int days,
+        int elves,
+        float gold,
+        float food,
+        List<Citizen> elvesList,
+        ExpeditionCenterEntity center = null)
+    {
+        return new ScoutingMission
+        {
+            missionType   = ScoutingMissionType.Survey,
+            targetChunk   = target,
+            totalDays     = days,
+            daysRemaining = days,
+            elfCount      = elves,
+            equipmentUsed = elves,
+            assignedElves = elvesList != null ? new List<Citizen>(elvesList) : new List<Citizen>(),
+            goldPaid      = gold,
+            foodPaid      = food,
+            sourceCenter  = center
+        };
+    }
+
+    public static ScoutingMission CreateRecon(
+        Vector2Int target,
+        int days,
+        int elves,
+        float gold,
+        float food,
+        List<Citizen> elvesList,
+        ExpeditionCenterEntity center = null)
+    {
+        return new ScoutingMission
+        {
+            missionType   = ScoutingMissionType.Recon,
+            targetChunk   = target,
+            totalDays     = days,
+            daysRemaining = days,
+            elfCount      = elves,
+            equipmentUsed = elves,
+            assignedElves = elvesList != null ? new List<Citizen>(elvesList) : new List<Citizen>(),
+            goldPaid      = gold,
+            foodPaid      = food,
+            sourceCenter  = center
+        };
+    }
+
+    /// <summary>Zachowane dla kompatybilności wstecznej.</summary>
     public static ScoutingMission Create(
         Vector2Int target,
         int days,
@@ -36,15 +88,7 @@ public class ScoutingMission
         float food,
         ExpeditionCenterEntity center)
     {
-        return new ScoutingMission
-        {
-            targetChunk   = target,
-            totalDays     = days,
-            daysRemaining = days,
-            goldPaid      = gold,
-            foodPaid      = food,
-            sourceCenter  = center
-        };
+        return CreateSurvey(target, days, 2, gold, food, null, center);
     }
 
     /// <summary>Tick dzienny. Zwraca true jeśli misja właśnie się skończyła.</summary>
@@ -56,5 +100,5 @@ public class ScoutingMission
     }
 
     public override string ToString()
-        => $"Misja [{targetChunk}] – {daysRemaining}/{totalDays} dni";
+        => $"Misja {missionType} [{targetChunk}] ({elfCount} elfów) – {daysRemaining}/{totalDays} dni";
 }

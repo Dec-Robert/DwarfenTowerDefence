@@ -1,16 +1,38 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MapExpansionManager : MonoBehaviour
 {
     public static MapExpansionManager Instance { get; private set; }
 
+    [Header("Konfiguracja Kosztów")]
+    public ExpansionCostConfig costConfig;
+
     public Dictionary<Vector2Int, ChunkStateData> activeChunks = new Dictionary<Vector2Int, ChunkStateData>();
     public Dictionary<Vector2Int, Vector2Int> roadDependencies = new Dictionary<Vector2Int, Vector2Int>();
 
+    // ─── Rejestr Centrów Ekspedycyjnych i Misji ──────────────────────────────
+    private readonly List<ExpeditionCenterEntity> expeditionCenters = new List<ExpeditionCenterEntity>();
+    public readonly List<ScoutingMission> activeMissions = new List<ScoutingMission>();
+
+    // ─── Zdarzenia ────────────────────────────────────────────────────────────
     public event Action<List<Vector2Int>> OnMapInitialized;
     public event Action<Vector2Int, ChunkState> OnChunkStateChanged;
+    public event Action<ScoutingMission> OnMissionStarted;
+    public event Action<ScoutingMission> OnMissionCompleted;
+    public event Action<int, int> OnEquipmentChanged; // (available, total)
+    public event Action<Vector2Int, ChunkReconIntel> OnReconIntelDiscovered;
+    public event Action<Vector2Int> OnBorderlandsChunkClicked;
+
+    private FogOfWarManager fogManager;
+
+    // ─── Właściwości Ekwipunku ────────────────────────────────────────────────
+    public int TotalEquipment => expeditionCenters.Where(c => c != null && c.isBuildingActive && c.gameObject.activeInHierarchy).Sum(c => c.EquipmentProvided);
+    public int UsedEquipment => activeMissions.Sum(m => m.equipmentUsed);
+    public int AvailableEquipment => Mathf.Max(0, TotalEquipment - UsedEquipment);
+    public IReadOnlyList<ScoutingMission> ActiveMissions => activeMissions;
 
     private void Awake()
     {
@@ -20,6 +42,15 @@ public class MapExpansionManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        if (costConfig == null)
+        {
+            costConfig = Resources.Load<ExpansionCostConfig>("ExpansionCostConfig");
+            if (costConfig == null)
+            {
+                costConfig = ScriptableObject.CreateInstance<ExpansionCostConfig>();
+            }
+        }
     }
 
     private void Start()
@@ -27,6 +58,12 @@ public class MapExpansionManager : MonoBehaviour
         if (TimePhaseManager.Instance != null)
         {
             TimePhaseManager.Instance.OnMorningStarted += HandleMorningTick;
+        }
+
+        fogManager = FindFirstObjectByType<FogOfWarManager>();
+        if (fogManager != null)
+        {
+            fogManager.OnBorderlandsClicked += HandleBorderlandsClicked;
         }
     }
 
@@ -36,12 +73,52 @@ public class MapExpansionManager : MonoBehaviour
         {
             TimePhaseManager.Instance.OnMorningStarted -= HandleMorningTick;
         }
+
+        if (fogManager != null)
+        {
+            fogManager.OnBorderlandsClicked -= HandleBorderlandsClicked;
+        }
     }
+
+    private void HandleBorderlandsClicked(Vector2Int coord)
+    {
+        OnBorderlandsChunkClicked?.Invoke(coord);
+    }
+
+    // =========================================================================
+    // Zarządzanie Budynkami (Expedition Centers)
+    // =========================================================================
+
+    public void RegisterExpeditionCenter(ExpeditionCenterEntity center)
+    {
+        if (center == null || expeditionCenters.Contains(center)) return;
+        expeditionCenters.Add(center);
+        OnEquipmentChanged?.Invoke(AvailableEquipment, TotalEquipment);
+    }
+
+    public void UnregisterExpeditionCenter(ExpeditionCenterEntity center)
+    {
+        if (center == null) return;
+        expeditionCenters.Remove(center);
+        OnEquipmentChanged?.Invoke(AvailableEquipment, TotalEquipment);
+    }
+
+    public bool CanDemolishCenter(ExpeditionCenterEntity center)
+    {
+        if (center == null) return true;
+        int remainingTotal = TotalEquipment - center.EquipmentProvided;
+        return remainingTotal >= UsedEquipment;
+    }
+
+    // =========================================================================
+    // Inicjalizacja Mapy
+    // =========================================================================
 
     public void Initialize(IReadOnlyDictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData, List<Vector2Int> initialSettledChunks = null)
     {
         activeChunks.Clear();
         roadDependencies.Clear();
+        activeMissions.Clear();
 
         if (HexMapGenerator.Instance != null)
         {
@@ -107,33 +184,118 @@ public class MapExpansionManager : MonoBehaviour
         List<Vector2Int> settledList = new List<Vector2Int>(startSettled);
         OnMapInitialized?.Invoke(settledList);
     }
+
+    // =========================================================================
+    // Cykl Dnia (Poranny Tick)
+    // =========================================================================
+
     private void HandleMorningTick()
     {
-        TickSurveys();
+        TickActiveMissions();
         TickOutposts();
         PropagateBorderlands();
     }
 
-    private void TickSurveys()
+    private void TickActiveMissions()
     {
-        List<Vector2Int> completedSurveys = new List<Vector2Int>();
+        List<ScoutingMission> finishedMissions = new List<ScoutingMission>();
 
-        foreach (var kvp in activeChunks)
+        foreach (var mission in activeMissions)
         {
-            ChunkStateData data = kvp.Value;
-            if (data.baseState != ChunkState.Surveying) continue;
-
-            data.surveyDaysRemaining--;
-            if (data.surveyDaysRemaining <= 0)
+            if (mission.Tick())
             {
-                completedSurveys.Add(kvp.Key);
+                finishedMissions.Add(mission);
             }
         }
 
-        foreach (var coord in completedSurveys)
+        foreach (var mission in finishedMissions)
         {
-            SetChunkBaseState(coord, ChunkState.Outskirts);
+            CompleteMission(mission);
         }
+
+        if (finishedMissions.Count > 0)
+        {
+            OnEquipmentChanged?.Invoke(AvailableEquipment, TotalEquipment);
+        }
+    }
+
+    private void CompleteMission(ScoutingMission mission)
+    {
+        activeMissions.Remove(mission);
+
+        // Zwrot elfów do puli Idle
+        if (mission.assignedElves != null && mission.assignedElves.Count > 0)
+        {
+            WorkforceManager.Instance?.ReleaseExpeditionWorkers(mission.assignedElves);
+        }
+
+        if (!activeChunks.TryGetValue(mission.targetChunk, out var chunkData))
+        {
+            OnMissionCompleted?.Invoke(mission);
+            return;
+        }
+
+        if (mission.missionType == ScoutingMissionType.Survey)
+        {
+            chunkData.surveyDaysRemaining = 0;
+            SetChunkBaseState(mission.targetChunk, ChunkState.Outskirts);
+        }
+        else if (mission.missionType == ScoutingMissionType.Recon)
+        {
+            chunkData.isReconActive = false;
+            chunkData.reconIntel = GenerateReconIntel(mission.targetChunk);
+            OnReconIntelDiscovered?.Invoke(mission.targetChunk, chunkData.reconIntel);
+        }
+
+        OnMissionCompleted?.Invoke(mission);
+    }
+
+    private ChunkReconIntel GenerateReconIntel(Vector2Int chunkCoord)
+    {
+        var intel = new ChunkReconIntel { hasIntel = true };
+
+        if (HexMapGenerator.Instance == null || HexMapGenerator.Instance.worldData == null)
+        {
+            return intel;
+        }
+
+        if (!HexMapGenerator.Instance.worldData.TryGetValue(chunkCoord, out var chunkHexes))
+        {
+            return intel;
+        }
+
+        var featureCounts = new Dictionary<HexFeatureType, int>();
+        bool hasRoad = false;
+
+        foreach (var cellData in chunkHexes.Values)
+        {
+            if (cellData == null) continue;
+
+            if (cellData.isPath) hasRoad = true;
+
+            if (cellData.feature != HexFeatureType.None &&
+                cellData.feature != HexFeatureType.Base &&
+                cellData.feature != HexFeatureType.Beacon &&
+                cellData.feature != HexFeatureType.Wall)
+            {
+                if (!featureCounts.ContainsKey(cellData.feature))
+                    featureCounts[cellData.feature] = 0;
+                featureCounts[cellData.feature]++;
+            }
+        }
+
+        intel.hasEnemyPath = hasRoad;
+
+        foreach (var kvp in featureCounts)
+        {
+            var abundance = ExpansionCostCalculator.EvaluateAbundance(kvp.Value, costConfig);
+            if (abundance != ReconAbundance.None)
+            {
+                intel.features[kvp.Key] = abundance;
+            }
+        }
+
+        return intel;
     }
 
     private void TickOutposts()
@@ -216,15 +378,200 @@ public class MapExpansionManager : MonoBehaviour
         }
     }
 
-    public bool TryStartSurvey(Vector2Int coord, int daysRequired)
-    {
-        if (!activeChunks.TryGetValue(coord, out var data)) return false;
-        if (data.baseState != ChunkState.Borderlands) return false;
+    // =========================================================================
+    // API Ekspedycji (Survey & Recon)
+    // =========================================================================
 
-        data.surveyDaysRemaining = daysRequired;
-        SetChunkBaseState(coord, ChunkState.Surveying);
+    public bool CanStartSurvey(Vector2Int coord, int elfCount, out string reason)
+    {
+        if (!activeChunks.TryGetValue(coord, out var data))
+        {
+            reason = "Nieprawidłowy obszar.";
+            return false;
+        }
+
+        if (data.baseState != ChunkState.Borderlands)
+        {
+            reason = "Obszar nie znajduje się na granicy (Borderlands).";
+            return false;
+        }
+
+        if (data.hasActiveMission)
+        {
+            reason = "Na tym obszarze trwa już aktywna misja.";
+            return false;
+        }
+
+        int minElves = costConfig != null ? costConfig.minElvesForSurvey : 2;
+        if (elfCount < minElves)
+        {
+            reason = $"Wymagane co najmniej {minElves} elfów.";
+            return false;
+        }
+
+        if (AvailableEquipment < elfCount)
+        {
+            reason = $"Brak wystarczającej liczby wolnego ekwipunku zwiadowczego ({AvailableEquipment}/{elfCount}).";
+            return false;
+        }
+
+        int idleElves = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(Race.Elves) : 0;
+        if (idleElves < elfCount)
+        {
+            reason = $"Brak wystarczającej liczby wolnych elfów ({idleElves}/{elfCount}).";
+            return false;
+        }
+
+        var cost = CalculateSurveyCost(coord, elfCount);
+        if (ResourceManager.Instance != null && !cost.CanAfford(
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Gold),
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Food)))
+        {
+            reason = $"Niewystarczające zasoby (Wymagane: {cost.goldCost} Złota, {cost.foodCost} Jedzenia).";
+            return false;
+        }
+
+        reason = string.Empty;
         return true;
     }
+
+    public bool TryStartSurvey(Vector2Int coord, int elfCount)
+    {
+        if (!CanStartSurvey(coord, elfCount, out _)) return false;
+
+        var cost = CalculateSurveyCost(coord, elfCount);
+
+        if (ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.SpendResource(ResourceType.Gold, cost.goldCost);
+            ResourceManager.Instance.SpendResource(ResourceType.Food, cost.foodCost);
+        }
+
+        List<Citizen> assignedElves = null;
+        if (WorkforceManager.Instance != null)
+        {
+            WorkforceManager.Instance.TryAssignExpeditionWorkers(elfCount, out assignedElves);
+        }
+
+        var mission = ScoutingMission.CreateSurvey(coord, cost.days, elfCount, cost.goldCost, cost.foodCost, assignedElves);
+        activeMissions.Add(mission);
+
+        var data = activeChunks[coord];
+        data.surveyDaysRemaining = cost.days;
+        SetChunkBaseState(coord, ChunkState.Surveying);
+
+        OnMissionStarted?.Invoke(mission);
+        OnEquipmentChanged?.Invoke(AvailableEquipment, TotalEquipment);
+        return true;
+    }
+
+    public bool CanStartRecon(Vector2Int coord, out string reason)
+    {
+        if (!activeChunks.TryGetValue(coord, out var data))
+        {
+            reason = "Nieprawidłowy obszar.";
+            return false;
+        }
+
+        if (data.baseState != ChunkState.Borderlands)
+        {
+            reason = "Obszar nie znajduje się na granicy (Borderlands).";
+            return false;
+        }
+
+        if (data.hasActiveMission)
+        {
+            reason = "Na tym obszarze trwa już aktywna misja.";
+            return false;
+        }
+
+        if (data.hasReconIntel)
+        {
+            reason = "Ten obszar został już zbadany przez zwiad wstępny.";
+            return false;
+        }
+
+        int reqElves = costConfig != null ? costConfig.reconElfRequirement : 3;
+        if (AvailableEquipment < reqElves)
+        {
+            reason = $"Brak ekwipunku zwiadowczego ({AvailableEquipment}/{reqElves}).";
+            return false;
+        }
+
+        int idleElves = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(Race.Elves) : 0;
+        if (idleElves < reqElves)
+        {
+            reason = $"Brak wolnych elfów ({idleElves}/{reqElves}).";
+            return false;
+        }
+
+        var cost = CalculateReconCost();
+        if (ResourceManager.Instance != null && !cost.CanAfford(
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Gold),
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Food)))
+        {
+            reason = $"Niewystarczające zasoby (Wymagane: {cost.goldCost} Złota, {cost.foodCost} Jedzenia).";
+            return false;
+        }
+
+        reason = string.Empty;
+        return true;
+    }
+
+    public bool TryStartRecon(Vector2Int coord)
+    {
+        if (!CanStartRecon(coord, out _)) return false;
+
+        var cost = CalculateReconCost();
+        int reqElves = costConfig != null ? costConfig.reconElfRequirement : 3;
+
+        if (ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.SpendResource(ResourceType.Gold, cost.goldCost);
+            ResourceManager.Instance.SpendResource(ResourceType.Food, cost.foodCost);
+        }
+
+        List<Citizen> assignedElves = null;
+        if (WorkforceManager.Instance != null)
+        {
+            WorkforceManager.Instance.TryAssignExpeditionWorkers(reqElves, out assignedElves);
+        }
+
+        var mission = ScoutingMission.CreateRecon(coord, cost.days, reqElves, cost.goldCost, cost.foodCost, assignedElves);
+        activeMissions.Add(mission);
+
+        var data = activeChunks[coord];
+        data.isReconActive = true;
+
+        OnMissionStarted?.Invoke(mission);
+        OnEquipmentChanged?.Invoke(AvailableEquipment, TotalEquipment);
+        return true;
+    }
+
+    public MissionCost CalculateSurveyCost(Vector2Int targetChunk, int elfCount)
+    {
+        bool isRoad = activeChunks.TryGetValue(targetChunk, out var d) && d.isRoadChunk;
+        return ExpansionCostCalculator.CalculateSurveyCost(targetChunk, activeChunks, isRoad, costConfig, elfCount);
+    }
+
+    public MissionCost CalculateReconCost()
+    {
+        return ExpansionCostCalculator.CalculateReconCost(costConfig);
+    }
+
+    public ScoutingMission GetActiveMissionForChunk(Vector2Int targetChunk)
+    {
+        return activeMissions.Find(m => m.targetChunk == targetChunk);
+    }
+
+    public ChunkReconIntel GetChunkReconIntel(Vector2Int targetChunk)
+    {
+        return activeChunks.TryGetValue(targetChunk, out var d) ? d.reconIntel : null;
+    }
+
+    // =========================================================================
+    // Posterunki (Outposts)
+    // =========================================================================
 
     public void RegisterOutpost(OutpostEntity outpost, Vector2Int coord, int daysToSettle)
     {
