@@ -78,6 +78,12 @@ public class BuildingDataEditor : Editor
         {
             BuildingEfficiencyEditorWindow.OpenForBuilding(bData);
         }
+
+        GUI.backgroundColor = new Color(0.4f, 0.85f, 0.5f);
+        if (GUILayout.Button("⚖️ Otwórz w Building Balance Editor (Koszty, Upkeep, Statystyki)", GUILayout.Height(26)))
+        {
+            BuildingBalanceEditorWindow.OpenForBuilding(bData);
+        }
         GUI.backgroundColor = prevBtn;
 
         EditorGUILayout.EndVertical();

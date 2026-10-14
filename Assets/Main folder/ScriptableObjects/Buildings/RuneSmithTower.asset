@@ -27,8 +27,10 @@ MonoBehaviour:
   requiredCitizenRace: 1
   isOutpost: 0
   constructionCost:
-  - type: 0
-    amount: 200
+  - type: 2
+    amount: 100
+  - type: 6
+    amount: 20
   productionPerCycle: []
   upkeepPerCycle: []
   tier1Upgrades: []

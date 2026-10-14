@@ -31,10 +31,8 @@ MonoBehaviour:
   constructionCost:
   - type: 0
     amount: 100
-  - type: 1
-    amount: 80
   - type: 2
-    amount: 50
+    amount: 200
   - type: 6
     amount: 40
   productionPerCycle: []

@@ -18,6 +18,7 @@ MonoBehaviour:
   type: 2
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
+  efficiencyTable: []
   allowedTerrain: 060000000300000000000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
@@ -41,22 +42,15 @@ MonoBehaviour:
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
-  baseShifts: 1
-  baseWorkersPerShift: 1
+  baseMaxWorkers: 1
   isUnlocked: 1
   housingRace: 1
   maxResidents: 4
   initialResidents: 1
   growthDifficultyMultiplier: 2
   baseGrowthTicks: 2
-  productionPerResident:
-  - type: 1
-    amount: 1
-  baseDailyUpkeep:
-  - type: 4
-    amount: 6
-  - type: 1
-    amount: 5
+  productionPerResident: []
+  baseDailyUpkeep: []
   upkeepPerResident:
   - type: 4
     amount: 2

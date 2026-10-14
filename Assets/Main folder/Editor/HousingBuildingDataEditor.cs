@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -9,6 +9,19 @@ public class HousingBuildingDataEditor : Editor
 {
     public override void OnInspectorGUI()
     {
+        HousingBuildingData hData = (HousingBuildingData)target;
+        if (hData != null)
+        {
+            Color prev = GUI.backgroundColor;
+            GUI.backgroundColor = new Color(0.4f, 0.85f, 0.5f);
+            if (GUILayout.Button("⚖️ Otwórz w Building Balance Editor (Koszty, Upkeep, Statystyki)", GUILayout.Height(26)))
+            {
+                BuildingBalanceEditorWindow.OpenForBuilding(hData);
+            }
+            GUI.backgroundColor = prev;
+            EditorGUILayout.Space(4);
+        }
+
         // Aktualizacja obiektu
         serializedObject.Update();
 
