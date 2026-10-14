@@ -28,7 +28,7 @@ public class ResourceManager : MonoBehaviour
 
         if (cityConfig != null)
         {
-            resourceBank[ResourceType.Gold] = cityConfig.startGold;
+            resourceBank[ResourceType.Ether] = cityConfig.startEther;
             resourceBank[ResourceType.Wood] = cityConfig.startWood;
             resourceBank[ResourceType.Stone] = cityConfig.startStone;
             resourceBank[ResourceType.Iron] = cityConfig.startIron;
@@ -38,7 +38,7 @@ public class ResourceManager : MonoBehaviour
         else
         {
             Debug.LogError("[ECONOMY][ResourceManager] BRAK CITY BASE CONFIGU!");
-            resourceBank[ResourceType.Gold] = 999999;
+            resourceBank[ResourceType.Ether] = 999999;
             resourceBank[ResourceType.Wood] = 999999;
             resourceBank[ResourceType.Stone] = 999999;
             resourceBank[ResourceType.Iron] = 999999;

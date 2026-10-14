@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -29,34 +29,41 @@ public class HexHighlighter
     {
         Clear();
 
-        if (data.bonusRule.requiredFeature == HexFeatureType.None) return;
+        if (data == null) return;
+        var rules = data.GetEffectiveBonusRules();
+        if (rules == null || rules.Count == 0) return;
         if (!mapGenerator.worldData.ContainsKey(centerChunk)) return;
 
         var chunkData = mapGenerator.worldData[centerChunk];
 
-        // 1. Ustalenie promienia (Baza z configu)
-        var radius = data.bonusRule.searchRadius <= 0 ? 1 : data.bonusRule.searchRadius;
-
-        // 2. Modyfikacja promienia na podstawie ulepszeń (jeśli inspektujemy już wybudowany budynek)
-        if (entity != null && entity.Upgrades != null)
+        foreach (var rule in rules)
         {
-            if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_1")) radius += 1;
-            if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 2;
-        }
+            if (rule.requiredFeature == HexFeatureType.None) continue;
 
-        // 3. Zbieranie wszystkich kandydatów w promieniu (a nie tylko bezpośrednich sąsiadów)
-        var candidates = GetHexesInRadius(centerLocal, radius);
+            // 1. Ustalenie promienia (Baza z configu)
+            var radius = rule.searchRadius <= 0 ? 1 : rule.searchRadius;
 
-        foreach (var coord in candidates)
-        {
-            if (!chunkData.ContainsKey(coord)) continue;
-            if (chunkData[coord].feature != data.bonusRule.requiredFeature) continue;
+            // 2. Modyfikacja promienia na podstawie ulepszeń (jeśli inspektujemy już wybudowany budynek)
+            if (entity != null && entity.Upgrades != null)
+            {
+                if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_1")) radius += 1;
+                if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 2;
+            }
 
-            var cell = mapGenerator.visualizer.GetHexCell(centerChunk, coord);
-            if (cell == null) continue;
+            // 3. Zbieranie wszystkich kandydatów w promieniu (a nie tylko bezpośrednich sąsiadów)
+            var candidates = GetHexesInRadius(centerLocal, radius);
 
-            cell.ToggleHighlight(true, highlightMat);
-            highlightedHexes.Add(cell);
+            foreach (var coord in candidates)
+            {
+                if (!chunkData.ContainsKey(coord)) continue;
+                if (chunkData[coord].feature != rule.requiredFeature) continue;
+
+                var cell = mapGenerator.visualizer.GetHexCell(centerChunk, coord);
+                if (cell == null || highlightedHexes.Contains(cell)) continue;
+
+                cell.ToggleHighlight(true, highlightMat);
+                highlightedHexes.Add(cell);
+            }
         }
     }
 

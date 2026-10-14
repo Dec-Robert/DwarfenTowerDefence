@@ -29,7 +29,7 @@ MonoBehaviour:
   constructionCost:
   - type: 2
     amount: 20
-  - type: 6
+  - type: 5
     amount: 5
   - type: 0
     amount: 15
@@ -37,12 +37,6 @@ MonoBehaviour:
   upkeepPerCycle: []
   tier1Upgrades: []
   prefab: {fileID: 1253841588521944598, guid: e4ebaf1706ba84b46b677476efc21a57, type: 3}
-  bonusRule:
-    requiredFeature: 0
-    searchRadius: 0
-    baseBonusPerHex: 0
-    penaltyPerUser: 0
-    minBonus: 0
-    onTopProductionBonus: 0
+  bonusRules: []
   baseMaxWorkers: 1
   isUnlocked: 1

@@ -731,7 +731,16 @@ public class ProductionContextWindowUI : MonoBehaviour
         if (pnlProductionResourceCard == null || currentBuilding == null || currentBuilding.data == null) return;
 
         var prodList = currentBuilding.data.productionPerCycle;
-        if (prodList == null || prodList.Count == 0)
+        var terrainBonuses = currentBuilding.Terrain != null ? currentBuilding.Terrain.CalculateTerrainBonuses() : null;
+        Dictionary<ResourceType, float> upgradeBonuses = currentBuilding.Upgrades != null
+            ? currentBuilding.Upgrades.GetAllProductionBonuses()
+            : null;
+
+        bool hasAnyProduction = (prodList != null && prodList.Count > 0) ||
+                                (upgradeBonuses != null && upgradeBonuses.Count > 0) ||
+                                (terrainBonuses != null && terrainBonuses.Count > 0);
+
+        if (!hasAnyProduction)
         {
             pnlProductionResourceCard.SetActive(false);
             return;
@@ -740,21 +749,21 @@ public class ProductionContextWindowUI : MonoBehaviour
         pnlProductionResourceCard.SetActive(true);
         if (pnlModifiersList == null) return;
 
-        // Zbuduj listę produkowanych surowców (bazowe + ewentualne z ulepszeń)
+        // Zbuduj listę produkowanych surowców (bazowe + ewentualne z ulepszeń + ewentualne z terenu)
         List<(ResourceType type, float baseAmount)> resourcesToDisplay = new List<(ResourceType, float)>();
-        Dictionary<ResourceType, float> upgradeBonuses = currentBuilding.Upgrades != null
-            ? currentBuilding.Upgrades.GetAllProductionBonuses()
-            : null;
 
-        for (int i = 0; i < prodList.Count; i++)
+        if (prodList != null)
         {
-            var cost = prodList[i];
-            float flatBonus = 0f;
-            if (upgradeBonuses != null && upgradeBonuses.TryGetValue(cost.type, out float val))
+            for (int i = 0; i < prodList.Count; i++)
             {
-                flatBonus = val;
+                var cost = prodList[i];
+                float flatBonus = 0f;
+                if (upgradeBonuses != null && upgradeBonuses.TryGetValue(cost.type, out float val))
+                {
+                    flatBonus = val;
+                }
+                resourcesToDisplay.Add((cost.type, cost.amount + flatBonus));
             }
-            resourcesToDisplay.Add((cost.type, cost.amount + flatBonus));
         }
 
         if (upgradeBonuses != null)
@@ -762,18 +771,21 @@ public class ProductionContextWindowUI : MonoBehaviour
             foreach (var kvp in upgradeBonuses)
             {
                 if (kvp.Value <= 0f) continue;
-                bool exists = false;
-                for (int i = 0; i < resourcesToDisplay.Count; i++)
-                {
-                    if (resourcesToDisplay[i].type == kvp.Key)
-                    {
-                        exists = true;
-                        break;
-                    }
-                }
-                if (!exists)
+                if (!resourcesToDisplay.Exists(r => r.type == kvp.Key))
                 {
                     resourcesToDisplay.Add((kvp.Key, kvp.Value));
+                }
+            }
+        }
+
+        if (terrainBonuses != null)
+        {
+            foreach (var kvp in terrainBonuses)
+            {
+                if (kvp.Value <= 0f) continue;
+                if (!resourcesToDisplay.Exists(r => r.type == kvp.Key))
+                {
+                    resourcesToDisplay.Add((kvp.Key, 0f));
                 }
             }
         }
@@ -784,18 +796,24 @@ public class ProductionContextWindowUI : MonoBehaviour
 
         // Obliczenia wspólne i terenowe dla budynku
         float terrainMult = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetTerrainMultiplier() : 1f;
-        float rawOnTopBonus = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetOnTopBonus() : 0f;
-        float rawAdjacentBonus = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetAdjacentBonus() : 0f;
-        float effectiveOnTopBonus = rawOnTopBonus * terrainMult;
-        float effectiveAdjacentBonus = rawAdjacentBonus * terrainMult;
 
         float externalMultiplier = currentBuilding.Production != null ? currentBuilding.Production.GetGlobalMultiplier() : 1f;
         float crewEff = currentBuilding.Production != null ? currentBuilding.Production.GetCrewEfficiency() : 0f;
 
         // Globalna widoczność wierszy tabeli (spójna dla Pnl_StaticText i każdej kolumny Pnl_ResourceColumn)
         bool showBase = true;
-        bool showOnTop = effectiveOnTopBonus > 0.001f;
-        bool showAdjacent = effectiveAdjacentBonus > 0.001f;
+        bool showOnTop = false;
+        bool showAdjacent = false;
+
+        for (int i = 0; i < resourcesToDisplay.Count; i++)
+        {
+            ResourceType rt = resourcesToDisplay[i].type;
+            float onTop = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetOnTopBonus(rt) * terrainMult : 0f;
+            float adj = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetAdjacentBonus(rt) * terrainMult : 0f;
+            if (onTop > 0.001f) showOnTop = true;
+            if (adj > 0.001f) showAdjacent = true;
+        }
+
         bool showExtMult = !Mathf.Approximately(externalMultiplier, 1.0f);
         bool showCrewEff = true;
 
@@ -855,10 +873,8 @@ public class ProductionContextWindowUI : MonoBehaviour
             ResourceType resType = resourcesToDisplay[i].type;
             float baseAmountWithUpgrade = resourcesToDisplay[i].baseAmount;
 
-            // Premie terenowe dotyczą pierwszego/głównego produkowanego surowca
-            bool isPrimary = (i == 0);
-            float colOnTop = isPrimary ? effectiveOnTopBonus : 0f;
-            float colAdjacent = isPrimary ? effectiveAdjacentBonus : 0f;
+            float colOnTop = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetOnTopBonus(resType) * terrainMult : 0f;
+            float colAdjacent = currentBuilding.Terrain != null ? currentBuilding.Terrain.GetAdjacentBonus(resType) * terrainMult : 0f;
 
             float baseWithFlats = baseAmountWithUpgrade + colOnTop + colAdjacent;
             float netTotal = currentBuilding.isBuildingActive ? (baseWithFlats * externalMultiplier * crewEff) : 0f;
@@ -877,8 +893,16 @@ public class ProductionContextWindowUI : MonoBehaviour
                 colView.rowBase.SetActive(showBase);
                 if (colView.txtBaseValue != null)
                 {
-                    colView.txtBaseValue.text = $"+{baseAmountWithUpgrade:0.#}";
-                    colView.txtBaseValue.color = colBaseColor;
+                    if (baseAmountWithUpgrade > 0.001f)
+                    {
+                        colView.txtBaseValue.text = $"+{baseAmountWithUpgrade:0.#}";
+                        colView.txtBaseValue.color = colBaseColor;
+                    }
+                    else
+                    {
+                        colView.txtBaseValue.text = "-";
+                        colView.txtBaseValue.color = colNeutralDashColor;
+                    }
                 }
             }
 

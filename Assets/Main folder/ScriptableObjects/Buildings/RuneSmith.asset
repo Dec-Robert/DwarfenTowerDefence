@@ -33,7 +33,7 @@ MonoBehaviour:
     amount: 20
   - type: 2
     amount: 40
-  - type: 6
+  - type: 5
     amount: 10
   - type: 1
     amount: 40
@@ -43,12 +43,6 @@ MonoBehaviour:
     amount: 2
   tier1Upgrades: []
   prefab: {fileID: 1253841588521944598, guid: 84cdae73d5ef63943aa2dc6ab913954e, type: 3}
-  bonusRule:
-    requiredFeature: 0
-    searchRadius: 0
-    baseBonusPerHex: 0
-    penaltyPerUser: 0
-    minBonus: 0
-    onTopProductionBonus: 0
+  bonusRules: []
   baseMaxWorkers: 1
   isUnlocked: 1

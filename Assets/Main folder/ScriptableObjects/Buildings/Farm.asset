@@ -47,12 +47,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e3a2d0267fa4fcd43858be9e402dafa6, type: 2}
   - {fileID: 11400000, guid: 602960ad5b67a88448134919c3b2e80e, type: 2}
   prefab: {fileID: 2413402597642724196, guid: 03adf5a8c6caa8f45a2868a6af66e344, type: 3}
-  bonusRule:
-    requiredFeature: 5
+  bonusRules:
+  - requiredFeature: 5
     searchRadius: 1
-    baseBonusPerHex: 5
-    penaltyPerUser: 2
-    minBonus: 0
-    onTopProductionBonus: 10
+    resourceYields:
+    - resourceType: 4
+      baseBonusPerHex: 5
+      onTopProductionBonus: 10
+      penaltyPerUser: 2
+      minBonus: 0
   baseMaxWorkers: 1
   isUnlocked: 1

@@ -2546,7 +2546,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
 
         return upgrade.effectType switch
         {
-            MetaEffectType.StartingGold                         => $"+{v} złota",
+            MetaEffectType.StartingEther                        => $"+{v} Kryształ Eteru",
             MetaEffectType.StartingWood                         => $"+{v} drewna",
             MetaEffectType.StartingStone                        => $"+{v} kamienia",
             MetaEffectType.StartingIron                         => $"+{v} żelaza",
@@ -2586,7 +2586,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
 
     private string GetEffectValueLabel(MetaEffectType type) => type switch
     {
-        MetaEffectType.StartingGold
+        MetaEffectType.StartingEther
             or MetaEffectType.StartingWood
             or MetaEffectType.StartingStone
             or MetaEffectType.StartingIron

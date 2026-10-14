@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
   m_Name: Mines_T1_New 1
   m_EditorClassIdentifier: 
-  upgradeName: "Kopalnia z\u0142ota"
+  upgradeName: Kopalnia Eteru
   icon: {fileID: 0}
   description: 
   cost: []
@@ -21,7 +21,7 @@ MonoBehaviour:
     amount: 34
   - type: 3
     amount: -2
-  - type: 6
+  - type: 5
     amount: -2
   upkeepIncrease: []
   globalProductionMultiplierBonus: 0

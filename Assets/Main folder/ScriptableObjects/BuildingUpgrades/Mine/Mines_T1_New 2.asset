@@ -21,7 +21,7 @@ MonoBehaviour:
     amount: 8
   - type: 0
     amount: -6
-  - type: 6
+  - type: 5
     amount: -2
   upkeepIncrease: []
   globalProductionMultiplierBonus: 0

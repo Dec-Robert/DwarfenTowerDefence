@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -82,7 +82,7 @@ public class LiveSessionMonitorWindow : EditorWindow
 
         DrawTableHeader("Surowiec", "Baza (Config)", "Bonus z Meta", "Aktualny Stan Konta");
 
-        DrawResourceRow(ResourceType.Gold, MetaEffectType.StartingGold);
+        DrawResourceRow(ResourceType.Ether, MetaEffectType.StartingEther);
         DrawResourceRow(ResourceType.Wood, MetaEffectType.StartingWood);
         DrawResourceRow(ResourceType.Stone, MetaEffectType.StartingStone);
         DrawResourceRow(ResourceType.Iron, MetaEffectType.StartingIron);
@@ -102,7 +102,7 @@ public class LiveSessionMonitorWindow : EditorWindow
             var cfg = ResourceManager.Instance.cityConfig;
             switch (type)
             {
-                case ResourceType.Gold: baseAmount = cfg.startGold; break;
+                case ResourceType.Ether: baseAmount = cfg.startEther; break;
                 case ResourceType.Wood: baseAmount = cfg.startWood; break;
                 case ResourceType.Stone: baseAmount = cfg.startStone; break;
                 case ResourceType.Iron: baseAmount = cfg.startIron; break;

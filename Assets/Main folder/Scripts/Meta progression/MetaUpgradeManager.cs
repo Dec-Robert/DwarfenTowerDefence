@@ -160,8 +160,8 @@ public class MetaUpgradeManager : MonoBehaviour
         switch (type)
         {
             // ── Surowce startowe ──────────────────────────────────────────────
-            case MetaEffectType.StartingGold:
-                ResourceManager.Instance?.AddResource(ResourceType.Gold, (int)value);
+            case MetaEffectType.StartingEther:
+                ResourceManager.Instance?.AddResource(ResourceType.Ether, (int)value);
                 break;
             case MetaEffectType.StartingWood:
                 ResourceManager.Instance?.AddResource(ResourceType.Wood, (int)value);

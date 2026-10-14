@@ -61,7 +61,15 @@ public class BuildingData : ScriptableObject
     public GameObject prefab;
 
     [Header("Zasady Produkcji Terenowej")] 
-    public TerrainBonusRule bonusRule;
+    public List<TerrainBonusRule> bonusRules = new List<TerrainBonusRule>();
+
+    /// <summary>
+    /// Zwraca listę reguł bonusów terenowych dla danego budynku.
+    /// </summary>
+    public List<TerrainBonusRule> GetEffectiveBonusRules()
+    {
+        return bonusRules ?? new List<TerrainBonusRule>();
+    }
 
     [Header("Pracownicy (Baza)")] public int baseMaxWorkers = 1;
 

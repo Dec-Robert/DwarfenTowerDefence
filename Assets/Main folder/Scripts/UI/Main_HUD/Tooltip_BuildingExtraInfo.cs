@@ -389,9 +389,34 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
         if (txtBonusForSurround != null)
         {
-            if (data.bonusRule.baseBonusPerHex > 0)
+            var rules = data.GetEffectiveBonusRules();
+            List<string> ruleDescriptions = new List<string>();
+
+            if (rules != null)
             {
-                txtBonusForSurround.text = $"Sąsiedztwo [{data.bonusRule.requiredFeature}]: +{data.bonusRule.baseBonusPerHex}";
+                foreach (var rule in rules)
+                {
+                    if (rule.requiredFeature == HexFeatureType.None || rule.resourceYields == null || rule.resourceYields.Count == 0) continue;
+
+                    List<string> yieldParts = new List<string>();
+                    foreach (var y in rule.resourceYields)
+                    {
+                        if (y.baseBonusPerHex > 0f)
+                        {
+                            yieldParts.Add($"+{y.baseBonusPerHex:0.#} {y.resourceType}");
+                        }
+                    }
+
+                    if (yieldParts.Count > 0)
+                    {
+                        ruleDescriptions.Add($"Sąsiedztwo [{rule.requiredFeature}]: {string.Join(", ", yieldParts)}");
+                    }
+                }
+            }
+
+            if (ruleDescriptions.Count > 0)
+            {
+                txtBonusForSurround.text = string.Join("\n", ruleDescriptions);
             }
             else
             {

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d10231103b6e4b888b338f11cf417c4c, type: 3}
   m_Name: CityBaseConfig
   m_EditorClassIdentifier: 
-  startGold: 15
+  startEther: 15
   startWood: 35
   startStone: 20
   startIron: 0

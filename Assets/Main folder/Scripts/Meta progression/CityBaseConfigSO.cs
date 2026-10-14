@@ -1,11 +1,13 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.Serialization;
 using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "CityBaseConfig", menuName = "Tower Defense/City Base Config")]
 public class CityBaseConfigSO : ScriptableObject
 {
     [Header("── Surowce Startowe Bazy ──")]
-    public int startGold = 100;
+    [FormerlySerializedAs("startGold")]
+    public int startEther = 100;
     public int startWood = 50;
     public int startStone = 0;
     public int startIron = 0;

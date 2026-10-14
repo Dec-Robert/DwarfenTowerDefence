@@ -22,7 +22,6 @@ MonoBehaviour:
     feature: 1
     featureLevel: 0
     building: {fileID: 0}
-  - localCoord: {x: 3, y: 1}
     feature: 1
     featureLevel: 0
     building: {fileID: 0}

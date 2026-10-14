@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -22,10 +23,11 @@ public class GateEntity : MonoBehaviour
     public float hpCostPerBoss = 1f;
 
     [Header("Koszt Odbudowy")]
-    [Tooltip("Bazowy koszt odbudowy w złocie")]
-    public float baseRebuildCostGold = 50f;
+    [FormerlySerializedAs("baseRebuildCostGold")]
+    [Tooltip("Bazowy koszt odbudowy w Kryształach Eteru")]
+    public float baseRebuildCostEther = 50f;
 
-    [Tooltip("O ile złota rośnie koszt za każdą falę")]
+    [Tooltip("O ile Kryształów Eteru rośnie koszt za każdą falę")]
     public float rebuildCostGrowthPerWave = 10f;
 
     [Header("Wizualizacja")]
@@ -122,7 +124,7 @@ public class GateEntity : MonoBehaviour
     public int GetRebuildCost()
     {
         var wave = TimePhaseManager.Instance != null ? TimePhaseManager.Instance.CurrentDay : 0;
-        return Mathf.RoundToInt(baseRebuildCostGold + rebuildCostGrowthPerWave * wave);
+        return Mathf.RoundToInt(baseRebuildCostEther + rebuildCostGrowthPerWave * wave);
     }
 
     public bool TryRebuild()
@@ -140,12 +142,12 @@ public class GateEntity : MonoBehaviour
 
         var cost = GetRebuildCost();
         if (ResourceManager.Instance == null ||
-            !ResourceManager.Instance.CanAfford(ResourceType.Gold, cost))
+            !ResourceManager.Instance.CanAfford(ResourceType.Ether, cost))
         {
             return false;
         }
 
-        ResourceManager.Instance.SpendResource(ResourceType.Gold, cost);
+        ResourceManager.Instance.SpendResource(ResourceType.Ether, cost);
 
         CurrentHP = maxHP;
         IsDestroyed = false;

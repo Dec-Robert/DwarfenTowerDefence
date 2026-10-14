@@ -392,7 +392,7 @@ public class DebugCheatManager : MonoBehaviour
             switch (sub)
             {
                 case "res":
-                    LogInfo("<b>res &lt;typ&gt; &lt;ilość&gt;</b> - Dodaje określoną ilość surowca (np. res gold 500, res wood 100).");
+                    LogInfo("<b>res &lt;typ&gt; &lt;ilość&gt;</b> - Dodaje określoną ilość surowca (np. res ether 500, res eter 500, res wood 100).");
                     LogInfo("<b>res all &lt;ilość&gt;</b> - Dodaje podaną ilość do każdego surowca.");
                     LogInfo("<b>res clear</b> - Zeruje stan wszystkich surowców do zera.");
                     break;
@@ -498,9 +498,14 @@ public class DebugCheatManager : MonoBehaviour
         }
 
         // Pojedynczy surowiec
-        if (!Enum.TryParse(sub, true, out ResourceType resType))
+        ResourceType resType;
+        if (sub.Equals("eter", StringComparison.OrdinalIgnoreCase))
         {
-            string available = string.Join(", ", Enum.GetNames(typeof(ResourceType)));
+            resType = ResourceType.Ether;
+        }
+        else if (!Enum.TryParse(sub, true, out resType))
+        {
+            string available = string.Join(", ", Enum.GetNames(typeof(ResourceType))) + ", eter";
             LogError($"Nieznany surowiec '{sub}'. Dostępne: {available}");
             return;
         }

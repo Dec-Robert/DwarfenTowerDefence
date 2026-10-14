@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -29,7 +29,7 @@ public class HexMapGenerator : MonoBehaviour
     public int mapMaxY   = 6;
 
     [Header("Ustawienia Chunku")]
-    public int   chunkRadius = 4;
+    public int   chunkRadius = 3;
     public float hexSize     = 1f;
     public float padding     = 0.02f;
 
@@ -100,10 +100,10 @@ public class HexMapGenerator : MonoBehaviour
         [Range(0, 100)] public int windingWeight    = 40;
         [Range(0, 100)] public int mazeWeight       = 40;
         public int wallCost          = 50;
-        public int windingWallCount  = 3;
+        public int windingWallCount  = 2;
         public int windingWallLength = 3;
-        public int mazeWallCount     = 10;
-        public int mazeWallLength    = 4;
+        public int mazeWallCount     = 5;
+        public int mazeWallLength    = 3;
     }
 
     // =========================================================================

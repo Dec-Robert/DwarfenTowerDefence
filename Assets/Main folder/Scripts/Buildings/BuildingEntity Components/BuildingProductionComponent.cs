@@ -119,11 +119,13 @@ public class BuildingProductionComponent
 
         if (terrainComponent != null)
         {
-            float terrainBonus = terrainComponent.CalculateTerrainBonus();
-            if (terrainBonus > 0f && data.productionPerCycle != null && data.productionPerCycle.Count > 0)
+            var terrainBonuses = terrainComponent.CalculateTerrainBonuses();
+            foreach (var kvp in terrainBonuses)
             {
-                var mainRes = data.productionPerCycle[0].type;
-                AddToDict(total, mainRes, terrainBonus);
+                if (kvp.Value > 0f)
+                {
+                    AddToDict(total, kvp.Key, kvp.Value);
+                }
             }
         }
 

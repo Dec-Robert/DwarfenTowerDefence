@@ -782,7 +782,7 @@ public class HousingContextWindowUI : MonoBehaviour
     {
         return type switch
         {
-            ResourceType.Gold => "Złoto",
+            ResourceType.Ether => "Kryształ Eteru",
             ResourceType.Wood => "Drewno",
             ResourceType.Stone => "Kamień",
             ResourceType.Iron => "Żelazo",

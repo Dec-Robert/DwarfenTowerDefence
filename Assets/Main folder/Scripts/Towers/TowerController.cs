@@ -287,8 +287,10 @@ public class TowerController : MonoBehaviour
             {
                 if (activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk && towerData.canShootChunk)
                 {
-                    float hexSize = 35f;
-                    targetPos = HexGridMath.GetChunkCenterWorld(targetChunkCoord, 4, hexSize, 0f);
+                    int radius = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.chunkRadius : 3;
+                    float hexSize = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.hexSize : 1f;
+                    float pad = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.padding : 0f;
+                    targetPos = HexGridMath.GetChunkCenterWorld(targetChunkCoord, radius, hexSize, pad);
                 }
                 else
                 {

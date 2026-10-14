@@ -38,7 +38,6 @@ MonoBehaviour:
     feature: 5
     featureLevel: 0
     building: {fileID: 0}
-  - localCoord: {x: 0, y: -4}
     feature: 5
     featureLevel: 0
     building: {fileID: 0}

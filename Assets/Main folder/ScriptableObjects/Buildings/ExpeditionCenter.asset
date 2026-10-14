@@ -37,12 +37,6 @@ MonoBehaviour:
   upkeepPerCycle: []
   tier1Upgrades: []
   prefab: {fileID: 1253841588521944598, guid: 24bb6747c09a7b047bca852207347540, type: 3}
-  bonusRule:
-    requiredFeature: 0
-    searchRadius: 0
-    baseBonusPerHex: 0
-    penaltyPerUser: 0
-    minBonus: 0
-    onTopProductionBonus: 0
+  bonusRules: []
   baseMaxWorkers: 1
   isUnlocked: 1

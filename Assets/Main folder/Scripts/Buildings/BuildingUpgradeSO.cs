@@ -21,7 +21,7 @@ public class BuildingUpgradeSO : ScriptableObject
         "Globalny mnożnik dodawany do CAŁEJ produkcji budynku (baza + teren). Np. 0.2 to +20% ogólnej wydajności.")]
     public float globalProductionMultiplierBonus;
 
-    [Tooltip("Globalny mnożnik dodawany do CAŁYCH kosztów utrzymania. Np. 0.5 to +50% kosztów węgla i złota.")]
+    [Tooltip("Globalny mnożnik dodawany do CAŁYCH kosztów utrzymania. Np. 0.5 to +50% kosztów węgla i Kryształu Eteru.")]
     public float globalUpkeepMultiplierBonus;
 
     [Header("Modyfikatory Terenu")]

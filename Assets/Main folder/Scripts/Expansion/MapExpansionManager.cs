@@ -441,10 +441,10 @@ public class MapExpansionManager : MonoBehaviour
 
         var cost = CalculateSurveyCost(coord, elfCount);
         if (ResourceManager.Instance != null && !cost.CanAfford(
-                ResourceManager.Instance.GetResourceAmount(ResourceType.Gold),
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Ether),
                 ResourceManager.Instance.GetResourceAmount(ResourceType.Food)))
         {
-            reason = $"Niewystarczające zasoby (Wymagane: {cost.goldCost} Złota, {cost.foodCost} Jedzenia).";
+            reason = $"Niewystarczające zasoby (Wymagane: {cost.etherCost} Kryształ Eteru, {cost.foodCost} Jedzenia).";
             return false;
         }
 
@@ -460,7 +460,7 @@ public class MapExpansionManager : MonoBehaviour
 
         if (ResourceManager.Instance != null)
         {
-            ResourceManager.Instance.SpendResource(ResourceType.Gold, cost.goldCost);
+            ResourceManager.Instance.SpendResource(ResourceType.Ether, cost.etherCost);
             ResourceManager.Instance.SpendResource(ResourceType.Food, cost.foodCost);
         }
 
@@ -470,7 +470,7 @@ public class MapExpansionManager : MonoBehaviour
             WorkforceManager.Instance.TryAssignExpeditionWorkers(elfCount, out assignedElves);
         }
 
-        var mission = ScoutingMission.CreateSurvey(coord, cost.days, elfCount, cost.goldCost, cost.foodCost, assignedElves);
+        var mission = ScoutingMission.CreateSurvey(coord, cost.days, elfCount, cost.etherCost, cost.foodCost, assignedElves);
         activeMissions.Add(mission);
 
         var data = activeChunks[coord];
@@ -524,10 +524,10 @@ public class MapExpansionManager : MonoBehaviour
 
         var cost = CalculateReconCost();
         if (ResourceManager.Instance != null && !cost.CanAfford(
-                ResourceManager.Instance.GetResourceAmount(ResourceType.Gold),
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Ether),
                 ResourceManager.Instance.GetResourceAmount(ResourceType.Food)))
         {
-            reason = $"Niewystarczające zasoby (Wymagane: {cost.goldCost} Złota, {cost.foodCost} Jedzenia).";
+            reason = $"Niewystarczające zasoby (Wymagane: {cost.etherCost} Kryształ Eteru, {cost.foodCost} Jedzenia).";
             return false;
         }
 
@@ -544,7 +544,7 @@ public class MapExpansionManager : MonoBehaviour
 
         if (ResourceManager.Instance != null)
         {
-            ResourceManager.Instance.SpendResource(ResourceType.Gold, cost.goldCost);
+            ResourceManager.Instance.SpendResource(ResourceType.Ether, cost.etherCost);
             ResourceManager.Instance.SpendResource(ResourceType.Food, cost.foodCost);
         }
 
@@ -554,7 +554,7 @@ public class MapExpansionManager : MonoBehaviour
             WorkforceManager.Instance.TryAssignExpeditionWorkers(reqElves, out assignedElves);
         }
 
-        var mission = ScoutingMission.CreateRecon(coord, cost.days, reqElves, cost.goldCost, cost.foodCost, assignedElves);
+        var mission = ScoutingMission.CreateRecon(coord, cost.days, reqElves, cost.etherCost, cost.foodCost, assignedElves);
         activeMissions.Add(mission);
 
         var data = activeChunks[coord];

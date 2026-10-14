@@ -1082,7 +1082,7 @@ MonoBehaviour:
   mapWidth: 8
   mapMinY: -3
   mapMaxY: 3
-  chunkRadius: 4
+  chunkRadius: 3
   hexSize: 1
   padding: 0
   minChunkDistance: 11
@@ -1127,7 +1127,7 @@ MonoBehaviour:
     sinkholeChance: 40
     fertileSoilChance: 0
   specialChunkTypes: []
-  baseRoadEndLocal: {x: 4, y: -2}
+  baseRoadEndLocal: {x: 3, y: -2}
   internalSettings:
     highwayWeight: 20
     windingWeight: 30
@@ -1135,8 +1135,8 @@ MonoBehaviour:
     wallCost: 50
     windingWallCount: 2
     windingWallLength: 3
-    mazeWallCount: 6
-    mazeWallLength: 5
+    mazeWallCount: 5
+    mazeWallLength: 3
 --- !u!4 &1837610583
 Transform:
   m_ObjectHideFlags: 0
@@ -35924,7 +35924,7 @@ GameObject:
   - component: {fileID: 6157477717816903278}
   - component: {fileID: 3928301231389631083}
   m_Layer: 5
-  m_Name: Pnl_SingleResource_Gold
+  m_Name: Pnl_SingleResource_Ether
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -140797,7 +140797,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
   ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
-  resourceType: 6
+  resourceType: 5
   trackResourceManager: 1
   ammount: {fileID: 4324404163361638276}
   icon: {fileID: 3987525515806011867}

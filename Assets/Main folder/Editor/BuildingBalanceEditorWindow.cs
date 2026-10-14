@@ -67,7 +67,7 @@ public class BuildingBalanceEditorWindow : EditorWindow
         public int baseMaxWorkers;
 
         // Terrain bonus & Placement
-        public TerrainBonusRule bonusRule;
+        public List<TerrainBonusRule> bonusRules = new List<TerrainBonusRule>();
         public List<HexFeatureType> allowedTerrain = new List<HexFeatureType>();
         public bool requiresOccupiedSpace;
 
@@ -916,60 +916,100 @@ public class BuildingBalanceEditorWindow : EditorWindow
             GUILayout.Label(GetCategoryBadge(b), EditorStyles.miniLabel, GUILayout.Width(typeWidth));
 
             // Wymagany Teren (HexFeatureType)
+            if (b.bonusRules == null) b.bonusRules = new List<TerrainBonusRule>();
+            TerrainBonusRule primaryRule = b.bonusRules.Count > 0 ? b.bonusRules[0] : null;
+
             Color prevBg = GUI.backgroundColor;
-            bool hasTerrainBonus = b.bonusRule.requiredFeature != HexFeatureType.None;
+            bool hasTerrainBonus = primaryRule != null && primaryRule.requiredFeature != HexFeatureType.None;
             if (hasTerrainBonus) GUI.backgroundColor = new Color(0.6f, 0.95f, 0.65f);
-            HexFeatureType newFeat = (HexFeatureType)EditorGUILayout.EnumPopup(b.bonusRule.requiredFeature, GUILayout.Width(featureWidth));
+            HexFeatureType curFeat = primaryRule != null ? primaryRule.requiredFeature : HexFeatureType.None;
+            HexFeatureType newFeat = (HexFeatureType)EditorGUILayout.EnumPopup(curFeat, GUILayout.Width(featureWidth));
             GUI.backgroundColor = prevBg;
-            if (newFeat != b.bonusRule.requiredFeature)
+
+            if (newFeat != curFeat)
             {
                 Undo.RecordObject(b, "Zmień requiredFeature");
-                b.bonusRule.requiredFeature = newFeat;
+                if (newFeat != HexFeatureType.None)
+                {
+                    if (primaryRule == null)
+                    {
+                        primaryRule = new TerrainBonusRule { searchRadius = 1, resourceYields = new List<TerrainResourceYield>() };
+                        b.bonusRules.Add(primaryRule);
+                    }
+                    primaryRule.requiredFeature = newFeat;
+                    if (primaryRule.resourceYields == null) primaryRule.resourceYields = new List<TerrainResourceYield>();
+                    if (primaryRule.resourceYields.Count == 0)
+                    {
+                        ResourceType targetRes = (b.productionPerCycle != null && b.productionPerCycle.Count > 0) ? b.productionPerCycle[0].type : ResourceType.Wood;
+                        primaryRule.resourceYields.Add(new TerrainResourceYield { resourceType = targetRes, baseBonusPerHex = 1f });
+                    }
+                }
+                else
+                {
+                    if (primaryRule != null)
+                    {
+                        b.bonusRules.Remove(primaryRule);
+                        primaryRule = null;
+                    }
+                }
                 EditorUtility.SetDirty(b);
             }
 
             // Promień poszukiwania
-            int newRadius = EditorGUILayout.IntField(b.bonusRule.searchRadius, activeCellStyle, GUILayout.Width(radiusWidth));
-            if (newRadius != b.bonusRule.searchRadius)
+            int curRadius = primaryRule != null ? primaryRule.searchRadius : 1;
+            int newRadius = EditorGUILayout.IntField(curRadius, activeCellStyle, GUILayout.Width(radiusWidth));
+            if (primaryRule != null && newRadius != primaryRule.searchRadius)
             {
                 Undo.RecordObject(b, "Zmień searchRadius");
-                b.bonusRule.searchRadius = Mathf.Max(1, newRadius);
+                primaryRule.searchRadius = Mathf.Max(1, newRadius);
                 EditorUtility.SetDirty(b);
             }
 
             // Bazowy bonus per heks
-            float newBaseBonus = EditorGUILayout.FloatField(b.bonusRule.baseBonusPerHex, activeCellStyle, GUILayout.Width(bonusWidth));
-            if (Mathf.Abs(newBaseBonus - b.bonusRule.baseBonusPerHex) > 0.001f)
+            float curBase = (primaryRule != null && primaryRule.resourceYields != null && primaryRule.resourceYields.Count > 0) ? primaryRule.resourceYields[0].baseBonusPerHex : 0f;
+            float newBaseBonus = EditorGUILayout.FloatField(curBase, activeCellStyle, GUILayout.Width(bonusWidth));
+            if (primaryRule != null && primaryRule.resourceYields != null && primaryRule.resourceYields.Count > 0 && Mathf.Abs(newBaseBonus - curBase) > 0.001f)
             {
                 Undo.RecordObject(b, "Zmień baseBonusPerHex");
-                b.bonusRule.baseBonusPerHex = newBaseBonus;
+                var y = primaryRule.resourceYields[0];
+                y.baseBonusPerHex = newBaseBonus;
+                primaryRule.resourceYields[0] = y;
                 EditorUtility.SetDirty(b);
             }
 
             // Kara za użytkownika
-            float newPenalty = EditorGUILayout.FloatField(b.bonusRule.penaltyPerUser, activeCellStyle, GUILayout.Width(penaltyWidth));
-            if (Mathf.Abs(newPenalty - b.bonusRule.penaltyPerUser) > 0.001f)
+            float curPenalty = (primaryRule != null && primaryRule.resourceYields != null && primaryRule.resourceYields.Count > 0) ? primaryRule.resourceYields[0].penaltyPerUser : 0f;
+            float newPenalty = EditorGUILayout.FloatField(curPenalty, activeCellStyle, GUILayout.Width(penaltyWidth));
+            if (primaryRule != null && primaryRule.resourceYields != null && primaryRule.resourceYields.Count > 0 && Mathf.Abs(newPenalty - curPenalty) > 0.001f)
             {
                 Undo.RecordObject(b, "Zmień penaltyPerUser");
-                b.bonusRule.penaltyPerUser = newPenalty;
+                var y = primaryRule.resourceYields[0];
+                y.penaltyPerUser = newPenalty;
+                primaryRule.resourceYields[0] = y;
                 EditorUtility.SetDirty(b);
             }
 
             // Min bonus
-            float newMin = EditorGUILayout.FloatField(b.bonusRule.minBonus, activeCellStyle, GUILayout.Width(minBonusWidth));
-            if (Mathf.Abs(newMin - b.bonusRule.minBonus) > 0.001f)
+            float curMin = (primaryRule != null && primaryRule.resourceYields != null && primaryRule.resourceYields.Count > 0) ? primaryRule.resourceYields[0].minBonus : 0f;
+            float newMin = EditorGUILayout.FloatField(curMin, activeCellStyle, GUILayout.Width(minBonusWidth));
+            if (primaryRule != null && primaryRule.resourceYields != null && primaryRule.resourceYields.Count > 0 && Mathf.Abs(newMin - curMin) > 0.001f)
             {
                 Undo.RecordObject(b, "Zmień minBonus");
-                b.bonusRule.minBonus = newMin;
+                var y = primaryRule.resourceYields[0];
+                y.minBonus = newMin;
+                primaryRule.resourceYields[0] = y;
                 EditorUtility.SetDirty(b);
             }
 
             // On-Top bonus
-            float newOnTop = EditorGUILayout.FloatField(b.bonusRule.onTopProductionBonus, activeCellStyle, GUILayout.Width(onTopWidth));
-            if (Mathf.Abs(newOnTop - b.bonusRule.onTopProductionBonus) > 0.001f)
+            float curOnTop = (primaryRule != null && primaryRule.resourceYields != null && primaryRule.resourceYields.Count > 0) ? primaryRule.resourceYields[0].onTopProductionBonus : 0f;
+            float newOnTop = EditorGUILayout.FloatField(curOnTop, activeCellStyle, GUILayout.Width(onTopWidth));
+            if (primaryRule != null && primaryRule.resourceYields != null && primaryRule.resourceYields.Count > 0 && Mathf.Abs(newOnTop - curOnTop) > 0.001f)
             {
                 Undo.RecordObject(b, "Zmień onTopProductionBonus");
-                b.bonusRule.onTopProductionBonus = newOnTop;
+                var y = primaryRule.resourceYields[0];
+                y.onTopProductionBonus = newOnTop;
+                primaryRule.resourceYields[0] = y;
                 EditorUtility.SetDirty(b);
             }
 
@@ -1603,78 +1643,115 @@ public class BuildingBalanceEditorWindow : EditorWindow
 
         // 1. Sekcja Bonusu Terenowego
         EditorGUILayout.BeginVertical(GUI.skin.box);
-        EditorGUILayout.LabelField("Reguła Bonusu Sąsiedztwa (Terrain Bonus Rule):", EditorStyles.miniBoldLabel);
-
         EditorGUILayout.BeginHorizontal();
-        HexFeatureType newFeat = (HexFeatureType)EditorGUILayout.EnumPopup("Wymagany Teren (Feature):", b.bonusRule.requiredFeature);
-        if (newFeat != b.bonusRule.requiredFeature)
+        EditorGUILayout.LabelField("Reguły Bonusu Terenowego (Terrain Bonus Rules):", EditorStyles.miniBoldLabel);
+        if (GUILayout.Button("➕ Dodaj Regułę Terenu", EditorStyles.miniButton, GUILayout.Width(160)))
         {
-            Undo.RecordObject(b, "Zmień requiredFeature");
-            b.bonusRule.requiredFeature = newFeat;
-            EditorUtility.SetDirty(b);
-        }
-
-        int newRadius = EditorGUILayout.IntSlider("Promień Szukania (Radius):", b.bonusRule.searchRadius, 1, 5);
-        if (newRadius != b.bonusRule.searchRadius)
-        {
-            Undo.RecordObject(b, "Zmień searchRadius");
-            b.bonusRule.searchRadius = Mathf.Max(1, newRadius);
+            Undo.RecordObject(b, "Dodaj regułę terenu");
+            if (b.bonusRules == null) b.bonusRules = new List<TerrainBonusRule>();
+            b.bonusRules.Add(new TerrainBonusRule { searchRadius = 1, resourceYields = new List<TerrainResourceYield>() });
             EditorUtility.SetDirty(b);
         }
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
-        float newBonus = EditorGUILayout.FloatField("Bonus za Heks (baseBonusPerHex):", b.bonusRule.baseBonusPerHex);
-        if (Mathf.Abs(newBonus - b.bonusRule.baseBonusPerHex) > 0.001f)
+        if (b.bonusRules != null && b.bonusRules.Count > 0)
         {
-            Undo.RecordObject(b, "Zmień baseBonusPerHex");
-            b.bonusRule.baseBonusPerHex = newBonus;
-            EditorUtility.SetDirty(b);
-        }
+            for (int rIdx = 0; rIdx < b.bonusRules.Count; rIdx++)
+            {
+                var rule = b.bonusRules[rIdx];
+                if (rule == null) continue;
 
-        float newPenalty = EditorGUILayout.FloatField("Kara za Innego Użytkownika:", b.bonusRule.penaltyPerUser);
-        if (Mathf.Abs(newPenalty - b.bonusRule.penaltyPerUser) > 0.001f)
-        {
-            Undo.RecordObject(b, "Zmień penaltyPerUser");
-            b.bonusRule.penaltyPerUser = newPenalty;
-            EditorUtility.SetDirty(b);
-        }
-        EditorGUILayout.EndHorizontal();
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"Reguła #{rIdx + 1}: {rule.requiredFeature}", EditorStyles.boldLabel);
+                GUI.backgroundColor = new Color(1f, 0.6f, 0.6f);
+                if (GUILayout.Button("Usuń regułę", EditorStyles.miniButton, GUILayout.Width(90)))
+                {
+                    Undo.RecordObject(b, "Usuń regułę terenu");
+                    b.bonusRules.RemoveAt(rIdx);
+                    EditorUtility.SetDirty(b);
+                    GUI.backgroundColor = Color.white;
+                    break;
+                }
+                GUI.backgroundColor = Color.white;
+                EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
-        float newMin = EditorGUILayout.FloatField("Minimalny Bonus (minBonus):", b.bonusRule.minBonus);
-        if (Mathf.Abs(newMin - b.bonusRule.minBonus) > 0.001f)
-        {
-            Undo.RecordObject(b, "Zmień minBonus");
-            b.bonusRule.minBonus = newMin;
-            EditorUtility.SetDirty(b);
-        }
+                EditorGUILayout.BeginHorizontal();
+                HexFeatureType newFeat = (HexFeatureType)EditorGUILayout.EnumPopup("Wymagany Teren:", rule.requiredFeature);
+                if (newFeat != rule.requiredFeature)
+                {
+                    Undo.RecordObject(b, "Zmień requiredFeature");
+                    rule.requiredFeature = newFeat;
+                    EditorUtility.SetDirty(b);
+                }
 
-        float newOnTop = EditorGUILayout.FloatField("Bonus na Wierzchu (On-Top):", b.bonusRule.onTopProductionBonus);
-        if (Mathf.Abs(newOnTop - b.bonusRule.onTopProductionBonus) > 0.001f)
-        {
-            Undo.RecordObject(b, "Zmień onTopProductionBonus");
-            b.bonusRule.onTopProductionBonus = newOnTop;
-            EditorUtility.SetDirty(b);
-        }
-        EditorGUILayout.EndHorizontal();
+                int newRadius = EditorGUILayout.IntSlider("Promień (Radius):", rule.searchRadius, 1, 5);
+                if (newRadius != rule.searchRadius)
+                {
+                    Undo.RecordObject(b, "Zmień searchRadius");
+                    rule.searchRadius = Mathf.Max(1, newRadius);
+                    EditorUtility.SetDirty(b);
+                }
+                EditorGUILayout.EndHorizontal();
 
-        // Podgląd kalkulacji na żywo
-        if (b.bonusRule.requiredFeature != HexFeatureType.None && b.bonusRule.baseBonusPerHex > 0)
-        {
-            float bonus1 = b.bonusRule.baseBonusPerHex;
-            float bonus3 = 3 * b.bonusRule.baseBonusPerHex;
-            float bonus6 = 6 * b.bonusRule.baseBonusPerHex;
-            EditorGUILayout.HelpBox(
-                $"💡 Podgląd bonusu dla [{b.bonusRule.requiredFeature}] w zasięgu {b.bonusRule.searchRadius}:\n" +
-                $"• 1 sąsiadujący heks: +{bonus1:F1} | 3 heksy: +{bonus3:F1} | 6 heksów: +{bonus6:F1}\n" +
-                (b.bonusRule.onTopProductionBonus > 0 ? $"• Dodatkowy bonus On-Top: +{b.bonusRule.onTopProductionBonus:F1}\n" : "") +
-                (b.bonusRule.penaltyPerUser > 0 ? $"• Kara za każdego kolejnego użytkownika heksu: -{b.bonusRule.penaltyPerUser:F1}" : ""),
-                MessageType.None);
+                if (rule.resourceYields == null) rule.resourceYields = new List<TerrainResourceYield>();
+
+                // Wyświetlanie surowców generowanych przez tę regułę
+                EditorGUILayout.Space(2);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("  Surowce generowane z tego terenu:", EditorStyles.miniBoldLabel);
+                if (GUILayout.Button("➕ Dodaj surowiec", EditorStyles.miniButton, GUILayout.Width(130)))
+                {
+                    Undo.RecordObject(b, "Dodaj surowiec do reguły");
+                    rule.resourceYields.Add(new TerrainResourceYield { resourceType = ResourceType.Wood, baseBonusPerHex = 1f });
+                    EditorUtility.SetDirty(b);
+                }
+                EditorGUILayout.EndHorizontal();
+
+                for (int yIdx = 0; yIdx < rule.resourceYields.Count; yIdx++)
+                {
+                    var y = rule.resourceYields[yIdx];
+                    EditorGUILayout.BeginHorizontal();
+                    ResourceType newRes = (ResourceType)EditorGUILayout.EnumPopup(y.resourceType, GUILayout.Width(100));
+                    float newBase = EditorGUILayout.FloatField("Baza:", y.baseBonusPerHex, GUILayout.Width(120));
+                    float newOnTop = EditorGUILayout.FloatField("On-Top:", y.onTopProductionBonus, GUILayout.Width(120));
+                    float newPen = EditorGUILayout.FloatField("Kara/gracz:", y.penaltyPerUser, GUILayout.Width(120));
+                    float newMin = EditorGUILayout.FloatField("Min:", y.minBonus, GUILayout.Width(100));
+
+                    if (newRes != y.resourceType || Mathf.Abs(newBase - y.baseBonusPerHex) > 0.001f ||
+                        Mathf.Abs(newOnTop - y.onTopProductionBonus) > 0.001f || Mathf.Abs(newPen - y.penaltyPerUser) > 0.001f ||
+                        Mathf.Abs(newMin - y.minBonus) > 0.001f)
+                    {
+                        Undo.RecordObject(b, "Edycja surowca terenu");
+                        y.resourceType = newRes;
+                        y.baseBonusPerHex = newBase;
+                        y.onTopProductionBonus = newOnTop;
+                        y.penaltyPerUser = newPen;
+                        y.minBonus = newMin;
+                        rule.resourceYields[yIdx] = y;
+                        EditorUtility.SetDirty(b);
+                    }
+
+                    GUI.backgroundColor = new Color(1f, 0.7f, 0.7f);
+                    if (GUILayout.Button("X", EditorStyles.miniButton, GUILayout.Width(24)))
+                    {
+                        Undo.RecordObject(b, "Usuń surowiec z reguły");
+                        rule.resourceYields.RemoveAt(yIdx);
+                        EditorUtility.SetDirty(b);
+                        GUI.backgroundColor = Color.white;
+                        break;
+                    }
+                    GUI.backgroundColor = Color.white;
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.Space(2);
+            }
         }
         else
         {
-            EditorGUILayout.LabelField("Brak aktywnego bonusu terenowego (wymagany heks = None lub bonus = 0).", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("Brak zdefiniowanych reguł bonusu terenowego dla tego budynku.", EditorStyles.miniLabel);
         }
         EditorGUILayout.EndVertical();
 
@@ -1742,7 +1819,7 @@ public class BuildingBalanceEditorWindow : EditorWindow
             upkeepPerCycle = CloneCostList(b.upkeepPerCycle),
             productionPerCycle = CloneCostList(b.productionPerCycle),
             baseMaxWorkers = b.baseMaxWorkers,
-            bonusRule = b.bonusRule,
+            bonusRules = CloneBonusRules(b.bonusRules),
             allowedTerrain = b.allowedTerrain != null ? new List<HexFeatureType>(b.allowedTerrain) : new List<HexFeatureType>(),
             requiresOccupiedSpace = b.requiresOccupiedSpace
         };
@@ -1778,7 +1855,7 @@ public class BuildingBalanceEditorWindow : EditorWindow
         target.upkeepPerCycle = CloneCostList(clipboard.upkeepPerCycle);
         target.productionPerCycle = CloneCostList(clipboard.productionPerCycle);
         target.baseMaxWorkers = clipboard.baseMaxWorkers;
-        target.bonusRule = clipboard.bonusRule;
+        target.bonusRules = CloneBonusRules(clipboard.bonusRules);
         target.allowedTerrain = new List<HexFeatureType>(clipboard.allowedTerrain);
         target.requiresOccupiedSpace = clipboard.requiresOccupiedSpace;
 
@@ -1825,6 +1902,38 @@ public class BuildingBalanceEditorWindow : EditorWindow
     {
         if (source == null) return new List<ResourceCost>();
         return new List<ResourceCost>(source);
+    }
+
+    private static List<TerrainBonusRule> CloneBonusRules(List<TerrainBonusRule> source)
+    {
+        if (source == null) return new List<TerrainBonusRule>();
+        var result = new List<TerrainBonusRule>();
+        foreach (var rule in source)
+        {
+            if (rule == null) continue;
+            var newRule = new TerrainBonusRule
+            {
+                requiredFeature = rule.requiredFeature,
+                searchRadius = rule.searchRadius,
+                resourceYields = new List<TerrainResourceYield>()
+            };
+            if (rule.resourceYields != null)
+            {
+                foreach (var y in rule.resourceYields)
+                {
+                    newRule.resourceYields.Add(new TerrainResourceYield
+                    {
+                        resourceType = y.resourceType,
+                        baseBonusPerHex = y.baseBonusPerHex,
+                        onTopProductionBonus = y.onTopProductionBonus,
+                        penaltyPerUser = y.penaltyPerUser,
+                        minBonus = y.minBonus
+                    });
+                }
+            }
+            result.Add(newRule);
+        }
+        return result;
     }
 
     // =========================================================================
@@ -1899,12 +2008,15 @@ public class BuildingBalanceEditorWindow : EditorWindow
             }
 
             // Pola bonusu terenowego i wymagań podłoża
-            row.Add(b.bonusRule.requiredFeature.ToString());
-            row.Add(b.bonusRule.searchRadius.ToString());
-            row.Add(b.bonusRule.baseBonusPerHex.ToString("F2"));
-            row.Add(b.bonusRule.penaltyPerUser.ToString("F2"));
-            row.Add(b.bonusRule.minBonus.ToString("F2"));
-            row.Add(b.bonusRule.onTopProductionBonus.ToString("F2"));
+            var firstRule = (b.bonusRules != null && b.bonusRules.Count > 0) ? b.bonusRules[0] : null;
+            var firstYield = (firstRule != null && firstRule.resourceYields != null && firstRule.resourceYields.Count > 0) ? firstRule.resourceYields[0] : (TerrainResourceYield?)null;
+
+            row.Add(firstRule != null ? firstRule.requiredFeature.ToString() : HexFeatureType.None.ToString());
+            row.Add(firstRule != null ? firstRule.searchRadius.ToString() : "1");
+            row.Add(firstYield.HasValue ? firstYield.Value.baseBonusPerHex.ToString("F2") : "0.00");
+            row.Add(firstYield.HasValue ? firstYield.Value.penaltyPerUser.ToString("F2") : "0.00");
+            row.Add(firstYield.HasValue ? firstYield.Value.minBonus.ToString("F2") : "0.00");
+            row.Add(firstYield.HasValue ? firstYield.Value.onTopProductionBonus.ToString("F2") : "0.00");
             row.Add(b.requiresOccupiedSpace ? "1" : "0");
             row.Add(b.allowedTerrain != null && b.allowedTerrain.Count > 0 ? string.Join("|", b.allowedTerrain) : "");
 
@@ -2061,29 +2173,51 @@ public class BuildingBalanceEditorWindow : EditorWindow
             }
 
             // Pola bonusu terenowego i wymagań podłoża
+            if (b.bonusRules == null) b.bonusRules = new List<TerrainBonusRule>();
+            TerrainBonusRule primaryRule = b.bonusRules.Count > 0 ? b.bonusRules[0] : null;
+
             if (headerMap.TryGetValue("Terrain_Feature", out int tfCol) && tfCol < cols.Length)
             {
-                if (Enum.TryParse<HexFeatureType>(cols[tfCol].Trim(), out var feat)) b.bonusRule.requiredFeature = feat;
+                if (Enum.TryParse<HexFeatureType>(cols[tfCol].Trim(), out var feat) && feat != HexFeatureType.None)
+                {
+                    if (primaryRule == null)
+                    {
+                        primaryRule = new TerrainBonusRule { searchRadius = 1, resourceYields = new List<TerrainResourceYield>() };
+                        b.bonusRules.Add(primaryRule);
+                    }
+                    primaryRule.requiredFeature = feat;
+                }
             }
-            if (headerMap.TryGetValue("Terrain_SearchRadius", out int tsCol) && tsCol < cols.Length)
+            if (headerMap.TryGetValue("Terrain_SearchRadius", out int tsCol) && tsCol < cols.Length && primaryRule != null)
             {
-                if (int.TryParse(cols[tsCol].Trim(), out int rad)) b.bonusRule.searchRadius = Mathf.Max(1, rad);
+                if (int.TryParse(cols[tsCol].Trim(), out int rad)) primaryRule.searchRadius = Mathf.Max(1, rad);
             }
-            if (headerMap.TryGetValue("Terrain_BaseBonusPerHex", out int tbCol) && tbCol < cols.Length)
+            if (primaryRule != null)
             {
-                if (float.TryParse(cols[tbCol].Trim(), out float bb)) b.bonusRule.baseBonusPerHex = bb;
-            }
-            if (headerMap.TryGetValue("Terrain_PenaltyPerUser", out int tpCol) && tpCol < cols.Length)
-            {
-                if (float.TryParse(cols[tpCol].Trim(), out float pen)) b.bonusRule.penaltyPerUser = pen;
-            }
-            if (headerMap.TryGetValue("Terrain_MinBonus", out int tmCol) && tmCol < cols.Length)
-            {
-                if (float.TryParse(cols[tmCol].Trim(), out float mb)) b.bonusRule.minBonus = mb;
-            }
-            if (headerMap.TryGetValue("Terrain_OnTopBonus", out int toCol) && toCol < cols.Length)
-            {
-                if (float.TryParse(cols[toCol].Trim(), out float ot)) b.bonusRule.onTopProductionBonus = ot;
+                if (primaryRule.resourceYields == null) primaryRule.resourceYields = new List<TerrainResourceYield>();
+                TerrainResourceYield y = primaryRule.resourceYields.Count > 0
+                    ? primaryRule.resourceYields[0]
+                    : new TerrainResourceYield { resourceType = (b.productionPerCycle != null && b.productionPerCycle.Count > 0) ? b.productionPerCycle[0].type : ResourceType.Wood };
+
+                if (headerMap.TryGetValue("Terrain_BaseBonusPerHex", out int tbCol) && tbCol < cols.Length)
+                {
+                    if (float.TryParse(cols[tbCol].Trim(), out float bb)) y.baseBonusPerHex = bb;
+                }
+                if (headerMap.TryGetValue("Terrain_PenaltyPerUser", out int tpCol) && tpCol < cols.Length)
+                {
+                    if (float.TryParse(cols[tpCol].Trim(), out float pen)) y.penaltyPerUser = pen;
+                }
+                if (headerMap.TryGetValue("Terrain_MinBonus", out int tmCol) && tmCol < cols.Length)
+                {
+                    if (float.TryParse(cols[tmCol].Trim(), out float mb)) y.minBonus = mb;
+                }
+                if (headerMap.TryGetValue("Terrain_OnTopBonus", out int toCol) && toCol < cols.Length)
+                {
+                    if (float.TryParse(cols[toCol].Trim(), out float ot)) y.onTopProductionBonus = ot;
+                }
+
+                if (primaryRule.resourceYields.Count > 0) primaryRule.resourceYields[0] = y;
+                else if (y.baseBonusPerHex > 0 || y.onTopProductionBonus > 0) primaryRule.resourceYields.Add(y);
             }
             if (headerMap.TryGetValue("Terrain_RequiresOccupied", out int troCol) && troCol < cols.Length)
             {
@@ -2325,14 +2459,13 @@ public class BuildingBalanceEditorWindow : EditorWindow
     {
         switch (res)
         {
-            case ResourceType.Gold: return "🪙 Złoto";
+            case ResourceType.Ether: return "💎 Kryształ Eteru";
             case ResourceType.Wood: return "🪵 Drewno";
             case ResourceType.Stone: return "🪨 Kamień";
             case ResourceType.Coal: return "⬛ Węgiel";
             case ResourceType.Food: return "🍞 Jedzenie";
             case ResourceType.Iron: return "⚔️ Żelazo";
             case ResourceType.Hope: return "✨ Nadzieja";
-            case ResourceType.Population: return "👥 Populacja";
             default: return res.ToString();
         }
     }
@@ -2341,14 +2474,13 @@ public class BuildingBalanceEditorWindow : EditorWindow
     {
         switch (res)
         {
-            case ResourceType.Gold: return new Color(1f, 0.9f, 0.55f);
+            case ResourceType.Ether: return new Color(0.35f, 0.85f, 1f);
             case ResourceType.Wood: return new Color(0.85f, 0.7f, 0.5f);
             case ResourceType.Stone: return new Color(0.8f, 0.85f, 0.9f);
             case ResourceType.Coal: return new Color(0.6f, 0.6f, 0.65f);
             case ResourceType.Food: return new Color(0.7f, 0.95f, 0.6f);
             case ResourceType.Iron: return new Color(0.75f, 0.8f, 1f);
             case ResourceType.Hope: return new Color(1f, 0.75f, 0.95f);
-            case ResourceType.Population: return new Color(0.6f, 1f, 0.9f);
             default: return Color.white;
         }
     }

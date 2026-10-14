@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -11,7 +11,7 @@ public class TowerDataEditor : Editor
         "productionPerCycle",
         "terrainProductionRules",
         "resourceType",
-        "bonusRule"
+        "bonusRules"
     };
 
     public override void OnInspectorGUI()

@@ -15,9 +15,9 @@ MonoBehaviour:
   minDays: 1
   maxDays: 7
   maxDistanceForTime: 6
-  baseGoldCost: 20
+  baseEtherCost: 20
   baseFoodCost: 10
-  goldPerHex: 5
+  etherPerHex: 5
   foodPerHex: 5
   roadCostMultiplier: 0.6
   roadTimeMultiplier: 0.7

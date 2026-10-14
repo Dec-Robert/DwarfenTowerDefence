@@ -22,7 +22,7 @@ public class ScoutingMission
     public int equipmentUsed;
     public List<Citizen> assignedElves = new List<Citizen>();
 
-    public float goldPaid;
+    public float etherPaid;
     public float foodPaid;
 
     // ─── Powiązany budynek (opcjonalny, zachowany dla kompatybilności) ───────
@@ -36,7 +36,7 @@ public class ScoutingMission
         Vector2Int target,
         int days,
         int elves,
-        float gold,
+        float ether,
         float food,
         List<Citizen> elvesList,
         ExpeditionCenterEntity center = null)
@@ -50,7 +50,7 @@ public class ScoutingMission
             elfCount      = elves,
             equipmentUsed = elves,
             assignedElves = elvesList != null ? new List<Citizen>(elvesList) : new List<Citizen>(),
-            goldPaid      = gold,
+            etherPaid     = ether,
             foodPaid      = food,
             sourceCenter  = center
         };
@@ -60,7 +60,7 @@ public class ScoutingMission
         Vector2Int target,
         int days,
         int elves,
-        float gold,
+        float ether,
         float food,
         List<Citizen> elvesList,
         ExpeditionCenterEntity center = null)
@@ -74,7 +74,7 @@ public class ScoutingMission
             elfCount      = elves,
             equipmentUsed = elves,
             assignedElves = elvesList != null ? new List<Citizen>(elvesList) : new List<Citizen>(),
-            goldPaid      = gold,
+            etherPaid     = ether,
             foodPaid      = food,
             sourceCenter  = center
         };
@@ -84,11 +84,11 @@ public class ScoutingMission
     public static ScoutingMission Create(
         Vector2Int target,
         int days,
-        float gold,
+        float ether,
         float food,
         ExpeditionCenterEntity center)
     {
-        return CreateSurvey(target, days, 2, gold, food, null, center);
+        return CreateSurvey(target, days, 2, ether, food, null, center);
     }
 
     /// <summary>Tick dzienny. Zwraca true jeśli misja właśnie się skończyła.</summary>

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -283,7 +283,7 @@ public class PathGenerator
         int style        = RollStyle();
         int baseDist     = HexGridMath.GetDistance(data.entryHex, data.exitHex);
         int shortestLen  = baseDist + 1;
-        int minLenTarget = style == 1 ? shortestLen + 3 : style == 2 ? shortestLen + 6 : shortestLen;
+        int minLenTarget = style == 1 ? shortestLen + 2 : style == 2 ? shortestLen + 4 : shortestLen;
 
         List<Vector2Int> bestPath  = new List<Vector2Int>();
         Dictionary<Vector2Int, int> bestCosts = new Dictionary<Vector2Int, int>();

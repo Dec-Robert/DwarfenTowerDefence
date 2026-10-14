@@ -769,7 +769,7 @@ MonoBehaviour:
   mapWidth: 8
   mapMinY: -6
   mapMaxY: 6
-  chunkRadius: 4
+  chunkRadius: 3
   hexSize: 1
   padding: 0.02
   minChunkDistance: 6
@@ -812,10 +812,10 @@ MonoBehaviour:
     windingWeight: 40
     mazeWeight: 40
     wallCost: 50
-    windingWallCount: 3
+    windingWallCount: 2
     windingWallLength: 3
-    mazeWallCount: 10
-    mazeWallLength: 4
+    mazeWallCount: 5
+    mazeWallLength: 3
 --- !u!114 &406902617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73391,7 +73391,7 @@ GameObject:
   - component: {fileID: 8461262444198806079}
   - component: {fileID: 1629055297529816634}
   m_Layer: 5
-  m_Name: Pnl_SingleResource_Gold
+  m_Name: Pnl_SingleResource_Ether
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -104453,7 +104453,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
   ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
-  resourceType: 6
+  resourceType: 5
   trackResourceManager: 1
   ammount: {fileID: 2025756361713435605}
   icon: {fileID: 1677935374437102986}

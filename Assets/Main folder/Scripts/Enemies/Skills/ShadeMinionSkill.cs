@@ -22,7 +22,10 @@ public class ShadeMinionSkill : EnemySkill
 
     private void Awake()
     {
-        cachedBasePos = HexGridMath.GetChunkCenterWorld(Vector2Int.zero, 4, 35f, 0f);
+        int radius = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.chunkRadius : 3;
+        float size = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.hexSize : 1f;
+        float pad = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.padding : 0f;
+        cachedBasePos = HexGridMath.GetChunkCenterWorld(Vector2Int.zero, radius, size, pad);
         basePosCached = true;
     }
 
@@ -55,7 +58,10 @@ public class ShadeMinionSkill : EnemySkill
 
         if (!basePosCached)
         {
-            cachedBasePos = HexGridMath.GetChunkCenterWorld(Vector2Int.zero, 4, 35f, 0f);
+            int radius = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.chunkRadius : 3;
+            float size = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.hexSize : 1f;
+            float pad = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.padding : 0f;
+            cachedBasePos = HexGridMath.GetChunkCenterWorld(Vector2Int.zero, radius, size, pad);
             basePosCached = true;
         }
 

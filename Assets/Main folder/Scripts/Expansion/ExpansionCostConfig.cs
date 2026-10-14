@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "ExpansionCostConfig", menuName = "Tower Defense/Expansion Cost Config")]
@@ -10,9 +11,11 @@ public class ExpansionCostConfig : ScriptableObject
     public int maxDistanceForTime = 6;
 
     [Header("Koszty Bazowe")]
-    public float baseGoldCost = 30f;
+    [FormerlySerializedAs("baseGoldCost")]
+    public float baseEtherCost = 30f;
     public float baseFoodCost = 10f;
-    public float goldPerHex = 15f;
+    [FormerlySerializedAs("goldPerHex")]
+    public float etherPerHex = 15f;
     public float foodPerHex = 5f;
 
     [Header("Modyfikatory Drogi")]
@@ -27,7 +30,8 @@ public class ExpansionCostConfig : ScriptableObject
     [Header("Krótka Ekspedycja (Recon / Zwiad)")]
     public int reconDays = 1;
     public int reconElfRequirement = 1;
-    public float reconGoldCost = 15f;
+    [FormerlySerializedAs("reconGoldCost")]
+    public float reconEtherCost = 15f;
     public float reconFoodCost = 10f;
 
     [Header("Przedziały Raportu Zwiadu")]
@@ -62,7 +66,7 @@ public static class ExpansionCostCalculator
         {
             return new MissionCost
             {
-                goldCost = 30,
+                etherCost = 30,
                 foodCost = 10,
                 days = 1,
                 distance = 1,
@@ -75,12 +79,12 @@ public static class ExpansionCostCalculator
         float timeRatio = Mathf.Clamp01((float)(distance - 1) / Mathf.Max(1, cfg.maxDistanceForTime - 1));
         int baseDays = Mathf.RoundToInt(Mathf.Lerp(cfg.minDays, cfg.maxDays, timeRatio));
 
-        float gold = cfg.baseGoldCost + cfg.goldPerHex * (distance - 1);
+        float ether = cfg.baseEtherCost + cfg.etherPerHex * (distance - 1);
         float food = cfg.baseFoodCost + cfg.foodPerHex * (distance - 1);
 
         if (isRoadChunk)
         {
-            gold *= cfg.roadCostMultiplier;
+            ether *= cfg.roadCostMultiplier;
             food *= cfg.roadCostMultiplier;
             baseDays = Mathf.Max(1, Mathf.RoundToInt(baseDays * cfg.roadTimeMultiplier));
         }
@@ -91,12 +95,12 @@ public static class ExpansionCostCalculator
         int finalDays = Mathf.Max(cfg.minSurveyDays, baseDays - extraElves * cfg.daysReductionPerExtraElf);
 
         float elfCostMultiplier = (float)clampedElves / Mathf.Max(1, cfg.minElvesForSurvey);
-        gold *= elfCostMultiplier;
+        ether *= elfCostMultiplier;
         food *= elfCostMultiplier;
 
         return new MissionCost
         {
-            goldCost = Mathf.RoundToInt(gold),
+            etherCost = Mathf.RoundToInt(ether),
             foodCost = Mathf.RoundToInt(food),
             days = finalDays,
             distance = distance,
@@ -110,7 +114,7 @@ public static class ExpansionCostCalculator
         {
             return new MissionCost
             {
-                goldCost = 15,
+                etherCost = 15,
                 foodCost = 10,
                 days = 1,
                 distance = 1,
@@ -120,7 +124,7 @@ public static class ExpansionCostCalculator
 
         return new MissionCost
         {
-            goldCost = Mathf.RoundToInt(cfg.reconGoldCost),
+            etherCost = Mathf.RoundToInt(cfg.reconEtherCost),
             foodCost = Mathf.RoundToInt(cfg.reconFoodCost),
             days = cfg.reconDays,
             distance = 1,
@@ -180,11 +184,11 @@ public static class ExpansionCostCalculator
 
 public struct MissionCost
 {
-    public int goldCost;
+    public int etherCost;
     public int foodCost;
     public int days;
     public int distance;
     public bool isRoad;
 
-    public bool CanAfford(float gold, float food) => gold >= goldCost && food >= foodCost;
+    public bool CanAfford(float ether, float food) => ether >= etherCost && food >= foodCost;
 }

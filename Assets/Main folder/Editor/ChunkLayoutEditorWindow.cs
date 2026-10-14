@@ -12,7 +12,7 @@ public class MetaMapConfigEditorWindow : EditorWindow
     private ChunkLayoutSO targetLayout;
     
     // --- USTAWIENIA SIATKI ---
-    private int chunkRadius = 4;
+    private int chunkRadius = 3;
     private float hexSize = 35f;
     private Vector2 panOffset = new Vector2(300, 300);
 
@@ -420,6 +420,22 @@ public class MetaMapConfigEditorWindow : EditorWindow
             if (GUILayout.Button("Wyczyść (Resetuj Heks)", GUILayout.Height(30)))
             {
                 RemoveOverrideFromSO();
+            }
+            GUI.backgroundColor = Color.white;
+        }
+
+        EditorGUILayout.Space(15);
+        if (targetLayout != null && targetLayout.hexes != null && targetLayout.hexes.Any(h => HexDistance(Vector2Int.zero, h.localCoord) > chunkRadius))
+        {
+            GUI.backgroundColor = new Color(1f, 0.6f, 0.2f);
+            if (GUILayout.Button($"Usuń heksy poza promieniem ({chunkRadius})", GUILayout.Height(30)))
+            {
+                Undo.RecordObject(targetLayout, "Przycięcie heksów layoutu");
+                targetLayout.hexes.RemoveAll(h => HexDistance(Vector2Int.zero, h.localCoord) > chunkRadius);
+                EditorUtility.SetDirty(targetLayout);
+                selectedHex = null;
+                hasOverrideSelected = false;
+                Repaint();
             }
             GUI.backgroundColor = Color.white;
         }

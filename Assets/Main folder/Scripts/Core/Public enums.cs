@@ -1,16 +1,17 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum ResourceType
 {
-    Gold,
-    Wood,
-    Stone,
-    Coal,
-    Food,
-    Population,
-    Iron,
-    Hope
+    Ether = 0,      // 0 - Kryształ Eteru
+    Gold = 0,       // Alias wsteczny
+    Wood = 1,       // 1
+    Stone = 2,      // 2
+    Coal = 3,       // 3
+    Food = 4,       // 4
+    Iron = 5,       // 5
+    Hope = 6        // 6
 }
 
 public enum BuildingPriority
@@ -120,7 +121,7 @@ public enum WallSystemMode
 ///     Wszystkie możliwe efekty meta-ulepszeń.
 ///     Każdy MetaUpgradeSO ma jeden MetaEffectType.
 ///     ── Surowce startowe ────────────────────────────────
-///     StartingGold / Wood / Stone / Iron / Coal / Food
+///     StartingEther / Wood / Stone / Iron / Coal / Food
 ///     effectValue = ile dodać na start sesji
 ///     ── Pracownicy i zmiany ─────────────────────────────
 ///     BonusShifts / BonusWorkersPerShift
@@ -166,7 +167,7 @@ public enum MetaEffectType
     None = 0,
 
     // ── Surowce startowe ──────────────────────────────────────────────────────
-    StartingGold = 10,
+    StartingEther = 10,
     StartingWood = 11,
     StartingStone = 12,
     StartingIron = 13,
@@ -236,18 +237,35 @@ public enum MetaEffectType
 }
 
 [Serializable]
-public struct TerrainBonusRule
+public struct TerrainResourceYield
 {
-    [Tooltip("Jaki teren daje bonus? (np. Forest dla Tartaku)")]
+    [Tooltip("Typ surowca generowanego z tego terenu")]
+    public ResourceType resourceType;
+
+    [Tooltip("Bazowy bonus generowany z każdego sąsiadującego heksa")]
+    public float baseBonusPerHex;
+
+    [Tooltip("Bonus generowany, jeśli budynek stoi bezpośrednio na tym heksie")]
+    public float onTopProductionBonus;
+
+    [Tooltip("Kara za każdego dodatkowego użytkownika współdzielącego ten heks")]
+    public float penaltyPerUser;
+
+    [Tooltip("Minimalny gwarantowany zysk z heksa po uwzględnieniu kary")]
+    public float minBonus;
+}
+
+[Serializable]
+public class TerrainBonusRule
+{
+    [Tooltip("Jaki teren daje bonus? (np. Forest dla Tartaku, Mountain dla Kopalni)")]
     public HexFeatureType requiredFeature;
 
     [Tooltip("Zasięg poszukiwania (1 = tylko sąsiedzi, 2 = sąsiedzi sąsiadów)")]
     public int searchRadius;
 
-    [Header("Matematyka")] public float baseBonusPerHex;
-    public float penaltyPerUser;
-    public float minBonus;
-    public float onTopProductionBonus;
+    [Tooltip("Lista surowców generowanych przez ten typ terenu wraz z ich parametrami")]
+    public List<TerrainResourceYield> resourceYields = new List<TerrainResourceYield>();
 }
 
 [Serializable]

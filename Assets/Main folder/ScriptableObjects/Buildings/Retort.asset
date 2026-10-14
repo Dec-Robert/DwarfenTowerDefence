@@ -46,12 +46,6 @@ MonoBehaviour:
     amount: 12
   tier1Upgrades: []
   prefab: {fileID: 4011031713050108421, guid: 07c2962ef65bb134394603a64ca2250e, type: 3}
-  bonusRule:
-    requiredFeature: 0
-    searchRadius: 1
-    baseBonusPerHex: 0
-    penaltyPerUser: 0
-    minBonus: 0
-    onTopProductionBonus: 0
+  bonusRules: []
   baseMaxWorkers: 1
   isUnlocked: 1
