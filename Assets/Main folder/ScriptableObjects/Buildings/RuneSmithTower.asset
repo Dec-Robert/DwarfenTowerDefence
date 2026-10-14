@@ -28,9 +28,11 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 2
-    amount: 100
-  - type: 6
     amount: 20
+  - type: 6
+    amount: 5
+  - type: 0
+    amount: 15
   productionPerCycle: []
   upkeepPerCycle: []
   tier1Upgrades: []

@@ -17,6 +17,7 @@ public class EnemyStats : MonoBehaviour
     private float currentDodge;
 
     private List<EnemySkill> skills = new List<EnemySkill>();
+    private bool isDead = false;
 
     [Header("Visuals")]
     public Renderer meshRenderer;
@@ -148,8 +149,10 @@ public class EnemyStats : MonoBehaviour
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
-    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical, float criticalMultiplier, TowerEntity sourceTower = null, bool isAoE = false)
+    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical, float criticalMultiplier, TowerEntity sourceTower = null, bool isAoE = false, DeathSource deathSource = DeathSource.Combat)
     {
+        if (isDead) return;
+
         foreach (var skill in skills)
         {
             rawDamage = skill.OnBeforeDamageCalculation(rawDamage, type, sourceTower, isAoE);
@@ -172,12 +175,12 @@ public class EnemyStats : MonoBehaviour
 
         for (int i = skills.Count - 1; i >= 0; i--)
         {
-            if (gameObject == null) return;
+            if (gameObject == null || isDead) return;
             skills[i].OnDamageTaken(finalDamage, currentHealth);
         }
 
         if (currentHealth <= 0)
-            Die();
+            Die(deathSource);
     }
 
     private void FlashColor(Color color, float duration)
@@ -227,19 +230,31 @@ public class EnemyStats : MonoBehaviour
         }
     }
 
-    private void Die()
+    public void Die(DeathSource source = DeathSource.Combat)
     {
-        if (HopeSessionManager.Instance != null)
+        if (isDead) return;
+        isDead = true;
+
+        if (source == DeathSource.Combat)
         {
-            HopeSessionManager.Instance.OnEnemyKilled(this.rank);
+            if (HopeSessionManager.Instance != null)
+            {
+                HopeSessionManager.Instance.OnEnemyKilled(this.rank);
+            }
+
+            if (RuneManager.Instance != null)
+            {
+                RuneManager.Instance.RollRuneDrop(this.rank);
+            }
         }
 
-        if (RuneManager.Instance != null)
+        for (int i = skills.Count - 1; i >= 0; i--)
         {
-            RuneManager.Instance.RollRuneDrop(this.rank);
+            if (skills[i] != null)
+            {
+                skills[i].OnDeath(source);
+            }
         }
-
-        foreach (var skill in skills) skill.OnDeath();
 
         OnDeath?.Invoke(this);
         Destroy(gameObject);
@@ -247,10 +262,7 @@ public class EnemyStats : MonoBehaviour
 
     public void GetToBase()
     {
-        foreach (var skill in skills) skill.OnDeath();
-
-        OnDeath?.Invoke(this);
-        Destroy(gameObject);
+        Die(DeathSource.BaseReached);
     }
 
     private float CalculateFinalDamage(DamageType type, float raw, float ap, float mp, bool crit, float critMult)

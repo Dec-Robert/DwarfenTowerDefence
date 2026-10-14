@@ -19,18 +19,18 @@ MonoBehaviour:
     accentColor: {r: 0.58, g: 0.36, b: 0.82, a: 1}
     levelIcon: {fileID: 0}
     coalCost: 0
-    towerDamageBonus: -0.2
+    towerDamageBonus: 0
     towerRangeAndRateBonus: -0.2
     enemyStatsBonus: 0.15
     runeDropAndRarityBonus: 0.35
-    nextDayProductionBonus: -0.25
+    nextDayProductionBonus: -0.15
   - levelIndex: 2
     title: "Tl\u0105cy si\u0119 \u017Bar"
     tagText: "OSZCZ\u0118DNO\u015A\u0106"
     accentColor: {r: 0.75, g: 0.42, b: 0.32, a: 1}
     levelIcon: {fileID: 0}
     coalCost: 15
-    towerDamageBonus: -0.1
+    towerDamageBonus: 0
     towerRangeAndRateBonus: -0.1
     enemyStatsBonus: 0.05
     runeDropAndRarityBonus: 0.15
@@ -40,7 +40,7 @@ MonoBehaviour:
     tagText: NEUTRALNY
     accentColor: {r: 0.28, g: 0.56, b: 0.78, a: 1}
     levelIcon: {fileID: 0}
-    coalCost: 35
+    coalCost: 30
     towerDamageBonus: 0
     towerRangeAndRateBonus: 0
     enemyStatsBonus: 0
@@ -51,8 +51,8 @@ MonoBehaviour:
     tagText: WZMOCNIENIE
     accentColor: {r: 0.85, g: 0.62, b: 0.18, a: 1}
     levelIcon: {fileID: 0}
-    coalCost: 65
-    towerDamageBonus: 0.15
+    coalCost: 45
+    towerDamageBonus: 0
     towerRangeAndRateBonus: 0.15
     enemyStatsBonus: -0.05
     runeDropAndRarityBonus: -0.1
@@ -62,8 +62,8 @@ MonoBehaviour:
     tagText: MAKS. MOC
     accentColor: {r: 0.95, g: 0.36, b: 0.12, a: 1}
     levelIcon: {fileID: 0}
-    coalCost: 110
-    towerDamageBonus: 0.35
+    coalCost: 60
+    towerDamageBonus: 0
     towerRangeAndRateBonus: 0.35
     enemyStatsBonus: -0.15
     runeDropAndRarityBonus: -0.25

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -87,14 +87,14 @@ public class GateEntity : MonoBehaviour
                 ApplyGateDamage(hpCostPerElite);
                 enemy.TakeDamage(
                     enemy.GetMaxHealth() * 0.20f,
-                    DamageType.True, 0f, 0f, false, 100f);
+                    DamageType.True, 0f, 0f, false, 100f, deathSource: DeathSource.Gate);
                 break;
 
             case EnemyRank.Boss:
                 ApplyGateDamage(hpCostPerBoss);
                 enemy.TakeDamage(
                     enemy.GetMaxHealth() * 0.05f,
-                    DamageType.True, 0f, 0f, false, 100f);
+                    DamageType.True, 0f, 0f, false, 100f, deathSource: DeathSource.Gate);
                 break;
         }
     }
@@ -116,9 +116,7 @@ public class GateEntity : MonoBehaviour
 
     private void KillEnemy(EnemyStats enemy)
     {
-        enemy.TakeDamage(
-            enemy.GetMaxHealth(),
-            DamageType.True, 0f, 0f, false, 100f);
+        enemy.Die(DeathSource.Gate);
     }
 
     public int GetRebuildCost()

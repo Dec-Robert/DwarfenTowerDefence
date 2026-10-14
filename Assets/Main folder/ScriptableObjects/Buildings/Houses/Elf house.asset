@@ -26,9 +26,11 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 4
-    amount: 10
+    amount: 15
   - type: 1
     amount: 25
+  - type: 0
+    amount: 6
   productionPerCycle: []
   upkeepPerCycle:
   - type: 1
@@ -48,12 +50,14 @@ MonoBehaviour:
   maxResidents: 4
   initialResidents: 1
   growthDifficultyMultiplier: 2
-  baseGrowthTicks: 2
+  baseGrowthTicks: 3
   productionPerResident: []
-  baseDailyUpkeep: []
+  baseDailyUpkeep:
+  - type: 1
+    amount: 1
   upkeepPerResident:
   - type: 4
-    amount: 2
+    amount: 3
   growthSurplusCost:
   - type: 4
     amount: 8

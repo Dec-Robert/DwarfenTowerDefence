@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     [Header("Ustawienia Startowe")]
     public CityBaseConfigSO cityConfig;
 
+    public int maxGateHP { get; private set; }
     public int mainGateHP { get; private set; }
     
     public int waveNumber => TimePhaseManager.Instance != null ? TimePhaseManager.Instance.CurrentDay : 1;
@@ -24,7 +25,8 @@ public class GameManager : MonoBehaviour
         if (Instance != null && Instance != this) Destroy(this);
         else Instance = this;
 
-        mainGateHP = cityConfig != null ? cityConfig.baseCityHP : 20;
+        maxGateHP = cityConfig != null ? cityConfig.baseCityHP : 20;
+        mainGateHP = maxGateHP;
     }
 
     private void Start()
@@ -44,6 +46,10 @@ public class GameManager : MonoBehaviour
         if (isInvincible && amount < 0) return;
 
         mainGateHP += amount;
+        if (mainGateHP > maxGateHP)
+        {
+            maxGateHP = mainGateHP;
+        }
 
         Debug.Log($"Zycie bazy zmienione o: {amount}. Aktualne: {mainGateHP}");
 
@@ -59,6 +65,10 @@ public class GameManager : MonoBehaviour
     public void SetBaseHealth(int value)
     {
         mainGateHP = Mathf.Max(0, value);
+        if (mainGateHP > maxGateHP)
+        {
+            maxGateHP = mainGateHP;
+        }
         Debug.Log($"Zycie bazy ustawione na: {mainGateHP}");
         OnHealthChanged?.Invoke(mainGateHP);
 

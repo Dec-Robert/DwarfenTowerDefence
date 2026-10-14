@@ -13,6 +13,12 @@ public class BlobSplitSkill : EnemySkill
 
     public override void OnDeath()
     {
+        OnDeath(DeathSource.Combat);
+    }
+
+    public override void OnDeath(DeathSource source)
+    {
+        if (source != DeathSource.Combat) return;
         if (hasSplit) return; // Zabezpieczenie przed pętlą
 
         hasSplit = true;

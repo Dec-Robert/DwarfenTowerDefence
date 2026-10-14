@@ -35,27 +35,31 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 2
-    amount: 5
+    amount: 15
   - type: 1
-    amount: 3
+    amount: 8
+  - type: 0
+    amount: 8
   productionPerCycle: []
   upkeepPerCycle:
-  - type: 1
+  - type: 2
+    amount: 2
+  - type: 3
     amount: 1
   tier1Upgrades: []
   prefab: {fileID: 7117580149188207224, guid: eca59424e3ae589438b24b6b3c61e4b7, type: 3}
   bonusRule:
     requiredFeature: 0
-    searchRadius: 0
+    searchRadius: 1
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0
     onTopProductionBonus: 0
   baseMaxWorkers: 1
   isUnlocked: 1
-  baseRange: 9
-  baseDamage: 100
-  fireRate: 0.3
+  baseRange: 10
+  baseDamage: 80
+  fireRate: 0.4
   criticalChancel: 0.05
   criticalDamageMultiplier: 2
   armorPenetration: 0

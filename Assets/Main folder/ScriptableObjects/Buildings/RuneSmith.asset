@@ -30,13 +30,17 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 0
-    amount: 100
+    amount: 20
   - type: 2
-    amount: 200
+    amount: 40
   - type: 6
+    amount: 10
+  - type: 1
     amount: 40
   productionPerCycle: []
-  upkeepPerCycle: []
+  upkeepPerCycle:
+  - type: 3
+    amount: 2
   tier1Upgrades: []
   prefab: {fileID: 1253841588521944598, guid: 84cdae73d5ef63943aa2dc6ab913954e, type: 3}
   bonusRule:

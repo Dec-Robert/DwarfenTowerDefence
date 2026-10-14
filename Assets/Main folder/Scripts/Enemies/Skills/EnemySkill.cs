@@ -15,4 +15,5 @@ public abstract class EnemySkill : MonoBehaviour
     public virtual void OnDamageTaken(float amount, float currentHp) { }
     public virtual float OnBeforeDamageCalculation(float incomingDamage, DamageType type, TowerEntity sourceTower = null, bool isAoE = false) { return incomingDamage; }
     public virtual void OnDeath() { } //
+    public virtual void OnDeath(DeathSource source) => OnDeath();
 }

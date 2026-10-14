@@ -94,6 +94,13 @@ public enum EnemyRank
     Boss
 }
 
+public enum DeathSource
+{
+    Combat,      // Zgładzony przez wieże/gracza (drop run, punkty nadziei, podział Bloba)
+    Gate,        // Zniszczony przez uderzenie w bramę na murze (GateEntity)
+    BaseReached  // Dotarł do Bazy Głównej (GetToBase)
+}
+
 /// <summary>
 ///     Tryb systemu murów — kontrolowany przez MetaUpgrade.
 ///     Disabled     → brak murów (domyślnie przed zakupem)

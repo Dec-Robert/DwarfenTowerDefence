@@ -15,17 +15,17 @@ MonoBehaviour:
   dayNumber: 4
   waveMessage: 
   customSpawnInterval: 0
-  hpMultiplier: 1
+  hpMultiplier: 1.4
   speedMultiplier: 1
   shuffleEnemies: 0
   allowRandomElites: 0
   enemies:
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
-    count: 16
+    count: 6
     forceElite: 0
   - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
-    count: 4
+    count: 1
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
-    count: 4
+    count: 1
     forceElite: 0

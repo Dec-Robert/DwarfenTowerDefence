@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d10231103b6e4b888b338f11cf417c4c, type: 3}
   m_Name: CityBaseConfig
   m_EditorClassIdentifier: 
-  startGold: 40
-  startWood: 20
-  startStone: 15
+  startGold: 15
+  startWood: 35
+  startStone: 20
   startIron: 0
-  startCoal: 0
-  startFood: 60
+  startCoal: 20
+  startFood: 45
   baseCityHP: 20
-  overrideHousingData: 1
+  overrideHousingData: 0
   humanStartPop: 1
   humanMaxPop: 4
   elfStartPop: 0

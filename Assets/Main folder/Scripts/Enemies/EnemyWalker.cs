@@ -46,20 +46,26 @@ public class EnemyWalker : MonoBehaviour
     {
         Debug.Log("Przeciwnik dotarł do bazy!");
 
-        switch (enemyStats.rank)
+        if (enemyStats != null && GameManager.Instance != null)
         {
-            case EnemyRank.Normal:
-                GameManager.Instance.ModifyBaseHealth(-1);
-                break;
-            case EnemyRank.Elite:
-                GameManager.Instance.ModifyBaseHealth(-3);
-                break;
-            case EnemyRank.Boss:
-                GameManager.Instance.InstantDestruction();
-                break;
+            switch (enemyStats.rank)
+            {
+                case EnemyRank.Normal:
+                    GameManager.Instance.ModifyBaseHealth(-1);
+                    break;
+                case EnemyRank.Elite:
+                    GameManager.Instance.ModifyBaseHealth(-3);
+                    break;
+                case EnemyRank.Boss:
+                    GameManager.Instance.InstantDestruction();
+                    break;
+            }
         }
 
-        enemyStats.GetToBase();
+        if (enemyStats != null)
+        {
+            enemyStats.GetToBase();
+        }
     }
 
     public void CopyProgressFrom(EnemyWalker other)

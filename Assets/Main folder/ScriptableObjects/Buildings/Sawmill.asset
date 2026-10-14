@@ -34,16 +34,14 @@ MonoBehaviour:
   requiredCitizenRace: 1
   isOutpost: 0
   constructionCost:
-  - type: 0
-    amount: 15
+  - type: 1
+    amount: 10
   - type: 2
     amount: 5
   productionPerCycle:
   - type: 1
-    amount: 10
-  upkeepPerCycle:
-  - type: 0
-    amount: 5
+    amount: 8
+  upkeepPerCycle: []
   tier1Upgrades:
   - {fileID: 11400000, guid: 289fd13374d7ccf4288a1d814aaca36b, type: 2}
   - {fileID: 11400000, guid: 3b95b65ec64317347839620d482c707f, type: 2}
@@ -51,10 +49,10 @@ MonoBehaviour:
   prefab: {fileID: 8647511797650135546, guid: a372fba93af731545bd3d3bd85da8b44, type: 3}
   bonusRule:
     requiredFeature: 1
-    searchRadius: 0
-    baseBonusPerHex: 3
-    penaltyPerUser: 0
+    searchRadius: 1
+    baseBonusPerHex: 2
+    penaltyPerUser: 1
     minBonus: 1
-    onTopProductionBonus: 5
+    onTopProductionBonus: 4
   baseMaxWorkers: 1
   isUnlocked: 1

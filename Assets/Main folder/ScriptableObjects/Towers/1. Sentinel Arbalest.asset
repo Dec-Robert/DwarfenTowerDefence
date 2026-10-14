@@ -21,7 +21,7 @@ MonoBehaviour:
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
   efficiencyTable:
-  - 0.4
+  - 0.25
   - 1
   - 1.1
   - 1.2
@@ -35,18 +35,20 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 0
-    amount: 10
+    amount: 5
   - type: 1
+    amount: 12
+  - type: 2
     amount: 5
   productionPerCycle: []
   upkeepPerCycle:
-  - type: 0
+  - type: 1
     amount: 2
   tier1Upgrades: []
   prefab: {fileID: 3908196004931482925, guid: c20acd7fe44159140a7792035788bea9, type: 3}
   bonusRule:
     requiredFeature: 0
-    searchRadius: 0
+    searchRadius: 1
     baseBonusPerHex: 0
     penaltyPerUser: 0
     minBonus: 0
@@ -54,11 +56,11 @@ MonoBehaviour:
   baseMaxWorkers: 1
   isUnlocked: 1
   baseRange: 15
-  baseDamage: 25
-  fireRate: 3
+  baseDamage: 24
+  fireRate: 2.5
   criticalChancel: 0.1
-  criticalDamageMultiplier: 2.5
-  armorPenetration: 0
+  criticalDamageMultiplier: 2
+  armorPenetration: 5
   magicPenetration: 0
   damageType: 0
   canShootChunk: 0

@@ -25,12 +25,12 @@ MonoBehaviour:
   requiredCitizenRace: 1
   isOutpost: 0
   constructionCost:
-  - type: 0
-    amount: 5
   - type: 1
-    amount: 10
+    amount: 15
   - type: 4
-    amount: 20
+    amount: 15
+  - type: 2
+    amount: 15
   productionPerCycle: []
   upkeepPerCycle:
   - type: 1
@@ -49,13 +49,15 @@ MonoBehaviour:
   housingRace: 0
   maxResidents: 5
   initialResidents: 2
-  growthDifficultyMultiplier: 2
-  baseGrowthTicks: 1
+  growthDifficultyMultiplier: 1
+  baseGrowthTicks: 2
   productionPerResident: []
-  baseDailyUpkeep: []
+  baseDailyUpkeep:
+  - type: 1
+    amount: 1
   upkeepPerResident:
   - type: 4
-    amount: 4
+    amount: 3
   growthSurplusCost:
   - type: 4
-    amount: 5
+    amount: 6

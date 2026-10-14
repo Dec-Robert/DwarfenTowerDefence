@@ -20,18 +20,34 @@ public class GateHPUpdater : MonoBehaviour
 
     private void OnEnable()
     {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.OnHealthChanged += UpdateUI;
-        }
+        Subscribe();
     }
 
     private void Start()
     {
-        UpdateUI(GameManager.Instance.mainGateHP);
+        Subscribe();
+        if (GameManager.Instance != null)
+        {
+            maxGateHP = GameManager.Instance.mainGateHP;
+            UpdateUI(GameManager.Instance.mainGateHP);
+        }
     }
 
     private void OnDisable()
+    {
+        Unsubscribe();
+    }
+
+    private void Subscribe()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnHealthChanged -= UpdateUI;
+            GameManager.Instance.OnHealthChanged += UpdateUI;
+        }
+    }
+
+    private void Unsubscribe()
     {
         if (GameManager.Instance != null)
         {
@@ -42,18 +58,22 @@ public class GateHPUpdater : MonoBehaviour
     private void UpdateUI(int hp)
     {
         int currentHP = Mathf.Max(0, hp);
-        
-        if (maxGateHP <= 0 && currentHP > 0) maxGateHP = currentHP;
+
         float healthRatio = maxGateHP > 0 ? Mathf.Clamp01((float)currentHP / maxGateHP) : 0f;
         
         if (gateHPBarVisualizer != null)
         {
+            if (gateVisualizeMaxSizeInPixels <= 0f)
+            {
+                gateVisualizeMaxSizeInPixels = gateHPBarVisualizer.sizeDelta.x;
+            }
             float targetWidth = gateVisualizeMaxSizeInPixels * healthRatio;
             gateHPBarVisualizer.sizeDelta = new Vector2(targetWidth, gateHPBarVisualizer.sizeDelta.y);
         }
 
-        gateHPTxt.text = (currentHP + "/" + maxGateHP).ToString();
-
-
+        if (gateHPTxt != null)
+        {
+            gateHPTxt.text = $"{currentHP}/{maxGateHP}";
+        }
     }
 }
