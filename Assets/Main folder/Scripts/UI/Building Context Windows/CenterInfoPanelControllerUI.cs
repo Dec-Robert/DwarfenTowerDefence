@@ -24,6 +24,8 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
     public GameObject runeForgePanel;
     public GameObject runeTowerSelectionModal;
     public GameObject hearthWindowPanel;
+    public GameObject expeditionCenterPanel;
+    public GameObject chunkExpeditionModal;
     
     void Awake()
     {
@@ -63,6 +65,18 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             var pnl = transform.Find("Pnl_HearthWindow");
             if (pnl != null) hearthWindowPanel = pnl.gameObject;
+        }
+
+        if (expeditionCenterPanel == null)
+        {
+            var pnl = transform.Find("Pnl_ExpeditionCenterWindow");
+            if (pnl != null) expeditionCenterPanel = pnl.gameObject;
+        }
+
+        if (chunkExpeditionModal == null)
+        {
+            var pnl = transform.Find("Pnl_ChunkExpeditionModal");
+            if (pnl != null) chunkExpeditionModal = pnl.gameObject;
         }
 
         HideAll();
@@ -147,6 +161,28 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
             }
         }
 
+        if (expeditionCenterPanel != null)
+        {
+            expeditionCenterPanel.SetActive(true);
+            var expUI = expeditionCenterPanel.GetComponent<ExpeditionCenterWindowUI>();
+            if (expUI == null) expUI = expeditionCenterPanel.AddComponent<ExpeditionCenterWindowUI>();
+            if (expUI != null)
+            {
+                expUI.AutoBindReferences();
+            }
+        }
+
+        if (chunkExpeditionModal != null)
+        {
+            chunkExpeditionModal.SetActive(true);
+            var modalUI = chunkExpeditionModal.GetComponent<ChunkExpeditionModalUI>();
+            if (modalUI == null) modalUI = chunkExpeditionModal.AddComponent<ChunkExpeditionModalUI>();
+            if (modalUI != null)
+            {
+                modalUI.AutoBindReferences();
+            }
+        }
+
         Canvas.ForceUpdateCanvases();
         HideAll();
     }
@@ -212,6 +248,53 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
             bool previewOnly = TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase != TimePhases.Dusk;
             OpenHearthWindow(previewOnly);
         }
+
+        if (buildingEntity is ExpeditionCenterEntity expeditionCenter)
+        {
+            OpenExpeditionCenter(expeditionCenter);
+        }
+    }
+
+    public bool OpenExpeditionCenter(ExpeditionCenterEntity center = null, Vector2Int? highlightChunk = null)
+    {
+        if (expeditionCenterPanel == null)
+        {
+            var pnl = transform.Find("Pnl_ExpeditionCenterWindow");
+            if (pnl != null) expeditionCenterPanel = pnl.gameObject;
+        }
+
+        if (expeditionCenterPanel == null) return false;
+
+        HideAll();
+        expeditionCenterPanel.SetActive(true);
+        var expUI = expeditionCenterPanel.GetComponent<ExpeditionCenterWindowUI>();
+        if (expUI == null) expUI = expeditionCenterPanel.AddComponent<ExpeditionCenterWindowUI>();
+        if (expUI != null)
+        {
+            expUI.Setup(center, highlightChunk);
+        }
+        return true;
+    }
+
+    public bool OpenChunkExpeditionModal(Vector2Int chunkCoord)
+    {
+        if (chunkExpeditionModal == null)
+        {
+            var pnl = transform.Find("Pnl_ChunkExpeditionModal");
+            if (pnl != null) chunkExpeditionModal = pnl.gameObject;
+        }
+
+        if (chunkExpeditionModal == null) return false;
+
+        HideAll();
+        chunkExpeditionModal.SetActive(true);
+        var modalUI = chunkExpeditionModal.GetComponent<ChunkExpeditionModalUI>();
+        if (modalUI == null) modalUI = chunkExpeditionModal.AddComponent<ChunkExpeditionModalUI>();
+        if (modalUI != null)
+        {
+            modalUI.Setup(chunkCoord);
+        }
+        return true;
     }
 
     public bool OpenHearthWindow(bool isPreviewOnly = false)
@@ -273,5 +356,7 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         if (runeForgePanel != null) runeForgePanel.SetActive(false);
         if (runeTowerSelectionModal != null) runeTowerSelectionModal.SetActive(false);
         if (hearthWindowPanel != null) hearthWindowPanel.SetActive(false);
+        if (expeditionCenterPanel != null) expeditionCenterPanel.SetActive(false);
+        if (chunkExpeditionModal != null) chunkExpeditionModal.SetActive(false);
     }
 }

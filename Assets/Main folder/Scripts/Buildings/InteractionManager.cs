@@ -203,6 +203,12 @@ public class InteractionManager : MonoBehaviour
             lastSelectedTower?.ShowRangeIndicator(false);
             lastSelectedTower = null;
         }
+        else if (building is ExpeditionCenterEntity)
+        {
+            CenterInfoPanelControllerUI.Instance?.Setup(building);
+            lastSelectedTower?.ShowRangeIndicator(false);
+            lastSelectedTower = null;
+        }
         else if (building.data != null && building.data.type == BuildingType.Economic)
         {
             CenterInfoPanelControllerUI.Instance?.Setup(building);

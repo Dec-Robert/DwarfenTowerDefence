@@ -2,6 +2,21 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
+    private static CameraController _instance;
+    public static CameraController Instance
+    {
+        get
+        {
+            if (_instance == null) _instance = FindFirstObjectByType<CameraController>();
+            return _instance;
+        }
+        private set => _instance = value;
+    }
+
+    void Awake()
+    {
+        _instance = this;
+    }
     [Header("Pr�dko�ci")]
     public float moveSpeed = 20f;
     public float zoomSpeed = 10f;

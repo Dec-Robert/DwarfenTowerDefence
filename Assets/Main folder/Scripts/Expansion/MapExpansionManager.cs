@@ -83,6 +83,23 @@ public class MapExpansionManager : MonoBehaviour
     private void HandleBorderlandsClicked(Vector2Int coord)
     {
         OnBorderlandsChunkClicked?.Invoke(coord);
+
+        // Jeśli na chunku trwa już ekspedycja lub zwiad: otwórz Centrum z podświetleniem tej wyprawy
+        if (activeChunks.TryGetValue(coord, out var chunkData) && chunkData.hasActiveMission)
+        {
+            CenterInfoPanelControllerUI.Instance?.OpenExpeditionCenter(null, coord);
+            return;
+        }
+
+        // Płynnie centrujemy kamerę na chunku (FocusOnPoint przesuwa X/Z, nie modyfikując rotacji ani wysokości Y)
+        Vector3 chunkPos = ExpeditionCenterWindowUI.GetChunkWorldPosition(coord);
+        if (CameraController.Instance != null)
+        {
+            CameraController.Instance.FocusOnPoint(chunkPos);
+        }
+
+        // Otwieramy modal zwiadu/ekspedycji chunka
+        CenterInfoPanelControllerUI.Instance?.OpenChunkExpeditionModal(coord);
     }
 
     // =========================================================================
