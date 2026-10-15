@@ -26,9 +26,6 @@ MonoBehaviour:
     feature: 1
     featureLevel: 0
     building: {fileID: 0}
-    feature: 1
-    featureLevel: 0
-    building: {fileID: 0}
   - localCoord: {x: 2, y: -3}
     feature: 5
     featureLevel: 0
@@ -45,25 +42,6 @@ MonoBehaviour:
     feature: 1
     featureLevel: 0
     building: {fileID: 0}
-    feature: 1
-    featureLevel: 0
-    building: {fileID: 0}
-    feature: 1
-    featureLevel: 0
-    building: {fileID: 0}
-    feature: 3
-    featureLevel: 3
-    building: {fileID: 0}
-    feature: 3
-    featureLevel: 2
-    building: {fileID: 0}
-  - localCoord: {x: 0, y: 3}
-    feature: 3
-    featureLevel: 2
-    building: {fileID: 0}
-    feature: 3
-    featureLevel: 1
-    building: {fileID: 0}
   - localCoord: {x: -1, y: 3}
     feature: 0
     featureLevel: 0
@@ -76,4 +54,16 @@ MonoBehaviour:
     feature: 0
     featureLevel: 0
     building: {fileID: 11400000, guid: fc69ce64a035f86478d06d70307cc2a6, type: 2}
+  - localCoord: {x: 0, y: 2}
+    feature: 3
+    featureLevel: 2
+    building: {fileID: 0}
+  - localCoord: {x: 0, y: 3}
+    feature: 3
+    featureLevel: 1
+    building: {fileID: 0}
+  - localCoord: {x: 2, y: -1}
+    feature: 5
+    featureLevel: 0
+    building: {fileID: 0}
   roadConnectionEdge: {x: 3, y: -2}

@@ -59,7 +59,7 @@ public class HearthWindowUI : MonoBehaviour
     public HearthLevelCardRefs[] levelCards = new HearthLevelCardRefs[5];
 
     [Header("Kolumny Efektów (Noc / Następny Dzień)")]
-    public HearthEffectItemRefs[] nightEffectItems = new HearthEffectItemRefs[4];
+    public HearthEffectItemRefs[] nightEffectItems = new HearthEffectItemRefs[5];
     public HearthEffectItemRefs[] dayEffectItems = new HearthEffectItemRefs[2];
 
     [Header("Stopka Podsumowania (Footer)")]
@@ -412,28 +412,29 @@ public class HearthWindowUI : MonoBehaviour
         if (txtPreviewLevelCost != null)
         {
             string costText = selectedData.coalCost <= 0 ? "0 WĘGLA (DARMOWY)" : $"{selectedData.coalCost} WĘGLA";
-            txtPreviewLevelCost.text = $"KOSZT: {costText}  •  {selectedData.tagText}";
+            string etherTier = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "ŚREDNIE" : selectedData.etherChanceTierLabel.ToUpperInvariant();
+            txtPreviewLevelCost.text = $"KOSZT: {costText}  •  {selectedData.tagText}  •  ETER: {etherTier} ({Mathf.RoundToInt(selectedData.guaranteedEtherPercent * 100f)}%)";
         }
     }
 
     private void RefreshEffectsUI(HearthLevelData selectedData)
     {
-        // 1. Obrażenia wież obronnych (Damage)
+        // 1. Szybkostrzelność wież obronnych (FireRate)
         UpdateEffectItem(
             GetNightEffect(0),
-            "Obrażenia wież obronnych",
-            FormatPercentDelta(selectedData.towerDamageBonus),
-            GetPlayerBeneficialColor(selectedData.towerDamageBonus),
-            GetTowerDamageDescription(selectedData.towerDamageBonus)
+            "Szybkostrzelność wież",
+            FormatPercentDelta(selectedData.towerFireRateBonus),
+            GetPlayerBeneficialColor(selectedData.towerFireRateBonus),
+            GetTowerFireRateDescription(selectedData.towerFireRateBonus)
         );
 
-        // 2. Zasięg i szybkostrzelność wież (Range & FireRate)
+        // 2. Zasięg wież obronnych (Range)
         UpdateEffectItem(
             GetNightEffect(1),
-            "Zasięg i szybkostrzelność wież",
-            FormatPercentDelta(selectedData.towerRangeAndRateBonus),
-            GetPlayerBeneficialColor(selectedData.towerRangeAndRateBonus),
-            GetTowerRangeRateDescription(selectedData.towerRangeAndRateBonus)
+            "Zasięg wież",
+            FormatPercentDelta(selectedData.towerRangeBonus),
+            GetPlayerBeneficialColor(selectedData.towerRangeBonus),
+            GetTowerRangeDescription(selectedData.towerRangeBonus)
         );
 
         // 3. Siła i prędkość wrogów (Enemy HP & Speed - ujemny bonus jest korzystny dla gracza!)
@@ -452,6 +453,17 @@ public class HearthWindowUI : MonoBehaviour
             FormatPercentDelta(selectedData.runeDropAndRarityBonus),
             GetPlayerBeneficialColor(selectedData.runeDropAndRarityBonus),
             GetRuneDropDescription(selectedData.runeDropAndRarityBonus)
+        );
+
+        // 5. Szanse na drop Etheru (Ether Wave Pool & Guarantee)
+        Color etherColor = GetEtherTierColor(selectedData.guaranteedEtherPercent);
+        string etherLabel = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "Średnie" : selectedData.etherChanceTierLabel;
+        UpdateEffectItem(
+            GetNightEffect(4),
+            "Szanse na drop Etheru",
+            $"{etherLabel.ToUpperInvariant()} ({Mathf.RoundToInt(selectedData.guaranteedEtherPercent * 100f)}% gwarant)",
+            etherColor,
+            GetEtherDropDescription(selectedData)
         );
 
         // Dzień 1: Produkcja wszystkich budynków następnego dnia
@@ -507,7 +519,9 @@ public class HearthWindowUI : MonoBehaviour
             else
             {
                 int remaining = currentCoal - selectedData.coalCost;
-                txtSummaryDetails.text = $"Po rozpaleniu w skarbcu pozostanie {remaining} Węgla. Efekty nocne zaczną działać natychmiast po rozpoczęciu Nocy.";
+                int etherPct = Mathf.RoundToInt(selectedData.guaranteedEtherPercent * 100f);
+                string etherTier = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "Średnie" : selectedData.etherChanceTierLabel;
+                txtSummaryDetails.text = $"Po rozpaleniu pozostanie {remaining} Węgla. Szanse na Ether: {etherTier} ({etherPct}% gwarantowane z puli fali).";
                 txtSummaryDetails.color = new Color(0.68f, 0.65f, 0.60f, 1f);
             }
         }
@@ -579,20 +593,20 @@ public class HearthWindowUI : MonoBehaviour
         return playerBeneficialValue > 0f ? ColorPositive : ColorNegative;
     }
 
-    private static string GetTowerDamageDescription(float bonus)
+    private static string GetTowerFireRateDescription(float bonus)
     {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        if (pct < 0) return $"Chłód osłabia mechanizmy obronne – wszystkie wieże zadają o {Mathf.Abs(pct)}% mniejsze obrażenia.";
-        if (pct > 0) return $"Żar Paleniska rozgrzewa amunicję i runy – wieże zadają o {pct}% większe obrażenia.";
-        return "Wieże obronne zadają standardowe obrażenia bazowe bez kar i wzmocnień.";
+        if (pct < 0) return $"Chłód i mrok spowalniają załogi – szybkostrzelność wież spada o {Mathf.Abs(pct)}%.";
+        if (pct > 0) return $"Żar Paleniska i wysokie morale przyspieszają tempo ostrzału wież o {pct}%.";
+        return "Wieże obronne strzelają ze standardową szybkostrzelnością (100% normy).";
     }
 
-    private static string GetTowerRangeRateDescription(float bonus)
+    private static string GetTowerRangeDescription(float bonus)
     {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        if (pct < 0) return $"Gęsty mrok ogranicza widoczność i tempo ostrzału załóg o {Mathf.Abs(pct)}%.";
-        if (pct > 0) return $"Blask ognia odsłania przedpole i zwiększa zasięg oraz szybkostrzelność wież o {pct}%.";
-        return "Standardowy zasięg widzenia oraz tempo ostrzału wszystkich wież (100% normy).";
+        if (pct < 0) return $"Gęsty mrok ogranicza widoczność przedpola – zasięg wież spada o {Mathf.Abs(pct)}%.";
+        if (pct > 0) return $"Blask ognia rozświetla przedpole – zasięg ostrzału wież rośnie o {pct}%.";
+        return "Standardowy zasięg widzenia i ostrzału wszystkich wież (100% normy).";
     }
 
     private static string GetEnemyStatsDescription(float bonus)
@@ -625,6 +639,25 @@ public class HearthWindowUI : MonoBehaviour
         if (data.levelIndex <= 2) return $"Oszczędne spalanie ({data.coalCost} szt. węgla) pozwala zachować zapasy kosztem lekkiego osłabienia.";
         if (data.levelIndex == 3) return $"Standardowy przydział paliwa ({data.coalCost} szt. węgla) utrzymuje pełną równowagę w twierdzy.";
         return $"Intensywne spalanie ({data.coalCost} szt. węgla) zapewnia potężne wsparcie obronne i gospodarcze.";
+    }
+
+    private static Color GetEtherTierColor(float guaranteedPercent)
+    {
+        if (guaranteedPercent >= 0.80f) return new Color(0.35f, 0.85f, 1.00f); // Ogromne (Cyan)
+        if (guaranteedPercent >= 0.60f) return ColorPositive;                 // Duże (Zielony)
+        if (guaranteedPercent >= 0.40f) return ColorAmberGold;                // Średnie (Bursztyn/Złoto)
+        if (guaranteedPercent >= 0.20f) return ColorNeutral;                  // Niskie (Szary/Neutralny)
+        return ColorNegative;                                                 // Zerowe (Czerwony)
+    }
+
+    private static string GetEtherDropDescription(HearthLevelData data)
+    {
+        int pct = Mathf.RoundToInt(data.guaranteedEtherPercent * 100f);
+        if (pct > 0)
+        {
+            return $"Gwarantowane pozyskanie co najmniej {pct}% Etheru z puli fali. Pozostały Ether może wydropić naturalnie (5% szansy).";
+        }
+        return "Brak gwarantowanego Etheru z fali – możliwe jedynie zdobycie rzadkiego naturalnego dropu (5% szansy) lub z Elit i Bossów.";
     }
 
     // =========================================================================
@@ -706,8 +739,8 @@ public class HearthWindowUI : MonoBehaviour
         var nightListTr = pnlHearth.Find("Pnl_EffectsColumnsRow/Sec_NightEffects/Pnl_EffectsList");
         if (nightListTr != null)
         {
-            if (nightEffectItems == null || nightEffectItems.Length != 4)
-                nightEffectItems = new HearthEffectItemRefs[4];
+            if (nightEffectItems == null || nightEffectItems.Length != 5)
+                nightEffectItems = new HearthEffectItemRefs[5];
 
             for (int i = 0; i < 4; i++)
             {
@@ -718,6 +751,23 @@ public class HearthWindowUI : MonoBehaviour
                 if (itemTr != null)
                 {
                     nightEffectItems[i] = BindEffectItemRefs(itemTr);
+                }
+            }
+
+            var item5Tr = nightListTr.Find("EffectItem_5");
+            if (item5Tr == null && nightEffectItems[3] != null && nightEffectItems[3].rootObject != null)
+            {
+                var cloned = Instantiate(nightEffectItems[3].rootObject, nightListTr);
+                cloned.name = "EffectItem_5";
+                item5Tr = cloned.transform;
+            }
+
+            if (item5Tr != null)
+            {
+                nightEffectItems[4] = BindEffectItemRefs(item5Tr);
+                if (nightEffectItems[4].imgEffectIcon != null)
+                {
+                    nightEffectItems[4].imgEffectIcon.color = new Color(0.35f, 0.85f, 1.00f);
                 }
             }
         }

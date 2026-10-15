@@ -23,6 +23,13 @@ public class BuildingEntity : MonoBehaviour
 
     public int currentTier => Upgrades?.CurrentTier ?? 0;
 
+    public static event Action OnAnyBuildingEconomyChanged;
+
+    public static void NotifyEconomyChanged()
+    {
+        OnAnyBuildingEconomyChanged?.Invoke();
+    }
+
     protected virtual void Start()
     {
         if (data != null && !isInitialized) Initialize(data);
@@ -123,6 +130,7 @@ public class BuildingEntity : MonoBehaviour
         {
             hasBeenUsed = true;
             RefreshInspectorUI();
+            NotifyEconomyChanged();
         }
 
         return success;
@@ -132,12 +140,14 @@ public class BuildingEntity : MonoBehaviour
     {
         Workers.RemoveWorker(race);
         RefreshInspectorUI();
+        NotifyEconomyChanged();
     }
 
     public virtual void HandleWorkerLost(Citizen citizen)
     {
         Workers?.ForgetWorker(citizen);
         RefreshInspectorUI();
+        NotifyEconomyChanged();
     }
 
     public List<Citizen> GetAssignedCitizens() => Workers.GetAssignedCitizens();
@@ -150,6 +160,7 @@ public class BuildingEntity : MonoBehaviour
     {
         Upgrades.ApplyUpgrade(upgrade);
         RefreshInspectorUI();
+        NotifyEconomyChanged();
     }
 
     public Dictionary<ResourceType, float> GetCurrentProduction() => Production.GetCurrentProduction();
@@ -189,6 +200,7 @@ public class BuildingEntity : MonoBehaviour
 
         if (Terrain != null) Terrain.DestroyArtificialFeatures();
 
+        NotifyEconomyChanged();
         Destroy(gameObject);
     }
 

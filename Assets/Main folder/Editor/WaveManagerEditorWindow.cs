@@ -206,6 +206,7 @@ public class WaveManagerEditorWindow : EditorWindow
         EditorGUILayout.BeginVertical("helpbox");
         selectedWave.dayNumber = Mathf.Max(1, EditorGUILayout.IntField("Numer Dnia (dayNumber)", selectedWave.dayNumber));
         selectedWave.waveMessage = EditorGUILayout.TextField("Komunikat Fali (waveMessage)", selectedWave.waveMessage);
+        selectedWave.etherPool = Mathf.Max(0, EditorGUILayout.IntField("Pula Etheru Fali (etherPool)", selectedWave.etherPool));
         selectedWave.customSpawnInterval = Mathf.Max(0f, EditorGUILayout.FloatField("Interwał Spawnu (0 = domyślny)", selectedWave.customSpawnInterval));
         selectedWave.hpMultiplier = Mathf.Max(0.1f, EditorGUILayout.FloatField("Mnożnik HP Fali", selectedWave.hpMultiplier <= 0f ? 1f : selectedWave.hpMultiplier));
         selectedWave.speedMultiplier = Mathf.Max(0.1f, EditorGUILayout.FloatField("Mnożnik Prędkości Fali", selectedWave.speedMultiplier <= 0f ? 1f : selectedWave.speedMultiplier));
@@ -339,9 +340,15 @@ public class WaveManagerEditorWindow : EditorWindow
         float interval = wave.customSpawnInterval > 0f ? wave.customSpawnInterval : 1.0f;
         float spawnDuration = totalEnemies * interval;
 
+        int eth80 = Mathf.RoundToInt(wave.etherPool * 0.8f);
+        int eth60 = Mathf.RoundToInt(wave.etherPool * 0.6f);
+        int eth40 = Mathf.RoundToInt(wave.etherPool * 0.4f);
+        int eth20 = Mathf.RoundToInt(wave.etherPool * 0.2f);
+
         EditorGUILayout.BeginVertical("helpbox");
         EditorGUILayout.LabelField("Podsumowanie Fali", EditorStyles.boldLabel);
         EditorGUILayout.LabelField($"Łącznie wrogów: {totalEnemies} (w tym gwarantowanych Elit: {totalElites})  |  Łączna pula HP: {totalHp:0.#}  |  Czas spawnowania: ~{spawnDuration:0.#}s");
+        EditorGUILayout.LabelField($"Pula Etheru: {wave.etherPool} szt.  |  Gwarant wg Ognia: Lvl 1: {eth80} (80%)  •  Lvl 2: {eth60} (60%)  •  Lvl 3: {eth40} (40%)  •  Lvl 4: {eth20} (20%)  •  Lvl 5: 0 (0%)");
         EditorGUILayout.EndVertical();
     }
 
@@ -359,6 +366,7 @@ public class WaveManagerEditorWindow : EditorWindow
         string assetPath = AssetDatabase.GenerateUniqueAssetPath($"{WavesFolderPath}/Wave day {nextDay}.asset");
         WaveDefinition newWave = CreateInstance<WaveDefinition>();
         newWave.dayNumber = nextDay;
+        newWave.etherPool = Mathf.Max(3, 2 + nextDay);
         newWave.hpMultiplier = 1f;
         newWave.speedMultiplier = 1f;
         newWave.enemies = new List<WaveDefinition.WaveEntry>();

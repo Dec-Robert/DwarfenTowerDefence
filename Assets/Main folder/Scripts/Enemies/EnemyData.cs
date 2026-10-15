@@ -27,6 +27,13 @@ public class EnemyData : ScriptableObject
     public float eliteHpMultiplier = 2.0f;
     public float eliteSpeedMultiplier = 1.3f;
 
+    [Header("Drop Etheru (Niezależny od puli fali)")]
+    [Tooltip("Gwarantowany Ether za pokonanie tego wroga w wersji Elitarnej (nie zużywa limitu puli fali)")]
+    public int etherDropElite = 1;
+
+    [Tooltip("Gwarantowany Ether za pokonanie tego wroga w wersji Bossa (nie zużywa limitu puli fali)")]
+    public int etherDropBoss = 5;
+
     [Header("Umiejetnosci")]
     public List<GameObject> skillPrefabs;
 }

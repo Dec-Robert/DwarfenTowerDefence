@@ -48,6 +48,7 @@ public class BuildingRegistry : MonoBehaviour
         if (building == null || buildings.Contains(building)) return;
         buildings.Add(building);
         OnBuildingRegistered?.Invoke(building);
+        BuildingEntity.NotifyEconomyChanged();
     }
 
     public void Unregister(BuildingEntity building)
@@ -55,6 +56,7 @@ public class BuildingRegistry : MonoBehaviour
         if (building == null) return;
         buildings.Remove(building);
         OnBuildingUnregistered?.Invoke(building);
+        BuildingEntity.NotifyEconomyChanged();
     }
 
     private void ExecuteMorningHousingEconomy()

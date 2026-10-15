@@ -59,6 +59,7 @@ public class EnemySpawner : MonoBehaviour
 
     void Start()
     {
+        EnsureEtherDropManager();
         if (fogManager != null) fogManager.OnChunkRevealed += OnChunkRevealedHandler;
         if (TimePhaseManager.Instance != null) TimePhaseManager.Instance.OnNightStarted += HandleNightPhase;
 
@@ -96,6 +97,8 @@ public class EnemySpawner : MonoBehaviour
         else
         {
             Debug.LogWarning($"[Spawner] Brak zdefiniowanej fali dla Dnia {waveNumber} (lista predefinedWaves jest pusta).");
+            EnsureEtherDropManager();
+            EnemyEtherDropManager.Instance?.InitializeWave(null, waveNumber, 10);
         }
     }
 
@@ -196,6 +199,12 @@ public class EnemySpawner : MonoBehaviour
 
         string msgInfo = string.IsNullOrEmpty(waveDef.waveMessage) ? "" : $" | \"{waveDef.waveMessage}\"";
         Debug.Log($"[Spawner] Fala Dzień {waveNumber} ({waveDef.name}): {enemiesToSpawnQueue.Count} wrogów w kolejce (HP x{hpMult:0.##}, Speed x{speedMult:0.##}, Interwał {currentWaveSpawnInterval:0.##}s){msgInfo}");
+
+        EnsureEtherDropManager();
+        if (EnemyEtherDropManager.Instance != null)
+        {
+            EnemyEtherDropManager.Instance.InitializeWave(waveDef, waveNumber, enemiesToSpawnQueue.Count);
+        }
     }
 
     private IEnumerator SpawnWaveRoutine()
@@ -481,6 +490,19 @@ public class EnemySpawner : MonoBehaviour
             for (int i = 0; i < route.currentActivePath.Count - 1; i++)
             {
                 Gizmos.DrawLine(route.currentActivePath[i], route.currentActivePath[i + 1]);
+            }
+        }
+    }
+
+    private void EnsureEtherDropManager()
+    {
+        if (EnemyEtherDropManager.Instance == null)
+        {
+            var existing = FindFirstObjectByType<EnemyEtherDropManager>();
+            if (existing == null)
+            {
+                var go = new GameObject("EnemyEtherDropManager");
+                go.AddComponent<EnemyEtherDropManager>();
             }
         }
     }

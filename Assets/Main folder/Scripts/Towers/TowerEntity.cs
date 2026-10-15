@@ -113,7 +113,7 @@ public class TowerEntity : BuildingEntity
 
         TowerStats calculatedStats = new TowerStats
         {
-            damage = (tData.baseDamage + flatDamage) * damageMulti * finalEfficiency,
+            damage = (tData.baseDamage + flatDamage) * damageMulti,
             range = (tData.baseRange + flatRange) * rangeMulti,
             fireRate = (tData.fireRate + flatFireRate) * fireRateMulti * finalEfficiency,
             criticalChancel = Mathf.Clamp01((baseCritChance + normFlatCrit) * critChanMulti),

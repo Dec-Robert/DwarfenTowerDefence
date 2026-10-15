@@ -29,6 +29,9 @@ public class BeaconEntity : BuildingEntity
 
     public static float ActiveNightEnemyStatsBonus { get; private set; } = 0f;
     public static float ActiveNightRuneBonus { get; private set; } = 0f;
+    public static float ActiveNightGuaranteedEtherPercent { get; private set; } = 0.40f;
+    public static string ActiveNightEtherChanceLabel { get; private set; } = "Średnie";
+    public static float ActiveNightNaturalDropChance { get; private set; } = 0.05f;
 
     public static float PendingNextDayProductionBonus { get; private set; } = 0f;
     public static float ActiveDayProductionBonus { get; private set; } = 0f;
@@ -46,6 +49,9 @@ public class BeaconEntity : BuildingEntity
         ActiveNightLevel = 0;
         ActiveNightEnemyStatsBonus = 0f;
         ActiveNightRuneBonus = 0f;
+        ActiveNightGuaranteedEtherPercent = 0.40f;
+        ActiveNightEtherChanceLabel = "Średnie";
+        ActiveNightNaturalDropChance = 0.05f;
         PendingNextDayProductionBonus = 0f;
         ActiveDayProductionBonus = 0f;
         OnHearthStateChanged = null;
@@ -138,17 +144,21 @@ public class BeaconEntity : BuildingEntity
         ActiveDayProductionBonus = 0f;
         PendingNextDayProductionBonus = levelData.nextDayProductionBonus;
 
-        // Modyfikatory wrogów i run na nadchodzącą noc
+        // Modyfikatory wrogów, run i eteru na nadchodzącą noc
         ActiveNightEnemyStatsBonus = levelData.enemyStatsBonus;
         ActiveNightRuneBonus = levelData.runeDropAndRarityBonus;
+        ActiveNightGuaranteedEtherPercent = levelData.guaranteedEtherPercent;
+        ActiveNightEtherChanceLabel = levelData.etherChanceTierLabel;
+        ActiveNightNaturalDropChance = levelData.naturalEtherDropChance;
 
         // Modyfikatory wież w GlobalModifierRegistry
         ApplyTowerNightModifiers(levelData);
 
         Debug.Log($"[BeaconEntity] Rozpalono Wielkie Palenisko – Poziom {levelData.levelIndex} ({levelData.title}). " +
-                  $"Koszt Węgla: {levelData.coalCost}, Wieże Obrażenia: {levelData.towerDamageBonus:+0%;-0%;0%}, " +
-                  $"Wieże Zasięg/Szybkość: {levelData.towerRangeAndRateBonus:+0%;-0%;0%}, " +
+                  $"Koszt Węgla: {levelData.coalCost}, Wieże Szybkostrzelność: {levelData.towerFireRateBonus:+0%;-0%;0%}, " +
+                  $"Wieże Zasięg: {levelData.towerRangeBonus:+0%;-0%;0%}, " +
                   $"Wrogowie: {levelData.enemyStatsBonus:+0%;-0%;0%}, Runy: {levelData.runeDropAndRarityBonus:+0%;-0%;0%}, " +
+                  $"Ether Szansa: {levelData.etherChanceTierLabel} ({levelData.guaranteedEtherPercent:P0} gwarant), " +
                   $"Produkcja jutra: {levelData.nextDayProductionBonus:+0%;-0%;0%}.");
 
         OnHearthStateChanged?.Invoke();
@@ -167,18 +177,16 @@ public class BeaconEntity : BuildingEntity
         {
             GlobalModifierRegistry.Instance.Unregister(ModifierSourceId);
 
-            if (!Mathf.Approximately(levelData.towerDamageBonus, 0f))
+            if (!Mathf.Approximately(levelData.towerRangeBonus, 0f))
             {
                 GlobalModifierRegistry.Instance.Register(
-                    new StatModifier(ModifierSourceId, TowerStatType.Damage, 1f + levelData.towerDamageBonus));
+                    new StatModifier(ModifierSourceId, TowerStatType.Range, 1f + levelData.towerRangeBonus));
             }
 
-            if (!Mathf.Approximately(levelData.towerRangeAndRateBonus, 0f))
+            if (!Mathf.Approximately(levelData.towerFireRateBonus, 0f))
             {
                 GlobalModifierRegistry.Instance.Register(
-                    new StatModifier(ModifierSourceId, TowerStatType.Range, 1f + levelData.towerRangeAndRateBonus));
-                GlobalModifierRegistry.Instance.Register(
-                    new StatModifier(ModifierSourceId, TowerStatType.FireRate, 1f + levelData.towerRangeAndRateBonus));
+                    new StatModifier(ModifierSourceId, TowerStatType.FireRate, 1f + levelData.towerFireRateBonus));
             }
         }
 
@@ -199,6 +207,9 @@ public class BeaconEntity : BuildingEntity
         ActiveNightLevel = 0;
         ActiveNightEnemyStatsBonus = 0f;
         ActiveNightRuneBonus = 0f;
+        ActiveNightGuaranteedEtherPercent = 0f;
+        ActiveNightEtherChanceLabel = string.Empty;
+        ActiveNightNaturalDropChance = 0.05f;
 
         ActiveDayProductionBonus = PendingNextDayProductionBonus;
         PendingNextDayProductionBonus = 0f;
@@ -242,5 +253,48 @@ public class BeaconEntity : BuildingEntity
     public static float GetActiveNightRuneMultiplier()
     {
         return Mathf.Max(0.1f, 1f + ActiveNightRuneBonus);
+    }
+
+    /// <summary>
+    ///     Zwraca aktywny procent gwarantowanego Etheru na noc (np. 0.8f dla Poziomu 1, 0.0f dla Poziomu 5).
+    ///     Jeśli noc jeszcze nie wystartowała (np. podgląd), zwraca wartość dla aktualnie wybranego szkicu poziomu (SelectedDraftLevel).
+    /// </summary>
+    public static float GetGuaranteedEtherPercent()
+    {
+        if (ActiveNightLevel > 0)
+        {
+            return ActiveNightGuaranteedEtherPercent;
+        }
+
+        HearthConfigSO config = GetConfig();
+        return config != null ? config.GetLevelData(SelectedDraftLevel).guaranteedEtherPercent : 0.40f;
+    }
+
+    /// <summary>
+    ///     Zwraca etykietę szansy na Ether (np. "Ogromne", "Duże", "Średnie", "Niskie", "Zerowe").
+    /// </summary>
+    public static string GetEtherChanceLabel()
+    {
+        if (ActiveNightLevel > 0 && !string.IsNullOrEmpty(ActiveNightEtherChanceLabel))
+        {
+            return ActiveNightEtherChanceLabel;
+        }
+
+        HearthConfigSO config = GetConfig();
+        return config != null ? config.GetLevelData(SelectedDraftLevel).etherChanceTierLabel : "Średnie";
+    }
+
+    /// <summary>
+    ///     Zwraca szansę na naturalny drop pozostałego Etheru z zabitego zwykłego wroga (domyślnie ~0.05f).
+    /// </summary>
+    public static float GetNaturalEtherDropChance()
+    {
+        if (ActiveNightLevel > 0)
+        {
+            return ActiveNightNaturalDropChance;
+        }
+
+        HearthConfigSO config = GetConfig();
+        return config != null ? config.GetLevelData(SelectedDraftLevel).naturalEtherDropChance : 0.05f;
     }
 }

@@ -24,4 +24,6 @@ MonoBehaviour:
   eliteSpawnChance: 0.1
   eliteHpMultiplier: 2
   eliteSpeedMultiplier: 1.3
+  etherDropElite: 1
+  etherDropBoss: 5
   skillPrefabs: []

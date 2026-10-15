@@ -155,15 +155,23 @@ public class HousingEntity : BuildingEntity
         currentGrowthProgress = 0;
     }
 
+    public void NotifyStateChanged()
+    {
+        OnHousingStateChanged?.Invoke();
+        NotifyEconomyChanged();
+    }
+
     public void AddResident(Citizen citizen)
     {
         if (citizen == null || residents.Contains(citizen)) return;
         residents.Add(citizen);
+        NotifyStateChanged();
     }
 
     public void RemoveResident(Citizen citizen)
     {
         residents.Remove(citizen);
+        NotifyStateChanged();
     }
 
     public override void Demolish()

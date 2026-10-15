@@ -770,7 +770,7 @@ public class CombatOptimizationTests
     }
 
     [Test]
-    public void Test38_MaddeningGazeSkill_FearDebuff_ReducesDamageAndFireRateByHalf()
+    public void Test38_MaddeningGazeSkill_FearDebuff_ReducesFireRateByHalf_PreservesDamage()
     {
         TowerController tower = CreateTower(Vector3.zero, 30f, TargetingMode.Closest);
         TowerStats baseStats = new TowerStats
@@ -787,7 +787,7 @@ public class CombatOptimizationTests
 
         tower.isFeared = true;
         tower.ApplyCalculatedStats(baseStats, 1f);
-        Assert.AreEqual(50f, tower.GetCurrentDamage(), 0.01f, "Damage must be halved (50%) when feared!");
+        Assert.AreEqual(100f, tower.GetCurrentDamage(), 0.01f, "Damage must NOT be reduced when feared!");
         Assert.AreEqual(1f, tower.GetCurrentFireRate(), 0.01f, "FireRate must be halved (50%) when feared!");
     }
 

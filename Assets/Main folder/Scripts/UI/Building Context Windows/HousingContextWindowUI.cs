@@ -659,6 +659,7 @@ public class HousingContextWindowUI : MonoBehaviour
         if (currentPop >= maxPop) return;
 
         currentHousing.stopGrowth = !currentHousing.stopGrowth;
+        currentHousing.NotifyStateChanged();
         RefreshGrowthToggleState();
         RefreshGrowthProgressUI();
     }

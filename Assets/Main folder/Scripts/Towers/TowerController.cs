@@ -73,7 +73,7 @@ public class TowerController : MonoBehaviour
         float fearMultiplier = isFeared ? 0.5f : 1f;
 
         currentRange = stats.range;
-        currentDamage = stats.damage * fearMultiplier;
+        currentDamage = stats.damage;
         currentFireRate = stats.fireRate * fearMultiplier;
         currentArmorPen = stats.armorPenetration;
         currentMagicPen = stats.magicPenetration;

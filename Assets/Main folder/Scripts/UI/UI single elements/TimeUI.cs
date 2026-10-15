@@ -100,9 +100,10 @@ public class TimeUI : MonoBehaviour
     
     private void ChangeToNight()
     {
-        SetPhaseVisuals(nightBackground, nightText, "Night");
+        string etherTier = BeaconEntity.GetEtherChanceLabel();
+        string phaseTitle = string.IsNullOrEmpty(etherTier) ? "Night" : $"Night ({etherTier})";
+        SetPhaseVisuals(nightBackground, nightText, phaseTitle);
         ChangeHangingPhase(true);
-
     }
 
     private void SetPhaseVisuals(Color bgColor, Color txtColor, string phaseName)
@@ -125,15 +126,15 @@ public class TimeUI : MonoBehaviour
 
     private void ChangeHangingPhase(bool isNight)
     {
-
         pnlDayMode.SetActive(!isNight);
         pnlNightMode.SetActive(isNight);
         //Miejsce na ewentualne animacje dotweenem
-
     }
 
     private void SetNightText(float gameState)
     {
-        phaseText.text = "Night ["+ gameState +"]";
+        string etherTier = BeaconEntity.GetEtherChanceLabel();
+        string suffix = string.IsNullOrEmpty(etherTier) ? "" : $" [{etherTier}]";
+        phaseText.text = $"Night [{gameState}]{suffix}";
     }
 }

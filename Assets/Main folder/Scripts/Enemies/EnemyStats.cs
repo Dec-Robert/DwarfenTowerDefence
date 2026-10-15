@@ -246,6 +246,11 @@ public class EnemyStats : MonoBehaviour
             {
                 RuneManager.Instance.RollRuneDrop(this.rank);
             }
+
+            if (EnemyEtherDropManager.Instance != null)
+            {
+                EnemyEtherDropManager.Instance.HandleEnemyDeath(this, source);
+            }
         }
 
         for (int i = skills.Count - 1; i >= 0; i--)

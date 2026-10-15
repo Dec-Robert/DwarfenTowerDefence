@@ -8,6 +8,10 @@ public class WaveDefinition : ScriptableObject
     public int dayNumber = 1;
     public string waveMessage;
 
+    [Header("Ekonomia Fali (Ether)")]
+    [Tooltip("Maksymalna pula eteru do zdobycia ze zwykłych wrogów w tej fali (np. Fala 1 = 3, Fala 2 = 4, Fala 3 = 6)")]
+    public int etherPool = 3;
+
     [Header("Parametry Spawnu i Skalowania Fali")]
     [Tooltip("Jeśli <= 0, używany jest domyślny nightSpawnInterval w EnemySpawner")]
     public float customSpawnInterval = 0f;

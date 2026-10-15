@@ -888,7 +888,7 @@ public class BuildingEfficiencyEditorWindow : EditorWindow
         for (int i = 0; i < table.Count; i++)
         {
             float eff = CalculateSimulatedEfficiency(table[i], i, true);
-            float dmg = tData.baseDamage * eff;
+            float dmg = tData.baseDamage;
             float rate = tData.fireRate * eff;
             float avgCritFactor = 1f + critChance01 * (critMult - 1f);
             float dps = dmg * rate * avgCritFactor;

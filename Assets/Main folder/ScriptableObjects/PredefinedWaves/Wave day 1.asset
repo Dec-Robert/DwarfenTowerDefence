@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dayNumber: 1
   waveMessage: 
+  etherPool: 3
   customSpawnInterval: 0
   hpMultiplier: 1
   speedMultiplier: 1
