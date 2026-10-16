@@ -93,6 +93,8 @@ public class ExtendedBuildingUI : MonoBehaviour
         UnregisterButtons();
     }
 
+    public List<BuildingData> AllBuildingsDatabase => allBuildingsDatabase;
+
     public void GenerateBuildingSlots()
     {
         ClearContainer(buildingsContainer);
@@ -102,7 +104,7 @@ public class ExtendedBuildingUI : MonoBehaviour
 
         foreach (var building in allBuildingsDatabase)
         {
-            if (building == null) continue;
+            if (building == null || !building.isUnlocked) continue;
 
             GameObject slotObj = Instantiate(buildingSlotPrefab, buildingsContainer);
             slotObj.SetActive(false);
@@ -114,6 +116,17 @@ public class ExtendedBuildingUI : MonoBehaviour
             }
 
             slotEntries.Add(new BuildingSlotEntry(slotObj, slotUI, building));
+        }
+    }
+
+    public void RefreshAvailableBuildings()
+    {
+        if (!Application.isPlaying) return;
+
+        GenerateBuildingSlots();
+        if (isOpen)
+        {
+            FilterSlots(currentCategory);
         }
     }
 
@@ -160,6 +173,12 @@ public class ExtendedBuildingUI : MonoBehaviour
         foreach (var entry in slotEntries)
         {
             if (entry.gameObject == null || entry.data == null) continue;
+
+            if (!entry.data.isUnlocked)
+            {
+                entry.gameObject.SetActive(false);
+                continue;
+            }
 
             bool isMatch;
             if (category is BuildingType.Unique or BuildingType.Utility)

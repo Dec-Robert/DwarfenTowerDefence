@@ -35,4 +35,4 @@ MonoBehaviour:
   prefab: {fileID: 0}
   bonusRules: []
   baseMaxWorkers: 1
-  isUnlocked: 1
+  isUnlocked: 0

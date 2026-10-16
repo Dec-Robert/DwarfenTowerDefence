@@ -24,6 +24,9 @@ MonoBehaviour:
     towerRangeBonus: -0.2
     enemyStatsBonus: 0.15
     runeDropAndRarityBonus: 0.35
+    etherChanceTierLabel: Ogromne
+    guaranteedEtherPercent: 0.8
+    naturalEtherDropChance: 0.05
     nextDayProductionBonus: -0.15
   - levelIndex: 2
     title: "Tl\u0105cy si\u0119 \u017Bar"
@@ -36,6 +39,9 @@ MonoBehaviour:
     towerRangeBonus: -0.1
     enemyStatsBonus: 0.05
     runeDropAndRarityBonus: 0.15
+    etherChanceTierLabel: "Du\u017Ce"
+    guaranteedEtherPercent: 0.6
+    naturalEtherDropChance: 0.05
     nextDayProductionBonus: -0.1
   - levelIndex: 3
     title: "Zr\xF3wnowa\u017Cony P\u0142omie\u0144"
@@ -48,6 +54,9 @@ MonoBehaviour:
     towerRangeBonus: 0
     enemyStatsBonus: 0
     runeDropAndRarityBonus: 0
+    etherChanceTierLabel: "\u015Arednie"
+    guaranteedEtherPercent: 0.4
+    naturalEtherDropChance: 0.05
     nextDayProductionBonus: 0
   - levelIndex: 4
     title: "Jasny Ogie\u0144"
@@ -60,6 +69,9 @@ MonoBehaviour:
     towerRangeBonus: 0.15
     enemyStatsBonus: -0.05
     runeDropAndRarityBonus: -0.1
+    etherChanceTierLabel: Niskie
+    guaranteedEtherPercent: 0.2
+    naturalEtherDropChance: 0.05
     nextDayProductionBonus: 0.15
   - levelIndex: 5
     title: Palenisko Magmy
@@ -72,4 +84,7 @@ MonoBehaviour:
     towerRangeBonus: 0.35
     enemyStatsBonus: -0.15
     runeDropAndRarityBonus: -0.25
+    etherChanceTierLabel: Zerowe
+    guaranteedEtherPercent: 0
+    naturalEtherDropChance: 0.05
     nextDayProductionBonus: 0.35

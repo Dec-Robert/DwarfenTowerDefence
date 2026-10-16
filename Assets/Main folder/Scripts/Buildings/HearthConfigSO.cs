@@ -36,7 +36,7 @@ public class HearthLevelData
 
     [Header("Drop Etheru z Fali")]
     [Tooltip("Etykieta szansy na Ether widoczna dla gracza (np. Ogromne, Duże, Średnie, Niskie, Zerowe)")]
-    public string etherChanceTierLabel = "Średnie";
+    public string etherChanceTierLabel = string.Empty;
 
     [Tooltip("Gwarantowany procent puli Etheru fali (np. 0.8 = 80%)")]
     [Range(0f, 1f)]
@@ -192,31 +192,31 @@ public class HearthConfigSO : ScriptableObject
         }
 
         // Uzupełnij brakujące dane Etheru dla istniejących assetów na dysku
-        if (levels[0] != null && string.IsNullOrEmpty(levels[0].etherChanceTierLabel))
+        if (levels[0] != null && (string.IsNullOrEmpty(levels[0].etherChanceTierLabel) || levels[0].etherChanceTierLabel != "Ogromne"))
         {
             levels[0].etherChanceTierLabel = "Ogromne";
             levels[0].guaranteedEtherPercent = 0.80f;
             levels[0].naturalEtherDropChance = 0.05f;
         }
-        if (levels[1] != null && string.IsNullOrEmpty(levels[1].etherChanceTierLabel))
+        if (levels[1] != null && (string.IsNullOrEmpty(levels[1].etherChanceTierLabel) || levels[1].etherChanceTierLabel != "Duże"))
         {
             levels[1].etherChanceTierLabel = "Duże";
             levels[1].guaranteedEtherPercent = 0.60f;
             levels[1].naturalEtherDropChance = 0.05f;
         }
-        if (levels[2] != null && string.IsNullOrEmpty(levels[2].etherChanceTierLabel))
+        if (levels[2] != null && (string.IsNullOrEmpty(levels[2].etherChanceTierLabel) || levels[2].etherChanceTierLabel != "Średnie"))
         {
             levels[2].etherChanceTierLabel = "Średnie";
             levels[2].guaranteedEtherPercent = 0.40f;
             levels[2].naturalEtherDropChance = 0.05f;
         }
-        if (levels[3] != null && string.IsNullOrEmpty(levels[3].etherChanceTierLabel))
+        if (levels[3] != null && (string.IsNullOrEmpty(levels[3].etherChanceTierLabel) || levels[3].etherChanceTierLabel != "Niskie"))
         {
             levels[3].etherChanceTierLabel = "Niskie";
             levels[3].guaranteedEtherPercent = 0.20f;
             levels[3].naturalEtherDropChance = 0.05f;
         }
-        if (levels[4] != null && string.IsNullOrEmpty(levels[4].etherChanceTierLabel))
+        if (levels[4] != null && (string.IsNullOrEmpty(levels[4].etherChanceTierLabel) || levels[4].etherChanceTierLabel != "Zerowe"))
         {
             levels[4].etherChanceTierLabel = "Zerowe";
             levels[4].guaranteedEtherPercent = 0.00f;

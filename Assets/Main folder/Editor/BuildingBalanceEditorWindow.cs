@@ -563,6 +563,7 @@ public class BuildingBalanceEditorWindow : EditorWindow
         float iconWidth = 34f;
         float nameWidth = 200f;
         float typeWidth = 105f;
+        float unlockedWidth = 70f;
         float colWidth = 68f;
         float totalWidth = 75f;
         float actionWidth = 90f;
@@ -588,6 +589,7 @@ public class BuildingBalanceEditorWindow : EditorWindow
         GUILayout.Label("Ikona", cellHeaderStyle, GUILayout.Width(iconWidth));
         GUILayout.Label("Nazwa Budynku", EditorStyles.miniBoldLabel, GUILayout.Width(nameWidth));
         GUILayout.Label("Kategoria", cellHeaderStyle, GUILayout.Width(typeWidth));
+        GUILayout.Label("Budowalny", cellHeaderStyle, GUILayout.Width(unlockedWidth));
 
         // Kolumny surowców
         for (int i = 0; i < MonitoredResources.Length; i++)
@@ -648,6 +650,14 @@ public class BuildingBalanceEditorWindow : EditorWindow
 
             // Kategoria
             GUILayout.Label(GetCategoryBadge(b), EditorStyles.miniLabel, GUILayout.Width(typeWidth));
+
+            // Budowalny (isUnlocked)
+            GUILayout.Space(24f);
+            bool newUnlocked = EditorGUILayout.Toggle(b.isUnlocked, GUILayout.Width(unlockedWidth - 24f));
+            if (newUnlocked != b.isUnlocked)
+            {
+                BuildingAvailabilityEditorWindow.SetBuildingUnlocked(b, newUnlocked);
+            }
 
             // Pobranie odpowiedniej listy kosztów w zależności od podwidoku
             List<ResourceCost> costList = GetResourceCostListForView(b, subView);
@@ -1220,9 +1230,7 @@ public class BuildingBalanceEditorWindow : EditorWindow
         bool newUnlocked = EditorGUILayout.ToggleLeft("Odblokowany na start", b.isUnlocked);
         if (newUnlocked != b.isUnlocked)
         {
-            Undo.RecordObject(b, "Zmień isUnlocked");
-            b.isUnlocked = newUnlocked;
-            EditorUtility.SetDirty(b);
+            BuildingAvailabilityEditorWindow.SetBuildingUnlocked(b, newUnlocked);
         }
         EditorGUILayout.EndHorizontal();
 

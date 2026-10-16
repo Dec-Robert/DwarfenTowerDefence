@@ -33,7 +33,7 @@ MonoBehaviour:
   prefab: {fileID: 805186248796621080, guid: b33da802702c20b4f91f7a220e374f3e, type: 3}
   bonusRules: []
   baseMaxWorkers: 1
-  isUnlocked: 1
+  isUnlocked: 0
   housingRace: 0
   maxResidents: 3
   initialResidents: 3

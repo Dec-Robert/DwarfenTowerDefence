@@ -50,7 +50,7 @@ MonoBehaviour:
   prefab: {fileID: 6103551412309873435, guid: ea11b7e379f6b794eb5bcd66bca96113, type: 3}
   bonusRules: []
   baseMaxWorkers: 1
-  isUnlocked: 1
+  isUnlocked: 0
   baseRange: 5
   baseDamage: 10
   fireRate: 0.5

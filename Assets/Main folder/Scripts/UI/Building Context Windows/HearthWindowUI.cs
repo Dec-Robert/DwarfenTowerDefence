@@ -411,9 +411,8 @@ public class HearthWindowUI : MonoBehaviour
 
         if (txtPreviewLevelCost != null)
         {
-            string costText = selectedData.coalCost <= 0 ? "0 WĘGLA (DARMOWY)" : $"{selectedData.coalCost} WĘGLA";
-            string etherTier = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "ŚREDNIE" : selectedData.etherChanceTierLabel.ToUpperInvariant();
-            txtPreviewLevelCost.text = $"KOSZT: {costText}  •  {selectedData.tagText}  •  ETER: {etherTier} ({Mathf.RoundToInt(selectedData.guaranteedEtherPercent * 100f)}%)";
+            txtPreviewLevelCost.text = string.Empty;
+            txtPreviewLevelCost.gameObject.SetActive(false);
         }
     }
 
@@ -457,13 +456,13 @@ public class HearthWindowUI : MonoBehaviour
 
         // 5. Szanse na drop Etheru (Ether Wave Pool & Guarantee)
         Color etherColor = GetEtherTierColor(selectedData.guaranteedEtherPercent);
-        string etherLabel = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "Średnie" : selectedData.etherChanceTierLabel;
+        string etherLabel = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "ŚREDNIE" : selectedData.etherChanceTierLabel.ToUpperInvariant();
         UpdateEffectItem(
             GetNightEffect(4),
             "Szanse na drop Etheru",
-            $"{etherLabel.ToUpperInvariant()} ({Mathf.RoundToInt(selectedData.guaranteedEtherPercent * 100f)}% gwarant)",
+            etherLabel,
             etherColor,
-            GetEtherDropDescription(selectedData)
+            string.Empty
         );
 
         // Dzień 1: Produkcja wszystkich budynków następnego dnia
@@ -519,9 +518,8 @@ public class HearthWindowUI : MonoBehaviour
             else
             {
                 int remaining = currentCoal - selectedData.coalCost;
-                int etherPct = Mathf.RoundToInt(selectedData.guaranteedEtherPercent * 100f);
                 string etherTier = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "Średnie" : selectedData.etherChanceTierLabel;
-                txtSummaryDetails.text = $"Po rozpaleniu pozostanie {remaining} Węgla. Szanse na Ether: {etherTier} ({etherPct}% gwarantowane z puli fali).";
+                txtSummaryDetails.text = $"Po rozpaleniu pozostanie {remaining} Węgla. Szanse na Ether: {etherTier}.";
                 txtSummaryDetails.color = new Color(0.68f, 0.65f, 0.60f, 1f);
             }
         }
@@ -577,7 +575,11 @@ public class HearthWindowUI : MonoBehaviour
             item.txtEffectValue.text = valueText;
             item.txtEffectValue.color = valueColor;
         }
-        if (item.txtEffectDesc != null) item.txtEffectDesc.text = desc;
+        if (item.txtEffectDesc != null)
+        {
+            item.txtEffectDesc.text = string.Empty;
+            item.txtEffectDesc.gameObject.SetActive(false);
+        }
     }
 
     private static string FormatPercentDelta(float bonus)
@@ -683,6 +685,12 @@ public class HearthWindowUI : MonoBehaviour
         var btnCloseTr = pnlHearth.Find("Pnl_TopBar/Btn_Close");
         if (btnCloseTr != null) btnClose = btnCloseTr.GetComponent<Button>();
 
+        var badgeMenuTr = pnlHearth.Find("Pnl_TopBar/Pnl_TitleColumn/Badge_Menu") ?? pnlHearth.Find("Pnl_TopBar/Badge_Menu");
+        if (badgeMenuTr != null)
+        {
+            badgeMenuTr.gameObject.SetActive(false);
+        }
+
         // 2. InfoAndCoalBar
         var badgeFreeWorkersTr = pnlHearth.Find("Pnl_InfoAndCoalBar/Pnl_FreeWorkers/Badge_FreeWorkers");
         if (badgeFreeWorkersTr != null)
@@ -706,13 +714,33 @@ public class HearthWindowUI : MonoBehaviour
             var imgPrev = previewBoxTr.Find("Img_HearthPreview");
             if (imgPrev != null) imgHearthPreview = imgPrev.GetComponent<Image>();
 
+            var summaryBadge = previewBoxTr.Find("Badge_CurrentLevelSummary");
+            if (summaryBadge != null)
+            {
+                for (int c = 0; c < summaryBadge.childCount; c++)
+                {
+                    var child = summaryBadge.GetChild(c);
+                    if (child != null && child.name != "Txt_PreviewLevelName")
+                    {
+                        child.gameObject.SetActive(false);
+                    }
+                }
+            }
+
             var txtPrevName = previewBoxTr.Find("Badge_CurrentLevelSummary/Txt_PreviewLevelName");
             if (txtPrevName != null) txtPrevName = txtPrevName.GetComponent<TextMeshProUGUI>() != null ? txtPrevName : null;
             if (txtPrevName != null) txtPreviewLevelName = txtPrevName.GetComponent<TextMeshProUGUI>();
 
             var txtPrevCost = previewBoxTr.Find("Badge_CurrentLevelSummary/Txt_PreviewLevelCost");
             if (txtPrevCost == null) txtPrevCost = previewBoxTr.Find("Txt_PreviewLevelCost");
-            if (txtPrevCost != null) txtPreviewLevelCost = txtPrevCost.GetComponent<TextMeshProUGUI>();
+            if (txtPrevCost != null)
+            {
+                txtPreviewLevelCost = txtPrevCost.GetComponent<TextMeshProUGUI>();
+                if (txtPreviewLevelCost != null)
+                {
+                    txtPreviewLevelCost.gameObject.SetActive(false);
+                }
+            }
         }
 
         // 4. LevelsRow (5 kart)
@@ -886,7 +914,15 @@ public class HearthWindowUI : MonoBehaviour
         if (valTr != null) refs.txtEffectValue = valTr.GetComponent<TextMeshProUGUI>();
 
         var descTr = itemTr.Find("Txt_EffectDesc");
-        if (descTr != null) refs.txtEffectDesc = descTr.GetComponent<TextMeshProUGUI>();
+        if (descTr != null)
+        {
+            refs.txtEffectDesc = descTr.GetComponent<TextMeshProUGUI>();
+            if (refs.txtEffectDesc != null)
+            {
+                refs.txtEffectDesc.text = string.Empty;
+                refs.txtEffectDesc.gameObject.SetActive(false);
+            }
+        }
 
         return refs;
     }
