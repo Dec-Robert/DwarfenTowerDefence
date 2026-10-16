@@ -13,22 +13,28 @@ MonoBehaviour:
   m_Name: Wave day 8
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 8
-  waveMessage: 
+  waveMessage: "D\u017Awi\u0119k krok\xF3w w g\u0119stwinie mg\u0142y zwiastuje natarcie spaczenia!"
   etherPool: 16
   customSpawnInterval: 0
   hpMultiplier: 2.21
   speedMultiplier: 1
-  shuffleEnemies: 0
+  shuffleEnemies: 1
   allowRandomElites: 0
   enemies:
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
-    count: 12
+    count: 10
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: b8d0e2cd314d4a10a9b6f90e40e2dd27, type: 2}
+    count: 4
     forceElite: 0
   - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
     count: 3
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
     count: 3
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    count: 2
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
     count: 1

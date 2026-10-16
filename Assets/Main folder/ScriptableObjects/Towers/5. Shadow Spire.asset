@@ -34,24 +34,30 @@ MonoBehaviour:
   requiredCitizenRace: 1
   isOutpost: 0
   constructionCost:
+  - type: 0
+    amount: 18
   - type: 1
-    amount: 35
+    amount: 25
   - type: 2
-    amount: 10
+    amount: 15
+  - type: 5
+    amount: 6
   productionPerCycle: []
   upkeepPerCycle:
   - type: 1
-    amount: 7
+    amount: 3
+  - type: 0
+    amount: 1
   tier1Upgrades: []
   prefab: {fileID: 7215377244750508747, guid: 2c5fc50d9f1b0334d9a648c4d9b23a44, type: 3}
   bonusRules: []
   baseMaxWorkers: 1
-  isUnlocked: 0
-  baseRange: 25
-  baseDamage: 200
+  isUnlocked: 1
+  baseRange: 19.2
+  baseDamage: 140
   fireRate: 0.5
-  criticalChancel: 0.25
-  criticalDamageMultiplier: 3
+  criticalChancel: 0.2
+  criticalDamageMultiplier: 2.5
   armorPenetration: 0
   magicPenetration: 0
   damageType: 1

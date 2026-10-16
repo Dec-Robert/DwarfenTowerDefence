@@ -11,7 +11,7 @@ public class HyperArmorSkill : EnemySkill
         if (charges > 0)
         {
             charges--;
-            Debug.Log($"{name} zablokował obra�enia Hiperpancerzem! Pozosta�o: {charges}");
+            Debug.Log($"{name} zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: {charges}");
             return 0f;
         }
         return incomingDamage;

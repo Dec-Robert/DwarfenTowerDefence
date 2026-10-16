@@ -51,7 +51,7 @@ MonoBehaviour:
   bonusRules: []
   baseMaxWorkers: 1
   isUnlocked: 1
-  baseRange: 10
+  baseRange: 8
   baseDamage: 80
   fireRate: 0.4
   criticalChancel: 0.05

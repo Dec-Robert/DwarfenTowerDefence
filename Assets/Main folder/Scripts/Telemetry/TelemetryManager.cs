@@ -4,8 +4,6 @@ using Unity.Services.Core.Environments;
 using Unity.Services.Analytics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using NUnit.Framework;
-using Unity.VisualScripting;
 using Event = UnityEngine.Event;
 
 public class TelemetryManager : MonoBehaviour

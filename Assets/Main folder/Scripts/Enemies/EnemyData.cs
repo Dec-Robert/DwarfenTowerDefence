@@ -22,6 +22,8 @@ public class EnemyData : ScriptableObject
     [Range(0, 100)] public float dodgeChance = 0f;
 
     [Header("Ranga")]
+    public EnemyRank rank = EnemyRank.Normal;
+    public bool isBoss => rank == EnemyRank.Boss;
     public bool canBeElite = true;
     public float eliteSpawnChance = 10f;
     public float eliteHpMultiplier = 2.0f;

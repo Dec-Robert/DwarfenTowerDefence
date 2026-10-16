@@ -155,7 +155,11 @@ public class EnemySpawner : MonoBehaviour
                 for (int i = 0; i < group.count; i++)
                 {
                     EnemyRank rank = EnemyRank.Normal;
-                    if (group.forceElite)
+                    if (group.enemy != null && (group.enemy.rank == EnemyRank.Boss || group.enemy.isBoss))
+                    {
+                        rank = EnemyRank.Boss;
+                    }
+                    else if (group.forceElite)
                     {
                         rank = EnemyRank.Elite;
                     }
@@ -336,7 +340,14 @@ public class EnemySpawner : MonoBehaviour
         EnemyStats stats = obj.GetComponent<EnemyStats>();
         if (stats != null)
         {
-            stats.rank = instr.rank;
+            if (stats.rank == EnemyRank.Boss || (instr.data != null && (instr.data.rank == EnemyRank.Boss || instr.data.isBoss)))
+            {
+                stats.rank = EnemyRank.Boss;
+            }
+            else
+            {
+                stats.rank = instr.rank;
+            }
             stats.Initialize(instr.data, instr.hpMultiplier, instr.speedMultiplier);
             stats.OnDeath += RemoveEnemyFromAlive;
             activeEnemies.Add(stats);

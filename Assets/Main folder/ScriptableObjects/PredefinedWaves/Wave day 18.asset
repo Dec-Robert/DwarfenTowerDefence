@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8964dde39bde5459a3bf59f693206d, type: 3}
+  m_Name: Wave day 18
+  m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
+  dayNumber: 18
+  waveMessage: "Potężna nawałnica spaczenia - ziemia drży pod naporem hordy."
+  etherPool: 38
+  customSpawnInterval: 0
+  hpMultiplier: 6.83
+  speedMultiplier: 1.1
+  shuffleEnemies: 1
+  allowRandomElites: 0
+  enemies:
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    count: 30
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: b8d0e2cd314d4a10a9b6f90e40e2dd27, type: 2}
+    count: 18
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    count: 9
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
+    count: 10
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    count: 8
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    count: 3
+    forceElite: 1

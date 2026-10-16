@@ -16,41 +16,68 @@ public class MaddeningGazeSkill : EnemySkill
     private float scanTimer = 0f;
     private const float ScanInterval = 0.2f;
 
+    public IReadOnlyList<TowerController> FearedTowers => fearedTowers;
+
     void Update()
     {
         scanTimer += Time.deltaTime;
         if (scanTimer < ScanInterval) return;
         scanTimer = 0f;
 
+        ScanTowers();
+    }
+
+    public void ScanTowers()
+    {
         currentTowersInRadius.Clear();
 
+        // 1. Sprawdź wieże zarejestrowane w BuildingRegistry (brak fizycznych colliderów na prefabach wież)
+        if (BuildingRegistry.Instance != null)
+        {
+            var towerEntities = BuildingRegistry.Instance.GetAllOfType<TowerEntity>();
+            for (int i = 0; i < towerEntities.Count; i++)
+            {
+                TowerEntity entity = towerEntities[i];
+                if (entity == null) continue;
+                TowerController tower = entity.controller ?? entity.GetComponent<TowerController>();
+                if (tower != null && Vector3.Distance(transform.position, entity.transform.position) <= auraRadius)
+                {
+                    ApplyFearToTower(tower);
+                }
+            }
+        }
+        else
+        {
+            // Fallback: bezpośrednie wyszukanie kontrolerów wież na scenie
+            var allTowers = Object.FindObjectsByType<TowerController>(FindObjectsSortMode.None);
+            for (int i = 0; i < allTowers.Length; i++)
+            {
+                TowerController tower = allTowers[i];
+                if (tower != null && Vector3.Distance(transform.position, tower.transform.position) <= auraRadius)
+                {
+                    ApplyFearToTower(tower);
+                }
+            }
+        }
+
+        // 2. Dodatkowo sprawdź collidery (gdyby obiekt wieży posiadał collider)
         int hitCount = Physics.OverlapSphereNonAlloc(transform.position, auraRadius, hitBuffer, layerMask);
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = hitBuffer[i];
             if (hit == null) continue;
 
-            TowerController tower = hit.GetComponent<TowerController>();
-            if (tower == null) tower = hit.GetComponentInChildren<TowerController>();
-            if (tower == null) tower = hit.GetComponentInParent<TowerController>();
-
+            TowerController tower = hit.GetComponent<TowerController>()
+                                 ?? hit.GetComponentInChildren<TowerController>()
+                                 ?? hit.GetComponentInParent<TowerController>();
             if (tower != null)
             {
-                currentTowersInRadius.Add(tower);
-                if (!fearedTowers.Contains(tower))
-                {
-                    // Nakładamy Aurę
-                    tower.isFeared = true;
-                    fearedTowers.Add(tower);
-
-                    // Wymuszamy przeliczenie statystyk wieży by uwzględnić karę!
-                    tower.GetComponent<TowerEntity>()?.RecalculateStats();
-                }
+                ApplyFearToTower(tower);
             }
         }
         System.Array.Clear(hitBuffer, 0, hitCount);
 
-        // Szukamy wież, które uciekły z aury (boss sobie poszedł), by zdjąć im karę
+        // 3. Zdejmij efekt paniki z wież, które opuściły zasięg aury
         for (int i = fearedTowers.Count - 1; i >= 0; i--)
         {
             TowerController tower = fearedTowers[i];
@@ -66,7 +93,18 @@ public class MaddeningGazeSkill : EnemySkill
         }
     }
 
-    private void RemoveFearFromAll()
+    private void ApplyFearToTower(TowerController tower)
+    {
+        currentTowersInRadius.Add(tower);
+        if (!fearedTowers.Contains(tower))
+        {
+            tower.isFeared = true;
+            fearedTowers.Add(tower);
+            tower.GetComponent<TowerEntity>()?.RecalculateStats();
+        }
+    }
+
+    public void RemoveFearFromAll()
     {
         for (int i = 0; i < fearedTowers.Count; i++)
         {
@@ -81,7 +119,7 @@ public class MaddeningGazeSkill : EnemySkill
         currentTowersInRadius.Clear();
     }
 
-    public override void OnDeath()
+    public override void OnDeath(DeathSource source = DeathSource.Combat)
     {
         RemoveFearFromAll();
     }

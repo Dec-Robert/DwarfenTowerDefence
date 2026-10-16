@@ -44,8 +44,7 @@ public class EnemyStats : MonoBehaviour
         Walker = GetComponent<EnemyWalker>();
         if (meshRenderer == null)
             meshRenderer = GetComponentInChildren<Renderer>();
-        if (renderers == null || renderers.Length == 0)
-            renderers = GetComponentsInChildren<Renderer>();
+        renderers = GetComponentsInChildren<Renderer>();
     }
 
     private void OnEnable()
@@ -54,6 +53,10 @@ public class EnemyStats : MonoBehaviour
         if (rank == EnemyRank.Elite)
         {
             ApplyVisualColor(Color.red);
+        }
+        else if (rank == EnemyRank.Boss)
+        {
+            ApplyVisualColor(new Color(0.85f, 0.2f, 0.95f));
         }
         else
         {
@@ -102,7 +105,9 @@ public class EnemyStats : MonoBehaviour
             originalColor = Color.white;
         }
 
-        if (rank != EnemyRank.Elite && rank != EnemyRank.Boss)
+        if (data != null && data.rank == EnemyRank.Boss)
+            rank = EnemyRank.Boss;
+        else if (rank != EnemyRank.Elite && rank != EnemyRank.Boss)
             rank = EnemyRank.Normal;
 
         float hearthEnemyMult = BeaconEntity.GetActiveNightEnemyMultiplier();
@@ -126,6 +131,10 @@ public class EnemyStats : MonoBehaviour
         {
             transform.localScale *= 1.2f;
             ApplyVisualColor(Color.red);
+        }
+        else if (rank == EnemyRank.Boss)
+        {
+            ApplyVisualColor(new Color(0.85f, 0.2f, 0.95f));
         }
         else
         {
@@ -216,6 +225,10 @@ public class EnemyStats : MonoBehaviour
         if (rank == EnemyRank.Elite)
         {
             ApplyVisualColor(Color.red);
+        }
+        else if (rank == EnemyRank.Boss)
+        {
+            ApplyVisualColor(new Color(0.85f, 0.2f, 0.95f));
         }
         else
         {
