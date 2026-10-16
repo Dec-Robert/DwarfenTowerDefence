@@ -568,7 +568,6 @@ GameObject:
   - component: {fileID: 66578069}
   - component: {fileID: 66578068}
   - component: {fileID: 66578067}
-  - component: {fileID: 66578066}
   - component: {fileID: 66578065}
   m_Layer: 5
   m_Name: Pnl_SingleResource_Stone
@@ -611,23 +610,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 1
---- !u!114 &66578066
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 66578063}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c039b9f7337a88847836697c8a72e858, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
-  ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
-  resourceType: 2
-  trackResourceManager: 1
-  ammount: {fileID: 1741053563}
-  icon: {fileID: 0}
 --- !u!114 &66578067
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -867,10 +849,10 @@ RectTransform:
   - {fileID: 302083570}
   m_Father: {fileID: 57959331}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 300, y: -416}
+  m_SizeDelta: {x: 552, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &94785940
 MonoBehaviour:
@@ -1455,10 +1437,10 @@ RectTransform:
   - {fileID: 595413007}
   m_Father: {fileID: 57959331}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 300, y: -64}
+  m_SizeDelta: {x: 552, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &350267188
 MonoBehaviour:
@@ -1702,7 +1684,6 @@ GameObject:
   - component: {fileID: 519970791}
   - component: {fileID: 519970790}
   - component: {fileID: 519970789}
-  - component: {fileID: 519970788}
   - component: {fileID: 519970787}
   m_Layer: 5
   m_Name: Pnl_SingleResource_Food
@@ -1745,23 +1726,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 1
---- !u!114 &519970788
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519970785}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c039b9f7337a88847836697c8a72e858, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
-  ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
-  resourceType: 4
-  trackResourceManager: 1
-  ammount: {fileID: 1869163010}
-  icon: {fileID: 0}
 --- !u!114 &519970789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1910,7 +1874,6 @@ GameObject:
   - component: {fileID: 578597702}
   - component: {fileID: 578597701}
   - component: {fileID: 578597700}
-  - component: {fileID: 578597699}
   - component: {fileID: 578597698}
   m_Layer: 5
   m_Name: Pnl_SingleResource_Ether
@@ -1953,23 +1916,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 1
---- !u!114 &578597699
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 578597696}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c039b9f7337a88847836697c8a72e858, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
-  ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
-  resourceType: 0
-  trackResourceManager: 1
-  ammount: {fileID: 689226760}
-  icon: {fileID: 0}
 --- !u!114 &578597700
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2667,10 +2613,10 @@ RectTransform:
   - {fileID: 2146246106}
   m_Father: {fileID: 57959331}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 300, y: -240}
+  m_SizeDelta: {x: 552, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &982176845
 MonoBehaviour:
@@ -2865,7 +2811,6 @@ GameObject:
   - component: {fileID: 1315479932}
   - component: {fileID: 1315479931}
   - component: {fileID: 1315479930}
-  - component: {fileID: 1315479929}
   - component: {fileID: 1315479928}
   m_Layer: 5
   m_Name: Pnl_SingleResource_Coal
@@ -2908,23 +2853,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 1
---- !u!114 &1315479929
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1315479926}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c039b9f7337a88847836697c8a72e858, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
-  ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
-  resourceType: 3
-  trackResourceManager: 1
-  ammount: {fileID: 276100417}
-  icon: {fileID: 0}
 --- !u!114 &1315479930
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3143,7 +3071,6 @@ GameObject:
   - component: {fileID: 1522214635}
   - component: {fileID: 1522214634}
   - component: {fileID: 1522214633}
-  - component: {fileID: 1522214632}
   - component: {fileID: 1522214631}
   m_Layer: 5
   m_Name: Pnl_SingleResource_Iron
@@ -3186,23 +3113,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 1
---- !u!114 &1522214632
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1522214629}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c039b9f7337a88847836697c8a72e858, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
-  ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
-  resourceType: 5
-  trackResourceManager: 1
-  ammount: {fileID: 57626815}
-  icon: {fileID: 0}
 --- !u!114 &1522214633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3939,7 +3849,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1873856268
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4150,7 +4060,6 @@ GameObject:
   - component: {fileID: 2045446507}
   - component: {fileID: 2045446506}
   - component: {fileID: 2045446505}
-  - component: {fileID: 2045446504}
   - component: {fileID: 2045446503}
   m_Layer: 5
   m_Name: Pnl_SingleResource_Wood
@@ -4193,23 +4102,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 1
---- !u!114 &2045446504
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2045446501}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c039b9f7337a88847836697c8a72e858, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
-  ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
-  resourceType: 1
-  trackResourceManager: 1
-  ammount: {fileID: 2053412037}
-  icon: {fileID: 0}
 --- !u!114 &2045446505
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33068,7 +32960,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960.1585, y: -116}
+  m_AnchoredPosition: {x: 959.84106, y: -116}
   m_SizeDelta: {x: 252, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &1789562790987711619
