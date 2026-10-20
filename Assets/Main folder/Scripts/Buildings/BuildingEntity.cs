@@ -33,6 +33,7 @@ public class BuildingEntity : MonoBehaviour
     protected virtual void Start()
     {
         if (data != null && !isInitialized) Initialize(data);
+        SetupAtmosphericLighting();
     }
 
     protected virtual void OnEnable()
@@ -65,6 +66,7 @@ public class BuildingEntity : MonoBehaviour
         CreateComponents();
         Terrain.FindAdjacentResources();
         SubscribeToPhaseChange();
+        SetupAtmosphericLighting();
 
         isInitialized = true;
     }
@@ -209,4 +211,47 @@ public class BuildingEntity : MonoBehaviour
     }
 
     public int GetTotalWorkerCount() => Workers.GetAssignedCitizens().Count;
+
+    protected virtual void SetupAtmosphericLighting()
+    {
+        if (GetComponentInChildren<SettlementLight>() != null) return;
+
+        GameObject lightObj = new GameObject("Settlement_Light");
+        lightObj.transform.SetParent(transform, false);
+
+        Light ptLight = lightObj.AddComponent<Light>();
+        ptLight.type = LightType.Point;
+        ptLight.renderMode = LightRenderMode.Auto;
+
+        SettlementLight settlementLight = lightObj.AddComponent<SettlementLight>();
+
+        if (this is BeaconEntity || (data != null && data.type == BuildingType.Unique))
+        {
+            lightObj.transform.localPosition = new Vector3(0f, 2.5f, 0f);
+            ptLight.shadows = LightShadows.Soft;
+            settlementLight.isBeacon = true;
+            settlementLight.baseIntensity = 3.5f;
+            settlementLight.baseRange = 25f;
+            settlementLight.lightColor = new Color(1.0f, 0.65f, 0.30f, 1f);
+            settlementLight.autoControlByPhase = false;
+        }
+        else if (data != null && data.type == BuildingType.Defense)
+        {
+            lightObj.transform.localPosition = new Vector3(0f, 3.2f, 0f);
+            ptLight.shadows = LightShadows.Soft;
+            settlementLight.baseIntensity = 2.2f;
+            settlementLight.baseRange = 14f;
+            settlementLight.lightColor = new Color(1.0f, 0.58f, 0.22f, 1f);
+            settlementLight.autoControlByPhase = true;
+        }
+        else
+        {
+            lightObj.transform.localPosition = new Vector3(0f, 1.8f, 0f);
+            ptLight.shadows = LightShadows.None;
+            settlementLight.baseIntensity = 1.3f;
+            settlementLight.baseRange = 8f;
+            settlementLight.lightColor = new Color(1.0f, 0.72f, 0.40f, 1f);
+            settlementLight.autoControlByPhase = true;
+        }
+    }
 }

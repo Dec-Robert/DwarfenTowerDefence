@@ -25,8 +25,10 @@ public class EnemyStats : MonoBehaviour
     private Color originalColor = Color.white;
 
     private static MaterialPropertyBlock sharedPropertyBlock;
+    private static MaterialPropertyBlock emissionOnlyBlock;
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorId = Shader.PropertyToID("_Color");
+    private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
     public EnemyWalker Walker { get; private set; }
 
@@ -37,6 +39,7 @@ public class EnemyStats : MonoBehaviour
     private static void ResetStatics()
     {
         sharedPropertyBlock = null;
+        emissionOnlyBlock = null;
     }
 
     private void Awake()
@@ -45,11 +48,13 @@ public class EnemyStats : MonoBehaviour
         if (meshRenderer == null)
             meshRenderer = GetComponentInChildren<Renderer>();
         renderers = GetComponentsInChildren<Renderer>();
+        EnemyGlow.PrepareRenderers(renderers);
     }
 
     private void OnEnable()
     {
         EnemyRegistry.Register(this);
+        EnemyGlow.OnStrengthChanged += HandleGlowChanged;
         if (rank == EnemyRank.Elite)
         {
             ApplyVisualColor(Color.red);
@@ -67,6 +72,7 @@ public class EnemyStats : MonoBehaviour
     private void OnDisable()
     {
         EnemyRegistry.Unregister(this);
+        EnemyGlow.OnStrengthChanged -= HandleGlowChanged;
         CancelInvoke(nameof(ResetColor));
         if (renderers != null)
         {
@@ -207,6 +213,7 @@ public class EnemyStats : MonoBehaviour
 
         sharedPropertyBlock.SetColor(BaseColorId, color);
         sharedPropertyBlock.SetColor(ColorId, color);
+        sharedPropertyBlock.SetColor(EmissionColorId, EnemyGlow.GetEmission(rank));
 
         for (int i = 0; i < renderers.Length; i++)
         {
@@ -232,15 +239,34 @@ public class EnemyStats : MonoBehaviour
         }
         else
         {
-            for (int i = 0; i < renderers.Length; i++)
+            ApplyEmissionOnly();
+        }
+    }
+
+    // Zwykli wrogowie zachowuja oryginalny kolor materialu - nadpisujemy tylko fioletowa emisje (noc).
+    private void ApplyEmissionOnly()
+    {
+        bool glowing = EnemyGlow.Strength > 0.001f;
+        if (glowing && emissionOnlyBlock == null)
+            emissionOnlyBlock = new MaterialPropertyBlock();
+        if (glowing)
+            emissionOnlyBlock.SetColor(EmissionColorId, EnemyGlow.GetEmission(rank));
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer r = renderers[i];
+            if (r != null)
             {
-                Renderer r = renderers[i];
-                if (r != null)
-                {
-                    r.SetPropertyBlock(null);
-                }
+                r.SetPropertyBlock(glowing ? emissionOnlyBlock : null);
             }
         }
+    }
+
+    private void HandleGlowChanged()
+    {
+        // Trwajacy blysk trafienia sam wywola ResetColor(), ktory uwzgledni nowa emisje.
+        if (IsInvoking(nameof(ResetColor))) return;
+        ResetColor();
     }
 
     public void Die(DeathSource source = DeathSource.Combat)
