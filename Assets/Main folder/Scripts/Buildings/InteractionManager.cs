@@ -159,7 +159,7 @@ public class InteractionManager : MonoBehaviour
         try
         {
             Debug.Log("[Interaction] Inspecting"+cell.chunkCoord);
-            building = cell.GetComponentInChildren<BuildingEntity>();
+            building = cell.OccupyingBuilding ?? cell.GetComponentInChildren<BuildingEntity>();
         }
         catch (Exception)
         {

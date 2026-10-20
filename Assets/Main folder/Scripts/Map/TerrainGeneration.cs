@@ -228,13 +228,28 @@ public class TerrainGenerator
             if (roll < threshold) { chunkCells[hex].feature = HexFeatureType.Mountain; continue; }
 
             threshold += settings.hillChance;
-            if (roll < threshold) { chunkCells[hex].feature = HexFeatureType.Hill; chunkCells[hex].featureLevel = Random.Range(1, 6); continue; }
+            if (roll < threshold)
+            {
+                chunkCells[hex].feature = HexFeatureType.None;
+                chunkCells[hex].elevation = Random.Range(1, 4);
+                chunkCells[hex].featureLevel = chunkCells[hex].elevation;
+                continue;
+            }
 
             threshold += settings.sinkholeChance;
-            if (roll < threshold) { chunkCells[hex].feature = HexFeatureType.Sinkhole; chunkCells[hex].featureLevel = Random.Range(-5, 0); continue; }
+            if (roll < threshold)
+            {
+                chunkCells[hex].feature = HexFeatureType.None;
+                chunkCells[hex].elevation = Random.Range(-3, 0);
+                chunkCells[hex].featureLevel = chunkCells[hex].elevation;
+                continue;
+            }
 
             threshold += settings.fertileSoilChance;
-            if (roll < threshold) { chunkCells[hex].feature = HexFeatureType.FertileSoil; }
+            if (roll < threshold)
+            {
+                chunkCells[hex].feature = HexFeatureType.Meadow;
+            }
         }
     }
 

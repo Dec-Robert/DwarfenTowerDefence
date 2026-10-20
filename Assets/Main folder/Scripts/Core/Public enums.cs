@@ -337,40 +337,51 @@ public enum BattleStats
 
 public enum HexFeatureType
 {
-    None,           // Pusta trawa
-    Forest,         // Las (wymagany do Tartaku)
-    Mountain,       // G�ra (blokuje wizj�, wymagana do Kopalni)
-    Hill,           // Wzg�rze (bonus do zasi�gu)
-    Sinkhole,       // Zapadlina (bonus dla Archeologa)
-    FertileSoil,    // żyzna gleba (bonus dla Farmy)
-    Base,           // Kapitol
-    Beacon,         // Beacon of Hope
-    Wall            // Mur (generowany na granicy)
+    None = 0,           // Pusta trawa / brak cechy
+    Forest = 1,         // Las (wymagany do Tartaku)
+    Mountain = 2,       // Gora (wymagana do Kopalni)
+    Meadow = 3,         // Laka (bonus dla Farmy)
+
+    // Aliasy wstecznej kompatybilnosci
+    [System.Obsolete("Zastapione przez Meadow")]
+    FertileSoil = 3,
+    [System.Obsolete("Wzgorza sa teraz obslugiwane przez elevation > 0")]
+    Hill = 10,
+    [System.Obsolete("Zapadliny sa teraz obslugiwane przez elevation < 0")]
+    Sinkhole = 11,
+    [System.Obsolete("Kapitol jest teraz budynkiem BuildingEntity")]
+    Base = 12,
+    [System.Obsolete("Latarnia jest teraz budynkiem BuildingEntity")]
+    Beacon = 13,
+    [System.Obsolete("Mur jest zarzadzany przez ChunkWallManager")]
+    Wall = 14
 }
 
-// Typy biom�w dla Chunk�w
+// Typy biomow dla Chunkow
 public enum BiomeType
 {
-    Plains,     // Domy�lny (Zbalansowany)
-    Forest,     // Du�o las�w, ma�o g�r
-    Mountains,  // Du�o g�r i wzg�rz
-    Volcano,    // P�asko (brak os�on)
-    Permafrost  // (Do zdefiniowania p�niej)
+    Plains,     // Domyslny (Zbalansowany)
+    Forest,     // Duzo lasow, malo gor
+    Mountains,  // Duzo gor i wzgorz
+    Volcano,    // Plasko (brak oslon)
+    Permafrost  // (Do zdefiniowania pozniej)
 }
 
-// Klasa przechowuj�ca dane pojedynczego pola
+// Klasa przechowujaca dane pojedynczego pola
 [Serializable]
 public class HexCellData
 {
-    public Vector2Int chunkCoord;   // W kt�rym chunku jest ten heks
-    public Vector2Int localCoord;   // Koordynaty q,r wewn�trz chunku
-    public Vector2Int gridCoord;    // Globalne koordynaty (opcjonalne, do �atwiejszego dost�pu)
+    public Vector2Int chunkCoord;   // W ktorym chunku jest ten heks
+    public Vector2Int localCoord;   // Koordynaty q,r wewnatrz chunku
+    public Vector2Int gridCoord;    // Globalne koordynaty (opcjonalne, do latwiejszego dostepu)
 
+    public int elevation = 0;       // 0 = plasko, >0 = wzgorze, <0 = zapadlina
     public HexFeatureType feature = HexFeatureType.None;
-    public int featureLevel = 0;    // For high + for low 0
+    public int featureLevel = 0;    // Poziom cechy / wysokosci
 
-    public bool isPath = false;     // Czy to jest droga wroga?
+    public bool isRoad = false;     // Czy to jest droga wroga?
+    public bool isPath { get => isRoad; set => isRoad = value; } // Alias wsteczny
 
     public BuildingData startingBuilding;
-
+    [NonSerialized] public BuildingEntity occupyingBuilding;
 }

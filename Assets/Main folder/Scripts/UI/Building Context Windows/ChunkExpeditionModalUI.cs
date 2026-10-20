@@ -683,7 +683,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         if (featureTilePrefab == null || intel == null) return;
 
         CreateFeatureTile("Las :", intel.GetAbundance(HexFeatureType.Forest));
-        CreateFeatureTile("Żyzna gleba :", intel.GetAbundance(HexFeatureType.FertileSoil));
+        CreateFeatureTile("Łąka :", intel.GetAbundance(HexFeatureType.Meadow));
         CreateFeatureTile("Góry :", intel.GetAbundance(HexFeatureType.Mountain));
     }
 

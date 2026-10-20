@@ -50,6 +50,7 @@ public class BuildingEntity : MonoBehaviour
     {
         UnsubscribeFromPhaseChange();
         Terrain?.ReleaseAll();
+        GetComponentInParent<HexCell>()?.ClearBuilding();
     }
 
     public virtual void Initialize(BuildingData buildingData)

@@ -335,7 +335,7 @@ public class BuildingTerrainComponent
             daysSinceLastPlant++;
             if (daysSinceLastPlant >= 4)
             {
-                TryConvertRandomHex(HexFeatureType.FertileSoil);
+                TryConvertRandomHex(HexFeatureType.Meadow);
                 daysSinceLastPlant = 0;
             }
         }
@@ -440,7 +440,7 @@ public class BuildingTerrainComponent
                 var neighborHex = HexMapVisualizer.Instance.GetHexCell(chunkCoord, nCoord);
                 if (neighborHex != null)
                 {
-                    neighborHex.GetComponentInChildren<BuildingEntity>()?.ForceRescan();
+                    neighborHex.OccupyingBuilding?.ForceRescan();
                 }
             }
         }
@@ -459,7 +459,7 @@ public class BuildingTerrainComponent
         {
             if (chunkData.TryGetValue(hexCoord, out var cellData))
             {
-                if (cellData.feature == HexFeatureType.Forest || cellData.feature == HexFeatureType.FertileSoil)
+                if (cellData.feature == HexFeatureType.Forest || cellData.feature == HexFeatureType.Meadow)
                 {
                     cellData.feature = HexFeatureType.None;
                     RefreshVisualsAndRescan(myCell.chunkCoord, hexCoord);

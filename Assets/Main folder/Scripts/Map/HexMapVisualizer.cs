@@ -10,6 +10,7 @@ public class HexMapVisualizer : MonoBehaviour
     public GameObject prefabForest;
     public GameObject prefabMountain;
     public GameObject prefabFertile;
+    public GameObject prefabMeadow;
 
     // --- NOWO��: Prefaby Specjalne ---
     [Header("Prefaby Budynk�w Specjalnych")]
@@ -23,6 +24,7 @@ public class HexMapVisualizer : MonoBehaviour
     public Material matHill;
     public Material matSinkhole;
     public Material matFertile;
+    public Material matMeadow;
     public Material matBase;
     public Material matBeacon;
 
@@ -106,8 +108,10 @@ public class HexMapVisualizer : MonoBehaviour
                     Vector3 basePos = centerWorld + HexGridMath.AxialToWorld(local.x, local.y, hexSize, padding);
 
                     // Modyfikacja wysoko�ci dla specjalnych teren�w
+                    // Modyfikacja wysokości dla specjalnych terenów
                     float heightOffset = 0f;
-                    if (cellData.feature == HexFeatureType.Hill) heightOffset = cellData.featureLevel * 0.1f;
+                    if (cellData.elevation != 0) heightOffset = cellData.elevation * 0.1f;
+                    else if (cellData.feature == HexFeatureType.Hill) heightOffset = cellData.featureLevel * 0.1f;
                     else if (cellData.feature == HexFeatureType.Sinkhole) heightOffset = cellData.featureLevel * 0.1f;
 
                     Vector3 finalPos = basePos + Vector3.up * heightOffset;
@@ -118,8 +122,7 @@ public class HexMapVisualizer : MonoBehaviour
 
                     // Dodanie komponentu logicznego
                     HexCell cellComponent = hex.AddComponent<HexCell>();
-                    cellComponent.chunkCoord = chunkCoord;
-                    cellComponent.localCoord = local;
+                    cellComponent.Initialize(cellData);
 
                     // --- NOWO��: Rejestracja heksa w szybkim s�owniku ---
                     // Dzi�ki temu InteractionManager mo�e go znale�� w czasie O(1)
@@ -177,39 +180,45 @@ public class HexMapVisualizer : MonoBehaviour
                     matToUse = matSinkhole;
                     nameSuffix = $" (Sinkhole {data.featureLevel})";
                     break;
-                case HexFeatureType.FertileSoil:
-                    matToUse = matFertile;
-                    nameSuffix = " (Fertile)";
-                    if (prefabFertile != null) SpawnProp(hexObj, prefabFertile);
+                                case HexFeatureType.Meadow:
+                    matToUse = matMeadow != null ? matMeadow : (matFertile != null ? matFertile : groundMat);
+                    nameSuffix = " (Meadow)";
+                    if (prefabMeadow != null) SpawnProp(hexObj, prefabMeadow);
+                    else if (prefabFertile != null) SpawnProp(hexObj, prefabFertile);
                     break;
 
-                // --- TUTAJ ZMIANA: KAPITOL ---
+                
+
                 case HexFeatureType.Base:
-                    matToUse = matBase;
+                    matToUse = matBase != null ? matBase : groundMat;
                     nameSuffix = " [CAPITOL]";
                     if (prefabBase != null)
                     {
-                        SpawnProp(hexObj, prefabBase);
+                        GameObject bObj = Instantiate(prefabBase, hexObj.transform);
+                        bObj.transform.localPosition = Vector3.zero;
+                        BuildingEntity bEntity = bObj.GetComponent<BuildingEntity>() ?? bObj.AddComponent<BuildingEntity>();
+                        HexCell cell = hexObj.GetComponent<HexCell>();
+                        if (cell != null) cell.SetBuilding(bEntity);
                     }
                     else
                     {
-                        // Fallback (stare skalowanie)
                         hexObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                     }
                     break;
 
-                // --- TUTAJ ZMIANA: BEACON ---
                 case HexFeatureType.Beacon:
-                    matToUse = matBeacon;
+                    matToUse = matBeacon != null ? matBeacon : groundMat;
                     nameSuffix = " [BEACON]";
                     if (prefabBeacon != null)
                     {
-                        // Instancjujemy Prefab (kt�ry ma skrypt BeaconEntity!)
-                        SpawnProp(hexObj, prefabBeacon);
+                        GameObject bObj = Instantiate(prefabBeacon, hexObj.transform);
+                        bObj.transform.localPosition = Vector3.zero;
+                        BuildingEntity bEntity = bObj.GetComponent<BeaconEntity>() ?? bObj.GetComponent<BuildingEntity>() ?? bObj.AddComponent<BeaconEntity>();
+                        HexCell cell = hexObj.GetComponent<HexCell>();
+                        if (cell != null) cell.SetBuilding(bEntity);
                     }
                     else
                     {
-                        // Fallback
                         hexObj.transform.localScale = new Vector3(0.8f, 3f, 0.8f);
                     }
                     break;
@@ -220,15 +229,19 @@ public class HexMapVisualizer : MonoBehaviour
         hexObj.name += nameSuffix;
     }
 
-    void SpawnProp(GameObject parentHex, GameObject prefab)
+    GameObject SpawnProp(GameObject parentHex, GameObject prefab)
     {
         GameObject prop = Instantiate(prefab, parentHex.transform);
         prop.transform.localPosition = Vector3.zero;
-
-        // Dla budynk�w wa�nych (Beacon/Base) lepiej nie losowa� rotacji, �eby sta�y prosto
-        // Ale dla las�w/g�r losowa rotacja jest OK.
-        // Mo�emy to prosto rozr�ni� lub zostawi� losowo dla klimatu.
         prop.transform.localRotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+
+        HexCell cell = parentHex.GetComponent<HexCell>();
+        if (cell != null)
+        {
+            cell.RegisterFeatureProp(prop);
+        }
+
+        return prop;
     }
 
     public void ClearMap()
@@ -289,6 +302,8 @@ public class HexMapVisualizer : MonoBehaviour
 
         // Wymuszamy startow� inicjalizacj�
         entity.Initialize(buildingData);
+        HexCell cellComp = hexObj.GetComponent<HexCell>();
+        if (cellComp != null) cellComp.SetBuilding(entity);
     }
 
     public HexCell GetHexCell(Vector2Int chunkCoord, Vector2Int localCoord)

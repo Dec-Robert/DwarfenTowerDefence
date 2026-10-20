@@ -304,7 +304,7 @@ public class MetaMapConfigEditorWindow : EditorWindow
             {
                 HexFeatureType.Forest => new Color(0.1f, 0.5f, 0.1f),
                 HexFeatureType.Mountain => new Color(0.4f, 0.4f, 0.4f),
-                HexFeatureType.FertileSoil => new Color(0.5f, 0.8f, 0.1f),
+                HexFeatureType.Meadow => new Color(0.5f, 0.8f, 0.1f),
                 HexFeatureType.Hill => new Color(0.6f, 0.5f, 0.2f),
                 HexFeatureType.Sinkhole => new Color(0.3f, 0.2f, 0.4f),
                 HexFeatureType.Base => new Color(0.1f, 0.2f, 0.8f),

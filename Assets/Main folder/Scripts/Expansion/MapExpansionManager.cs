@@ -290,10 +290,9 @@ public class MapExpansionManager : MonoBehaviour
 
             if (cellData.isPath) hasRoad = true;
 
-            if (cellData.feature != HexFeatureType.None &&
-                cellData.feature != HexFeatureType.Base &&
-                cellData.feature != HexFeatureType.Beacon &&
-                cellData.feature != HexFeatureType.Wall)
+            if (cellData.feature == HexFeatureType.Forest ||
+                cellData.feature == HexFeatureType.Mountain ||
+                cellData.feature == HexFeatureType.Meadow)
             {
                 if (!featureCounts.ContainsKey(cellData.feature))
                     featureCounts[cellData.feature] = 0;

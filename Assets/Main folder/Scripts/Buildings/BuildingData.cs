@@ -13,6 +13,46 @@ public enum BuildingType
     Unique // Kapitol, Beacon   BUDYNKI NIE BUDOWALNE LUB BUDOWALNE BARDZO SPECYFICZNYCH KONDYCJI
 }
 
+public enum ElevationFilterMode
+{
+    Any = 0,            // Dowolna wysokość (domyślnie, bezpieczne dla obecnych budynków)
+    OnlyFlat = 1,       // Tylko płasko (elevation == 0)
+    OnlyHills = 2,      // Tylko wzgórza (elevation > 0)
+    OnlyCavities = 3,   // Tylko zapadliska (elevation < 0)
+    CustomRange = 4,    // W przedziale od minElevation do maxElevation
+    SpecificValues = 5  // Tylko wybrane konkretne wartości z listy allowedElevations
+}
+
+[System.Serializable]
+public struct ElevationRequirement
+{
+    public ElevationFilterMode mode;
+    public int minElevation;
+    public int maxElevation;
+    public List<int> allowedElevations;
+
+    public bool IsValid(int elevation)
+    {
+        switch (mode)
+        {
+            case ElevationFilterMode.Any:
+                return true;
+            case ElevationFilterMode.OnlyFlat:
+                return elevation == 0;
+            case ElevationFilterMode.OnlyHills:
+                return elevation > 0;
+            case ElevationFilterMode.OnlyCavities:
+                return elevation < 0;
+            case ElevationFilterMode.CustomRange:
+                return elevation >= minElevation && elevation <= maxElevation;
+            case ElevationFilterMode.SpecificValues:
+                return allowedElevations != null && allowedElevations.Contains(elevation);
+            default:
+                return true;
+        }
+    }
+}
+
 [CreateAssetMenu(fileName = "NewBuilding", menuName = "City Builder/Building Data")]
 public class BuildingData : ScriptableObject
 {
@@ -38,6 +78,12 @@ public class BuildingData : ScriptableObject
     public List<float> efficiencyTable = new List<float>();
 
     [Header("Wymagania Terenu")] public List<HexFeatureType> allowedTerrain;
+
+    [Header("Wymagania Wysokości (Elevation)")]
+    public ElevationRequirement elevationRequirement = new ElevationRequirement { mode = ElevationFilterMode.Any };
+
+    [Header("Wymagania Dróg")]
+    public bool allowOnRoad = false;
 
     public bool requiresOccupiedSpace;
 

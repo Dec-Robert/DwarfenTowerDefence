@@ -31,9 +31,7 @@ public class ChunkReconIntel
         {
             case HexFeatureType.Forest: return "Las";
             case HexFeatureType.Mountain: return "Góra";
-            case HexFeatureType.Hill: return "Wzgórze";
-            case HexFeatureType.FertileSoil: return "Żyzna gleba";
-            case HexFeatureType.Sinkhole: return "Zapadlina";
+            case HexFeatureType.Meadow: return "Łąka";
             default: return feature.ToString();
         }
     }

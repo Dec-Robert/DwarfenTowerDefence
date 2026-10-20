@@ -19,10 +19,10 @@ public class BuildingPlacer
         var chunkDataMap = mapGenerator.worldData[cell.chunkCoord];
         if (!chunkDataMap.TryGetValue(cell.localCoord, out var cellData)) return false;
 
-        if (cellData.isPath) return false;
-        if (data.allowedTerrain != null && !data.allowedTerrain.Contains(cellData.feature)) return false;
-
-        if (cell.GetComponentInChildren<BuildingEntity>() != null) return false;
+        if (cell.IsRoad && !data.allowOnRoad) return false;
+        if (!data.elevationRequirement.IsValid(cell.Elevation)) return false;
+        if (data.allowedTerrain != null && data.allowedTerrain.Count > 0 && !data.allowedTerrain.Contains(cell.Feature)) return false;
+        if (cell.HasBuilding()) return false;
 
         if (!IsChunkStateValidForBuilding(cell.chunkCoord, data)) return false;
 
@@ -139,14 +139,13 @@ public class BuildingPlacer
 
     private void PerformBuild(HexCell cell, BuildingData data)
     {
-        foreach (Transform child in cell.transform)
-            Object.Destroy(child.gameObject);
-
         var newObj = Object.Instantiate(data.prefab, cell.transform.position, Quaternion.identity);
         newObj.transform.parent = cell.transform;
 
         var entity = newObj.GetComponent<BuildingEntity>() ?? newObj.AddComponent<BuildingEntity>();
         entity.Initialize(data);
+
+        cell.SetBuilding(entity);
 
         if (data is TowerData towerData)
         {

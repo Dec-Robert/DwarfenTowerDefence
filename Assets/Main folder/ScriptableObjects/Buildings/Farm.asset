@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.75
   - 2
   - 2.15
-  allowedTerrain: 0000000005000000
+  allowedTerrain: 0000000003000000
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
   requiredCitizenRace: 1
@@ -48,7 +48,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 602960ad5b67a88448134919c3b2e80e, type: 2}
   prefab: {fileID: 2413402597642724196, guid: 03adf5a8c6caa8f45a2868a6af66e344, type: 3}
   bonusRules:
-  - requiredFeature: 5
+  - requiredFeature: 3
     searchRadius: 1
     resourceYields:
     - resourceType: 4
