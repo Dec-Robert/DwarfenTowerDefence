@@ -42,9 +42,33 @@ public class EnemyStats : MonoBehaviour
     private void Awake()
     {
         Walker = GetComponent<EnemyWalker>();
-        if (meshRenderer == null)
-            meshRenderer = GetComponentInChildren<Renderer>();
-        renderers = GetComponentsInChildren<Renderer>();
+        CacheRenderers();
+    }
+
+    private void CacheRenderers()
+    {
+        Renderer[] all = GetComponentsInChildren<Renderer>(true);
+        if (all == null || all.Length == 0)
+        {
+            renderers = Array.Empty<Renderer>();
+            return;
+        }
+
+        List<Renderer> bodyRenderers = new List<Renderer>(all.Length);
+        for (int i = 0; i < all.Length; i++)
+        {
+            Renderer r = all[i];
+            if (r != null && r.GetComponent<EnemyHealthBar>() == null && r.GetComponentInParent<EnemyHealthBar>() == null)
+            {
+                bodyRenderers.Add(r);
+            }
+        }
+        renderers = bodyRenderers.ToArray();
+
+        if (meshRenderer == null && renderers.Length > 0)
+        {
+            meshRenderer = renderers[0];
+        }
     }
 
     private void OnEnable()
@@ -85,11 +109,8 @@ public class EnemyStats : MonoBehaviour
     {
         data = _data;
 
-        if (meshRenderer == null)
-            meshRenderer = GetComponentInChildren<Renderer>();
-
-        if (renderers == null || renderers.Length == 0)
-            renderers = GetComponentsInChildren<Renderer>();
+        if (renderers == null || renderers.Length == 0 || meshRenderer == null)
+            CacheRenderers();
 
         if (meshRenderer != null && meshRenderer.sharedMaterial != null)
         {

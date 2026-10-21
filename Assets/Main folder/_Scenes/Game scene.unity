@@ -2353,6 +2353,7 @@ GameObject:
   m_Component:
   - component: {fileID: 743555804}
   - component: {fileID: 743555805}
+  - component: {fileID: 743555806}
   m_Layer: 0
   m_Name: --Managers
   m_TagString: Untagged
@@ -2406,6 +2407,31 @@ MonoBehaviour:
   activeGuaranteedPercent: 0.4
   activeNaturalDropChance: 0.05
   activeEtherChanceLabel: "\u015Arednie"
+--- !u!114 &743555806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743555803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2faa5e03254b4a43945458a1a141a82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealthBarManager
+  isVisible: 1
+  barPixelSize: {x: 96, y: 24}
+  worldPixelScale: 0.01
+  borderThickness: 2
+  dividerThickness: 1.5
+  redColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
+  blueColor: {r: 0.2, g: 0.5, b: 0.95, a: 1}
+  greenColor: {r: 0.15, g: 0.8, b: 0.25, a: 1}
+  purpleColor: {r: 0.7, g: 0.2, b: 0.85, a: 1}
+  backgroundColor: {r: 0.12, g: 0.12, b: 0.12, a: 0.95}
+  borderColor: {r: 0.02, g: 0.02, b: 0.02, a: 1}
+  dividerColor: {r: 0, g: 0, b: 0, a: 1}
+  maxVisiblePurpleSegments: 20
 --- !u!1 &743807534
 GameObject:
   m_ObjectHideFlags: 0
@@ -33068,7 +33094,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960.1585, y: -116}
+  m_AnchoredPosition: {x: 960.19574, y: -116}
   m_SizeDelta: {x: 252, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &1789562790987711619

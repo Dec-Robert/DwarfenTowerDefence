@@ -936,6 +936,7 @@ public class CombatOptimizationTests
     public static void RunTestsOnDomainReload()
     {
         RunAllTestsEmpirically(out int passed, out int failed, out List<string> errors);
+        EnemyHealthBarTests.RunAllTestsEmpirically(out int hbPassed, out int hbFailed, out List<string> hbErrors);
     }
 
     public static bool RunAllTestsEmpirically(out int passed, out int failed, out List<string> errors)
