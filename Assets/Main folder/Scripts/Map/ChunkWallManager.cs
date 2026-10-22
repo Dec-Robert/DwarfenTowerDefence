@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -124,11 +124,15 @@ public class ChunkWallManager : MonoBehaviour
         foreach (var kvp in expansionManager.roadDependencies)
         {
             Vector2Int successor = kvp.Key;
-            Vector2Int predecessor = kvp.Value;
+            List<Vector2Int> predecessors = kvp.Value;
+            if (predecessors == null) continue;
 
-            if (baseChunks.Contains(predecessor) && !baseChunks.Contains(successor))
+            foreach (var predecessor in predecessors)
             {
-                PlaceGateOnBoundary(predecessor, successor);
+                if (baseChunks.Contains(predecessor) && !baseChunks.Contains(successor))
+                {
+                    PlaceGateOnBoundary(predecessor, successor);
+                }
             }
         }
     }
@@ -154,12 +158,15 @@ public class ChunkWallManager : MonoBehaviour
 
         foreach (var frontier in frontierChunks)
         {
-            if (!expansionManager.roadDependencies.TryGetValue(frontier, out var predecessor))
+            if (!expansionManager.roadDependencies.TryGetValue(frontier, out var predecessors) || predecessors == null)
                 continue;
 
-            if (!walledCityChunks.Contains(predecessor)) continue;
+            foreach (var predecessor in predecessors)
+            {
+                if (!walledCityChunks.Contains(predecessor)) continue;
 
-            PlaceGateOnBoundary(predecessor, frontier);
+                PlaceGateOnBoundary(predecessor, frontier);
+            }
         }
     }
 
@@ -277,7 +284,16 @@ public class ChunkWallManager : MonoBehaviour
 
     private HashSet<Vector2Int> GetRoadChunks()
     {
-        return new HashSet<Vector2Int>(expansionManager.roadDependencies.Keys);
+        var roadChunks = new HashSet<Vector2Int>(expansionManager.roadDependencies.Keys);
+        if (expansionManager.activeChunks != null)
+        {
+            foreach (var kvp in expansionManager.activeChunks)
+            {
+                if (kvp.Value != null && kvp.Value.isRoadChunk)
+                    roadChunks.Add(kvp.Key);
+            }
+        }
+        return roadChunks;
     }
 
     private HashSet<Vector2Int> FindFrontierChunks(
@@ -288,10 +304,15 @@ public class ChunkWallManager : MonoBehaviour
         foreach (var kvp in expansionManager.roadDependencies)
         {
             var chunk = kvp.Key;
-            var pred = kvp.Value;
-            if (!successors.ContainsKey(pred))
-                successors[pred] = new List<Vector2Int>();
-            successors[pred].Add(chunk);
+            var preds = kvp.Value;
+            if (preds == null) continue;
+
+            foreach (var pred in preds)
+            {
+                if (!successors.ContainsKey(pred))
+                    successors[pred] = new List<Vector2Int>();
+                successors[pred].Add(chunk);
+            }
         }
 
         var frontier = new HashSet<Vector2Int>();

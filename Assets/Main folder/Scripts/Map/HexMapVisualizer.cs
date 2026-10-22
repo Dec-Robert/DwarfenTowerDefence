@@ -50,8 +50,6 @@ public class HexMapVisualizer : MonoBehaviour
     public void VisualizeWorld(
             Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData,
             HashSet<Vector2Int> allValidChunks,
-            Dictionary<Vector2Int, BiomeType> chunkBiomes,
-            Dictionary<BiomeType, Material> biomeMaterials,
             int chunkRadius,
             float hexSize,
             float padding)
@@ -68,21 +66,10 @@ public class HexMapVisualizer : MonoBehaviour
         {
             Vector3 centerWorld = HexGridMath.GetChunkCenterWorld(chunkCoord, chunkRadius, hexSize, padding);
 
-            string biomeName = "Unknown";
             Material chunkBaseMat = matDefaultGrass;
 
             // Ustalanie biomu i materia�u dla chunku
-            if (chunkBiomes != null && chunkBiomes.ContainsKey(chunkCoord))
-            {
-                BiomeType biome = chunkBiomes[chunkCoord];
-                biomeName = biome.ToString();
-                if (biomeMaterials != null && biomeMaterials.ContainsKey(biome))
-                {
-                    chunkBaseMat = biomeMaterials[biome];
-                }
-            }
-
-            GameObject chunkObj = new GameObject($"Chunk_{chunkCoord.x}_{chunkCoord.y}_{biomeName}");
+            GameObject chunkObj = new GameObject($"Chunk_{chunkCoord.x}_{chunkCoord.y}");
             chunkObj.transform.parent = mapHolder;
             chunkObj.transform.position = centerWorld;
 
@@ -300,7 +287,7 @@ public class HexMapVisualizer : MonoBehaviour
         return null;
     }
     
-    public void RedrawSingleHex(Vector2Int chunkCoord, Vector2Int localCoord, HexCellData cellData, Dictionary<BiomeType, Material> biomeMaterials, BiomeType biome)
+    public void RedrawSingleHex(Vector2Int chunkCoord, Vector2Int localCoord, HexCellData cellData)
     {
         HexCell cell = GetHexCell(chunkCoord, localCoord);
         if (cell == null) return;
@@ -319,10 +306,6 @@ public class HexMapVisualizer : MonoBehaviour
 
         // 2. Ustal materiał
         Material chunkBaseMat = matDefaultGrass;
-        if (biomeMaterials != null && biomeMaterials.ContainsKey(biome))
-        {
-            chunkBaseMat = biomeMaterials[biome];
-        }
 
         // 3. Zaaplikuj nowe wizualia
         ApplyVisualsToHex(cell.gameObject, cellData, chunkBaseMat);

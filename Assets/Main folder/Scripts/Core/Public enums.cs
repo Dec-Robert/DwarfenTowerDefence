@@ -348,15 +348,6 @@ public enum HexFeatureType
     Wall            // Mur (generowany na granicy)
 }
 
-// Typy biom�w dla Chunk�w
-public enum BiomeType
-{
-    Plains,     // Domy�lny (Zbalansowany)
-    Forest,     // Du�o las�w, ma�o g�r
-    Mountains,  // Du�o g�r i wzg�rz
-    Volcano,    // P�asko (brak os�on)
-    Permafrost  // (Do zdefiniowania p�niej)
-}
 
 // Klasa przechowuj�ca dane pojedynczego pola
 [Serializable]
