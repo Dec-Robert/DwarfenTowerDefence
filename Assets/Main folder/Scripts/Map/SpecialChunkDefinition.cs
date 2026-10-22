@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
@@ -32,9 +32,6 @@ public class SpecialChunkDefinition : ScriptableObject
 
     [Tooltip("Minimalna i maksymalna odległość od bazy (w chunkach)")]
     public Vector2Int distanceRange = new Vector2Int(3, 8);
-
-    [Tooltip("W jakich biomach może się pojawić (puste = wszystkie)")]
-    public List<BiomeType> allowedBiomes = new List<BiomeType>();
 
     [Tooltip("Czy może pojawić się tylko raz na mapie?")]
     public bool uniquePerMap = true;

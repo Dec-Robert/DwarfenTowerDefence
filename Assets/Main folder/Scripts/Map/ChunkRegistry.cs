@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
@@ -116,11 +116,9 @@ public class ChunkRegistry
 
     /// <summary>
     /// Zwraca kandydatów do spawnu specjalnych chunków –
-    /// niebędących meta, w zadanym przedziale odległości, z odpowiednim biomem.
+    /// niebędących meta, w zadanym przedziale odległości.
     /// </summary>
-    public List<Vector2Int> GetSpecialChunkCandidates(
-        Vector2Int distanceRange,
-        List<BiomeType> allowedBiomes)
+    public List<Vector2Int> GetSpecialChunkCandidates(Vector2Int distanceRange)
     {
         var result = new List<Vector2Int>();
 
@@ -132,13 +130,6 @@ public class ChunkRegistry
 
             int dist = HexGridMath.GetDistance(Vector2Int.zero, chunk);
             if (dist < distanceRange.x || dist > distanceRange.y) continue;
-
-            // Sprawdzenie biomu (puste = wszystkie)
-            if (allowedBiomes != null && allowedBiomes.Count > 0)
-            {
-                if (!ctx.chunkBiomes.TryGetValue(chunk, out var biome)) continue;
-                if (!allowedBiomes.Contains(biome)) continue;
-            }
 
             result.Add(chunk);
         }

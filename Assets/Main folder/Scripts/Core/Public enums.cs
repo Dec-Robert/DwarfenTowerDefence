@@ -357,16 +357,6 @@ public enum HexFeatureType
     Wall = 14
 }
 
-// Typy biomow dla Chunkow
-public enum BiomeType
-{
-    Plains,     // Domyslny (Zbalansowany)
-    Forest,     // Duzo lasow, malo gor
-    Mountains,  // Duzo gor i wzgorz
-    Volcano,    // Plasko (brak oslon)
-    Permafrost  // (Do zdefiniowania pozniej)
-}
-
 // Klasa przechowujaca dane pojedynczego pola
 [Serializable]
 public class HexCellData

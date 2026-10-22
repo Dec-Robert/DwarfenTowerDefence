@@ -223,22 +223,75 @@ Każdego ranka w `HousingEntity` realizowany jest algorytm:
 
 ---
 
-## 4. Topologia Mapy, Siatka Heksagonalna i Ekspansja
+## 4. Topologia Mapy, Siatka Heksagonalna, Generacja Terenu i Ekspansja
 
-### 4.1. Matematyka Siatki Heksagonalnej (`HexGridMath`)
+### 4.1. Słowniczek Terminów Topologii Dróg
+- **Spawner**: Chunk krańcowy ścieżki (głównej lub bocznej), na którym rodzą się wrogowie po całkowitym odkryciu prowadzącej do niego trasy, albo graniczny chunk mgły wojny (`Hidden`), z którego wrogowie wychodzą na pierwszy odsłonięty chunk (`Outskirts` / `Settled`).
+- **Rozdroże (Crossroads)**: Chunk na ścieżce posiadający więcej niż jedno wejście lub wyjście (`isCrossroads == true`). Tworzy czysty kształt litery **Y** lub **T** wokół centralnego węzła (`hubHex`, w odległości $\le 1$ od środka chunka), bez zbędnych zawijasów.
+  - **Rozdroże 1 (Merge / Zbiorcze)**: Rozdroże bliżej bazy, w którym pętla lub odnoga boczna łączy się z powrotem z główną arterią.
+  - **Rozdroże 2 (Split / Rozdzielające)**: Rozdroże dalej od bazy (w głąb mgły), w którym ścieżka rozwidla się na dwa warianty (główny i pętlowy).
+- **Pętla (Loop)**: Alternatywna ścieżka boczna (`LoopDefinition`), która odchodzi od głównej trasy na `Rozdrożu 2` i wraca do niej na `Rozdrożu 1` bliżej bazy. Nie tworzy własnego spawnera końcowego, lecz dzieli ruch wrogów po odkryciu `Rozdroża 2`.
+- **Ścieżka / Odnoga Boczna (Side Branch)**: Trasa odchodząca od głównej ścieżki w kierunku od bazy na zewnątrz mapy ($\text{dist}(\text{next}, 0) \ge \text{dist}(\text{curr}, 0)$), zakończona własnym, dedykowanym spawnerem.
+
+---
+
+### 4.2. Matematyka Siatki Heksagonalnej (`HexGridMath`)
 - Układ współrzędnych: Osiowy (`Axial Coordinates` $q, r$).
-- Promień chunka: `chunkRadius = 4`. Każdy chunk składa się z **37 heksów** (od centrum do krawędzi o dystansie 4).
+- Promień chunka: `chunkRadius = 3` (w generatorze mapy) / `4` (w układzie bazy). Standardowy chunk proceduralny o promieniu `3` składa się z **37 heksów** ($1 + 3 \times 3 \times (3 + 1) = 37$).
 - Rozmiar heksa w silniku: `hexSize = 1f`, `padding = 0.02f`.
 - **Konwersja Axial $\to$ World (3D)**:
   $$X = (\text{hexSize} + \text{padding}) \times \sqrt{3} \times \left(q + \frac{r}{2}\right)$$
   $$Z = (\text{hexSize} + \text{padding}) \times \frac{3}{2} \times r$$
-- **Środek chunka na mapie świata**:
-  $$\text{centerQ} = c_q \times (2 \times \text{radius} + 1) + c_r \times \text{radius} = 9 c_q + 4 c_r$$
-  $$\text{centerR} = c_q \times (-\text{radius}) + c_r \times (\text{radius} + 1) = -4 c_q + 5 c_r$$
+- **Środek chunka na mapie świata (`chunkRadius = 3`)**:
+  $$\text{centerQ} = c_q \times (2 \times \text{radius} + 1) + c_r \times \text{radius} = 7 c_q + 3 c_r$$
+  $$\text{centerR} = c_q \times (-\text{radius}) + c_r \times (\text{radius} + 1) = -3 c_q + 4 c_r$$
 
 ---
 
-### 4.2. Struktura Chunku Startowego (0,0) (`Chunk 0_0/Main_layout.asset`)
+### 4.3. Deterministyczny Generator (`MapRng`) i Pierścieniowa Generacja Zasobów (`TerrainGenerationConfig`)
+System biomów został całkowicie usunięty na rzecz czytelnej, deterministycznej generacji opartej o `MapRng` (instancję `System.Random` inicjalizowaną przez `seed` w `HexMapGenerator`) oraz pierścienie odległości od bazy (`dist = HexDistance((0,0), chunkCoord)`):
+
+| Pierścień (Odległość od Bazy) | Las (`Forest`) | Żyzna Gleba (`FertileSoil`) | Wzgórza (`Hill`, wys. 1–2) | Góry (`Mountain`, wys. 3) | Rola Taktyczna i Ekonomiczna |
+| :-: | :-: | :-: | :-: | :-: | :--- |
+| **Ring 1–2** *(Wczesna gra)* | **22%** | **14%** | **12%** | **0%** *(Zakaz)* | Szybki start gospodarki drzewnej, żywnościowej i kamienia; gwarantowany brak gór blokujących widoczność. |
+| **Ring 3–4** *(Środkowa gra)* | **18%** | **10%** | **16%** | **10%** | Pierwszy dostęp do gór (`Mountain` / wysokość 3) pod kopalnie rudy i węgla oraz zaawansowane pozycje obronne. |
+| **Ring 5+** *(Późna gra)* | **14%** | **8%** | **18%** | **16%** | Surowy krajobraz wysokogórski bogaty w minerały i naturalne wąwozy obronne. |
+
+#### Twarde Gwarancje Surowcowe (`TerrainGenerator.EnsureGuarantees`):
+Po wstępnym wylosowaniu terenu w każdym chunku (z zachowaniem bufora wokół drogi `roadBufferChanceReduction = 0.5`), walidator wymusza spełnienie minimalnych i maksymalnych progów:
+1. **Pierścienie 1–2**:
+   - Minimum **10 heksów Lasu (`Forest`)**.
+   - Minimum **6 heksów Żyznej Gleby (`FertileSoil`)**.
+   - Minimum **6 heksów Wzgórz (`Hill`)**.
+   - Dokładnie **0 heksów Gór (`Mountain`)** (nadmiar jest automatycznie degradowany do `Plain`).
+2. **Pierścienie 3–4**:
+   - Minimum **10 heksów Gór (`Mountain`, wysokość 3)** rozłożonych na co najmniej **2 różnych chunkach** (`minChunksWithResource = 2`).
+
+#### Chunki Unikatowe (`SpecialChunkPlacer`):
+- Rozmieszczane deterministycznie w pierścieniach **3–8** (`minRingDistance = 3`, `maxRingDistance = 8`).
+- **Całkowite wykluczenie ze ścieżek**: Chunk unikatowy nigdy nie może pojawić się na ścieżce głównej, pętli, odnodze bocznej, rozdrożu ani w bezpośrednim sąsiedztwie spawnerów ($\text{dist} > 1$).
+- Respektuje predefiniowany układ heksów `layoutOverride` (jeśli przypisano `ChunkLayoutSO`).
+
+---
+
+### 4.4. Algorytm Generowania Ścieżek, Rozdroży i Pętli (`PathGenerator`)
+1. **Główna Arteria (Path A)**:
+   - Zaczyna się na chunku startowym `(0,0)` i biegnie aż do krawędzi mapy.
+   - Gwarantowana minimalna długość: **$\ge 11$ chunków** (`minMainPathLength = 11`).
+2. **Strefa Ochronna Startu (`safeStartChunks = 2`)**:
+   - Pierwsze **2 chunki ścieżki najbliższe bazie** (indeksy `1` i `2` na Path A) mają absolutny zakaz posiadania rozdroży, pętli oraz odnóg bocznych (`!isCrossroads`).
+   - Na każdym z tych dwóch pierwszych chunków wewnętrzna droga heksagonalna musi liczyć **minimum 6 heksów** (`internalPath.Count >= 6`), co wymusza lekki łuk/zakręt wewnątrz chunka i daje wieżom odpowiedni czas ostrzału już od pierwszej nocy.
+3. **Pętle (`GenerateLoops`)**:
+   - Domyślnie generowana jest **1 gwarantowana pętla** (`guaranteedLoops = 1`) oraz **30% szansy na drugą pętlę** (`secondLoopChance = 0.30f`).
+   - Pętla odchodzi na `Rozdrożu 2` (dalej od bazy) i wraca na `Rozdrożu 1` (bliżej bazy, z zachowaniem strefy ochronnej $\ge 3$).
+   - Pętla jest całkowicie rozłączna z omijanym odcinkiem głównej ścieżki i ma długość $\ge$ omijany segment.
+4. **Odnogi Boczne (`GenerateSideBranches`)**:
+   - Domyślnie **2 odnogi boczne** (`sideBranchesCount = 2`, długość `2–4` chunków).
+   - Każda odnoga spełnia warunek monotonicznego oddalania się od bazy ($\text{dist}(\text{next}, 0) \ge \text{dist}(\text{curr}, 0)$) i kończy się własnym spawnerem.
+
+---
+
+### 4.5. Struktura Chunku Startowego (0,0) (`Chunk 0_0/Main_layout.asset`)
 W sercu kotliny na starcie gry znajdują się predefiniowane obiekty:
 - `(0, 0)`: **Latarnia Nadziei (Beacon of Hope)** [Feature 7].
 - `(0, 1)`: **Kapitol / Główna Baza** [Feature 6].
@@ -251,12 +304,12 @@ W sercu kotliny na starcie gry znajdują się predefiniowane obiekty:
 
 ---
 
-### 4.3. Mechanika Mgły Wojny i Ekspansji (`ExpansionCostConfig`)
+### 4.6. Mechanika Mgły Wojny i Ekspansji (`ExpansionCostConfig` & `MapExpansionManager`)
 
 Gracz może odkrywać zamglone chunki wokół bazy za pośrednictwem **Centrum Ekspedycji**.
 
 ```
-[Chunki Bazy / Odkryte] ──(Zwiad / Recon)──> Raport o Zasobach (None/Scarce/Moderate/Abundant)
+[Chunki Bazy / Odkryte] ──(Zwiad / Recon)──> Raport o Zasobach + Flaga Rozdroża (isCrossroads)
                         ──(Wyprawa / Survey)─> Odsłonięcie Chunku & Oddalenie Spawnu Wrogów
 ```
 
@@ -264,14 +317,11 @@ Gracz może odkrywać zamglone chunki wokół bazy za pośrednictwem **Centrum E
 - **Wymóg**: 1 Elf.
 - **Czas trwania**: 1 dzień (`reconDays = 1`).
 - **Koszt**: 15 Złota, 10 Żywności.
-- **Efekt**: Raport o obfitości zasobów na zamglonym chunku:
-  - *None*: 0 heksów.
-  - *Scarce (Znikome)*: 1–2 heksy zasobów.
-  - *Moderate (Umiarkowane)*: 3–5 heksów zasobów.
-  - *Abundant (Obfite)*: 6+ heksów zasobów.
+- **Efekt**: Raport o obfitości zasobów na zamglonym chunku (*None*: 0, *Scarce*: 1–2, *Moderate*: 3–5, *Abundant*: 6+ heksów) oraz informacja taktyczna `isCrossroads`, ostrzegająca gracza, czy na badanym chunku znajduje się rozwidlenie dróg.
 
 #### 2. Pełna Kolonizacja / Odkrycie (Survey):
 - **Wymóg minimalny**: 2 Elfy (`minElvesForSurvey = 2`).
+- **Odblokowanie wzdłuż dróg i pętli (`roadPredecessors`)**: Chunk drogowy (np. `Rozdroże 2` na końcu pętli) staje się dostępny do odkrycia wzdłuż traktu, gdy **którykolwiek** z jego poprzedników od strony bazy (`roadPredecessors`) ma status `Outskirts` lub `Settled`.
 - **Formuła Dystansu**: Najkrótsza odległość heksagonalna $D$ od granicy aktualnie osiedlonych chunków.
 - **Formuła Czasu (w dniach)**:
   $$\text{Współczynnik Czasu} = \text{clamp01}\left(\frac{D - 1}{\max(1, \text{maxDistanceForTime} - 1)}\right) \quad (\text{dla } \text{maxDistance} = 6)$$
@@ -284,10 +334,11 @@ Gracz może odkrywać zamglone chunki wokół bazy za pośrednictwem **Centrum E
   - *Mnożnik drogi*: Jeśli chunk leży na drodze, koszt wynosi $60\%$ ($\times 0.6$).
   - *Mnożnik załogi*: Jeśli wysłano więcej elfów, koszty rosną proporcjonalnie: $\times \frac{\text{Liczba Elfów}}{2}$.
 
-#### 3. Kluczowa Zależność Taktyczna Ekspansji:
-Wrogowie pojawiają się na **pierwszym odsłoniętym punkcie drogi**. 
-- Jeśli gracz nie bada terenu: wrogowie spawnują się tuż pod bramą bazy (krótki czas reakcji dla wież).
-- Jeśli gracz kolonizuje kolejne chunki wzdłuż drogi: punkt spawnu przesuwa się w głąb mapy, drastycznie wydłużając czas marszu wrogów do bazy i dając wieżom znacznie więcej czasu na zadanie obrażeń.
+#### 3. Kluczowa Zależność Taktyczna Ekspansji (Skanowanie Wsteczne od Bazy):
+Wrogowie poruszają się wyłącznie po **ciągłym łańcuchu odkrytych chunków prowadzących od Bazy `(0,0)`**:
+- `EnemySpawner` skanuje każdą trasę wstecz od Bazy `(0,0)` aż do pierwszego zamglonego chunka (`Hidden`), który staje się aktualnym punktem wejścia wrogów z mgły.
+- Odkrycie „wyspy” w głębi mapy (bez ciągłego połączenia drogowego z bazą) **nie przesuwa** punktu spawnu.
+- Dopóki gracz nie odkryje chunka z `Rozdrożem`, wszystkie trasy przechodzące przez to rozdroże są **skonsolidowane** w jedną aktywną ścieżkę o pełnej wadze. Dopiero odsłonięcie rozdroża aktywuje podział ruchu na odnogę lub pętlę.
 
 ---
 
@@ -444,11 +495,17 @@ Kolejka wrogów na każdą noc (`PredefinedWaves`):
 | **Dzień 4** | 16x Skeleton, 4x Arcanist, 4x Blob | 24 | 36 | 1.0x | 1.0x | **2 480 HP** *(Bloby: 800 + 480 dzieci)* |
 | **Dzień 5** | 5x Skeleton, 5x Arcanist, 20x Blob | 30 | 75 | 1.0x | 1.0x | **7 150 HP** *(Bloby: 4000 + 2400 dzieci)* |
 
-#### Matematyka Wyboru Ścieżki Spawnu (`EnemySpawner.RecalculateActiveRoutes`):
-Jeśli z odkrytych chunków wynika $N$ aktywnych tras dojścia:
-- **Trasa Główna (najdłuższa)**:
-  $$\text{Szansa Głównej} = \max\left(40\%, 100\% - (3.0 + 2.5 \times N)\%\right)$$
-- **Trasy Poboczne**: Dzielą pozostałą pulę procentową proporcjonalnie do swojej długości fizycznej (`fullLength`).
+#### Model Przepływu Ruchu i Wyboru Ścieżki Spawnu (`EnemySpawner.RecalculateActiveRoutes`):
+Zamiast losowania proporcjonalnego do długości tras, `EnemySpawner` wykorzystuje **model przepływu (Flow 70/30)** połączony ze **skanowaniem wstecznym od Bazy `(0,0)`** oraz **konsolidacją tras przed odkryciem rozdroża**:
+1. **Skanowanie Wsteczne (Backwards Scan from Base)**:
+   - Dla każdej wygenerowanej trasy spawner idzie od Bazy `(0,0)` w stronę spawnera końcowego, dopóki chunki są odkryte (`Outskirts` lub `Settled`).
+   - Pierwszy napotkany zamglony chunk (`Hidden`) staje się aktywnym punktem wyjścia wrogów z mgły wojny.
+2. **Konsolidacja Tras przed Odkryciem Rozdroża**:
+   - Jeśli dwie trasy (np. główna i pętla albo główna i odnoga boczna) rozdzielają się na rozdrożu, które jest wciąż ukryte w mgle (`Hidden`), ich aktywne przedrostki od bazy są identyczne.
+   - Spawner **scala (konsoliduje)** takie trasy w jedną aktywną ścieżkę i sumuje ich wagi przepływu – wrogowie nie dzielą się na warianty, dopóki gracz fizycznie nie odsłoni chunka z rozdrożem.
+3. **Podział Przepływu 70% / 30% na Odkrytych Rozdrożach**:
+   - **Trasa Główna (Path A)**: Bazowo otrzymuje **70% przepływu** (`mainBranchFlowWeight = 0.70f`).
+   - **Aktywne Odnogi Boczne i Pętle**: Dzielą między sobą pozostałe **30% przepływu** (`sideBranchFlowWeight = 0.30f`). Jeśli na głównym trakcie odkryto pętlę (odsłonięto `Rozdroże 2`), ruch na odcinku pętli dzieli się w stosunku **70% główny trakt / 30% pętla**.
 
 ---
 

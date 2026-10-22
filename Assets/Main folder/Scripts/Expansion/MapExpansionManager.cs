@@ -11,7 +11,7 @@ public class MapExpansionManager : MonoBehaviour
     public ExpansionCostConfig costConfig;
 
     public Dictionary<Vector2Int, ChunkStateData> activeChunks = new Dictionary<Vector2Int, ChunkStateData>();
-    public Dictionary<Vector2Int, Vector2Int> roadDependencies = new Dictionary<Vector2Int, Vector2Int>();
+    public Dictionary<Vector2Int, List<Vector2Int>> roadDependencies = new Dictionary<Vector2Int, List<Vector2Int>>();
 
     // ─── Rejestr Centrów Ekspedycyjnych i Misji ──────────────────────────────
     private readonly List<ExpeditionCenterEntity> expeditionCenters = new List<ExpeditionCenterEntity>();
@@ -139,7 +139,19 @@ public class MapExpansionManager : MonoBehaviour
 
         if (HexMapGenerator.Instance != null)
         {
-            roadDependencies = HexMapGenerator.Instance.GetRoadRevealDependencies();
+            roadDependencies = HexMapGenerator.Instance.GetRoadRevealDependenciesMulti();
+            if (roadDependencies == null || roadDependencies.Count == 0)
+            {
+                var singleDeps = HexMapGenerator.Instance.GetRoadRevealDependencies();
+                if (singleDeps != null)
+                {
+                    roadDependencies = new Dictionary<Vector2Int, List<Vector2Int>>();
+                    foreach (var kvp in singleDeps)
+                    {
+                        roadDependencies[kvp.Key] = new List<Vector2Int> { kvp.Value };
+                    }
+                }
+            }
         }
 
         HashSet<Vector2Int> startSettled = new HashSet<Vector2Int>();
@@ -163,11 +175,11 @@ public class MapExpansionManager : MonoBehaviour
                 baseState = startSettled.Contains(chunkCoord) ? ChunkState.Settled : ChunkState.Wilderness
             };
 
-            if (roadDependencies.ContainsKey(chunkCoord))
+            if (roadDependencies.TryGetValue(chunkCoord, out var predecessors) && predecessors != null && predecessors.Count > 0)
             {
                 data.isRoadChunk = true;
-                data.roadPredecessor = roadDependencies[chunkCoord];
-                data.hasRoadPredecessor = data.roadPredecessor.x != -999;
+                data.roadPredecessors = new List<Vector2Int>(predecessors);
+                data.hasRoadPredecessor = true;
             }
 
             activeChunks.Add(chunkCoord, data);
@@ -181,7 +193,17 @@ public class MapExpansionManager : MonoBehaviour
             ChunkStateData data = kvp.Value;
             if (!data.isRoadChunk || !data.hasRoadPredecessor) continue;
 
-            if (startSettled.Contains(data.roadPredecessor) && !startSettled.Contains(kvp.Key))
+            bool anySettledPredecessor = false;
+            foreach (var pred in data.roadPredecessors)
+            {
+                if (startSettled.Contains(pred))
+                {
+                    anySettledPredecessor = true;
+                    break;
+                }
+            }
+
+            if (anySettledPredecessor && !startSettled.Contains(kvp.Key))
             {
                 initialRoadChunks.Add(kvp.Key);
             }
@@ -302,6 +324,20 @@ public class MapExpansionManager : MonoBehaviour
 
         intel.hasEnemyPath = hasRoad;
 
+        // Crossroads detection
+        if (HexMapGenerator.Instance != null && HexMapGenerator.Instance.Context != null)
+        {
+            var ctx = HexMapGenerator.Instance.Context;
+            if (ctx.crossroadsChunks != null && ctx.crossroadsChunks.Contains(chunkCoord))
+            {
+                intel.isCrossroads = true;
+            }
+            else if (ctx.chunkPaths != null && ctx.chunkPaths.TryGetValue(chunkCoord, out var pathData) && pathData.isCrossroads)
+            {
+                intel.isCrossroads = true;
+            }
+        }
+
         foreach (var kvp in featureCounts)
         {
             var abundance = ExpansionCostCalculator.EvaluateAbundance(kvp.Value, costConfig);
@@ -372,14 +408,33 @@ public class MapExpansionManager : MonoBehaviour
 
             if (data.isRoadChunk && data.hasRoadPredecessor)
             {
-                if (activeChunks.TryGetValue(data.roadPredecessor, out var predData))
+                bool anyPredecessorRevealed = false;
+                if (data.roadPredecessors != null && data.roadPredecessors.Count > 0)
                 {
-                    if (predData.baseState != ChunkState.Outskirts && predData.baseState != ChunkState.Settled)
+                    foreach (var predCoord in data.roadPredecessors)
                     {
-                        continue;
+                        if (activeChunks.TryGetValue(predCoord, out var predData))
+                        {
+                            if (predData.baseState == ChunkState.Outskirts || predData.baseState == ChunkState.Settled)
+                            {
+                                anyPredecessorRevealed = true;
+                                break;
+                            }
+                        }
                     }
                 }
-                else
+                else if (data.roadPredecessor.x != -999)
+                {
+                    if (activeChunks.TryGetValue(data.roadPredecessor, out var predData))
+                    {
+                        if (predData.baseState == ChunkState.Outskirts || predData.baseState == ChunkState.Settled)
+                        {
+                            anyPredecessorRevealed = true;
+                        }
+                    }
+                }
+
+                if (!anyPredecessorRevealed)
                 {
                     continue;
                 }

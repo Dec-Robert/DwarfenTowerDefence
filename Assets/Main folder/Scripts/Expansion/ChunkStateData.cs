@@ -7,6 +7,7 @@ public class ChunkReconIntel
 {
     public bool hasIntel;
     public bool hasEnemyPath;
+    public bool isCrossroads;
     public Dictionary<HexFeatureType, ReconAbundance> features = new Dictionary<HexFeatureType, ReconAbundance>();
 
     public ReconAbundance GetAbundance(HexFeatureType feature)
@@ -44,8 +45,49 @@ public class ChunkStateData
     public ChunkState baseState = ChunkState.Wilderness;
     public OutpostEntity activeOutpost;
     public bool isRoadChunk;
-    public Vector2Int roadPredecessor = new Vector2Int(-999, -999);
-    public bool hasRoadPredecessor;
+
+    /// <summary>
+    /// Lista chunków poprzedzających (bliżej bazy) wzdłuż drogi.
+    /// W topologii pętli i rozdroży chunk może mieć wielu poprzedników (np. Rozdroże 2 ma nitkę główną i nitkę pętli).
+    /// </summary>
+    public List<Vector2Int> roadPredecessors = new List<Vector2Int>();
+
+    /// <summary>
+    /// Właściwość wstecznej kompatybilności zwracająca pierwszego poprzednika lub sentinel (-999, -999).
+    /// Setter czyści listę i dodaje nową wartość (jeśli nie jest sentinelem).
+    /// </summary>
+    public Vector2Int roadPredecessor
+    {
+        get => roadPredecessors != null && roadPredecessors.Count > 0
+            ? roadPredecessors[0]
+            : new Vector2Int(-999, -999);
+        set
+        {
+            if (roadPredecessors == null)
+                roadPredecessors = new List<Vector2Int>();
+            else
+                roadPredecessors.Clear();
+
+            if (value.x != -999 || value.y != -999)
+            {
+                roadPredecessors.Add(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Właściwość określająca, czy chunk ma zdefiniowanego przynajmniej jednego poprzednika drogowego.
+    /// Setter zachowany dla wstecznej kompatybilności z instrukcjami przypisania (np. data.hasRoadPredecessor = ...).
+    /// </summary>
+    public bool hasRoadPredecessor
+    {
+        get => roadPredecessors != null && roadPredecessors.Count > 0;
+        set
+        {
+            // Setter no-op: stan wynika dynamicznie z roadPredecessors.Count > 0.
+        }
+    }
+
     public int surveyDaysRemaining;
     public int outpostSettlementDaysRemaining;
 
@@ -72,4 +114,12 @@ public class ChunkStateData
     public bool CanBuildDefense => EffectiveState == ChunkState.Outskirts || EffectiveState == ChunkState.Settled;
 
     public bool CanBuildEconomic => EffectiveState == ChunkState.Settled;
+
+    /// <summary>Bezpiecznie dodaje poprzednika drogowego, o ile nie jest sentinelem.</summary>
+    public void AddRoadPredecessor(Vector2Int pred)
+    {
+        if (pred.x == -999 && pred.y == -999) return;
+        if (roadPredecessors == null) roadPredecessors = new List<Vector2Int>();
+        if (!roadPredecessors.Contains(pred)) roadPredecessors.Add(pred);
+    }
 }

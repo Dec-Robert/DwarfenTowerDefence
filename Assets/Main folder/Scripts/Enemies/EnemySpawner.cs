@@ -51,6 +51,8 @@ public class EnemySpawner : MonoBehaviour
     {
         public string name;
         [Range(0, 100)] public float currentSpawnChance;
+        [Tooltip("Relative flow weight assigned by topological flow model")]
+        public float flowWeight = 1.0f;
         public List<Vector3> fullPath;
         public Vector3 currentSpawnPoint;
         public List<Vector3> currentActivePath;
@@ -393,32 +395,60 @@ public class EnemySpawner : MonoBehaviour
         InitializeRoutes();
     }
 
-    void InitializeRoutes()
+    public void InitializeRoutes()
     {
         allPotentialRoutes.Clear();
-        var rawPaths = mapGenerator.GetAllSpawnPaths();
 
-        if (rawPaths == null)
-        {
-            StartCoroutine(RetryInitialize());
-            return;
-        }
+        // 1. Sprawdź czy dostępny jest Model Przepływu (GetAllSpawnRoutes)
+        var routeVariants = mapGenerator != null ? mapGenerator.GetAllSpawnRoutes() : null;
 
-        foreach (var path in rawPaths)
+        if (routeVariants != null && routeVariants.Count > 0)
         {
-            if (path == null || path.Count < 2) continue;
-            float len = 0;
-            for (int i = 0; i < path.Count - 1; i++)
+            foreach (var variant in routeVariants)
             {
-                len += Vector3.Distance(path[i], path[i + 1]);
+                if (variant.fullPath == null || variant.fullPath.Count < 2) continue;
+                float len = 0;
+                for (int i = 0; i < variant.fullPath.Count - 1; i++)
+                {
+                    len += Vector3.Distance(variant.fullPath[i], variant.fullPath[i + 1]);
+                }
+
+                allPotentialRoutes.Add(new SpawnRoute
+                {
+                    fullPath = variant.fullPath,
+                    flowWeight = variant.flowWeight > 0f ? variant.flowWeight : 1.0f,
+                    fullLength = len,
+                    name = !string.IsNullOrEmpty(variant.name) ? variant.name : $"Route {allPotentialRoutes.Count}"
+                });
+            }
+        }
+        else
+        {
+            // Wsteczna kompatybilność z GetAllSpawnPaths
+            var rawPaths = mapGenerator != null ? mapGenerator.GetAllSpawnPaths() : null;
+            if (rawPaths == null || rawPaths.Count == 0)
+            {
+                StartCoroutine(RetryInitialize());
+                return;
             }
 
-            allPotentialRoutes.Add(new SpawnRoute
+            foreach (var path in rawPaths)
             {
-                fullPath = path,
-                fullLength = len,
-                name = "Route " + allPotentialRoutes.Count
-            });
+                if (path == null || path.Count < 2) continue;
+                float len = 0;
+                for (int i = 0; i < path.Count - 1; i++)
+                {
+                    len += Vector3.Distance(path[i], path[i + 1]);
+                }
+
+                allPotentialRoutes.Add(new SpawnRoute
+                {
+                    fullPath = path,
+                    flowWeight = 1.0f / rawPaths.Count,
+                    fullLength = len,
+                    name = "Route " + allPotentialRoutes.Count
+                });
+            }
         }
 
         allPotentialRoutes = allPotentialRoutes.OrderByDescending(r => r.fullLength).ToList();
@@ -433,58 +463,128 @@ public class EnemySpawner : MonoBehaviour
 
     void OnChunkRevealedHandler(Vector2Int _) => RecalculateActiveRoutes();
 
-    void RecalculateActiveRoutes()
+    public void RecalculateActiveRoutes()
     {
         activeRoutes.Clear();
 
+        if (allPotentialRoutes == null || allPotentialRoutes.Count == 0) return;
+        if (mapGenerator == null || fogManager == null) return;
+
+        // 1. Skanowanie wstecz od Bazy (koniec trasy) w stronę Spawnera (początek trasy)
+        var candidateRoutes = new List<SpawnRoute>();
+
         foreach (var route in allPotentialRoutes)
         {
-            int foundIndex = -1;
-            for (int i = 0; i < route.fullPath.Count; i++)
+            if (route.fullPath == null || route.fullPath.Count < 2) continue;
+
+            int activeSpawnIndex = route.fullPath.Count - 1;
+            for (int i = route.fullPath.Count - 1; i >= 0; i--)
             {
                 var chunk = mapGenerator.GetChunkCoordFromWorldPosition(route.fullPath[i]);
                 if (fogManager.IsChunkRevealed(chunk))
                 {
-                    foundIndex = i;
+                    activeSpawnIndex = i;
+                }
+                else
+                {
+                    // Natrafiono na mgłę – ostatni ujawniony punkt jest aktywnym spawnerem na granicy mgły
                     break;
                 }
             }
 
-            if (foundIndex >= 0 && foundIndex < route.fullPath.Count - 2)
+            // Wymagaj co najmniej 2 punktów na aktywnej ścieżce (spawner -> punkt kolejny)
+            if (activeSpawnIndex >= 0 && activeSpawnIndex < route.fullPath.Count - 1)
             {
-                route.currentSpawnPoint = route.fullPath[foundIndex];
-                route.currentActivePath = route.fullPath.GetRange(foundIndex, route.fullPath.Count - foundIndex);
-                route.name = $"Spawn at {mapGenerator.GetChunkCoordFromWorldPosition(route.currentSpawnPoint)}";
-                activeRoutes.Add(route);
+                var activePath = route.fullPath.GetRange(activeSpawnIndex, route.fullPath.Count - activeSpawnIndex);
+                var spawnPoint = route.fullPath[activeSpawnIndex];
+
+                candidateRoutes.Add(new SpawnRoute
+                {
+                    fullPath = route.fullPath,
+                    fullLength = route.fullLength,
+                    flowWeight = route.flowWeight,
+                    currentSpawnPoint = spawnPoint,
+                    currentActivePath = activePath,
+                    name = $"Spawn at {mapGenerator.GetChunkCoordFromWorldPosition(spawnPoint)}"
+                });
             }
         }
 
-        if (activeRoutes.Count == 0) return;
+        if (candidateRoutes.Count == 0) return;
 
-        activeRoutes = activeRoutes.OrderByDescending(r => r.fullLength).ToList();
-        int count = activeRoutes.Count;
+        // 2. Scalanie tras o identycznym odkrytym przebiegu (przed rozdrożem ukrytym w mgle)
+        var mergedRoutes = new List<SpawnRoute>();
 
-        if (count == 1)
+        foreach (var candidate in candidateRoutes)
         {
-            activeRoutes[0].currentSpawnChance = 100f;
-            activeRoutes[0].name += " [MAIN]";
+            SpawnRoute existingGroup = null;
+            foreach (var merged in mergedRoutes)
+            {
+                if (AreActivePathsIdentical(merged.currentActivePath, candidate.currentActivePath))
+                {
+                    existingGroup = merged;
+                    break;
+                }
+            }
+
+            if (existingGroup != null)
+            {
+                existingGroup.flowWeight += candidate.flowWeight;
+            }
+            else
+            {
+                mergedRoutes.Add(new SpawnRoute
+                {
+                    name = candidate.name,
+                    fullPath = candidate.fullPath,
+                    fullLength = candidate.fullLength,
+                    flowWeight = candidate.flowWeight,
+                    currentSpawnPoint = candidate.currentSpawnPoint,
+                    currentActivePath = new List<Vector3>(candidate.currentActivePath)
+                });
+            }
+        }
+
+        // 3. Normalizacja wag przepływu (suma currentSpawnChance = 100%)
+        float totalFlow = mergedRoutes.Sum(r => r.flowWeight);
+
+        if (totalFlow > 0.0001f)
+        {
+            foreach (var r in mergedRoutes)
+            {
+                r.currentSpawnChance = (r.flowWeight / totalFlow) * 100f;
+            }
         }
         else
         {
-            float deduction = baseFormulaConst + perSpawnerMultiplier * count;
-            float mainChance = Mathf.Max(40f, 100f - deduction);
-            deduction = 100f - mainChance;
-
-            activeRoutes[0].currentSpawnChance = mainChance;
-            activeRoutes[0].name += " [MAIN]";
-
-            float totalMinor = activeRoutes.Skip(1).Sum(r => r.fullLength);
-            for (int i = 1; i < count; i++)
+            float equalShare = 100f / mergedRoutes.Count;
+            foreach (var r in mergedRoutes)
             {
-                float share = totalMinor > 0 ? activeRoutes[i].fullLength / totalMinor : 1f / (count - 1);
-                activeRoutes[i].currentSpawnChance = share * deduction;
+                r.currentSpawnChance = equalShare;
             }
         }
+
+        activeRoutes = mergedRoutes.OrderByDescending(r => r.currentSpawnChance).ToList();
+
+        if (activeRoutes.Count > 0)
+        {
+            activeRoutes[0].name += " [MAIN]";
+        }
+    }
+
+    private static bool AreActivePathsIdentical(List<Vector3> pathA, List<Vector3> pathB)
+    {
+        if (pathA == null || pathB == null) return false;
+        if (pathA.Count != pathB.Count) return false;
+
+        const float toleranceSq = 0.001f;
+        for (int i = 0; i < pathA.Count; i++)
+        {
+            if ((pathA[i] - pathB[i]).sqrMagnitude > toleranceSq)
+                return false;
+        }
+
+        return true;
     }
 
     void OnDrawGizmos()

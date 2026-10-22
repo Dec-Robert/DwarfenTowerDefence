@@ -414,20 +414,7 @@ public class BuildingTerrainComponent
         if (changedCell != null && mapGen != null)
         {
             var cellData = mapGen.worldData[chunkCoord][localCoord];
-            var currentBiome = BiomeType.Plains;
-
-            var biomeDict = new Dictionary<BiomeType, Material>();
-            foreach (var bs in mapGen.biomeSettings)
-            {
-                if (bs.biomeGroundMaterial != null && !biomeDict.ContainsKey(bs.type))
-                {
-                    biomeDict.Add(bs.type, bs.biomeGroundMaterial);
-                }
-            }
-
-            if (biomeDict.Count > 0) currentBiome = biomeDict.Keys.First();
-
-            HexMapVisualizer.Instance.RedrawSingleHex(chunkCoord, localCoord, cellData, biomeDict, currentBiome);
+            HexMapVisualizer.Instance.RedrawSingleHex(chunkCoord, localCoord, cellData);
         }
 
         var entity = buildingTransform.GetComponent<BuildingEntity>();
