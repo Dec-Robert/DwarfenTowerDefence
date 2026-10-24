@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: elfy_3
   upgradeName: Elfy 3
-  description: "Elfy zapewniaj\u0105 dodatkowe bonusy rasowe\nprzy budynkach produkcyjnych"
+  description: "Elfy zapewniaj\u0105 dodatkowe bonusy rasowe\nprzy budynkach produkcyjnych\nKa\u017Cdy
+    elf w tartaku oraz na farmie zapewnia 5%\ndodatkowej produktywno\u015Bci"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0

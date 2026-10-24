@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: nowa_wiea_3
   upgradeName: "Nowa wie\u017Ca 3"
-  description: "Daje dostep do nowej wie\u017Cy(gracz wybiera kt\xF3r\u0105\nz 4
+  description: "Daje dostep do nowej wie\u017Cy(gracz wybiera kt\xF3r\u0105\nz 3
     zablokowanych wybiera)\n"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: 414d9a3409652bf4ba5b081e4e194359, type: 2}
+  - {fileID: 11400000, guid: e946c1fb136782e4f8b48cd04745e547, type: 2}
   effectType: 0
   effectValue: 0
   effectValue2: 0

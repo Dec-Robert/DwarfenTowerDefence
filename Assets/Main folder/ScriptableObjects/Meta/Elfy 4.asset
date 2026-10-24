@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: elfy_4
   upgradeName: Elfy 4
-  description: "Elfy zapewniaj\u0105 dodatkowe bonusy rasowe\nprzy wie\u017Cach"
+  description: "Elfy zapewniaj\u0105 dodatkowe bonusy rasowe\nprzy wie\u017Cach\n+10%
+    zasi\u0119gu\n+5% szansy na trafienie krytyczne"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0

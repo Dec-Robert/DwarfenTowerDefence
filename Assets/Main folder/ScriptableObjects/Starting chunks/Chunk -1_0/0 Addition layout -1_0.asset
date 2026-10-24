@@ -22,4 +22,8 @@ MonoBehaviour:
     feature: 1
     featureLevel: 0
     building: {fileID: 0}
+  - localCoord: {x: -1, y: 0}
+    feature: 1
+    featureLevel: 0
+    building: {fileID: 0}
   roadConnectionEdge: {x: 0, y: 0}

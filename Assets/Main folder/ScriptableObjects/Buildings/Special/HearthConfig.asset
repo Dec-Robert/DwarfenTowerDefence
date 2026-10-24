@@ -27,7 +27,7 @@ MonoBehaviour:
     etherChanceTierLabel: Ogromne
     guaranteedEtherPercent: 0.8
     naturalEtherDropChance: 0.05
-    nextDayProductionBonus: -0.15
+    nextDayProductionBonus: 0
   - levelIndex: 2
     title: "Tl\u0105cy si\u0119 \u017Bar"
     tagText: "OSZCZ\u0118DNO\u015A\u0106"
@@ -42,7 +42,7 @@ MonoBehaviour:
     etherChanceTierLabel: "Du\u017Ce"
     guaranteedEtherPercent: 0.6
     naturalEtherDropChance: 0.05
-    nextDayProductionBonus: -0.1
+    nextDayProductionBonus: 0
   - levelIndex: 3
     title: "Zr\xF3wnowa\u017Cony P\u0142omie\u0144"
     tagText: NEUTRALNY
@@ -72,7 +72,7 @@ MonoBehaviour:
     etherChanceTierLabel: Niskie
     guaranteedEtherPercent: 0.2
     naturalEtherDropChance: 0.05
-    nextDayProductionBonus: 0.15
+    nextDayProductionBonus: 0
   - levelIndex: 5
     title: Palenisko Magmy
     tagText: MAKS. MOC
@@ -87,4 +87,4 @@ MonoBehaviour:
     etherChanceTierLabel: Zerowe
     guaranteedEtherPercent: 0
     naturalEtherDropChance: 0.05
-    nextDayProductionBonus: 0.35
+    nextDayProductionBonus: 0.05

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
+  m_Name: Potencjal ziemi 3b II
+  m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
+  id: potencjal_ziemi_3b_ii
+  upgradeName: Potencjal ziemi 3b II
+  description: "Wzmacnia chunk dodatkow o budynek\n(dodatkowe g\xF3ry)"
+  icon: {fileID: 0}
+  cost: 100
+  isUnlocked: 0
+  prerequisites:
+  - {fileID: 11400000, guid: db0b12e2296276e49904eafc809561f1, type: 2}
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}

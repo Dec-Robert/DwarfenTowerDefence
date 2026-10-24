@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: potencjal_ziemi_1b_3
   upgradeName: Potencjal ziemi 1b
-  description: 'Wzmacnia chunk dodatkowy o budynek '
+  description: 'Wzmacnia chunk dodatkowy o kolejne lasy '
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0

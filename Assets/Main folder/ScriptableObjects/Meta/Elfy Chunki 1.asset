@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: elfy_chunki_1
   upgradeName: Elfy Chunki 1
-  description: "Expedycje maj\u0105 sznase na znalezienie\nspecjalnego chunka: POBOJOWISKO"
+  description: "Expedycje maj\u0105 sznase na znalezienie\nspecjalnego chunka: POBOJOWISKO\nSPECJALNE
+    CHUNKI DO PRZEMY\u015ALENIA"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0

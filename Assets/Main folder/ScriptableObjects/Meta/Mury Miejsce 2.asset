@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: mury_miejsce_2
   upgradeName: Mury Miejsce 2
-  description: "Zwi\u0119ksza zdrowie bramy miejskiej o X pkt"
+  description: "Zwi\u0119ksza zdrowie bramy miejskiej o 5 pkt"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0

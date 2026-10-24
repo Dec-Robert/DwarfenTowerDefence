@@ -90,7 +90,7 @@ public class HearthConfigSO : ScriptableObject
                 etherChanceTierLabel = "Ogromne",
                 guaranteedEtherPercent = 0.80f,
                 naturalEtherDropChance = 0.05f,
-                nextDayProductionBonus = -0.25f
+                nextDayProductionBonus = 0f
             };
         }
 
@@ -111,7 +111,7 @@ public class HearthConfigSO : ScriptableObject
                 etherChanceTierLabel = "Duże",
                 guaranteedEtherPercent = 0.60f,
                 naturalEtherDropChance = 0.05f,
-                nextDayProductionBonus = -0.10f
+                nextDayProductionBonus = 0f
             };
         }
 
@@ -153,7 +153,7 @@ public class HearthConfigSO : ScriptableObject
                 etherChanceTierLabel = "Niskie",
                 guaranteedEtherPercent = 0.20f,
                 naturalEtherDropChance = 0.05f,
-                nextDayProductionBonus = 0.15f
+                nextDayProductionBonus = 0f
             };
         }
 
@@ -174,7 +174,7 @@ public class HearthConfigSO : ScriptableObject
                 etherChanceTierLabel = "Zerowe",
                 guaranteedEtherPercent = 0.00f,
                 naturalEtherDropChance = 0.05f,
-                nextDayProductionBonus = 0.35f
+                nextDayProductionBonus = 0.05f
             };
         }
 

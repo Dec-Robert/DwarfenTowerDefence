@@ -28,14 +28,10 @@ MonoBehaviour:
     targetChunk: {x: -1, y: 0}
     requiredUpgrade: {fileID: 11400000, guid: fa9a857a46e58964eb72ce3da69c7328, type: 2}
     modifierLayout: {fileID: 11400000, guid: eea8ec8aa75a45c4c825d2e598e1790a, type: 2}
-  - name: Tree->Sawmil expansion
+  - name: Tree expansion second
     targetChunk: {x: -1, y: 0}
     requiredUpgrade: {fileID: 11400000, guid: 50014c826ba92a84aa72edc8a10e62ef, type: 2}
-    modifierLayout: {fileID: 11400000, guid: 7ccdddbe18cf2414db2a72abd2004fd0, type: 2}
-  - name: Fields
-    targetChunk: {x: -1, y: 1}
-    requiredUpgrade: {fileID: 11400000, guid: b688a76a1c4f86e40ab4e933cefd9b81, type: 2}
-    modifierLayout: {fileID: 11400000, guid: 597d5e4c7fcb4cc46990b772d3231c90, type: 2}
+    modifierLayout: {fileID: 11400000, guid: aef56c93aafd6214cb30d9a20806d37e, type: 2}
   - name: Fields -> farms
     targetChunk: {x: -1, y: 1}
     requiredUpgrade: {fileID: 11400000, guid: a1a1a677070a7e34a86249f56e49ace8, type: 2}
@@ -48,3 +44,7 @@ MonoBehaviour:
     targetChunk: {x: -2, y: 1}
     requiredUpgrade: {fileID: 11400000, guid: d29e1b6ed7706e14dbef6c9db7d37a9b, type: 2}
     modifierLayout: {fileID: 11400000, guid: 2bf146cf497b3e44884e4a29b071ca0a, type: 2}
+  - name: 
+    targetChunk: {x: 0, y: 0}
+    requiredUpgrade: {fileID: 0}
+    modifierLayout: {fileID: 0}

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: potencjal_ziemi_1
   upgradeName: Potencjal ziemi 1
-  description: Wzmacnia chunk startowy o cos
+  description: "Domy elf\xF3w i krasnolud\xF3w na chunku startowym \nnie s\u0105
+    ju\u017C zrujnowane"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: narzdzie_ludu
   upgradeName: "Narz\u0119dzie ludu"
-  description: "Daje bonus do wydobycia [ca\u0142a \u015Bciezka tutaj\nb\u0119dzie
-    skupia\u0107 si\u0119 na bonusach do wydobycia]"
+  description: "Kazdy budynek produkcyjny mo\u017Ce pomie\u015Bcic \njednego wi\u0119cej
+    pracownika"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: zapomnine_rowniny_2
   upgradeName: Zapomnine rowniny 2
-  description: "Teren startowy zostaje powi\u0119kszony o 1 chunk"
+  description: "Teren startowy zostaje powi\u0119kszony o 1 chunk\n(chunk z polami)"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0

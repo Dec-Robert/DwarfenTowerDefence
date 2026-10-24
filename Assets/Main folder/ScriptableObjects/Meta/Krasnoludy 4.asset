@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: krasnoludy_4
   upgradeName: Krasnoludy 4
-  description: "Krasnoludy zapewniaj\u0105 dodatkowe bonusy rasowe\nprzy wie\u017Cach"
+  description: "Krasnoludy zapewniaj\u0105 dodatkowe bonusy rasowe\nprzy wie\u017Cach\n+8%
+    obra\u017Ce\u0144\n+5% przebicia pancerza"
   icon: {fileID: 0}
   cost: 100
   isUnlocked: 0
