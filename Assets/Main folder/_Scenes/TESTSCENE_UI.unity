@@ -741,6 +741,7 @@ MonoBehaviour:
   prefabForest: {fileID: 0}
   prefabMountain: {fileID: 0}
   prefabFertile: {fileID: 0}
+  prefabMeadow: {fileID: 0}
   prefabBase: {fileID: 0}
   prefabBeacon: {fileID: 0}
   matPath: {fileID: 0}
@@ -749,6 +750,7 @@ MonoBehaviour:
   matHill: {fileID: 0}
   matSinkhole: {fileID: 0}
   matFertile: {fileID: 0}
+  matMeadow: {fileID: 0}
   matBase: {fileID: 0}
   matBeacon: {fileID: 0}
   matDefaultGrass: {fileID: 0}
@@ -764,6 +766,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2ebbf342d20bd44fbc74b95e03d69ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  seed: 0
   visualizer: {fileID: 0}
   fogManager: {fileID: 0}
   mapWidth: 8
@@ -779,32 +782,18 @@ MonoBehaviour:
   extraSpawnDistanceRange: {x: 2, y: 6}
   chanceForMoreBranching: 30
   globalObstacleChance: 40
+  topologySettings:
+    safeStartChunks: 2
+    minStartRoadLength: 6
+    minChunksBetweenCrossroads: 1
+    guaranteedLoops: 1
+    extraLoopChance: 30
+    loopSpanRange: {x: 2, y: 4}
+    loopFlowRatio: 0.3
+    sideBranchChances: 6400000055000000
+    branchFlowRatio: 0.3
   metaConfig: {fileID: 0}
-  biomeSettings:
-  - name: Plains
-    type: 0
-    biomeGroundMaterial: {fileID: 0}
-    forestClusterChance: 30
-    mountainChance: 5
-    hillChance: 10
-    sinkholeChance: 5
-    fertileSoilChance: 20
-  - name: Forest
-    type: 1
-    biomeGroundMaterial: {fileID: 0}
-    forestClusterChance: 80
-    mountainChance: 5
-    hillChance: 10
-    sinkholeChance: 5
-    fertileSoilChance: 10
-  - name: Mountains
-    type: 2
-    biomeGroundMaterial: {fileID: 0}
-    forestClusterChance: 10
-    mountainChance: 40
-    hillChance: 30
-    sinkholeChance: 5
-    fertileSoilChance: 0
+  terrainConfig: {fileID: 0}
   specialChunkTypes: []
   baseRoadEndLocal: {x: 3, y: -2}
   internalSettings:
