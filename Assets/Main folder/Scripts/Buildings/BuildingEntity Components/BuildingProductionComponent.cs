@@ -93,7 +93,43 @@ public class BuildingProductionComponent
     public float GetCrewEfficiency()
     {
         int workerCount = workerComponent != null ? workerComponent.GetActiveWorkers().Count : 0;
-        return data != null ? data.GetEffectiveEfficiencyForWorkers(workerCount) : 0f;
+        float baseEff = data != null ? data.GetEffectiveEfficiencyForWorkers(workerCount) : 0f;
+
+        if (workerCount > 0 && workerComponent != null && MetaUpgradeManager.Instance != null)
+        {
+            // Human production synergy (Ludzka wytrwałość I): if humanCount >= 4, +20% efficiency
+            int humanCount = workerComponent.GetWorkerCount(Race.Humans);
+            if (humanCount >= 4 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.ProductionSynergy_Human) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.ProductionSynergy_Human)))
+            {
+                baseEff += 0.20f;
+            }
+
+            // Elf production synergy (Elfy 3): if sawmill/farm, +5% efficiency per elf worker
+            int elfCount = workerComponent.GetWorkerCount(Race.Elves);
+            if (elfCount > 0 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.ProductionSynergy_Elf) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.ProductionSynergy_Elf)))
+            {
+                if (IsSawmillOrFarm())
+                {
+                    baseEff += 0.05f * elfCount;
+                }
+            }
+        }
+
+        return baseEff;
+    }
+
+    private bool IsSawmillOrFarm()
+    {
+        if (data == null) return false;
+        string name = data.name ?? "";
+        string bName = data.buildingName ?? "";
+        return name.IndexOf("Sawmill", System.StringComparison.OrdinalIgnoreCase) >= 0
+            || name.IndexOf("Tartak", System.StringComparison.OrdinalIgnoreCase) >= 0
+            || name.IndexOf("Farm", System.StringComparison.OrdinalIgnoreCase) >= 0
+            || bName.IndexOf("Sawmill", System.StringComparison.OrdinalIgnoreCase) >= 0
+            || bName.IndexOf("Tartak", System.StringComparison.OrdinalIgnoreCase) >= 0
+            || bName.IndexOf("Farm", System.StringComparison.OrdinalIgnoreCase) >= 0
+            || bName.IndexOf("Farma", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     public Dictionary<ResourceType, float> GetBaseProductionWithFlats()

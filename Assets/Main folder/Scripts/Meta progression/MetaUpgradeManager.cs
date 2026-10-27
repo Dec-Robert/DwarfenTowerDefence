@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement; // Wymagane do wykrywania zmiany sceny
 using System.Collections.Generic;
@@ -34,6 +35,11 @@ public class MetaUpgradeManager : MonoBehaviour
 
     [Header("── Lista Wszystkich Upgradów ────────────")]
     public List<MetaUpgradeSO> allUpgrades = new List<MetaUpgradeSO>();
+
+    [Header("── Katalog Wież (Draft) ───────────────────")]
+    public List<TowerData> allTowers = new List<TowerData>();
+
+    public event Action<MetaUpgradeSO> OnUpgradePurchased;
 
     [Header("── Konfiguracja Scen ────────────────────")]
     [Tooltip("Nazwa sceny, w której manager ma zaaplikować efekty (np. GameScene)")]
@@ -186,6 +192,12 @@ public class MetaUpgradeManager : MonoBehaviour
             case MetaEffectType.BonusWorkersPerShift:
                 CityStatsManager.Instance?.AddGlobalWorkerSlot(Mathf.RoundToInt(value));
                 break;
+            case MetaEffectType.BonusProductionWorkers:
+                CityStatsManager.Instance?.AddGlobalProductionWorkerSlot(Mathf.RoundToInt(value));
+                break;
+            case MetaEffectType.BonusTowerCrewSlots:
+                CityStatsManager.Instance?.AddGlobalTowerCrewSlot(Mathf.RoundToInt(value));
+                break;
             
 
             // ── Miasto ────────────────────────────────────────────────────────
@@ -254,6 +266,9 @@ public class MetaUpgradeManager : MonoBehaviour
         return appliedValues.ContainsKey(type);
     }
 
+    /// <summary>Czy dany efekt jest odblokowany i aktywny?</summary>
+    public bool HasEffect(MetaEffectType type) => IsUnlocked(type);
+
     /// <summary>
     /// Zwraca wartość efektu specyficznego dla danego budynku.
     /// Używaj w BuildingUpgradeComponent i BuildingProductionComponent.
@@ -285,6 +300,124 @@ public class MetaUpgradeManager : MonoBehaviour
     {
         CollectValues();
         ApplyAllEffects();
+    }
+
+    // =========================================================================
+    // OBSŁUGA ZAKUPU I DRAFT WIEŻ
+    // =========================================================================
+
+    /// <summary>
+    /// Wywoływane przy zakupie węzła ulepszenia.
+    /// Oznacza węzeł jako odblokowany, aktualizuje SaveManager i wyzwala TowerDraftModalUI jeśli to draft wieży.
+    /// </summary>
+    public void OnNodePurchased(MetaUpgradeSO node)
+    {
+        if (ReferenceEquals(node, null)) return;
+
+        if (!node.isUnlocked)
+        {
+            node.isUnlocked = true;
+        }
+
+        if (SaveManager.Instance != null && SaveManager.Instance.currentSaveData != null)
+        {
+            if (SaveManager.Instance.currentSaveData.unlockedUpgradeIDs == null)
+            {
+                SaveManager.Instance.currentSaveData.unlockedUpgradeIDs = new List<string>();
+            }
+
+            if (!SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Contains(node.id))
+            {
+                SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Add(node.id);
+                SaveManager.Instance.SaveGame();
+            }
+        }
+
+        OnUpgradePurchased?.Invoke(node);
+
+        if (IsTowerDraftUpgrade(node))
+        {
+            TriggerTowerDraft();
+        }
+    }
+
+    /// <summary>
+    /// Sprawdza czy dany węzeł jest węzłem wyboru nowej wieży (Nowa wieża 1..5 lub MetaEffectType.TowerDraftUnlock).
+    /// </summary>
+    public bool IsTowerDraftUpgrade(MetaUpgradeSO node)
+    {
+        if (ReferenceEquals(node, null)) return false;
+        if (node.effectType == MetaEffectType.TowerDraftUnlock) return true;
+        if (!string.IsNullOrEmpty(node.id) && node.id.StartsWith("nowa_wie", StringComparison.OrdinalIgnoreCase)) return true;
+        if (!string.IsNullOrEmpty(node.upgradeName) && node.upgradeName.StartsWith("Nowa wieża", StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Uruchamia przepływ okna wyboru nowej wieży (Tower Draft).
+    /// </summary>
+    public void TriggerTowerDraft(Action onComplete = null)
+    {
+        List<TowerData> towers = GetAllTowers();
+        TowerDraftModalUI draftModal = TowerDraftModalUI.Instance ?? TowerDraftModalUI.GetOrCreateInstance();
+        if (draftModal != null)
+        {
+            draftModal.ShowDraft(towers, onComplete);
+        }
+        else
+        {
+            Debug.LogWarning("[MetaUpgradeManager] Nie znaleziono instancji TowerDraftModalUI!");
+        }
+    }
+
+    /// <summary>
+    /// Pobiera listę wszystkich wież z managera, SaveManagera lub bazy assetów w edytorze.
+    /// </summary>
+    public List<TowerData> GetAllTowers()
+    {
+        if (allTowers != null && allTowers.Count > 0)
+        {
+            return allTowers;
+        }
+
+        if (SaveManager.Instance != null && SaveManager.Instance.allTowers != null && SaveManager.Instance.allTowers.Count > 0)
+        {
+            return SaveManager.Instance.allTowers;
+        }
+
+        var assetDatabaseType = Type.GetType("UnityEditor.AssetDatabase, UnityEditor.CoreModule") ??
+                                Type.GetType("UnityEditor.AssetDatabase, UnityEditor");
+        if (assetDatabaseType != null)
+        {
+            try
+            {
+                var findAssetsMethod = assetDatabaseType.GetMethod("FindAssets", new Type[] { typeof(string) });
+                var guidToPathMethod = assetDatabaseType.GetMethod("GUIDToAssetPath", new Type[] { typeof(string) });
+                var loadAssetMethod = assetDatabaseType.GetMethod("LoadAssetAtPath", new Type[] { typeof(string), typeof(Type) });
+
+                if (findAssetsMethod != null && guidToPathMethod != null && loadAssetMethod != null)
+                {
+                    string[] guids = (string[])findAssetsMethod.Invoke(null, new object[] { "t:TowerData" });
+                    if (guids != null && guids.Length > 0)
+                    {
+                        List<TowerData> loaded = new List<TowerData>();
+                        foreach (string guid in guids)
+                        {
+                            string path = (string)guidToPathMethod.Invoke(null, new object[] { guid });
+                            TowerData tower = (TowerData)loadAssetMethod.Invoke(null, new object[] { path, typeof(TowerData) });
+                            if (tower != null) loaded.Add(tower);
+                        }
+                        if (loaded.Count > 0)
+                        {
+                            allTowers = loaded;
+                            return loaded;
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+        return new List<TowerData>();
     }
 
     // =========================================================================

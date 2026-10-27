@@ -35,6 +35,9 @@ public class MetaUpgradeSO : ScriptableObject
     public Sprite icon;
     public int cost;
 
+    [Header("── Pozycja w grafie ─────────────────────")]
+    public Vector2 nodePosition;
+
     [Header("── Stan ─────────────────────────────────")]
     public bool isUnlocked = false;
 
@@ -61,6 +64,19 @@ public class MetaUpgradeSO : ScriptableObject
              "Wskazuje konkretny budynek którego dotyczy efekt.")]
     public BuildingData targetBuilding;
 
+    [Header("── Warianty A/B (Opcjonalne) ───────────────")]
+    [Tooltip("Czy ten węzeł posiada wzajemnie wykluczające się warianty specjalizacji A/B.")]
+    public bool hasVariants = false;
+
+    [Tooltip("Czy ten asset jest opcją wariantu podpiętą pod węzeł nadrzędny (niewyświetlany bezpośrednio na grafie 2D).")]
+    public bool isVariantOption = false;
+
+    [Tooltip("Referencja do wariantu A")]
+    public MetaUpgradeSO variantA;
+
+    [Tooltip("Referencja do wariantu B")]
+    public MetaUpgradeSO variantB;
+
     // =========================================================================
     // HELPERS (tylko edytor + runtime)
     // =========================================================================
@@ -71,12 +87,23 @@ public class MetaUpgradeSO : ScriptableObject
         effectType == MetaEffectType.BuildingTerrainBonusMultiplier||
         effectType == MetaEffectType.SpecificBuildingProductionBonus;
 
+    /// <summary>
+    /// Zwraca aktywny wariant ("A", "B" lub null) na podstawie listy odblokowanych ID.
+    /// </summary>
+    public string GetActiveVariant(List<string> unlockedIDs)
+    {
+        if (!hasVariants || unlockedIDs == null) return null;
+        if (variantB != null && unlockedIDs.Contains(variantB.id)) return "B";
+        if (variantA != null && unlockedIDs.Contains(variantA.id)) return "A";
+        return null;
+    }
+
     /// <summary>Czy wszystkie wymagania są spełnione?</summary>
     public bool ArePrerequisitesMet()
     {
         if (prerequisites == null) return true;
         foreach (var req in prerequisites)
-            if (req != null && !req.isUnlocked) return false;
+            if (!ReferenceEquals(req, null) && !req.isUnlocked) return false;
         return true;
     }
 }

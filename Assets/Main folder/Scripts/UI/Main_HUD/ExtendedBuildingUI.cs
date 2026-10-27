@@ -68,6 +68,19 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     private void Start()
     {
+        if (SaveManager.Instance != null && allBuildingsDatabase != null)
+        {
+            List<TowerData> towers = new List<TowerData>();
+            foreach (var b in allBuildingsDatabase)
+            {
+                if (b is TowerData td) towers.Add(td);
+            }
+            if (towers.Count > 0)
+            {
+                SaveManager.Instance.SyncTowersWithSave(towers);
+            }
+        }
+
         GenerateBuildingSlots();
 
         if (closeOnStart)
@@ -161,6 +174,18 @@ public class ExtendedBuildingUI : MonoBehaviour
     public void SetBuildingsDatabase(List<BuildingData> buildings)
     {
         allBuildingsDatabase = buildings ?? new List<BuildingData>();
+        if (SaveManager.Instance != null && allBuildingsDatabase != null)
+        {
+            List<TowerData> towers = new List<TowerData>();
+            foreach (var b in allBuildingsDatabase)
+            {
+                if (b is TowerData td) towers.Add(td);
+            }
+            if (towers.Count > 0)
+            {
+                SaveManager.Instance.SyncTowersWithSave(towers);
+            }
+        }
         GenerateBuildingSlots();
         if (isOpen)
         {

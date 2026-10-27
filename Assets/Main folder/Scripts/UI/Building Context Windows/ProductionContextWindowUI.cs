@@ -606,7 +606,7 @@ public class ProductionContextWindowUI : MonoBehaviour
         int totalWorkers = currentBuilding.GetTotalWorkerCount();
         int maxWorkers = currentBuilding.data != null ? currentBuilding.data.baseMaxWorkers : 1;
         if (currentBuilding.Upgrades != null) maxWorkers += currentBuilding.Upgrades.LocalBonusWorkers;
-        if (CityStatsManager.Instance != null) maxWorkers += CityStatsManager.Instance.globalBonusWorkersPerShift;
+        if (CityStatsManager.Instance != null) maxWorkers += CityStatsManager.Instance.globalBonusProductionWorkers;
 
         float crewEff = currentBuilding.Production != null ? currentBuilding.Production.GetCrewEfficiency() : 0f;
 

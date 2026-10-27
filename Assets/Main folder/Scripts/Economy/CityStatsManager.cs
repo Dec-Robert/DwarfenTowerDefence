@@ -7,6 +7,8 @@ public class CityStatsManager : MonoBehaviour
     [Header("Globalne Bonusy (Meta/Eventy)")]
     public int globalBonusShifts = 0;
     public int globalBonusWorkersPerShift = 0;
+    public int globalBonusProductionWorkers = 0;
+    public int globalBonusTowerCrewSlots = 0;
     public int globalShiftLengthModifier = 0; 
 
     //
@@ -19,4 +21,6 @@ public class CityStatsManager : MonoBehaviour
     // Metody do modyfikacji przez Meta Progresj�
     public void AddGlobalShift(int amount) => globalBonusShifts += amount;
     public void AddGlobalWorkerSlot(int amount) => globalBonusWorkersPerShift += amount;
+    public void AddGlobalProductionWorkerSlot(int amount) => globalBonusProductionWorkers += amount;
+    public void AddGlobalTowerCrewSlot(int amount) => globalBonusTowerCrewSlots += amount;
 }

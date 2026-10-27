@@ -19,6 +19,7 @@ public class MainMenuDemoUI : MonoBehaviour
     [Header("Przyciski Główne")]
     [SerializeField] private Button btnStart;
     [SerializeField] private Button btnHowToPlay;
+    [SerializeField] private Button btnMetaGraph;
     [SerializeField] private Button btnExit;
 
     [Header("Konfiguracja Sceny")]
@@ -85,6 +86,7 @@ public class MainMenuDemoUI : MonoBehaviour
     public int CardsCount => cards.Count;
     public GameObject HowToPlayModal => howToPlayModal;
     public IReadOnlyList<GuideCard> Cards => cards;
+    public Button BtnMetaGraph => btnMetaGraph;
 
     // Elementy runtime dla modalu
     private TextMeshProUGUI modalCardTitle;
@@ -117,6 +119,10 @@ public class MainMenuDemoUI : MonoBehaviour
             {
                 CloseHowToPlay();
             }
+            else if (MetaGraphControllerUI.Instance != null && MetaGraphControllerUI.Instance.IsOpen)
+            {
+                CloseMetaGraph();
+            }
         }
     }
 
@@ -139,6 +145,25 @@ public class MainMenuDemoUI : MonoBehaviour
                        ?? container.Find("Pnl_Button/Btn_HowToPlay")
                        ?? container.Find("Btn_HowToPlay");
             if (t != null) btnHowToPlay = t.GetComponent<Button>();
+        }
+
+        if (btnMetaGraph == null)
+        {
+            Transform t = container.Find("Pnl_Background/Pnl_Button/Btn_MetaGraph") 
+                       ?? container.Find("Pnl_Button/Btn_MetaGraph")
+                       ?? container.Find("Btn_MetaGraph")
+                       ?? container.Find("Pnl_Background/Pnl_Button/Btn_DrzewoRozwoju")
+                       ?? container.Find("Btn_DrzewoRozwoju");
+            if (t != null) btnMetaGraph = t.GetComponent<Button>();
+            else if (btnHowToPlay != null)
+            {
+                // Proceduralnie stwórz przycisk "Drzewo Rozwoju" obok Jak Grać jeśli brak w scenie
+                GameObject newBtnObj = Instantiate(btnHowToPlay.gameObject, btnHowToPlay.transform.parent);
+                newBtnObj.name = "Btn_MetaGraph";
+                btnMetaGraph = newBtnObj.GetComponent<Button>();
+                int siblingIndex = btnHowToPlay.transform.GetSiblingIndex() + 1;
+                newBtnObj.transform.SetSiblingIndex(siblingIndex);
+            }
         }
 
         if (btnExit == null)
@@ -164,6 +189,12 @@ public class MainMenuDemoUI : MonoBehaviour
             btnHowToPlay.onClick.AddListener(OpenHowToPlay);
         }
 
+        if (btnMetaGraph != null)
+        {
+            btnMetaGraph.onClick.RemoveAllListeners();
+            btnMetaGraph.onClick.AddListener(OpenMetaGraph);
+        }
+
         if (btnExit != null)
         {
             btnExit.onClick.RemoveAllListeners();
@@ -176,6 +207,7 @@ public class MainMenuDemoUI : MonoBehaviour
         // Standardy UI z GEMINI.md: 16 pt dla przycisków / opisów sekcji
         SetButtonTextAndSize(btnStart, "Rozpocznij Demo", 16f);
         SetButtonTextAndSize(btnHowToPlay, "Jak Grać", 16f);
+        SetButtonTextAndSize(btnMetaGraph, "Drzewo Rozwoju", 16f);
         SetButtonTextAndSize(btnExit, "Wyjście", 16f);
     }
 
@@ -231,6 +263,28 @@ public class MainMenuDemoUI : MonoBehaviour
         if (howToPlayModal != null)
         {
             howToPlayModal.SetActive(false);
+        }
+    }
+
+    public void OpenMetaGraph()
+    {
+        if (howToPlayModal != null && howToPlayModal.activeSelf)
+        {
+            CloseHowToPlay();
+        }
+
+        MetaGraphControllerUI graph = MetaGraphControllerUI.Instance ?? MetaGraphControllerUI.GetOrCreateInstance();
+        if (graph != null)
+        {
+            graph.OpenGraph();
+        }
+    }
+
+    public void CloseMetaGraph()
+    {
+        if (MetaGraphControllerUI.Instance != null)
+        {
+            MetaGraphControllerUI.Instance.CloseGraph();
         }
     }
 
@@ -323,7 +377,7 @@ public class MainMenuDemoUI : MonoBehaviour
         }
 
         // Główny kontener modalu (overlay)
-        GameObject modalObj = new GameObject("Pnl_HowToPlayModal", typeof(RectTransform), typeof(Image));
+        GameObject modalObj = new GameObject("Pnl_HowToPlayModal", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         modalObj.transform.SetParent(canvas.transform, false);
 
         RectTransform modalRect = modalObj.GetComponent<RectTransform>();
@@ -336,7 +390,7 @@ public class MainMenuDemoUI : MonoBehaviour
         overlayImg.color = new Color(0.04f, 0.05f, 0.07f, 0.88f); // ciemne tło
 
         // Okno modalu
-        GameObject windowObj = new GameObject("Window", typeof(RectTransform), typeof(Image));
+        GameObject windowObj = new GameObject("Window", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         windowObj.transform.SetParent(modalObj.transform, false);
 
         RectTransform windowRect = windowObj.GetComponent<RectTransform>();
@@ -358,7 +412,7 @@ public class MainMenuDemoUI : MonoBehaviour
         headerRect.anchoredPosition = new Vector2(0f, -15f);
         headerRect.sizeDelta = new Vector2(-40f, 44f);
 
-        GameObject titleTxtObj = new GameObject("Txt_Title", typeof(RectTransform), typeof(TextMeshProUGUI));
+        GameObject titleTxtObj = new GameObject("Txt_Title", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         titleTxtObj.transform.SetParent(headerObj.transform, false);
         RectTransform titleRect = titleTxtObj.GetComponent<RectTransform>();
         titleRect.anchorMin = Vector2.zero;
@@ -409,7 +463,7 @@ public class MainMenuDemoUI : MonoBehaviour
         }
 
         // Obszar Treści Karty (Content Box)
-        GameObject contentBox = new GameObject("ContentBox", typeof(RectTransform), typeof(Image));
+        GameObject contentBox = new GameObject("ContentBox", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         contentBox.transform.SetParent(windowObj.transform, false);
         RectTransform contentRect = contentBox.GetComponent<RectTransform>();
         contentRect.anchorMin = new Vector2(0f, 0f);
@@ -421,7 +475,7 @@ public class MainMenuDemoUI : MonoBehaviour
         contentBoxImg.color = new Color(0.08f, 0.09f, 0.10f, 0.95f);
 
         // Tytuł Karty
-        GameObject cardTitleObj = new GameObject("Txt_CardTitle", typeof(RectTransform), typeof(TextMeshProUGUI));
+        GameObject cardTitleObj = new GameObject("Txt_CardTitle", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         cardTitleObj.transform.SetParent(contentBox.transform, false);
         RectTransform cardTitleRect = cardTitleObj.GetComponent<RectTransform>();
         cardTitleRect.anchorMin = new Vector2(0f, 1f);
@@ -437,7 +491,7 @@ public class MainMenuDemoUI : MonoBehaviour
         modalCardTitle.color = new Color(0.85f, 0.9f, 1f);
 
         // Treść Karty
-        GameObject cardBodyObj = new GameObject("Txt_CardBody", typeof(RectTransform), typeof(TextMeshProUGUI));
+        GameObject cardBodyObj = new GameObject("Txt_CardBody", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         cardBodyObj.transform.SetParent(contentBox.transform, false);
         RectTransform cardBodyRect = cardBodyObj.GetComponent<RectTransform>();
         cardBodyRect.anchorMin = Vector2.zero;
@@ -463,7 +517,7 @@ public class MainMenuDemoUI : MonoBehaviour
         footerRect.sizeDelta = new Vector2(-40f, 45f);
 
         // Wskaźnik strony
-        GameObject pageIndObj = new GameObject("Txt_PageIndicator", typeof(RectTransform), typeof(TextMeshProUGUI));
+        GameObject pageIndObj = new GameObject("Txt_PageIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         pageIndObj.transform.SetParent(footerObj.transform, false);
         RectTransform pageIndRect = pageIndObj.GetComponent<RectTransform>();
         pageIndRect.anchorMin = new Vector2(0f, 0.5f);
@@ -510,7 +564,7 @@ public class MainMenuDemoUI : MonoBehaviour
 
     private GameObject CreateSimpleButton(Transform parent, string name, string label, TMP_FontAsset fontAsset, float fontSize, Vector2 size)
     {
-        GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+        GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
         btnObj.transform.SetParent(parent, false);
 
         RectTransform rt = btnObj.GetComponent<RectTransform>();
@@ -527,7 +581,7 @@ public class MainMenuDemoUI : MonoBehaviour
         colors.disabledColor = new Color(0.12f, 0.14f, 0.16f, 0.5f);
         btn.colors = colors;
 
-        GameObject textObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        GameObject textObj = new GameObject("Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         textObj.transform.SetParent(btnObj.transform, false);
 
         RectTransform textRt = textObj.GetComponent<RectTransform>();

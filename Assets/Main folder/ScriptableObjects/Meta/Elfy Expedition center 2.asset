@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -18,11 +18,12 @@ MonoBehaviour:
 
 '
   icon: {fileID: 0}
-  cost: 100
+  cost: 125
+  nodePosition: {x: 2660, y: 4580}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 4e54f9aeccd836d42a8086c9eca9d915, type: 2}
-  effectType: 0
-  effectValue: 0
+  effectType: 60
+  effectValue: 0.15
   effectValue2: 0
   targetBuilding: {fileID: 0}

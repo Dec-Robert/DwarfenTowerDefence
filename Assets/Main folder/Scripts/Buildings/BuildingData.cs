@@ -164,8 +164,18 @@ public class BuildingData : ScriptableObject
             return 1f + (workerCount - 1) * workerScalingFactor;
         }
 
-        int clampedIndex = Mathf.Clamp(workerCount, 0, efficiencyTable.Count - 1);
-        return efficiencyTable[clampedIndex];
+        if (workerCount < 0) return 0f;
+
+        if (workerCount < efficiencyTable.Count)
+        {
+            return efficiencyTable[workerCount];
+        }
+
+        // Ekstrapolacja dynamiczna dla pracowników powyżej rozmiaru tabeli
+        float lastVal = efficiencyTable[efficiencyTable.Count - 1];
+        int extraWorkers = workerCount - (efficiencyTable.Count - 1);
+        float scaling = workerScalingFactor > 0f ? workerScalingFactor : 0.15f;
+        return lastVal + (extraWorkers * scaling);
     }
 
     /// <summary>
@@ -175,7 +185,7 @@ public class BuildingData : ScriptableObject
     {
         float baseEff = GetBaseEfficiencyForWorkers(workerCount);
 
-        if (MetaUpgradeManager.Instance != null)
+        if (!ReferenceEquals(MetaUpgradeManager.Instance, null))
         {
             if (workerCount <= 0)
             {

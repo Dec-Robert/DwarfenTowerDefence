@@ -10,18 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: Nowy Upgrade
+  m_Name: Ulepszenie Wiez 1
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
-  id: nowy_upgrade
-  upgradeName: "Ludzka wytrwa\u0142o\u015B\u0107"
-  description: "Je\u015Bli w budynku pracuje conajmniej 4 ludzki\nbudynek zyskuje
-    dodatkowe 20% wydajno\u015Bci"
+  id: ulepszenie_wiez_1
+  upgradeName: Ulepszenie Wież I
+  description: "Wybór Specjalizacji: Przebicie pancerza lub przebicie magiczne dla wszystkich wież."
   icon: {fileID: 0}
-  cost: 100
+  cost: 175
+  nodePosition: {x: 3020, y: 3170}
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: d2606b79442244e458ef2535918d9428, type: 2}
+  - {fileID: 11400000, guid: e946c1fb136782e4f8b48cd04745e547, type: 2}
   effectType: 0
   effectValue: 0
   effectValue2: 0
   targetBuilding: {fileID: 0}
+  hasVariants: 1
+  isVariantOption: 0
+  variantA: {fileID: 11400000, guid: 5f7ced480bfee1543a14ba9e7ff25f57, type: 2}
+  variantB: {fileID: 11400000, guid: 5a731a8f201ed0d498a18361e786827b, type: 2}

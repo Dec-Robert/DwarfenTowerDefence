@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -16,11 +16,12 @@ MonoBehaviour:
   upgradeName: Potencjal ziemi 3a
   description: "Wzmacnia chunk dodatkow o surowiec\n(dodatkowe wzg\xF3rza)"
   icon: {fileID: 0}
-  cost: 100
+  cost: 525
+  nodePosition: {x: 5280, y: 1640}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: a5b654a5b099a0e4b8822d6060a6e7de, type: 2}
-  effectType: 0
-  effectValue: 0
+  effectType: 32
+  effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}

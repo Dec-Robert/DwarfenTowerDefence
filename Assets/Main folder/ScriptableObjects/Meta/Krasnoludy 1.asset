@@ -16,7 +16,8 @@ MonoBehaviour:
   upgradeName: Krasnoludy 1
   description: "Oblokowywuje budynek: Ku\u017Ania runiczna\n oraz common runy"
   icon: {fileID: 0}
-  cost: 100
+  cost: 10
+  nodePosition: {x: 1960, y: 1960}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: d5b82056eb2ec564296df8ef5bab883a, type: 2}

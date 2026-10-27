@@ -664,6 +664,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   globalBonusShifts: 0
   globalBonusWorkersPerShift: 0
+  globalBonusProductionWorkers: 0
+  globalBonusTowerCrewSlots: 0
   globalShiftLengthModifier: 0
 --- !u!114 &406902609
 MonoBehaviour:

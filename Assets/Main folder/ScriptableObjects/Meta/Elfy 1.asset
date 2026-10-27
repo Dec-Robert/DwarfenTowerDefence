@@ -16,7 +16,8 @@ MonoBehaviour:
   upgradeName: Elfy 1
   description: Odblokowywuje Centrum zwiadowcze
   icon: {fileID: 0}
-  cost: 100
+  cost: 10
+  nodePosition: {x: 1880, y: 3160}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: d5b82056eb2ec564296df8ef5bab883a, type: 2}

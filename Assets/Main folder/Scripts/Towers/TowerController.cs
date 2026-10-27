@@ -80,7 +80,7 @@ public class TowerController : MonoBehaviour
         criticalChance = stats.criticalChancel;
         criticalMultiplier = stats.criticalDamageMultiplier;
 
-        if (rangeIndicatorInstance != null && rangeIndicatorInstance.activeSelf)
+        if (!ReferenceEquals(rangeIndicatorInstance, null) && rangeIndicatorInstance.activeSelf)
         {
             float scale = currentRange * 2f;
             rangeIndicatorInstance.transform.localScale = new Vector3(scale, 1f, scale);

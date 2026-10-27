@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -16,11 +16,12 @@ MonoBehaviour:
   upgradeName: Hearth 2
   description: "Poziomy 3, 4 i 5 paleniska staja si\u0119 ta\u0144sze"
   icon: {fileID: 0}
-  cost: 100
+  cost: 180
+  nodePosition: {x: 3040, y: 3680}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 090cf51bcba9e2542bf4ae3ebe4c1648, type: 2}
   effectType: 0
-  effectValue: 0
+  effectValue: 0.15
   effectValue2: 0
   targetBuilding: {fileID: 0}

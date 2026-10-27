@@ -54,10 +54,10 @@ public class TowerEntity : BuildingEntity
     public float GetCurrentEfficiency()
     {
         int crewCount = GetTotalWorkerCount();
-        BuildingData bData = controller != null && controller.towerData != null ? controller.towerData : data;
+        BuildingData bData = !ReferenceEquals(controller, null) && !ReferenceEquals(controller.towerData, null) ? controller.towerData : data;
 
         float crewEfficiency;
-        if (bData != null)
+        if (!ReferenceEquals(bData, null))
         {
             crewEfficiency = bData.GetEffectiveEfficiencyForWorkers(crewCount);
         }
@@ -79,29 +79,29 @@ public class TowerEntity : BuildingEntity
 
     public void RecalculateStats()
     {
-        TowerData tData = controller != null ? controller.towerData : data as TowerData;
-        if (tData == null) return;
+        TowerData tData = !ReferenceEquals(controller, null) && !ReferenceEquals(controller.towerData, null) ? controller.towerData : data as TowerData;
+        if (ReferenceEquals(tData, null)) return;
 
         float finalEfficiency = GetCurrentEfficiency();
 
         var registry = GlobalModifierRegistry.Instance;
 
-        float rangeMulti = registry != null ? registry.GetMultiplier(TowerStatType.Range, this) : 1f;
-        float damageMulti = registry != null ? registry.GetMultiplier(TowerStatType.Damage, this) : 1f;
-        float fireRateMulti = registry != null ? registry.GetMultiplier(TowerStatType.FireRate, this) : 1f;
-        float armorPenMulti = registry != null ? registry.GetMultiplier(TowerStatType.ArmorPenetration, this) : 1f;
-        float magicPenMulti = registry != null ? registry.GetMultiplier(TowerStatType.MagicPenetration, this) : 1f;
-        float critChanMulti = registry != null ? registry.GetMultiplier(TowerStatType.CriticalChance, this) : 1f;
-        float critDmgMulti = registry != null ? registry.GetMultiplier(TowerStatType.CriticalDamage, this) : 1f;
+        float rangeMulti = !ReferenceEquals(registry, null) ? registry.GetMultiplier(TowerStatType.Range, this) : 1f;
+        float damageMulti = !ReferenceEquals(registry, null) ? registry.GetMultiplier(TowerStatType.Damage, this) : 1f;
+        float fireRateMulti = !ReferenceEquals(registry, null) ? registry.GetMultiplier(TowerStatType.FireRate, this) : 1f;
+        float armorPenMulti = !ReferenceEquals(registry, null) ? registry.GetMultiplier(TowerStatType.ArmorPenetration, this) : 1f;
+        float magicPenMulti = !ReferenceEquals(registry, null) ? registry.GetMultiplier(TowerStatType.MagicPenetration, this) : 1f;
+        float critChanMulti = !ReferenceEquals(registry, null) ? registry.GetMultiplier(TowerStatType.CriticalChance, this) : 1f;
+        float critDmgMulti = !ReferenceEquals(registry, null) ? registry.GetMultiplier(TowerStatType.CriticalDamage, this) : 1f;
 
-        float flatRange = registry != null ? registry.GetFlat(TowerStatType.Range, this) : 0f;
-        float flatDamage = registry != null ? registry.GetFlat(TowerStatType.Damage, this) : 0f;
-        float flatFireRate = registry != null ? registry.GetFlat(TowerStatType.FireRate, this) : 0f;
+        float flatRange = !ReferenceEquals(registry, null) ? registry.GetFlat(TowerStatType.Range, this) : 0f;
+        float flatDamage = !ReferenceEquals(registry, null) ? registry.GetFlat(TowerStatType.Damage, this) : 0f;
+        float flatFireRate = !ReferenceEquals(registry, null) ? registry.GetFlat(TowerStatType.FireRate, this) : 0f;
 
-        float flatArmorPen = registry != null ? registry.GetFlat(TowerStatType.ArmorPenetration, this) : 0f;
-        float flatMagicPen = registry != null ? registry.GetFlat(TowerStatType.MagicPenetration, this) : 0f;
-        float flatCritChan = registry != null ? registry.GetFlat(TowerStatType.CriticalChance, this) : 0f;
-        float flatCritDmg = registry != null ? registry.GetFlat(TowerStatType.CriticalDamage, this) : 0f;
+        float flatArmorPen = !ReferenceEquals(registry, null) ? registry.GetFlat(TowerStatType.ArmorPenetration, this) : 0f;
+        float flatMagicPen = !ReferenceEquals(registry, null) ? registry.GetFlat(TowerStatType.MagicPenetration, this) : 0f;
+        float flatCritChan = !ReferenceEquals(registry, null) ? registry.GetFlat(TowerStatType.CriticalChance, this) : 0f;
+        float flatCritDmg = !ReferenceEquals(registry, null) ? registry.GetFlat(TowerStatType.CriticalDamage, this) : 0f;
 
         float baseCritChance = tData.criticalChancel > 1f ? tData.criticalChancel / 100f : tData.criticalChancel;
         float baseArmorPen = tData.armorPenetration > 1f ? tData.armorPenetration / 100f : tData.armorPenetration;
@@ -110,6 +110,57 @@ public class TowerEntity : BuildingEntity
         float normFlatCritDmg = Mathf.Abs(flatCritDmg) >= 1f ? flatCritDmg / 100f : flatCritDmg;
         float normFlatArmorPen = Mathf.Abs(flatArmorPen) >= 1f ? flatArmorPen / 100f : flatArmorPen;
         float normFlatMagicPen = Mathf.Abs(flatMagicPen) >= 1f ? flatMagicPen / 100f : flatMagicPen;
+
+        // Synergie rasowe i ulepszenia globalne z MetaUpgradeManager
+        int dwarfCount = Workers != null ? Workers.GetWorkerCount(Race.Dwarves) : 0;
+        int elfCount = Workers != null ? Workers.GetWorkerCount(Race.Elves) : 0;
+        int humanCount = Workers != null ? Workers.GetWorkerCount(Race.Humans) : 0;
+
+        float metaDamageMulti = 0f;
+        float metaRangeMulti = 0f;
+        float metaCritChance = 0f;
+        float metaArmorPen = 0f;
+        float metaEfficiencyBonus = 0f;
+
+        if (!ReferenceEquals(MetaUpgradeManager.Instance, null))
+        {
+            // Krasnoludy: +8% obrażeń, +5% przebicia pancerza na krasnoluda
+            if (dwarfCount > 0 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.TowerCrewSynergy_Dwarf) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.TowerCrewSynergy_Dwarf)))
+            {
+                metaDamageMulti += 0.08f * dwarfCount;
+                metaArmorPen += 0.05f * dwarfCount;
+            }
+
+            // Elfy: +10% zasięgu, +5% szansy na trafienie krytyczne na elfa
+            if (elfCount > 0 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.TowerCrewSynergy_Elf) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.TowerCrewSynergy_Elf)))
+            {
+                metaRangeMulti += 0.10f * elfCount;
+                metaCritChance += 0.05f * elfCount;
+            }
+
+            // Ludzie (Ludzka wytrwałość II): conajmniej 4 ludzi daje +20% wydajności
+            if (humanCount >= 4 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.TowerCrewSynergy_Human) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.TowerCrewSynergy_Human)))
+            {
+                metaEfficiencyBonus += 0.20f;
+            }
+
+            // Globalne ulepszenia wież z MetaUpgradeManager
+            flatDamage += MetaUpgradeManager.Instance.GetValue(MetaEffectType.TowerGlobalDamage);
+            fireRateMulti += MetaUpgradeManager.Instance.GetValue(MetaEffectType.TowerGlobalFireRate);
+
+            float globalArmorPen = MetaUpgradeManager.Instance.GetValue(MetaEffectType.TowerGlobalArmorPenetration);
+            metaArmorPen += Mathf.Abs(globalArmorPen) >= 1f ? globalArmorPen / 100f : globalArmorPen;
+
+            float globalMagicPen = MetaUpgradeManager.Instance.GetValue(MetaEffectType.TowerGlobalMagicPenetration);
+            float normGlobalMagicPen = Mathf.Abs(globalMagicPen) >= 1f ? globalMagicPen / 100f : globalMagicPen;
+            normFlatMagicPen += normGlobalMagicPen;
+        }
+
+        finalEfficiency += metaEfficiencyBonus;
+        damageMulti += metaDamageMulti;
+        rangeMulti += metaRangeMulti;
+        normFlatCrit += metaCritChance;
+        normFlatArmorPen += metaArmorPen;
 
         TowerStats calculatedStats = new TowerStats
         {
@@ -123,11 +174,11 @@ public class TowerEntity : BuildingEntity
             damageType = tData.damageType
         };
 
-        if (controller != null)
+        if (!ReferenceEquals(controller, null))
         {
             controller.canShoot = isBuildingActive;
+            controller.ApplyCalculatedStats(calculatedStats, finalEfficiency);
         }
-        controller?.ApplyCalculatedStats(calculatedStats, finalEfficiency);
     }
 
     public override bool TryAddWorker(Race race)
@@ -156,6 +207,13 @@ public class TowerEntity : BuildingEntity
         RecalculateStats();
     }
 
+    public override int GetGlobalWorkerBonus() => CityStatsManager.Instance?.globalBonusTowerCrewSlots ?? 0;
+
+    protected override System.Func<int> GetGlobalBonusWorkersDelegate()
+    {
+        return () => GetGlobalWorkerBonus();
+    }
+
     public float[] GetEfficencyTable()
     {
         BuildingData bData = controller != null && controller.towerData != null ? controller.towerData : data;
@@ -163,7 +221,7 @@ public class TowerEntity : BuildingEntity
         {
             int maxWorkers = bData.baseMaxWorkers
                 + (Upgrades != null ? Upgrades.LocalBonusWorkers : 0)
-                + (CityStatsManager.Instance != null ? CityStatsManager.Instance.globalBonusWorkersPerShift : 0);
+                + (CityStatsManager.Instance != null ? CityStatsManager.Instance.globalBonusTowerCrewSlots : 0);
             return bData.GetEffectiveEfficiencyTable(maxWorkers + 1);
         }
         return efficiencyTable;

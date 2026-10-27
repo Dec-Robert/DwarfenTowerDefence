@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -18,11 +18,12 @@ MonoBehaviour:
     wzg\xF3rza na kt\xF3rym jest postawiony.\nDodatkowo zapewnia 0.25 dodatkowe kamienia\nza
     kazdy poziom wzg\xF3rza wok\xF3\u0142."
   icon: {fileID: 0}
-  cost: 100
+  cost: 420
+  nodePosition: {x: 3800, y: 2420}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 22bef866fb774f0459f1a9289b28e138, type: 2}
-  effectType: 0
-  effectValue: 0
+  effectType: 32
+  effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}

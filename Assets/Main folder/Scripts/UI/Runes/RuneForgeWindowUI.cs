@@ -561,6 +561,11 @@ public class RuneForgeWindowUI : MonoBehaviour
 
     public void SwitchTab(RuneForgeTab tab)
     {
+        if (tab == RuneForgeTab.Fusion && MetaUpgradeManager.Instance != null && !MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockRuneFusion))
+            return;
+        if (tab == RuneForgeTab.Transmutation && MetaUpgradeManager.Instance != null && !MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockRuneTransmutation))
+            return;
+
         currentTab = tab;
 
         if (viewSocketing != null) viewSocketing.SetActive(tab == RuneForgeTab.Socketing);
@@ -595,11 +600,20 @@ public class RuneForgeWindowUI : MonoBehaviour
     private void SetTabStyle(Button btn, bool isActive)
     {
         if (btn == null) return;
+        bool interactable = btn.interactable;
         var img = btn.GetComponent<Image>();
-        if (img != null) img.color = isActive ? tabActiveBg : tabInactiveBg;
+        if (img != null)
+        {
+            Color baseColor = isActive ? tabActiveBg : tabInactiveBg;
+            img.color = interactable ? baseColor : new Color(baseColor.r * 0.5f, baseColor.g * 0.5f, baseColor.b * 0.5f, 0.5f);
+        }
 
         var txt = btn.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
-        if (txt != null) txt.color = isActive ? tabActiveTxt : tabInactiveTxt;
+        if (txt != null)
+        {
+            Color textColor = isActive ? tabActiveTxt : tabInactiveTxt;
+            txt.color = interactable ? textColor : new Color(0.5f, 0.5f, 0.5f, 0.6f);
+        }
     }
 
     // =========================================================================
@@ -635,6 +649,29 @@ public class RuneForgeWindowUI : MonoBehaviour
             int towersCount = currentForge.GetNeighboringRuneTowersCount();
             int maxSlots = currentForge.GetMaxSlots();
             txtRuneTowersDesc.text = $"Sąsiednie wieże runiczne: <b>{towersCount}/4</b>\nOdblokowane sloty: <b>{maxSlots}/5</b>";
+        }
+
+        bool fusionUnlocked = MetaUpgradeManager.Instance == null || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockRuneFusion);
+        bool transmuteUnlocked = MetaUpgradeManager.Instance == null || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockRuneTransmutation);
+
+        if (btnTabFusion != null)
+        {
+            btnTabFusion.interactable = fusionUnlocked;
+            var txt = btnTabFusion.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+            if (txt != null)
+            {
+                txt.text = fusionUnlocked ? "Fuzja Run" : "Fuzja (Zablokowana)";
+            }
+        }
+
+        if (btnTabTransmutation != null)
+        {
+            btnTabTransmutation.interactable = transmuteUnlocked;
+            var txt = btnTabTransmutation.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+            if (txt != null)
+            {
+                txt.text = transmuteUnlocked ? "Transmutacja Run" : "Transmutacja (Zablokowana)";
+            }
         }
     }
 

@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: produkcja_budynkow_5
   upgradeName: Produkcja budynkow 5
-  description: "Kopalnia zapewnia dodatkowy 1 metalu i 1 w\u0119gla.\n"
+  description: "Umo\u017Cliwia specjalizacje kopalni pod wydobywanie\nw\u0119gla
+    lub z\u0142ota (specjalny prefab). Menu ulepsze\u0144\ndo dorobienia"
   icon: {fileID: 0}
   cost: 100
+  nodePosition: {x: 4340, y: 2420}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 4f6d7397a36896c4fa5c07df968e1eb2, type: 2}

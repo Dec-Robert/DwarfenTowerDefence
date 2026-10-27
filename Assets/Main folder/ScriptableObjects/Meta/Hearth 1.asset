@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -16,11 +16,12 @@ MonoBehaviour:
   upgradeName: Hearth 1
   description: Odblokowywuje 4 i 5 poziom paleniska
   icon: {fileID: 0}
-  cost: 100
+  cost: 130
+  nodePosition: {x: 2760, y: 3560}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 414d9a3409652bf4ba5b081e4e194359, type: 2}
   effectType: 0
-  effectValue: 0
+  effectValue: 5
   effectValue2: 0
   targetBuilding: {fileID: 0}

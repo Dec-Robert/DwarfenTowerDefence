@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -16,11 +16,12 @@ MonoBehaviour:
   upgradeName: Krasnoludy side 2
   description: "Krasnoludy zaczynaj\u0105 z 1 populacj\u0105 wi\u0119cej \nw domach"
   icon: {fileID: 0}
-  cost: 100
+  cost: 180
+  nodePosition: {x: 4500, y: 1220}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 47c7d7558ba6d8a4898d50a72954aff0, type: 2}
-  effectType: 0
-  effectValue: 0
+  effectType: 34
+  effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}

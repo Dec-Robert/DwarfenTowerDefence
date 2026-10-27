@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
+  m_Name: Ulepszenie Wiez 2
+  m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
+  id: ulepszenie_wiez_2
+  upgradeName: Ulepszenie Wież II
+  description: "Wybór Specjalizacji: Szybkostrzelność lub obrażenia dla wszystkich wież."
+  icon: {fileID: 0}
+  cost: 250
+  nodePosition: {x: 3680, y: 3170}
+  isUnlocked: 0
+  prerequisites:
+  - {fileID: 11400000, guid: fa4f7a67aaa83d549ac1a24703c5e395, type: 2}
+  effectType: 0
+  effectValue: 0
+  effectValue2: 0
+  targetBuilding: {fileID: 0}
+  hasVariants: 1
+  isVariantOption: 0
+  variantA: {fileID: 11400000, guid: 0000f558581626a40a8940c5de4a8494, type: 2}
+  variantB: {fileID: 11400000, guid: 00d6cbbf95f1f3749a64ad0ca9268b25, type: 2}

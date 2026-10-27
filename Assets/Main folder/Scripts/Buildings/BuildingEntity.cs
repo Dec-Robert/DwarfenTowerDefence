@@ -80,7 +80,7 @@ public class BuildingEntity : MonoBehaviour
             this,
             data,
             Upgrades,
-            () => CityStatsManager.Instance?.globalBonusWorkersPerShift ?? 0);
+            GetGlobalBonusWorkersDelegate());
 
         Terrain = new BuildingTerrainComponent(data, transform, Upgrades);
 
@@ -90,6 +90,13 @@ public class BuildingEntity : MonoBehaviour
             Terrain,
             Workers,
             transform);
+    }
+
+    public virtual int GetGlobalWorkerBonus() => CityStatsManager.Instance?.globalBonusProductionWorkers ?? 0;
+
+    protected virtual System.Func<int> GetGlobalBonusWorkersDelegate()
+    {
+        return () => GetGlobalWorkerBonus();
     }
 
     private void SubscribeToPhaseChange()

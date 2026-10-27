@@ -535,7 +535,7 @@ public class TowerContextWindowUI : MonoBehaviour
         int totalWorkers = currentTower.GetTotalWorkerCount();
         int maxWorkers = currentTower.data != null ? currentTower.data.baseMaxWorkers : 1;
         if (currentTower.Upgrades != null) maxWorkers += currentTower.Upgrades.LocalBonusWorkers;
-        if (CityStatsManager.Instance != null) maxWorkers += CityStatsManager.Instance.globalBonusWorkersPerShift;
+        if (CityStatsManager.Instance != null) maxWorkers += CityStatsManager.Instance.globalBonusTowerCrewSlots;
 
         // Podsumowanie
         if (txtWorkerCount != null)

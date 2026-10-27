@@ -427,6 +427,17 @@ public class MetaUpgradeEditorWindow : EditorWindow
         }
         x += 72f;
 
+        // Przycisk + Warianty A/B
+        if (GUI.Button(new Rect(x, 2, 82, 24), "+ Warianty", EditorStyles.toolbarButton))
+        {
+            Vector2 centerGraph = ScreenToGraph(new Vector2(
+                (position.width - (selectedNode != null ? SIDE_PANEL_WIDTH : 0f)) * 0.5f - NODE_WIDTH * 0.5f,
+                (position.height - TOOLBAR_HEIGHT) * 0.5f - NODE_HEIGHT * 0.5f));
+            contextMenuGraphPos = centerGraph;
+            QueueSafeAction(() => CreateNewUpgradeWithVariantsImmediate(contextMenuGraphPos));
+        }
+        x += 86f;
+
         // Przycisk Odśwież (zachowuje pozycje z EditorPrefs)
         if (GUI.Button(new Rect(x, 2, 64, 24), "Odśwież", EditorStyles.toolbarButton))
         {
@@ -712,6 +723,16 @@ public class MetaUpgradeEditorWindow : EditorWindow
                 borderColor = COLOR_SEARCH_HIT;
                 borderThickness = 2.5f;
             }
+            else if (node.upgrade.hasVariants)
+            {
+                borderColor = new Color(0.72f, 0.45f, 0.95f, 0.9f);
+                borderThickness = 2f;
+            }
+            else if (node.upgrade.isVariantOption)
+            {
+                borderColor = new Color(0.35f, 0.65f, 0.95f, 0.75f);
+                borderThickness = 1.5f;
+            }
 
             DrawBorder(screenRect, borderColor, borderThickness);
 
@@ -720,10 +741,29 @@ public class MetaUpgradeEditorWindow : EditorWindow
                 ? $"({node.upgrade.name})"
                 : node.upgrade.upgradeName;
 
+            if (node.upgrade.hasVariants)
+            {
+                displayTitle = "🔀 " + displayTitle;
+            }
+
+            float rightBadgeMargin = (node.upgrade.hasVariants || node.upgrade.isVariantOption) && zoomScale > 0.4f ? 36f : 12f;
             Rect nameRect = new Rect(
                 screenRect.x + 6f, screenRect.y + 4f,
-                screenRect.width - 12f, screenRect.height * 0.45f);
+                screenRect.width - rightBadgeMargin, screenRect.height * 0.45f);
             GUI.Label(nameRect, displayTitle, cachedNameStyle);
+
+            if (node.upgrade.hasVariants && zoomScale > 0.4f)
+            {
+                Rect badgeRect = new Rect(screenRect.xMax - 32f, screenRect.y + 3f, 28f, 13f);
+                EditorGUI.DrawRect(badgeRect, new Color(0.55f, 0.28f, 0.85f, 0.95f));
+                GUI.Label(badgeRect, "A/B", cachedIdBadgeStyle);
+            }
+            else if (node.upgrade.isVariantOption && zoomScale > 0.4f)
+            {
+                Rect badgeRect = new Rect(screenRect.xMax - 44f, screenRect.y + 3f, 40f, 13f);
+                EditorGUI.DrawRect(badgeRect, new Color(0.2f, 0.5f, 0.75f, 0.95f));
+                GUI.Label(badgeRect, "OPCJA", cachedIdBadgeStyle);
+            }
 
             // Opis efektu (lub powiązania z MetaMapConfig)
             if (zoomScale > 0.45f)
@@ -945,6 +985,89 @@ public class MetaUpgradeEditorWindow : EditorWindow
                     upgrade.ArePrerequisitesMet() ? "○ Dostępny do kupna" : "✗ Zablokowany (brak wymagań)",
                     upgrade.isUnlocked ? MessageType.Info : MessageType.None);
 
+                // Sekcja Wariantów A/B
+                EditorGUILayout.Space(8);
+                EditorGUILayout.LabelField("─── Warianty A/B ─────────────────────────", EditorStyles.miniLabel);
+
+                EditorGUI.BeginChangeCheck();
+                bool newHasVariants = EditorGUILayout.Toggle("Posiada Warianty A/B", upgrade.hasVariants);
+                bool newIsVariantOption = EditorGUILayout.Toggle("Jest Podwariantem (Opcja)", upgrade.isVariantOption);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(upgrade, "Zmień flagi wariantów");
+                    upgrade.hasVariants = newHasVariants;
+                    upgrade.isVariantOption = newIsVariantOption;
+                    EditorUtility.SetDirty(upgrade);
+                    Repaint();
+                }
+
+                if (upgrade.isVariantOption)
+                {
+                    EditorGUILayout.HelpBox("ℹ Ten obiekt jest opcją wariantu (podrzędną). W grze wybiera się go poprzez węzeł nadrzędny.", MessageType.Info);
+                }
+
+                if (upgrade.hasVariants)
+                {
+                    EditorGUILayout.Space(4);
+                    bool missingAny = upgrade.variantA == null || upgrade.variantB == null;
+                    if (missingAny)
+                    {
+                        EditorGUILayout.HelpBox("Węzeł ma włączone warianty, ale brakuje przypisanego Wariantu A lub B.", MessageType.Warning);
+                        if (GUILayout.Button("⚡ Wygeneruj brakujące podwarianty A i B", GUILayout.Height(24)))
+                        {
+                            var nodeToFix = selectedNode;
+                            QueueSafeAction(() => GenerateMissingVariantsForNode(nodeToFix));
+                        }
+                        EditorGUILayout.Space(4);
+                    }
+
+                    // Wariant A
+                    EditorGUI.BeginChangeCheck();
+                    var newVarA = (MetaUpgradeSO)EditorGUILayout.ObjectField("Wariant A", upgrade.variantA, typeof(MetaUpgradeSO), false);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(upgrade, "Zmień Wariant A");
+                        upgrade.variantA = newVarA;
+                        if (newVarA != null && !newVarA.isVariantOption)
+                        {
+                            Undo.RecordObject(newVarA, "Oznacz jako podwariant");
+                            newVarA.isVariantOption = true;
+                            EditorUtility.SetDirty(newVarA);
+                        }
+                        EditorUtility.SetDirty(upgrade);
+                        Repaint();
+                    }
+
+                    if (upgrade.variantA != null)
+                    {
+                        DrawInlineVariantEditor(upgrade.variantA, "Wariant A");
+                    }
+
+                    EditorGUILayout.Space(4);
+
+                    // Wariant B
+                    EditorGUI.BeginChangeCheck();
+                    var newVarB = (MetaUpgradeSO)EditorGUILayout.ObjectField("Wariant B", upgrade.variantB, typeof(MetaUpgradeSO), false);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(upgrade, "Zmień Wariant B");
+                        upgrade.variantB = newVarB;
+                        if (newVarB != null && !newVarB.isVariantOption)
+                        {
+                            Undo.RecordObject(newVarB, "Oznacz jako podwariant");
+                            newVarB.isVariantOption = true;
+                            EditorUtility.SetDirty(newVarB);
+                        }
+                        EditorUtility.SetDirty(upgrade);
+                        Repaint();
+                    }
+
+                    if (upgrade.variantB != null)
+                    {
+                        DrawInlineVariantEditor(upgrade.variantB, "Wariant B");
+                    }
+                }
+
                 // Sekcja Wymagań (Prerequisites)
                 EditorGUILayout.Space(8);
                 EditorGUILayout.LabelField("─── Wymagania (Prerequisites) ───", EditorStyles.miniLabel);
@@ -1009,6 +1132,12 @@ public class MetaUpgradeEditorWindow : EditorWindow
                 {
                     var nodeToDup = selectedNode;
                     QueueSafeAction(() => DuplicateNodeAsNextTier(nodeToDup));
+                }
+
+                if (!upgrade.hasVariants && GUILayout.Button("🔀 Konwertuj na węzeł z wariantami A/B"))
+                {
+                    var nodeToConv = selectedNode;
+                    QueueSafeAction(() => GenerateMissingVariantsForNode(nodeToConv));
                 }
 
                 EditorGUILayout.BeginHorizontal();
@@ -1499,6 +1628,12 @@ public class MetaUpgradeEditorWindow : EditorWindow
             QueueSafeAction(() => CreateNewUpgradeImmediate(spawnPos));
         });
 
+        menu.AddItem(new GUIContent("🔀 Utwórz nowy węzeł z wariantami A/B"), false, () =>
+        {
+            Vector2 spawnPos = contextMenuGraphPos;
+            QueueSafeAction(() => CreateNewUpgradeWithVariantsImmediate(spawnPos));
+        });
+
         menu.AddItem(new GUIContent("📂 Dodaj istniejący plik SO..."), false, () =>
         {
             QueueSafeAction(AddExistingUpgrade);
@@ -1551,6 +1686,21 @@ public class MetaUpgradeEditorWindow : EditorWindow
         {
             QueueSafeAction(() => DuplicateNodeAsNextTier(node));
         });
+
+        if (!node.upgrade.hasVariants)
+        {
+            menu.AddItem(new GUIContent("🔀 Konwertuj na węzeł z wariantami A/B"), false, () =>
+            {
+                QueueSafeAction(() => GenerateMissingVariantsForNode(node));
+            });
+        }
+        else if (node.upgrade.variantA == null || node.upgrade.variantB == null)
+        {
+            menu.AddItem(new GUIContent("⚡ Wygeneruj brakujące podwarianty A/B"), false, () =>
+            {
+                QueueSafeAction(() => GenerateMissingVariantsForNode(node));
+            });
+        }
 
         menu.AddItem(new GUIContent("🔄 Zaktualizuj ID i nazwę pliku wg Nazwy"), false, () =>
         {
@@ -1794,6 +1944,202 @@ public class MetaUpgradeEditorWindow : EditorWindow
     }
 
     /// <summary>
+    /// Tworzy nowy węzeł nadrzędny z wariantami A/B wraz z dwoma wygenerowanymi sub-assetami wariantów.
+    /// </summary>
+    private void CreateNewUpgradeWithVariantsImmediate(Vector2 graphPos)
+    {
+        if (!EnsureMetaFolderExists()) return;
+
+        string baseFileName = GetUniqueAssetFileName("Nowe Ulepszenie (Warianty)");
+        string baseAssetPath = $"{MetaUpgradeTools.SCAN_PATH}/{baseFileName}.asset";
+
+        var parentUpgrade = CreateInstance<MetaUpgradeSO>();
+        parentUpgrade.upgradeName = baseFileName;
+        parentUpgrade.id = GetUniqueUpgradeId(baseFileName);
+        parentUpgrade.cost = 150;
+        parentUpgrade.effectType = MetaEffectType.None;
+        parentUpgrade.hasVariants = true;
+        parentUpgrade.prerequisites = new List<MetaUpgradeSO>();
+
+        // Wariant A
+        string varAFileName = GetUniqueAssetFileName($"{baseFileName} A");
+        string varAPath = $"{MetaUpgradeTools.SCAN_PATH}/{varAFileName}.asset";
+        var varA = CreateInstance<MetaUpgradeSO>();
+        varA.upgradeName = $"{baseFileName} A";
+        varA.id = GetUniqueUpgradeId($"{parentUpgrade.id}_a");
+        varA.description = "Wariant A ulepszenia";
+        varA.cost = parentUpgrade.cost;
+        varA.isVariantOption = true;
+        varA.effectType = MetaEffectType.TowerGlobalDamage;
+        varA.effectValue = 0.10f;
+        varA.prerequisites = new List<MetaUpgradeSO>();
+
+        // Wariant B
+        string varBFileName = GetUniqueAssetFileName($"{baseFileName} B");
+        string varBPath = $"{MetaUpgradeTools.SCAN_PATH}/{varBFileName}.asset";
+        var varB = CreateInstance<MetaUpgradeSO>();
+        varB.upgradeName = $"{baseFileName} B";
+        varB.id = GetUniqueUpgradeId($"{parentUpgrade.id}_b");
+        varB.description = "Wariant B ulepszenia";
+        varB.cost = parentUpgrade.cost;
+        varB.isVariantOption = true;
+        varB.effectType = MetaEffectType.TowerGlobalFireRate;
+        varB.effectValue = 0.10f;
+        varB.prerequisites = new List<MetaUpgradeSO>();
+
+        AssetDatabase.CreateAsset(varA, varAPath);
+        AssetDatabase.CreateAsset(varB, varBPath);
+
+        parentUpgrade.variantA = varA;
+        parentUpgrade.variantB = varB;
+
+        AssetDatabase.CreateAsset(parentUpgrade, baseAssetPath);
+        AssetDatabase.SaveAssets();
+
+        if (targetManager != null)
+        {
+            if (targetManager.allUpgrades == null) targetManager.allUpgrades = new List<MetaUpgradeSO>();
+            if (!targetManager.allUpgrades.Contains(varA)) targetManager.allUpgrades.Add(varA);
+            if (!targetManager.allUpgrades.Contains(varB)) targetManager.allUpgrades.Add(varB);
+        }
+
+        RegisterNewUpgradeInGraphAndManager(parentUpgrade, graphPos, focusName: true);
+    }
+
+    /// <summary>
+    /// Generuje brakujące assety wariantów A/B dla wskazanego węzła i łączy je w MetaUpgradeSO.
+    /// </summary>
+    private void GenerateMissingVariantsForNode(UpgradeNode node)
+    {
+        if (node?.upgrade == null) return;
+        if (!EnsureMetaFolderExists()) return;
+
+        var upgrade = node.upgrade;
+        Undo.RecordObject(upgrade, "Wygeneruj warianty A/B");
+        upgrade.hasVariants = true;
+
+        string parentName = string.IsNullOrWhiteSpace(upgrade.upgradeName) ? upgrade.name : upgrade.upgradeName;
+        string parentId = string.IsNullOrWhiteSpace(upgrade.id) ? "upgrade" : upgrade.id;
+
+        if (upgrade.variantA == null)
+        {
+            string varAFileName = GetUniqueAssetFileName($"{parentName} A");
+            string varAPath = $"{MetaUpgradeTools.SCAN_PATH}/{varAFileName}.asset";
+            var varA = CreateInstance<MetaUpgradeSO>();
+            varA.upgradeName = $"{parentName} A";
+            varA.id = GetUniqueUpgradeId($"{parentId}_a");
+            varA.description = string.IsNullOrWhiteSpace(upgrade.description) ? "Wariant A ulepszenia" : $"{upgrade.description} (Wariant A)";
+            varA.cost = upgrade.cost;
+            varA.isVariantOption = true;
+            varA.effectType = upgrade.effectType != MetaEffectType.None ? upgrade.effectType : MetaEffectType.TowerGlobalDamage;
+            varA.effectValue = upgrade.effectValue != 0 ? upgrade.effectValue : 0.10f;
+            varA.icon = upgrade.icon;
+            varA.prerequisites = new List<MetaUpgradeSO>();
+
+            AssetDatabase.CreateAsset(varA, varAPath);
+            upgrade.variantA = varA;
+            if (targetManager != null && targetManager.allUpgrades != null && !targetManager.allUpgrades.Contains(varA))
+            {
+                targetManager.allUpgrades.Add(varA);
+            }
+        }
+
+        if (upgrade.variantB == null)
+        {
+            string varBFileName = GetUniqueAssetFileName($"{parentName} B");
+            string varBPath = $"{MetaUpgradeTools.SCAN_PATH}/{varBFileName}.asset";
+            var varB = CreateInstance<MetaUpgradeSO>();
+            varB.upgradeName = $"{parentName} B";
+            varB.id = GetUniqueUpgradeId($"{parentId}_b");
+            varB.description = string.IsNullOrWhiteSpace(upgrade.description) ? "Wariant B ulepszenia" : $"{upgrade.description} (Wariant B)";
+            varB.cost = upgrade.cost;
+            varB.isVariantOption = true;
+            varB.effectType = upgrade.effectType != MetaEffectType.None ? upgrade.effectType : MetaEffectType.TowerGlobalFireRate;
+            varB.effectValue = upgrade.effectValue != 0 ? upgrade.effectValue : 0.10f;
+            varB.icon = upgrade.icon;
+            varB.prerequisites = new List<MetaUpgradeSO>();
+
+            AssetDatabase.CreateAsset(varB, varBPath);
+            upgrade.variantB = varB;
+            if (targetManager != null && targetManager.allUpgrades != null && !targetManager.allUpgrades.Contains(varB))
+            {
+                targetManager.allUpgrades.Add(varB);
+            }
+        }
+
+        AssetDatabase.SaveAssets();
+        EditorUtility.SetDirty(upgrade);
+        if (targetManager != null) EditorUtility.SetDirty(targetManager);
+        UpdateManagerSyncStatus();
+        Repaint();
+    }
+
+    /// <summary>
+    /// Rysuje kompaktowy edytor podrzędnego wariantu bezpośrednio w panelu bocznym węzła nadrzędnego.
+    /// </summary>
+    private void DrawInlineVariantEditor(MetaUpgradeSO variant, string label)
+    {
+        if (variant == null) return;
+
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label($"<b>{label}:</b> {(string.IsNullOrWhiteSpace(variant.upgradeName) ? variant.name : variant.upgradeName)}", EditorStyles.boldLabel);
+        if (GUILayout.Button("Pokaż", GUILayout.Width(46), GUILayout.Height(18)))
+        {
+            EditorGUIUtility.PingObject(variant);
+        }
+        if (GUILayout.Button("Inspector", GUILayout.Width(64), GUILayout.Height(18)))
+        {
+            Selection.activeObject = variant;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUI.BeginChangeCheck();
+        string vName = EditorGUILayout.TextField("Nazwa", variant.upgradeName);
+        string vDesc = EditorGUILayout.TextField("Opis", variant.description);
+        MetaEffectType vEffect = (MetaEffectType)EditorGUILayout.EnumPopup("Typ Efektu", variant.effectType);
+        float vVal = variant.effectValue;
+        float vVal2 = variant.effectValue2;
+        BuildingData vBld = variant.targetBuilding;
+
+        if (vEffect != MetaEffectType.None)
+        {
+            vVal = EditorGUILayout.FloatField(GetEffectValueLabel(vEffect), variant.effectValue);
+            if (vEffect == MetaEffectType.EliteChanceBoost)
+            {
+                vVal2 = EditorGUILayout.FloatField("Od Fali", variant.effectValue2);
+            }
+            bool needsBuilding =
+                vEffect == MetaEffectType.SpecificBuildingUpgradeCostReduction ||
+                vEffect == MetaEffectType.BuildingTerrainBonusMultiplier ||
+                vEffect == MetaEffectType.SpecificBuildingProductionBonus;
+
+            if (needsBuilding)
+            {
+                vBld = (BuildingData)EditorGUILayout.ObjectField("Budynek Docelowy", variant.targetBuilding, typeof(BuildingData), false);
+            }
+        }
+        Sprite vIcon = (Sprite)EditorGUILayout.ObjectField("Ikona", variant.icon, typeof(Sprite), false);
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(variant, $"Edycja {label}");
+            variant.upgradeName = vName;
+            variant.description = vDesc;
+            variant.effectType = vEffect;
+            variant.effectValue = vVal;
+            variant.effectValue2 = vVal2;
+            variant.targetBuilding = vBld;
+            variant.icon = vIcon;
+            variant.isVariantOption = true;
+            EditorUtility.SetDirty(variant);
+            Repaint();
+        }
+
+        EditorGUILayout.EndVertical();
+    }
+
+    /// <summary>
     /// Duplikuje wskazany węzeł jako kolejny Tier (np. "Optimized work I" -> "Optimized work II"),
     /// umieszczając go po prawej stronie i automatycznie podpinając oryginał jako wymaganie.
     /// </summary>
@@ -1821,6 +2167,51 @@ public class MetaUpgradeEditorWindow : EditorWindow
         copy.effectValue2   = src.effectValue2;
         copy.targetBuilding = src.targetBuilding;
         copy.prerequisites  = new List<MetaUpgradeSO> { src };
+        copy.hasVariants    = src.hasVariants;
+        copy.isVariantOption = src.isVariantOption;
+
+        if (src.hasVariants)
+        {
+            if (src.variantA != null)
+            {
+                string varAName = IncrementTierInName(
+                    string.IsNullOrWhiteSpace(src.variantA.upgradeName) ? src.variantA.name : src.variantA.upgradeName);
+                string fileA = GetUniqueAssetFileName(varAName);
+                var copyA = Instantiate(src.variantA);
+                copyA.name = fileA;
+                copyA.upgradeName = varAName;
+                copyA.id = GetUniqueUpgradeId(fileA);
+                copyA.cost = copy.cost;
+                copyA.isVariantOption = true;
+                AssetDatabase.CreateAsset(copyA, $"{MetaUpgradeTools.SCAN_PATH}/{fileA}.asset");
+                copy.variantA = copyA;
+                if (targetManager != null)
+                {
+                    if (targetManager.allUpgrades == null) targetManager.allUpgrades = new List<MetaUpgradeSO>();
+                    if (!targetManager.allUpgrades.Contains(copyA)) targetManager.allUpgrades.Add(copyA);
+                }
+            }
+
+            if (src.variantB != null)
+            {
+                string varBName = IncrementTierInName(
+                    string.IsNullOrWhiteSpace(src.variantB.upgradeName) ? src.variantB.name : src.variantB.upgradeName);
+                string fileB = GetUniqueAssetFileName(varBName);
+                var copyB = Instantiate(src.variantB);
+                copyB.name = fileB;
+                copyB.upgradeName = varBName;
+                copyB.id = GetUniqueUpgradeId(fileB);
+                copyB.cost = copy.cost;
+                copyB.isVariantOption = true;
+                AssetDatabase.CreateAsset(copyB, $"{MetaUpgradeTools.SCAN_PATH}/{fileB}.asset");
+                copy.variantB = copyB;
+                if (targetManager != null)
+                {
+                    if (targetManager.allUpgrades == null) targetManager.allUpgrades = new List<MetaUpgradeSO>();
+                    if (!targetManager.allUpgrades.Contains(copyB)) targetManager.allUpgrades.Add(copyB);
+                }
+            }
+        }
 
         AssetDatabase.CreateAsset(copy, assetPath);
         AssetDatabase.SaveAssets();
@@ -2048,7 +2439,27 @@ public class MetaUpgradeEditorWindow : EditorWindow
         nodes.Remove(node);
         nodeByUpgrade.Remove(upgradeToDelete);
 
-        // 4. Usuń plik z dysku
+        // 4. Usuń plik z dysku (oraz powiązane pliki wariantów A/B jeśli to węzeł z wariantami)
+        if (upgradeToDelete.hasVariants)
+        {
+            if (upgradeToDelete.variantA != null)
+            {
+                if (targetManager != null && targetManager.allUpgrades != null)
+                    targetManager.allUpgrades.Remove(upgradeToDelete.variantA);
+                string pathA = AssetDatabase.GetAssetPath(upgradeToDelete.variantA);
+                if (!string.IsNullOrEmpty(pathA))
+                    AssetDatabase.DeleteAsset(pathA);
+            }
+            if (upgradeToDelete.variantB != null)
+            {
+                if (targetManager != null && targetManager.allUpgrades != null)
+                    targetManager.allUpgrades.Remove(upgradeToDelete.variantB);
+                string pathB = AssetDatabase.GetAssetPath(upgradeToDelete.variantB);
+                if (!string.IsNullOrEmpty(pathB))
+                    AssetDatabase.DeleteAsset(pathB);
+            }
+        }
+
         string path = AssetDatabase.GetAssetPath(upgradeToDelete);
         if (!string.IsNullOrEmpty(path))
             AssetDatabase.DeleteAsset(path);
@@ -2133,8 +2544,19 @@ public class MetaUpgradeEditorWindow : EditorWindow
 
         foreach (var n in nodes)
         {
-            if (n?.upgrade != null && !managerSet.Contains(n.upgrade))
-                unsyncedManagerCount++;
+            if (n?.upgrade != null)
+            {
+                if (!managerSet.Contains(n.upgrade))
+                    unsyncedManagerCount++;
+
+                if (n.upgrade.hasVariants)
+                {
+                    if (n.upgrade.variantA != null && !managerSet.Contains(n.upgrade.variantA))
+                        unsyncedManagerCount++;
+                    if (n.upgrade.variantB != null && !managerSet.Contains(n.upgrade.variantB))
+                        unsyncedManagerCount++;
+                }
+            }
         }
 
         if (targetManager.allUpgrades != null && targetManager.allUpgrades.Any(u => u == null))
@@ -2524,6 +2946,13 @@ public class MetaUpgradeEditorWindow : EditorWindow
     private string GetNodeEffectSummary(MetaUpgradeSO upgrade)
     {
         if (upgrade == null) return "—";
+
+        if (upgrade.hasVariants)
+        {
+            string summaryA = upgrade.variantA != null ? FormatEffect(upgrade.variantA) : "Brak A";
+            string summaryB = upgrade.variantB != null ? FormatEffect(upgrade.variantB) : "Brak B";
+            return $"A: {summaryA}\nB: {summaryB}";
+        }
 
         bool hasMapLinks = mapConfigLinks.TryGetValue(upgrade, out var links) && links.Count > 0;
         if (upgrade.effectType == MetaEffectType.None)

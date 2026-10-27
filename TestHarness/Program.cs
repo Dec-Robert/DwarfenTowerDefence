@@ -49,6 +49,13 @@ class Program
         TestM2ChallengerEmpiricalStressSuite();
         _failedTests += ChallengerM2Tests.RunAll();
         _failedTests += ChallengerM3Tests.RunAll();
+        _failedTests += ChallengerMeta2_2Tests.RunAll();
+        _failedTests += ChallengerMeta3_3Tests.RunAll();
+        _failedTests += Challenger2Meta3EmpiricalTests.RunAll();
+        _failedTests += ChallengerM4Tests.RunAll();
+        _failedTests += AdversarialM4StressTests.RunAll();
+        _failedTests += ChallengerMeta4_2Tests.RunAll();
+        _failedTests += MetaProgressionTests.RunAll();
 
         Console.WriteLine("\n=================================================");
         Console.WriteLine($"RESULTS: {_passedTests} PASSED, {_failedTests} FAILED");

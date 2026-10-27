@@ -169,6 +169,20 @@ public static class MetaUpgradeTools
         if (manager == null) return;
         if (upgrades == null) upgrades = LoadAllUpgrades(quiet: true);
 
+        // Upewnij się, że warianty A/B z ulepszeń nadrzędnych są również włączone do listy managera
+        var toAdd = new List<MetaUpgradeSO>();
+        foreach (var u in upgrades)
+        {
+            if (u != null && u.hasVariants)
+            {
+                if (u.variantA != null && !upgrades.Contains(u.variantA) && !toAdd.Contains(u.variantA))
+                    toAdd.Add(u.variantA);
+                if (u.variantB != null && !upgrades.Contains(u.variantB) && !toAdd.Contains(u.variantB))
+                    toAdd.Add(u.variantB);
+            }
+        }
+        if (toAdd.Count > 0) upgrades.AddRange(toAdd);
+
         upgrades.Sort((a, b) =>
         {
             string pathA = AssetDatabase.GetAssetPath(a);

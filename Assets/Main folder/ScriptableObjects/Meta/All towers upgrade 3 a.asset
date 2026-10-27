@@ -16,11 +16,16 @@ MonoBehaviour:
   upgradeName: All towers upgrade 3 a
   description: "Zwi\u0119ksza szybkostrzelno\u015B\u0107 wie\u017C o 5%"
   icon: {fileID: 0}
-  cost: 100
+  cost: 350
+  nodePosition: {x: 3540, y: 3120}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 36cdcf70882ba114185b16e0df03b4d4, type: 2}
-  effectType: 0
-  effectValue: 0
+  effectType: 54
+  effectValue: 0.05
   effectValue2: 0
   targetBuilding: {fileID: 0}
+  hasVariants: 0
+  isVariantOption: 1
+  variantA: {fileID: 0}
+  variantB: {fileID: 0}

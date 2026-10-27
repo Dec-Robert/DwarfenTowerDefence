@@ -177,6 +177,9 @@ public enum MetaEffectType
     // ── Pracownicy i zmiany ───────────────────────────────────────────────────
     BonusShifts = 20,
     BonusWorkersPerShift = 21,
+    BonusProductionWorkers = 22,
+    ProductionSynergy_Elf = 23,
+    ProductionSynergy_Human = 24,
 
     // ── Produkcja budynków ────────────────────────────────────────────────────
     BuildingPassiveEfficiency = 30,
@@ -208,6 +211,15 @@ public enum MetaEffectType
 
     // ── Wieże ─────────────────────────────────────────────────────────────────
     TowerNoAmmoNightPenalty = 50,
+    BonusTowerCrewSlots = 51,
+    TowerGlobalArmorPenetration = 52,
+    TowerGlobalMagicPenetration = 53,
+    TowerGlobalFireRate = 54,
+    TowerGlobalDamage = 55,
+    TowerDraftUnlock = 56,
+    TowerCrewSynergy_Dwarf = 57,
+    TowerCrewSynergy_Elf = 58,
+    TowerCrewSynergy_Human = 59,
 
     // ── Eksploracja ───────────────────────────────────────────────────────────
     ExpansionCostReduction = 60,
@@ -233,7 +245,16 @@ public enum MetaEffectType
     RuneDropChance_Cursed = 113,
 
     // Zwiększa maksymalną liczbę wież runicznych, które gracz może wybudować (bazowo 0)
-    RuneTowerLimit = 114
+    RuneTowerLimit = 114,
+
+    // Bramkowanie rzadkości i funkcji kuźni
+    UnlockRuneRarity_Uncommon = 115,
+    UnlockRuneRarity_Rare = 116,
+    UnlockRuneRarity_Legendary = 117,
+    UnlockRuneRarity_Cursed = 118,
+    UnlockRuneFusion = 119,
+    UnlockRuneTransmutation = 120,
+    UnlockCursedCrafting = 121
 }
 
 [Serializable]
