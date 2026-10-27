@@ -31,19 +31,26 @@ public static class PhaseResourceForecastManager
 
         if (BuildingRegistry.Instance == null) return result;
 
-        switch (currentPhase)
+        try
         {
-            case TimePhases.Morning:
-                CalculateMorningToDuskForecast(result);
-                break;
+            switch (currentPhase)
+            {
+                case TimePhases.Morning:
+                    CalculateMorningToDuskForecast(result);
+                    break;
 
-            case TimePhases.Dusk:
-                CalculateDuskToMorningForecast(result);
-                break;
+                case TimePhases.Dusk:
+                    CalculateDuskToMorningForecast(result);
+                    break;
 
-            case TimePhases.Night:
-                // W nocy 0 kapsułek / brak podglądu
-                break;
+                case TimePhases.Night:
+                    // W nocy 0 kapsułek / brak podglądu
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[PhaseResourceForecastManager] Błąd kalkulacji prognozy: {ex.Message}");
         }
 
         return result;
@@ -56,8 +63,8 @@ public static class PhaseResourceForecastManager
     {
         var activeBuildings = BuildingRegistry.Instance.AllBuildings
             .Where(b => b != null && b.isBuildingActive && b.data != null &&
-                        b.data.type != BuildingType.Defense &&
-                        b.data.type != BuildingType.Housing &&
+                        b.data.type == BuildingType.Economic &&
+                        b.Production != null &&
                         !(b is HousingEntity))
             .ToList();
 
@@ -65,6 +72,8 @@ public static class PhaseResourceForecastManager
 
         foreach (var building in activeBuildings)
         {
+            if (building == null || building.data == null) continue;
+
             float crewEfficiency = building.Production != null ? building.Production.GetCrewEfficiency() : 1f;
             if (crewEfficiency <= 0f) continue;
 
@@ -108,6 +117,8 @@ public static class PhaseResourceForecastManager
 
         foreach (var defense in defenseBuildings)
         {
+            if (defense == null || defense.data == null) continue;
+
             if (defense is TowerEntity tower)
             {
                 // Wieża ponosi koszty tylko jeśli posiada załogę
@@ -131,6 +142,8 @@ public static class PhaseResourceForecastManager
 
         foreach (var housing in housingBuildings)
         {
+            if (housing == null || housing.housingData == null) continue;
+
             int residentCount = housing.residents != null ? housing.residents.Count : 0;
             if (residentCount <= 0) continue;
 

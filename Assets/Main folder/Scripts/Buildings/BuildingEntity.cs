@@ -15,6 +15,7 @@ public class BuildingEntity : MonoBehaviour
     public bool hasBeenUsed;
 
     private bool isInitialized;
+    public bool IsInitialized => isInitialized;
 
     public BuildingUpgradeComponent Upgrades { get; private set; }
     public BuildingWorkerComponent Workers { get; private set; }
@@ -65,7 +66,7 @@ public class BuildingEntity : MonoBehaviour
         }
 
         CreateComponents();
-        Terrain.FindAdjacentResources();
+        Terrain?.FindAdjacentResources();
         SubscribeToPhaseChange();
         SetupAtmosphericLighting();
 
@@ -133,7 +134,7 @@ public class BuildingEntity : MonoBehaviour
 
     public virtual bool TryAddWorker(Race race)
     {
-        if (!isBuildingActive) return false;
+        if (!isBuildingActive || Workers == null) return false;
 
         var success = Workers.TryAddWorker(race);
         if (success)
@@ -148,6 +149,7 @@ public class BuildingEntity : MonoBehaviour
 
     public virtual void RemoveWorker(Race race)
     {
+        if (Workers == null) return;
         Workers.RemoveWorker(race);
         RefreshInspectorUI();
         NotifyEconomyChanged();
@@ -160,24 +162,29 @@ public class BuildingEntity : MonoBehaviour
         NotifyEconomyChanged();
     }
 
-    public List<Citizen> GetAssignedCitizens() => Workers.GetAssignedCitizens();
+    public List<Citizen> GetAssignedCitizens() => Workers != null ? Workers.GetAssignedCitizens() : new List<Citizen>();
 
-    public int GetWorkerCount(Race race) => Workers.GetWorkerCount(race);
+    public int GetWorkerCount(Race race) => Workers != null ? Workers.GetWorkerCount(race) : 0;
 
-    public List<BuildingUpgradeSO> GetAvailableUpgrades() => Upgrades.GetAvailableUpgrades();
+    public List<BuildingUpgradeSO> GetAvailableUpgrades() => Upgrades != null ? Upgrades.GetAvailableUpgrades() : new List<BuildingUpgradeSO>();
 
     public void ApplyUpgrade(BuildingUpgradeSO upgrade)
     {
+        if (Upgrades == null) return;
         Upgrades.ApplyUpgrade(upgrade);
         RefreshInspectorUI();
         NotifyEconomyChanged();
     }
 
-    public Dictionary<ResourceType, float> GetCurrentProduction() => Production.GetCurrentProduction();
+    public Dictionary<ResourceType, float> GetCurrentProduction()
+    {
+        if (Production == null) return new Dictionary<ResourceType, float>();
+        return Production.GetCurrentProduction();
+    }
 
     public void ForceRescan()
     {
-        Terrain.FindAdjacentResources();
+        Terrain?.FindAdjacentResources();
         if (this is TowerEntity tower) tower.RecalculateStats();
     }
 
@@ -187,7 +194,7 @@ public class BuildingEntity : MonoBehaviour
     {
         if (!CanDemolish()) return;
 
-        Workers.ReleaseAllWorkers();
+        Workers?.ReleaseAllWorkers();
 
         if (data != null && data.constructionCost != null && ResourceManager.Instance != null)
         {
@@ -218,7 +225,7 @@ public class BuildingEntity : MonoBehaviour
     {
     }
 
-    public int GetTotalWorkerCount() => Workers.GetAssignedCitizens().Count;
+    public int GetTotalWorkerCount() => Workers != null ? Workers.GetAssignedCitizens().Count : 0;
 
     protected virtual void SetupAtmosphericLighting()
     {

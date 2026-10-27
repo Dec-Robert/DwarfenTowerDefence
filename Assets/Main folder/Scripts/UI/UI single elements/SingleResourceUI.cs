@@ -14,6 +14,18 @@ public class SingleResourceUI : MonoBehaviour
     private bool isSubscribed;
     private bool isStaticValue;
 
+    private void Awake()
+    {
+        // Pigułki podglądu bilansu w Pnl_TopBonusInfo nie powinny śledzić stanu magazynu
+        if (transform.parent != null && transform.parent.parent != null &&
+            transform.parent.parent.name == "Pnl_TopBonusInfo")
+        {
+            trackResourceManager = false;
+            enabled = false;
+            return;
+        }
+    }
+
     private void OnEnable()
     {
         Subscribe();
@@ -33,7 +45,7 @@ public class SingleResourceUI : MonoBehaviour
 
     private void Subscribe()
     {
-        if (!trackResourceManager || isStaticValue || isSubscribed || ResourceManager.Instance == null) return;
+        if (!enabled || !trackResourceManager || isStaticValue || isSubscribed || ResourceManager.Instance == null) return;
 
         ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
         isSubscribed = true;

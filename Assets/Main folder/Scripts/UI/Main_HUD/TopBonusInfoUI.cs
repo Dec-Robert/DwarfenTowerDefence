@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -47,10 +48,30 @@ public class TopBonusInfoUI : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoInitialize()
     {
+        TryInitialize();
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        TryInitialize();
+    }
+
+    public static void TryInitialize()
+    {
         var panel = GameObject.Find("Pnl_TopBonusInfo");
-        if (panel != null && panel.GetComponent<TopBonusInfoUI>() == null)
+        if (panel != null)
         {
-            panel.AddComponent<TopBonusInfoUI>();
+            var comp = panel.GetComponent<TopBonusInfoUI>();
+            if (comp == null)
+            {
+                comp = panel.AddComponent<TopBonusInfoUI>();
+            }
+            else
+            {
+                comp.RefreshUI();
+            }
         }
     }
 
@@ -69,6 +90,7 @@ public class TopBonusInfoUI : MonoBehaviour
         Instance = this;
 
         FindAndConfigureSlots();
+        HideAllSlots();
     }
 
     private void Start()
@@ -236,60 +258,72 @@ public class TopBonusInfoUI : MonoBehaviour
 
     public void RefreshUI()
     {
-        if (TimePhaseManager.Instance == null) return;
-
-        TimePhases currentPhase = TimePhaseManager.Instance.CurrentTimePhase;
-
-        // W nocy: 0 kapsułek (wszystkie ukryte, czysty ekran na walkę)
-        if (currentPhase == TimePhases.Night)
+        try
         {
-            HideAllSlots();
-            return;
-        }
-
-        var forecast = PhaseResourceForecastManager.CalculateForecast(currentPhase);
-
-        foreach (var slot in bonusSlots)
-        {
-            if (slot.rootObject == null || slot.amountText == null) continue;
-
-            int delta = forecast.ContainsKey(slot.resourceType) ? forecast[slot.resourceType] : 0;
-            int currentTreasury = ResourceManager.Instance != null
-                ? ResourceManager.Instance.GetResourceAmount(slot.resourceType)
-                : 0;
-
-            if (delta == 0)
+            if (TimePhaseManager.Instance == null)
             {
-                // Brak zmian dla tego surowca -> ukryj kapsułkę
-                slot.rootObject.SetActive(false);
+                HideAllSlots();
+                return;
             }
-            else
-            {
-                slot.rootObject.SetActive(true);
 
-                if (delta > 0)
+            TimePhases currentPhase = TimePhaseManager.Instance.CurrentTimePhase;
+
+            // W nocy: 0 kapsułek (wszystkie ukryte, czysty ekran na walkę)
+            if (currentPhase == TimePhases.Night)
+            {
+                HideAllSlots();
+                return;
+            }
+
+            var forecast = PhaseResourceForecastManager.CalculateForecast(currentPhase);
+            if (forecast == null) return;
+
+            foreach (var slot in bonusSlots)
+            {
+                if (slot.rootObject == null || slot.amountText == null) continue;
+
+                int delta = forecast.ContainsKey(slot.resourceType) ? forecast[slot.resourceType] : 0;
+                int currentTreasury = ResourceManager.Instance != null
+                    ? ResourceManager.Instance.GetResourceAmount(slot.resourceType)
+                    : 0;
+
+                if (delta == 0)
                 {
-                    slot.amountText.text = $"+{delta}";
-                    slot.amountText.color = positiveColor;
-                    if (slot.backgroundImage != null)
-                    {
-                        slot.backgroundImage.color = slot.defaultBgColor;
-                    }
+                    // Brak zmian dla tego surowca -> ukryj kapsułkę
+                    slot.rootObject.SetActive(false);
                 }
                 else
                 {
-                    // Ujemny bilans (ubytek / koszt)
-                    bool isDeficit = (currentTreasury + delta) < 0;
+                    slot.rootObject.SetActive(true);
 
-                    slot.amountText.text = isDeficit ? $"! {delta}" : $"{delta}";
-                    slot.amountText.color = isDeficit ? deficitTextColor : negativeColor;
-
-                    if (slot.backgroundImage != null)
+                    if (delta > 0)
                     {
-                        slot.backgroundImage.color = isDeficit ? crisisBgColor : slot.defaultBgColor;
+                        slot.amountText.text = $"+{delta}";
+                        slot.amountText.color = positiveColor;
+                        if (slot.backgroundImage != null)
+                        {
+                            slot.backgroundImage.color = slot.defaultBgColor;
+                        }
+                    }
+                    else
+                    {
+                        // Ujemny bilans (ubytek / koszt)
+                        bool isDeficit = (currentTreasury + delta) < 0;
+
+                        slot.amountText.text = isDeficit ? $"! {delta}" : $"{delta}";
+                        slot.amountText.color = isDeficit ? deficitTextColor : negativeColor;
+
+                        if (slot.backgroundImage != null)
+                        {
+                            slot.backgroundImage.color = isDeficit ? crisisBgColor : slot.defaultBgColor;
+                        }
                     }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[TopBonusInfoUI] Błąd podczas odświeżania podglądu bilansu: {ex.Message}");
         }
     }
 

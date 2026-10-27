@@ -41,7 +41,7 @@ public class BuildingProductionComponent
         if (crewEfficiency <= 0f) return;
 
         bool hasUpkeep = true;
-        if (data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0 && ResourceManager.Instance != null)
+        if (data != null && data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0 && ResourceManager.Instance != null)
         {
             hasUpkeep = ResourceManager.Instance.SpendResources(data.upkeepPerCycle);
         }
@@ -80,7 +80,7 @@ public class BuildingProductionComponent
     public float GetGlobalMultiplier()
     {
         float metaBonus = 0f;
-        if (MetaUpgradeManager.Instance != null)
+        if (MetaUpgradeManager.Instance != null && data != null)
         {
             metaBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
         }
@@ -135,6 +135,7 @@ public class BuildingProductionComponent
     public Dictionary<ResourceType, float> GetBaseProductionWithFlats()
     {
         var total = new Dictionary<ResourceType, float>();
+        if (data == null) return total;
 
         if (data.productionPerCycle != null)
         {
