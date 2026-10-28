@@ -369,58 +369,143 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         }
     }
 
+    private string GetResourceDisplayName(ResourceType type)
+    {
+        return type switch
+        {
+            ResourceType.Ether => "Kryształ Eteru",
+            ResourceType.Wood => "Drewno",
+            ResourceType.Stone => "Kamień",
+            ResourceType.Iron => "Żelazo",
+            ResourceType.Coal => "Węgiel",
+            ResourceType.Food => "Żywność",
+            ResourceType.Hope => "Nadzieja",
+            _ => type.ToString()
+        };
+    }
+
+    private string GetFeatureDisplayName(HexFeatureType feature)
+    {
+        return feature switch
+        {
+            HexFeatureType.Forest => "LAS",
+            HexFeatureType.Meadow => "ŁĄKI",
+            HexFeatureType.Mountain => "GÓRY",
+            HexFeatureType.Hill => "WZGÓRZA",
+            _ => feature.ToString().ToUpperInvariant()
+        };
+    }
+
     private void SetupProductionSection(BuildingData data)
     {
         SetSectionVisibility(towers: false, production: true, housing: false, special: false);
 
         SetupResourcePool(productionSlots, data.productionPerCycle);
 
+        bool hasRules = data.bonusRules != null && data.bonusRules.Count > 0;
+        bool hasElevation = data.elevationBonus.enabled;
+
+        if (!hasRules && !hasElevation)
+        {
+            if (txtBonusForPlacing != null)
+            {
+                txtBonusForPlacing.text = "Brak bonusów terenowych";
+            }
+            if (txtBonusForSurround != null)
+            {
+                txtBonusForSurround.text = "";
+            }
+            return;
+        }
+
+        // 1. Zbieranie terenów dających bonus
+        var terrainNames = new List<string>();
+        if (hasRules)
+        {
+            foreach (var rule in data.bonusRules)
+            {
+                if (rule.requiredFeature != HexFeatureType.None)
+                {
+                    string name = GetFeatureDisplayName(rule.requiredFeature);
+                    if (!terrainNames.Contains(name)) terrainNames.Add(name);
+                }
+            }
+        }
+        if (hasElevation)
+        {
+            string hillName = "WZGÓRZA";
+            if (!terrainNames.Contains(hillName)) terrainNames.Add(hillName);
+        }
+
+        string terrainText = terrainNames.Count > 0 ? string.Join(" / ", terrainNames) : "BRAK";
+
+        // 2. Bonus za postawienie na danym surowcu (on-top)
+        var onTopDescriptions = new List<string>();
+        if (hasRules)
+        {
+            foreach (var rule in data.bonusRules)
+            {
+                if (rule.resourceYields == null) continue;
+                foreach (var y in rule.resourceYields)
+                {
+                    if (y.onTopProductionBonus > 0f)
+                    {
+                        onTopDescriptions.Add($"+{y.onTopProductionBonus.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(y.resourceType)}");
+                    }
+                }
+            }
+        }
+        if (hasElevation && data.elevationBonus.onTopBonusPerLevel > 0f)
+        {
+            onTopDescriptions.Add($"+{data.elevationBonus.onTopBonusPerLevel.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(data.elevationBonus.resourceType)} / poziom wzgórza");
+        }
+
+        // 3. Bonus za każdy surowiec wokół (adjacent)
+        var adjacentDescriptions = new List<string>();
+        if (hasRules)
+        {
+            foreach (var rule in data.bonusRules)
+            {
+                if (rule.resourceYields == null) continue;
+                foreach (var y in rule.resourceYields)
+                {
+                    if (y.baseBonusPerHex > 0f)
+                    {
+                        adjacentDescriptions.Add($"+{y.baseBonusPerHex.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(y.resourceType)} / pole");
+                    }
+                }
+            }
+        }
+        if (hasElevation && data.elevationBonus.adjacentBonusPerLevel > 0f)
+        {
+            adjacentDescriptions.Add($"+{data.elevationBonus.adjacentBonusPerLevel.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(data.elevationBonus.resourceType)} / poziom wokół");
+        }
+
+        // Formatowanie pól tekstowych
         if (txtBonusForPlacing != null)
         {
-            if (data.allowedTerrain != null && data.allowedTerrain.Count > 0)
+            var placingLines = new List<string>
             {
-                txtBonusForPlacing.text = $"Budowa na: {string.Join(", ", data.allowedTerrain)}";
-            }
-            else
+                $"Bonus do postawienia na terenie: {terrainText}"
+            };
+
+            if (onTopDescriptions.Count > 0)
             {
-                txtBonusForPlacing.text = "Budowa na: Dowolny teren";
+                placingLines.Add($"Bonus za postawienie na danym surowcu: {string.Join(", ", onTopDescriptions)}");
             }
+
+            txtBonusForPlacing.text = string.Join("\n", placingLines);
         }
 
         if (txtBonusForSurround != null)
         {
-            var rules = data.GetEffectiveBonusRules();
-            List<string> ruleDescriptions = new List<string>();
-
-            if (rules != null)
+            if (adjacentDescriptions.Count > 0)
             {
-                foreach (var rule in rules)
-                {
-                    if (rule.requiredFeature == HexFeatureType.None || rule.resourceYields == null || rule.resourceYields.Count == 0) continue;
-
-                    List<string> yieldParts = new List<string>();
-                    foreach (var y in rule.resourceYields)
-                    {
-                        if (y.baseBonusPerHex > 0f)
-                        {
-                            yieldParts.Add($"+{y.baseBonusPerHex:0.#} {y.resourceType}");
-                        }
-                    }
-
-                    if (yieldParts.Count > 0)
-                    {
-                        ruleDescriptions.Add($"Sąsiedztwo [{rule.requiredFeature}]: {string.Join(", ", yieldParts)}");
-                    }
-                }
-            }
-
-            if (ruleDescriptions.Count > 0)
-            {
-                txtBonusForSurround.text = string.Join("\n", ruleDescriptions);
+                txtBonusForSurround.text = $"Bonus za każdy surowiec wokół: {string.Join(", ", adjacentDescriptions)}";
             }
             else
             {
-                txtBonusForSurround.text = "Bonus sąsiedztwa: Brak";
+                txtBonusForSurround.text = "";
             }
         }
     }

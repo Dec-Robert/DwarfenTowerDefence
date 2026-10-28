@@ -15,12 +15,16 @@ public class WaveDefinition : ScriptableObject
     [Header("Parametry Spawnu i Skalowania Fali")]
     [Tooltip("Jeśli <= 0, używany jest domyślny nightSpawnInterval w EnemySpawner")]
     public float customSpawnInterval = 0f;
-    [Tooltip("Mnożnik HP wszystkich wrogów w tej fali (1.0 = bazowe HP)")]
+
+    [Tooltip("Legacy: w zdefiniowanych falach statystyki wynikają z wybranego Tieru. Fale po ostatniej zdefiniowanej używają skalowania 1.1^a")]
     public float hpMultiplier = 1f;
-    [Tooltip("Mnożnik prędkości ruchu wszystkich wrogów w tej fali (1.0 = bazowa prędkość)")]
+
+    [Tooltip("Legacy: w zdefiniowanych falach statystyki wynikają z wybranego Tieru")]
     public float speedMultiplier = 1f;
+
     [Tooltip("Czy wymieszać kolejność spawnowania wrogów ze wszystkich grup")]
     public bool shuffleEnemies = false;
+
     [Tooltip("Czy pozwalać na losowe pojawianie się Elit zgodnie z szansą w EnemyData")]
     public bool allowRandomElites = false;
 
@@ -28,9 +32,20 @@ public class WaveDefinition : ScriptableObject
     public struct WaveEntry
     {
         public EnemyData enemy;
+
+        [Range(1, 4)]
+        [Tooltip("Tier wroga (1 - 4) określający jego statystyki, prefab i ikonkę")]
+        public int tier;
+
         public int count;
+
         [Tooltip("Wymusza rangę Elite dla całej tej grupy")]
         public bool forceElite;
+
+        /// <summary>
+        /// Zwraca poprawny numer tieru (1 - 4), domyślnie 1 gdy pole nie zostało zainicjalizowane.
+        /// </summary>
+        public int Tier => tier > 0 ? Mathf.Clamp(tier, 1, 4) : 1;
     }
 
     [Header("Skład Fali")]

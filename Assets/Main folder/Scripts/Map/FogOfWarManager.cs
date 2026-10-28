@@ -23,6 +23,16 @@ public class FogOfWarManager : MonoBehaviour
     public float outskirtsFogHeightScale = 0.08f;
     public float outskirtsFogYOffset = 0.0f;
 
+    [Header("Maska Globalna Mgły")]
+    [Tooltip("Rozdzielczość generowanej tekstury maski mgły (np. 128, 256)")]
+    public int maskResolution = 128;
+    [Tooltip("Mnożnik promienia chunka w świecie określający wielkość plamy w masce")]
+    public float chunkRadiusMultiplier = 1.8f;
+    [Tooltip("Współczynnik miękkości przejścia na krawędziach")]
+    public float fogBlendFalloff = 0.4f;
+    [Tooltip("Margines wokół granic mapy (w jednostkach promienia chunka)")]
+    public float worldMarginMultiplier = 3.0f;
+
     public event Action<Vector2Int> OnChunkRevealed;
     public event Action<Vector2Int> OnBorderlandsClicked;
 
@@ -30,6 +40,12 @@ public class FogOfWarManager : MonoBehaviour
     private int chunkRadius;
     private float hexSize;
     private float padding;
+
+    // Pola dla globalnej maski mgły w shaderze
+    private Texture2D fogMaskTexture;
+    private Color32[] maskPixels;
+    private Vector2 worldBoundsMin;
+    private Vector2 worldBoundsSize;
 
     private void Start()
     {
@@ -43,7 +59,7 @@ public class FogOfWarManager : MonoBehaviour
         if (expansionManager != null)
         {
             expansionManager.OnMapInitialized += HandleMapInitialized;
-            expansionManager.OnChunkStateChanged += UpdateChunkFogState;
+            expansionManager.OnChunkStateChanged += OnChunkStateChangedHandler;
 
             if (expansionManager.activeChunks.Count > 0 && activeFogChunks.Count == 0)
             {
@@ -57,8 +73,16 @@ public class FogOfWarManager : MonoBehaviour
         if (expansionManager != null)
         {
             expansionManager.OnMapInitialized -= HandleMapInitialized;
-            expansionManager.OnChunkStateChanged -= UpdateChunkFogState;
+            expansionManager.OnChunkStateChanged -= OnChunkStateChangedHandler;
         }
+
+        DestroyMaskTexture();
+    }
+
+    private void OnChunkStateChangedHandler(Vector2Int coord, ChunkState state)
+    {
+        UpdateChunkFogState(coord, state);
+        UpdateGlobalFogMask();
     }
 
     private void Update()
@@ -97,12 +121,152 @@ public class FogOfWarManager : MonoBehaviour
 
         if (fogPrefab == null) return;
 
+        CalculateWorldBounds(allChunks);
+        InitMaskTexture();
+
         foreach (var coord in allChunks)
         {
             SpawnFogObject(coord);
         }
 
         UpdateAllFogVisuals();
+    }
+
+    // =========================================================================
+    // LOGIKA GLOBALNEJ MASKI MGŁY
+    // =========================================================================
+
+    private void CalculateWorldBounds(HashSet<Vector2Int> allChunks)
+    {
+        if (allChunks == null || allChunks.Count == 0) return;
+
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 max = new Vector2(float.MinValue, float.MinValue);
+
+        foreach (var coord in allChunks)
+        {
+            Vector3 center = HexGridMath.GetChunkCenterWorld(coord, chunkRadius, hexSize, padding);
+            min = Vector2.Min(min, new Vector2(center.x, center.z));
+            max = Vector2.Max(max, new Vector2(center.x, center.z));
+        }
+
+        // Dodajemy margines wielkości chunka pomnożonej przez worldMarginMultiplier z każdej strony
+        float margin = chunkRadius * hexSize * worldMarginMultiplier;
+        worldBoundsMin = min - new Vector2(margin, margin);
+        Vector2 worldBoundsMax = max + new Vector2(margin, margin);
+        worldBoundsSize = worldBoundsMax - worldBoundsMin;
+
+        if (worldBoundsSize.x <= 0f) worldBoundsSize.x = 1f;
+        if (worldBoundsSize.y <= 0f) worldBoundsSize.y = 1f;
+
+        // Wysyłamy współrzędne świata do shaderów
+        Shader.SetGlobalVector("_FogWorldBounds", new Vector4(worldBoundsMin.x, worldBoundsMin.y, worldBoundsSize.x, worldBoundsSize.y));
+    }
+
+    private void InitMaskTexture()
+    {
+        int res = Mathf.Max(16, maskResolution);
+
+        if (fogMaskTexture != null && (fogMaskTexture.width != res || fogMaskTexture.height != res))
+        {
+            DestroyMaskTexture();
+        }
+
+        if (fogMaskTexture == null)
+        {
+            fogMaskTexture = new Texture2D(res, res, TextureFormat.R8, false);
+            fogMaskTexture.filterMode = FilterMode.Bilinear;
+            fogMaskTexture.wrapMode = TextureWrapMode.Clamp;
+            maskPixels = new Color32[res * res];
+        }
+
+        Shader.SetGlobalTexture("_FogMask", fogMaskTexture);
+    }
+
+    private void DestroyMaskTexture()
+    {
+        if (fogMaskTexture != null)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(fogMaskTexture);
+            }
+            else
+            {
+                DestroyImmediate(fogMaskTexture);
+            }
+            fogMaskTexture = null;
+        }
+        maskPixels = null;
+    }
+
+    public void UpdateGlobalFogMask()
+    {
+        if (fogMaskTexture == null || expansionManager == null || maskPixels == null || worldBoundsSize.x <= 0f) return;
+
+        int res = fogMaskTexture.width;
+
+        // Domyślnie cała mapa to Wilderness (255 = 1.0)
+        byte defaultVal = 255;
+        for (int i = 0; i < maskPixels.Length; i++)
+        {
+            maskPixels[i] = new Color32(defaultVal, defaultVal, defaultVal, 255);
+        }
+
+        float chunkWorldRadius = chunkRadius * hexSize * chunkRadiusMultiplier;
+        float pixelRadius = (chunkWorldRadius / worldBoundsSize.x) * res;
+
+        // Wypalamy stan każdego chunka do tekstury
+        foreach (var kvp in expansionManager.activeChunks)
+        {
+            Vector3 center = HexGridMath.GetChunkCenterWorld(kvp.Key, chunkRadius, hexSize, padding);
+
+            // Pozycja w pikselach tekstury
+            float u = (center.x - worldBoundsMin.x) / worldBoundsSize.x;
+            float v = (center.z - worldBoundsMin.y) / worldBoundsSize.y;
+            int px = Mathf.RoundToInt(u * (res - 1));
+            int py = Mathf.RoundToInt(v * (res - 1));
+
+            byte targetValue = 255; // Wilderness domyślnie
+            switch (kvp.Value.EffectiveState)
+            {
+                case ChunkState.Settled:
+                case ChunkState.Outskirts:
+                    targetValue = 0; // Odkryte
+                    break;
+                case ChunkState.Borderlands:
+                case ChunkState.Surveying:
+                    targetValue = 128; // Do odkrycia (0.5)
+                    break;
+            }
+
+            // Rysujemy miękkie koło wokół chunku
+            int r = Mathf.CeilToInt(pixelRadius);
+            for (int y = -r; y <= r; y++)
+            {
+                for (int x = -r; x <= r; x++)
+                {
+                    int targetX = px + x;
+                    int targetY = py + y;
+                    if (targetX < 0 || targetX >= res || targetY < 0 || targetY >= res) continue;
+
+                    float distNorm = Mathf.Sqrt(x * x + y * y) / pixelRadius;
+                    if (distNorm <= 1.0f)
+                    {
+                        int idx = targetY * res + targetX;
+                        // Bierzemy mniejszą wartość, aby odkryte tereny i zwiad naturalnie wgryzały się w mrok
+                        if (targetValue < maskPixels[idx].r)
+                        {
+                            byte blended = (byte)Mathf.Lerp(targetValue, maskPixels[idx].r, distNorm * fogBlendFalloff);
+                            maskPixels[idx] = new Color32(blended, blended, blended, 255);
+                        }
+                    }
+                }
+            }
+        }
+
+        fogMaskTexture.SetPixels32(maskPixels);
+        fogMaskTexture.Apply();
     }
 
     public void UpdateChunkFogState(Vector2Int coord, ChunkState state)
@@ -149,6 +313,8 @@ public class FogOfWarManager : MonoBehaviour
         {
             UpdateChunkFogState(kvp.Key, kvp.Value.EffectiveState);
         }
+
+        UpdateGlobalFogMask();
     }
 
     public bool IsChunkRevealed(Vector2Int coord)
@@ -249,5 +415,7 @@ public class FogOfWarManager : MonoBehaviour
         {
             DestroyImmediate(transform.GetChild(i).gameObject);
         }
+
+        DestroyMaskTexture();
     }
 }

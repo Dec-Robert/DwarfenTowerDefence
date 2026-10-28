@@ -13,8 +13,38 @@ MonoBehaviour:
   m_Name: HeraldOfTheMist
   m_EditorClassIdentifier: 
   prefab: {fileID: 6987379787904698027, guid: 7da11d0ad8814b28813705b5ee53075e, type: 3}
+  sprite: {fileID: 0}
   threatCost: 10
   enemyName: Herald of the mist
+  tiers:
+  - prefab: {fileID: 6987379787904698027, guid: 7da11d0ad8814b28813705b5ee53075e, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 1500
+    moveSpeed: 0.65
+    armor: 30
+    magicResist: 30
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 7da11d0ad8814b28813705b5ee53075e, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 1500
+    moveSpeed: 0.65
+    armor: 30
+    magicResist: 30
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 7da11d0ad8814b28813705b5ee53075e, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 1500
+    moveSpeed: 0.65
+    armor: 30
+    magicResist: 30
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 7da11d0ad8814b28813705b5ee53075e, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 1500
+    moveSpeed: 0.65
+    armor: 30
+    magicResist: 30
+    dodgeChance: 0
   baseHp: 1500
   moveSpeed: 0.65
   armor: 30

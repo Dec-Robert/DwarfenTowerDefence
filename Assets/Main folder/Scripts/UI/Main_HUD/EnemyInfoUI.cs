@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class EnemyInfoUI : MonoBehaviour
 {
-    public static EnemyInfoUI  Instance { get; private set; }
+    public static EnemyInfoUI Instance { get; private set; }
 
     [Header("Text")]
     public TextMeshProUGUI monsterNameText;
@@ -16,7 +16,7 @@ public class EnemyInfoUI : MonoBehaviour
     public TextMeshProUGUI monsterArmourText;
     public TextMeshProUGUI monsterMagicDefenseText;
 
-    [Header("Images")] 
+    [Header("Images")]
     public Image enemyIcon;
     public Image healthBar;
 
@@ -26,7 +26,6 @@ public class EnemyInfoUI : MonoBehaviour
 
     private EnemyStats enemyStats;
     private bool isOpenWindow;
-
 
     public void Awake()
     {
@@ -46,29 +45,38 @@ public class EnemyInfoUI : MonoBehaviour
             if (isOpenWindow) CloseWindow();
             return;
         }
-        
-        if (enemyStats != null) UpdateUIComponent();
 
-
-        
+        UpdateUIComponent();
     }
 
     private void UpdateHealth()
     {
-        healthText.text = enemyStats.GetCurrentHealth().ToString(); 
-        healthBar.fillAmount = 0.5f; //Todo: Tymczasowo trwałe 0.5
+        if (enemyStats == null) return;
+        healthText.text = $"{Mathf.CeilToInt(enemyStats.GetCurrentHealth())} / {Mathf.CeilToInt(enemyStats.GetMaxHealth())}";
+        if (healthBar != null && enemyStats.GetMaxHealth() > 0f)
+        {
+            healthBar.fillAmount = Mathf.Clamp01(enemyStats.GetCurrentHealth() / enemyStats.GetMaxHealth());
+        }
     }
-    
+
     private void UpdateUIComponent()
     {
-    monsterNameText.text = enemyStats.data.enemyName;
-    healthText.text = enemyStats.GetCurrentHealth().ToString();
-    monsterSpeedText.text = enemyStats.data.moveSpeed.ToString();
-    monsterArmourText.text = enemyStats.data.armor.ToString();
-    monsterMagicDefenseText.text = enemyStats.data.magicResist.ToString();
+        if (enemyStats == null || enemyStats.data == null) return;
 
-    enemyIcon.sprite = enemyStats.data.sprite;
-    healthBar.fillAmount = 0.5f; //Todo: Tymczasowo trwałe 0.5
+        string tierText = (enemyStats.data.rank == EnemyRank.Boss || enemyStats.data.isBoss) ? "" : $" (T{enemyStats.Tier})";
+        monsterNameText.text = $"{enemyStats.data.enemyName}{tierText}";
+        healthText.text = $"{Mathf.CeilToInt(enemyStats.GetCurrentHealth())} / {Mathf.CeilToInt(enemyStats.GetMaxHealth())}";
+        monsterSpeedText.text = $"{enemyStats.CurrentMoveSpeed:0.##}";
+        monsterArmourText.text = $"{enemyStats.CurrentArmor * 100f:0.#}%";
+        monsterMagicDefenseText.text = $"{enemyStats.CurrentMagicResist * 100f:0.#}%";
+
+        Sprite icon = enemyStats.CurrentSprite;
+        if (icon != null) enemyIcon.sprite = icon;
+
+        if (healthBar != null && enemyStats.GetMaxHealth() > 0f)
+        {
+            healthBar.fillAmount = Mathf.Clamp01(enemyStats.GetCurrentHealth() / enemyStats.GetMaxHealth());
+        }
     }
 
     public void OpenWindow(EnemyStats stats)
@@ -83,6 +91,6 @@ public class EnemyInfoUI : MonoBehaviour
     {
         enemyStats = null;
         isOpenWindow = false;
-        rectTransform.DOAnchorPosY(hiddenYPosition,0.1f).SetUpdate(true);
+        rectTransform.DOAnchorPosY(hiddenYPosition, 0.1f).SetUpdate(true);
     }
 }

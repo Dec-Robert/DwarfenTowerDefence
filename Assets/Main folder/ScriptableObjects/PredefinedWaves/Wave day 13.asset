@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Wave day 13
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 13
-  waveMessage: "Czarne od\u0142amy ska\u0142 o\u017Cywaj\u0105 - zwi\u0119kszona obecno\u015B\u0107 aberracji!"
+  waveMessage: "Czarne od\u0142amy ska\u0142 o\u017Cywaj\u0105 - zwi\u0119kszona
+    obecno\u015B\u0107 aberracji!"
   etherPool: 26
   customSpawnInterval: 0
   hpMultiplier: 3.88
@@ -22,17 +23,22 @@ MonoBehaviour:
   allowRandomElites: 0
   enemies:
   - enemy: {fileID: 11400000, guid: b8d0e2cd314d4a10a9b6f90e40e2dd27, type: 2}
+    tier: 1
     count: 10
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    tier: 1
     count: 4
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
+    tier: 1
     count: 6
     forceElite: 0
   - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
     count: 5
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    tier: 1
     count: 1
     forceElite: 1

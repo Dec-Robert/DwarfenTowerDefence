@@ -46,14 +46,13 @@ MonoBehaviour:
     amount: 2
   tier1Upgrades: []
   prefab: {fileID: 6524460908731403753, guid: aaac537b19e66e145902f1bec629cd9a, type: 3}
-  bonusRules:
-  - requiredFeature: 3
+  elevationBonus:
+    enabled: 1
+    resourceType: 2
+    onTopBonusPerLevel: 1
+    adjacentBonusPerLevel: 0.5
+    penaltyPerExtraBuilding: 3
     searchRadius: 1
-    resourceYields:
-    - resourceType: 2
-      baseBonusPerHex: 4
-      onTopProductionBonus: 8
-      penaltyPerUser: 0
-      minBonus: 0
+  bonusRules: []
   baseMaxWorkers: 1
   isUnlocked: 1

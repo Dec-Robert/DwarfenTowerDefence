@@ -22,6 +22,12 @@ public class EnemySpawner : MonoBehaviour
     [Header("Spawn Settings")]
     public float nightSpawnInterval = 1.0f;
 
+    [Header("Endless / Late Scaling Settings")]
+    [Tooltip("Włącza skalowanie wykładnicze dla dni po ostatniej zdefiniowanej fali")]
+    public bool enableLateScaling = true;
+    [Tooltip("Baza potęgowania mnożnika HP (np. 1.1 = +10% HP za każdy dzień ponad ostatnią falę: 1.1^a)")]
+    public float lateScalingBase = 1.1f;
+
     [Header("Route Weights")]
     public float baseFormulaConst = 3f;
     public float perSpawnerMultiplier = 2.5f;
@@ -32,6 +38,7 @@ public class EnemySpawner : MonoBehaviour
     private struct SpawnInstruction
     {
         public EnemyData data;
+        public int tier;
         public EnemyRank rank;
         public float hpMultiplier;
         public float speedMultiplier;
@@ -91,10 +98,11 @@ public class EnemySpawner : MonoBehaviour
         activeEnemies.Clear();
         currentWaveSpawnInterval = nightSpawnInterval;
 
-        WaveDefinition selectedWave = FindWaveForDay(waveNumber);
+        int daysBeyondLast = 0;
+        WaveDefinition selectedWave = FindWaveForDay(waveNumber, out daysBeyondLast);
         if (selectedWave != null)
         {
-            PreparePredefinedWave(selectedWave, waveNumber);
+            PreparePredefinedWave(selectedWave, waveNumber, daysBeyondLast);
         }
         else
         {
@@ -104,14 +112,29 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    private WaveDefinition FindWaveForDay(int waveNumber)
+    public WaveDefinition FindWaveForDay(int waveNumber)
     {
+        int daysBeyondLast;
+        return FindWaveForDay(waveNumber, out daysBeyondLast);
+    }
+
+    public WaveDefinition FindWaveForDay(int waveNumber, out int daysBeyondLast)
+    {
+        daysBeyondLast = 0;
         if (predefinedWaves == null || predefinedWaves.Count == 0) return null;
+
+        int maxDefinedDay = predefinedWaves.Where(w => w != null).Max(w => w.dayNumber);
+
+        if (waveNumber > maxDefinedDay)
+        {
+            daysBeyondLast = waveNumber - maxDefinedDay;
+            return predefinedWaves.Where(w => w != null).OrderBy(w => w.dayNumber).LastOrDefault();
+        }
 
         WaveDefinition exact = predefinedWaves.Find(w => w != null && w.dayNumber == waveNumber);
         if (exact != null) return exact;
 
-        // Fallback: najbliższa wcześniejsza fala (lub pierwsza zdefiniowana)
+        // Fallback: najbliższa wcześniejsza fala w ramach zdefiniowanego zakresu
         WaveDefinition fallback = null;
         foreach (var w in predefinedWaves)
         {
@@ -136,15 +159,21 @@ public class EnemySpawner : MonoBehaviour
         return fallback;
     }
 
-    void PreparePredefinedWave(WaveDefinition waveDef, int waveNumber)
+    void PreparePredefinedWave(WaveDefinition waveDef, int waveNumber, int daysBeyondLast = 0)
     {
         if (waveDef.customSpawnInterval > 0f)
         {
             currentWaveSpawnInterval = waveDef.customSpawnInterval;
         }
 
-        float hpMult = waveDef.hpMultiplier > 0f ? waveDef.hpMultiplier : 1f;
-        float speedMult = waveDef.speedMultiplier > 0f ? waveDef.speedMultiplier : 1f;
+        // Fale ręczne: mnożnik 1.0 (statystyki definiowane przez tiery wrogów).
+        // Fale endless (dni po ostatniej fali): 1.1^a dla HP.
+        float hpMult = 1f;
+        if (daysBeyondLast > 0 && enableLateScaling)
+        {
+            hpMult = Mathf.Pow(lateScalingBase, daysBeyondLast);
+        }
+        float speedMult = 1f;
 
         List<SpawnInstruction> instructions = new List<SpawnInstruction>();
 
@@ -153,6 +182,8 @@ public class EnemySpawner : MonoBehaviour
             foreach (var group in waveDef.enemies)
             {
                 if (group.enemy == null || group.count <= 0) continue;
+
+                int groupTier = group.Tier;
 
                 for (int i = 0; i < group.count; i++)
                 {
@@ -179,6 +210,7 @@ public class EnemySpawner : MonoBehaviour
                     instructions.Add(new SpawnInstruction
                     {
                         data = group.enemy,
+                        tier = groupTier,
                         rank = rank,
                         hpMultiplier = hpMult,
                         speedMultiplier = speedMult
@@ -204,7 +236,8 @@ public class EnemySpawner : MonoBehaviour
         }
 
         string msgInfo = string.IsNullOrEmpty(waveDef.waveMessage) ? "" : $" | \"{waveDef.waveMessage}\"";
-        Debug.Log($"[Spawner] Fala Dzień {waveNumber} ({waveDef.name}): {enemiesToSpawnQueue.Count} wrogów w kolejce (HP x{hpMult:0.##}, Speed x{speedMult:0.##}, Interwał {currentWaveSpawnInterval:0.##}s){msgInfo}");
+        string endlessInfo = daysBeyondLast > 0 ? $" [ENDLESS a={daysBeyondLast}, HP x{hpMult:0.##}]" : "";
+        Debug.Log($"[Spawner] Fala Dzień {waveNumber} ({waveDef.name}){endlessInfo}: {enemiesToSpawnQueue.Count} wrogów w kolejce (HP x{hpMult:0.##}, Speed x{speedMult:0.##}, Interwał {currentWaveSpawnInterval:0.##}s){msgInfo}");
 
         EnsureEtherDropManager();
         if (EnemyEtherDropManager.Instance != null)
@@ -300,6 +333,7 @@ public class EnemySpawner : MonoBehaviour
             SpawnEnemy(new SpawnInstruction
             {
                 data = data,
+                tier = 1,
                 rank = asElite ? EnemyRank.Elite : EnemyRank.Normal,
                 hpMultiplier = 1f,
                 speedMultiplier = 1f
@@ -334,10 +368,13 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnEnemy(SpawnInstruction instr)
     {
-        if (activeRoutes.Count == 0 || instr.data?.prefab == null) return;
+        if (activeRoutes.Count == 0 || instr.data == null) return;
+
+        GameObject prefabToSpawn = instr.data.GetPrefabForTier(instr.tier);
+        if (prefabToSpawn == null) return;
 
         SpawnRoute route = SelectRoute();
-        GameObject obj = Instantiate(instr.data.prefab, route.currentSpawnPoint, Quaternion.identity);
+        GameObject obj = Instantiate(prefabToSpawn, route.currentSpawnPoint, Quaternion.identity);
 
         EnemyStats stats = obj.GetComponent<EnemyStats>();
         if (stats != null)
@@ -350,7 +387,7 @@ public class EnemySpawner : MonoBehaviour
             {
                 stats.rank = instr.rank;
             }
-            stats.Initialize(instr.data, instr.hpMultiplier, instr.speedMultiplier);
+            stats.Initialize(instr.data, instr.tier, instr.hpMultiplier, instr.speedMultiplier);
             stats.OnDeath += RemoveEnemyFromAlive;
             activeEnemies.Add(stats);
         }

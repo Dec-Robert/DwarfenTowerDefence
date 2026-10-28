@@ -13,8 +13,38 @@ MonoBehaviour:
   m_Name: Abberracja
   m_EditorClassIdentifier: 
   prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
+  sprite: {fileID: 0}
   threatCost: 4
   enemyName: Abberracja
+  tiers:
+  - prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 380
+    moveSpeed: 0.75
+    armor: 50
+    magicResist: 0
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 380
+    moveSpeed: 0.75
+    armor: 50
+    magicResist: 0
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 380
+    moveSpeed: 0.75
+    armor: 50
+    magicResist: 0
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 380
+    moveSpeed: 0.75
+    armor: 50
+    magicResist: 0
+    dodgeChance: 0
   baseHp: 380
   moveSpeed: 0.75
   armor: 50

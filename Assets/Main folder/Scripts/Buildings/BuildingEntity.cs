@@ -51,7 +51,17 @@ public class BuildingEntity : MonoBehaviour
     {
         UnsubscribeFromPhaseChange();
         Terrain?.ReleaseAll();
-        GetComponentInParent<HexCell>()?.ClearBuilding();
+        var myCell = GetComponentInParent<HexCell>();
+        myCell?.ClearBuilding();
+
+        if (myCell != null && HexMapVisualizer.Instance != null)
+        {
+            foreach (var nCoord in HexGridMath.GetNeighbors(myCell.localCoord))
+            {
+                var neighborHex = HexMapVisualizer.Instance.GetHexCell(myCell.chunkCoord, nCoord);
+                neighborHex?.GetComponentInChildren<BuildingEntity>()?.ForceRescan();
+            }
+        }
     }
 
     public virtual void Initialize(BuildingData buildingData)

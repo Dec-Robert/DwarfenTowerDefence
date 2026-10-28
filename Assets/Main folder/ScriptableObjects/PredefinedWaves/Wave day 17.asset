@@ -13,26 +13,32 @@ MonoBehaviour:
   m_Name: Wave day 17
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 17
-  waveMessage: "Bataliony elitarnych aberracji i zwiadowc\xF3w napieraj\u0105 na bastiony obronne."
+  waveMessage: "Bataliony elitarnych aberracji i zwiadowc\xF3w napieraj\u0105 na
+    bastiony obronne."
   etherPool: 36
   customSpawnInterval: 0
-  hpMultiplier: 6.10
+  hpMultiplier: 6.1
   speedMultiplier: 1.05
   shuffleEnemies: 1
   allowRandomElites: 0
   enemies:
   - enemy: {fileID: 11400000, guid: b8d0e2cd314d4a10a9b6f90e40e2dd27, type: 2}
+    tier: 1
     count: 16
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    tier: 1
     count: 8
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
+    tier: 1
     count: 8
     forceElite: 0
   - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
     count: 2
     forceElite: 1
   - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    tier: 1
     count: 2
     forceElite: 1

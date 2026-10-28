@@ -13,8 +13,38 @@ MonoBehaviour:
   m_Name: MistStalker
   m_EditorClassIdentifier: 
   prefab: {fileID: 6987379787904698027, guid: 7ed10735d8ef4938a26a3755cf289825, type: 3}
+  sprite: {fileID: 0}
   threatCost: 2
   enemyName: Mist Stalker
+  tiers:
+  - prefab: {fileID: 6987379787904698027, guid: 7ed10735d8ef4938a26a3755cf289825, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 140
+    moveSpeed: 2
+    armor: 0
+    magicResist: 35
+    dodgeChance: 25
+  - prefab: {fileID: 6987379787904698027, guid: 7ed10735d8ef4938a26a3755cf289825, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 140
+    moveSpeed: 2
+    armor: 0
+    magicResist: 35
+    dodgeChance: 25
+  - prefab: {fileID: 6987379787904698027, guid: 7ed10735d8ef4938a26a3755cf289825, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 140
+    moveSpeed: 2
+    armor: 0
+    magicResist: 35
+    dodgeChance: 25
+  - prefab: {fileID: 6987379787904698027, guid: 7ed10735d8ef4938a26a3755cf289825, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 140
+    moveSpeed: 2
+    armor: 0
+    magicResist: 35
+    dodgeChance: 25
   baseHp: 140
   moveSpeed: 2
   armor: 0

@@ -8,6 +8,14 @@ public class EnemyStats : MonoBehaviour
     [Header("Data Preview")]
     public EnemyData data;
     public EnemyRank rank = EnemyRank.Normal;
+    [SerializeField] private int tier = 1;
+
+    public int Tier => tier;
+    public float CurrentArmor => currentArmor;
+    public float CurrentMagicResist => currentMagicResist;
+    public float CurrentDodge => currentDodge;
+    public float CurrentMoveSpeed => Walker != null ? Walker.speed : (data != null ? data.GetTier(tier).moveSpeed : 0f);
+    public Sprite CurrentSprite => (data != null) ? data.GetSpriteForTier(tier) : null;
 
     [SerializeField] private float currentHealth;
     [SerializeField] private float maxHealth;
@@ -78,7 +86,6 @@ public class EnemyStats : MonoBehaviour
         {
             meshRenderer = renderers[0];
         }
-
     }
 
     private void OnEnable()
@@ -119,7 +126,13 @@ public class EnemyStats : MonoBehaviour
 
     public void Initialize(EnemyData _data, float waveHpMult = 1f, float waveSpeedMult = 1f)
     {
+        Initialize(_data, 1, waveHpMult, waveSpeedMult);
+    }
+
+    public void Initialize(EnemyData _data, int _tier, float waveHpMult = 1f, float waveSpeedMult = 1f)
+    {
         data = _data;
+        tier = Mathf.Clamp(_tier, 1, 4);
 
         if (renderers == null || renderers.Length == 0 || meshRenderer == null)
             CacheRenderers();
@@ -143,22 +156,29 @@ public class EnemyStats : MonoBehaviour
         else if (rank != EnemyRank.Elite && rank != EnemyRank.Boss)
             rank = EnemyRank.Normal;
 
-        float hearthEnemyMult = BeaconEntity.GetActiveNightEnemyMultiplier();
-        float eliteHpMult = (rank == EnemyRank.Elite && data.eliteHpMultiplier > 0f) ? data.eliteHpMultiplier : 1f;
-        float eliteSpeedMult = (rank == EnemyRank.Elite && data.eliteSpeedMultiplier > 0f) ? data.eliteSpeedMultiplier : 1f;
+        EnemyTierStats tierStats = data != null ? data.GetTier(tier) : null;
+        float baseHpVal = tierStats != null ? tierStats.baseHp : (data != null ? data.baseHp : 100f);
+        float baseSpeedVal = tierStats != null ? tierStats.moveSpeed : (data != null ? data.moveSpeed : 3f);
+        float baseArmorVal = tierStats != null ? tierStats.armor : (data != null ? data.armor : 0f);
+        float baseMRVal = tierStats != null ? tierStats.magicResist : (data != null ? data.magicResist : 0f);
+        float baseDodgeVal = tierStats != null ? tierStats.dodgeChance : (data != null ? data.dodgeChance : 0f);
 
-        maxHealth = Mathf.Max(1f, data.baseHp * hearthEnemyMult * Mathf.Max(0.01f, waveHpMult) * eliteHpMult);
+        float hearthEnemyMult = BeaconEntity.GetActiveNightEnemyMultiplier();
+        float eliteHpMult = (rank == EnemyRank.Elite && data != null && data.eliteHpMultiplier > 0f) ? data.eliteHpMultiplier : 1f;
+        float eliteSpeedMult = (rank == EnemyRank.Elite && data != null && data.eliteSpeedMultiplier > 0f) ? data.eliteSpeedMultiplier : 1f;
+
+        maxHealth = Mathf.Max(1f, baseHpVal * hearthEnemyMult * Mathf.Max(0.01f, waveHpMult) * eliteHpMult);
         currentHealth = maxHealth;
 
-        currentArmor = data.armor <= 1f ? data.armor : data.armor / 100f;
-        currentMagicResist = data.magicResist <= 1f ? data.magicResist : data.magicResist / 100f;
-        currentDodge = data.dodgeChance <= 1f ? data.dodgeChance : data.dodgeChance / 100f;
+        currentArmor = baseArmorVal <= 1f ? baseArmorVal : baseArmorVal / 100f;
+        currentMagicResist = baseMRVal <= 1f ? baseMRVal : baseMRVal / 100f;
+        currentDodge = baseDodgeVal <= 1f ? baseDodgeVal : baseDodgeVal / 100f;
 
         if (Walker == null)
             Walker = GetComponent<EnemyWalker>();
 
         if (Walker != null)
-            Walker.speed = Mathf.Max(0.1f, data.moveSpeed * hearthEnemyMult * Mathf.Max(0.01f, waveSpeedMult) * eliteSpeedMult);
+            Walker.speed = Mathf.Max(0.1f, baseSpeedVal * hearthEnemyMult * Mathf.Max(0.01f, waveSpeedMult) * eliteSpeedMult);
 
         if (rank == EnemyRank.Elite)
         {
@@ -174,10 +194,11 @@ public class EnemyStats : MonoBehaviour
             ResetColor();
         }
 
-        if (_data.skillPrefabs != null)
+        if (_data != null && _data.skillPrefabs != null)
         {
             foreach (var prefab in _data.skillPrefabs)
             {
+                if (prefab == null) continue;
                 GameObject skillObj = Instantiate(prefab, transform);
                 EnemySkill skill = skillObj.GetComponent<EnemySkill>();
                 if (skill != null)

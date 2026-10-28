@@ -13,13 +13,44 @@ MonoBehaviour:
   m_Name: Blob
   m_EditorClassIdentifier: 
   prefab: {fileID: 6987379787904698027, guid: 56ea7a1b4e1eb70429cfcd1b02d6b7a1, type: 3}
+  sprite: {fileID: 0}
   threatCost: 3
   enemyName: Blob
+  tiers:
+  - prefab: {fileID: 6987379787904698027, guid: 56ea7a1b4e1eb70429cfcd1b02d6b7a1, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 200
+    moveSpeed: 1
+    armor: 10
+    magicResist: 0
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 56ea7a1b4e1eb70429cfcd1b02d6b7a1, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 200
+    moveSpeed: 1
+    armor: 10
+    magicResist: 0
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 56ea7a1b4e1eb70429cfcd1b02d6b7a1, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 200
+    moveSpeed: 1
+    armor: 10
+    magicResist: 0
+    dodgeChance: 0
+  - prefab: {fileID: 6987379787904698027, guid: 56ea7a1b4e1eb70429cfcd1b02d6b7a1, type: 3}
+    sprite: {fileID: 0}
+    baseHp: 200
+    moveSpeed: 1
+    armor: 10
+    magicResist: 0
+    dodgeChance: 0
   baseHp: 200
   moveSpeed: 1
   armor: 10
   magicResist: 0
   dodgeChance: 0
+  rank: 0
   canBeElite: 1
   eliteSpawnChance: 0.1
   eliteHpMultiplier: 2

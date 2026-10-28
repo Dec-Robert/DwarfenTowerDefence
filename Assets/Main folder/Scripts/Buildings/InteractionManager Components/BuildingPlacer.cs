@@ -21,7 +21,28 @@ public class BuildingPlacer
 
         if (cell.IsRoad && !data.allowOnRoad) return false;
         if (!data.elevationRequirement.IsValid(cell.Elevation)) return false;
-        if (data.allowedTerrain != null && data.allowedTerrain.Count > 0 && !data.allowedTerrain.Contains(cell.Feature)) return false;
+
+        bool isMine = data.type == BuildingType.Economic && (
+            (data.allowedTerrain != null && data.allowedTerrain.Count == 1 && data.allowedTerrain.Contains(HexFeatureType.Mountain)) ||
+            (data.buildingName != null && data.buildingName.IndexOf("Mine", StringComparison.OrdinalIgnoreCase) >= 0)
+        );
+
+        if (data.type == BuildingType.Economic)
+        {
+            if (isMine)
+            {
+                if (cell.Feature != HexFeatureType.Mountain) return false;
+            }
+            else
+            {
+                if (cell.Feature == HexFeatureType.Mountain) return false;
+            }
+        }
+        else
+        {
+            if (data.allowedTerrain != null && data.allowedTerrain.Count > 0 && !data.allowedTerrain.Contains(cell.Feature)) return false;
+        }
+
         if (cell.HasBuilding()) return false;
 
         if (!IsChunkStateValidForBuilding(cell.chunkCoord, data)) return false;

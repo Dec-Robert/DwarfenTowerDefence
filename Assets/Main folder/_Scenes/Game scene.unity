@@ -1162,6 +1162,7 @@ GameObject:
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
   - component: {fileID: 330585548}
+  - component: {fileID: 330585549}
   m_Layer: 0
   m_Name: ---Main Camera
   m_TagString: MainCamera
@@ -1306,6 +1307,18 @@ MonoBehaviour:
   maxHeight: 50
   mapLimit: {x: 500, y: 500}
   isInputLocked: 0
+--- !u!114 &330585549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29cc23b9fd2e8854398f9dbf70280b5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GlobalShaderTime
 --- !u!1 &350267186
 GameObject:
   m_ObjectHideFlags: 0
@@ -2725,6 +2738,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 20bc131a828c4959a0e9dbde4a54f3c6, type: 2}
   - {fileID: 11400000, guid: 89e2eb21c5974408bf780700290d8dc7, type: 2}
   nightSpawnInterval: 1
+  enableLateScaling: 1
+  lateScalingBase: 1.1
   baseFormulaConst: 10
   perSpawnerMultiplier: 2.5
   activeRoutes: []
@@ -3538,8 +3553,8 @@ MonoBehaviour:
   expansionManager: {fileID: 1837610586}
   mapVisualizer: {fileID: 1837610584}
   mapGenerator: {fileID: 1837610582}
-  defaultFogMaterial: {fileID: 2100000, guid: ecf964584f2921a42a52d9d4bc81e15f, type: 2}
-  borderlandsFogMaterial: {fileID: 2100000, guid: bd1d809bd81bd1549a9811c50a52b701, type: 2}
+  defaultFogMaterial: {fileID: -876546973899608171, guid: 9c8afe04d5ea9ce40be87e68e5f82fba, type: 3}
+  borderlandsFogMaterial: {fileID: -876546973899608171, guid: e2767fe3a19ad6248aa59182a1ea2177, type: 3}
   surveyingFogMaterial: {fileID: 2100000, guid: d9b8120594697c24e968d0dd2918c202, type: 2}
   outskirtsFogMaterial: {fileID: 2100000, guid: 69087ab46eb2d144499180d014dba817, type: 2}
   fogPrefab: {fileID: 3870602923655417153, guid: 3ace50b7f41b02447ba50c08e65fdf93, type: 3}
@@ -3547,6 +3562,10 @@ MonoBehaviour:
   fogHeightScale: 1
   outskirtsFogHeightScale: 0.08
   outskirtsFogYOffset: 0
+  maskResolution: 64
+  chunkRadiusMultiplier: 1
+  fogBlendFalloff: 1
+  worldMarginMultiplier: 3
 --- !u!114 &1837610586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32893,7 +32912,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 959.84106, y: -116}
+  m_AnchoredPosition: {x: 1039.68, y: -116}
   m_SizeDelta: {x: 252, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &1789562790987711619

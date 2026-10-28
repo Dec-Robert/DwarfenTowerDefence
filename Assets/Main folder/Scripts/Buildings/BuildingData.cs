@@ -117,6 +117,18 @@ public class BuildingData : ScriptableObject
         return bonusRules ?? new List<TerrainBonusRule>();
     }
 
+    [Header("Zasady Bonusu Wysokosciowego")]
+    public ElevationBonusRule elevationBonus;
+
+    /// <summary>
+    /// Sprawdza, czy budynek posiada jakiekolwiek bonusy terenowe lub wysokosciowe.
+    /// </summary>
+    public bool HasAnyTerrainBonuses()
+    {
+        bool hasRules = bonusRules != null && bonusRules.Count > 0;
+        return hasRules || elevationBonus.enabled;
+    }
+
     [Header("Pracownicy (Baza)")] public int baseMaxWorkers = 1;
 
     [Header("Is building unlocked to be build")]

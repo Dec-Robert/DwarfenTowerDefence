@@ -290,6 +290,28 @@ public class TerrainBonusRule
 }
 
 [Serializable]
+public struct ElevationBonusRule
+{
+    [Tooltip("Czy budynek czerpie korzysci ze wzniesien terenu (np. Kamieniolom)?")]
+    public bool enabled;
+
+    [Tooltip("Jaki surowiec jest wydobywany ze wzniesienia?")]
+    public ResourceType resourceType;
+
+    [Tooltip("Bonus za kazdy poziom wzniesienia heksa, na ktorym stoi budynek")]
+    public float onTopBonusPerLevel;
+
+    [Tooltip("Bonus za kazdy poziom wzniesienia na sasiednich heksach")]
+    public float adjacentBonusPerLevel;
+
+    [Tooltip("Redukcja poziomu terenu za kazdego dodatkowego uzytkownika wzniesienia: poziom - penalty*(N-1)")]
+    public float penaltyPerExtraBuilding;
+
+    [Tooltip("Zasieg poszukiwania wzniesien (zazwyczaj 1 = bezposredni sasiedzi)")]
+    public int searchRadius;
+}
+
+[Serializable]
 public struct TowerStats
 {
     public float range; // Range in game units

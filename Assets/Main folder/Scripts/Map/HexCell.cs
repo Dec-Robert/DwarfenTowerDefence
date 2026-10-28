@@ -15,7 +15,16 @@ public class HexCell : MonoBehaviour
     {
         return OccupyingBuilding != null || GetComponentInChildren<BuildingEntity>() != null;
     }
-    public int Elevation => Data != null ? Data.elevation : 0;
+    public int Elevation
+    {
+        get
+        {
+            if (Data == null) return 0;
+            if (Data.elevation != 0) return Data.elevation;
+            if (Data.feature == HexFeatureType.Hill) return Mathf.Max(1, Data.featureLevel);
+            return 0;
+        }
+    }
     public bool IsHill => Elevation > 0;
     public bool IsCavity => Elevation < 0;
     public bool IsFlat => Elevation == 0;

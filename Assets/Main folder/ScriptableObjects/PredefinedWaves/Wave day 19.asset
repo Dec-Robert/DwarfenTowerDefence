@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Wave day 19
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 19
-  waveMessage: "Ostatnia prosta przed decydującym starciem - nie pozwól pęknąć murom!"
+  waveMessage: "Ostatnia prosta przed decyduj\u0105cym starciem - nie pozw\xF3l p\u0119kn\u0105\u0107
+    murom!"
   etherPool: 42
   customSpawnInterval: 0
   hpMultiplier: 7.65
@@ -22,20 +23,26 @@ MonoBehaviour:
   allowRandomElites: 0
   enemies:
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 1
     count: 30
     forceElite: 0
   - enemy: {fileID: 11400000, guid: b8d0e2cd314d4a10a9b6f90e40e2dd27, type: 2}
+    tier: 1
     count: 20
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    tier: 1
     count: 10
     forceElite: 0
   - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
     count: 10
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+    tier: 1
     count: 3
     forceElite: 1
   - enemy: {fileID: 11400000, guid: 775e7e3e868d498d8e3fffa05a5e25c8, type: 2}
+    tier: 1
     count: 1
     forceElite: 0

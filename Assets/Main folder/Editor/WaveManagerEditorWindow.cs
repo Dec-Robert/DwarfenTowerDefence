@@ -21,7 +21,13 @@ public class WaveManagerEditorWindow : EditorWindow
     public static void ShowWindow()
     {
         var window = GetWindow<WaveManagerEditorWindow>("Wave Manager");
-        window.minSize = new Vector2(880, 560);
+        window.minSize = new Vector2(900, 580);
+    }
+
+    [MenuItem("Tools/Waves/Migrate Enemy Tiers and Waves")]
+    public static void RunMigrationMenuItem()
+    {
+        EnemyTierMigrationTool.MigrateAll();
     }
 
     private void OnEnable()
@@ -88,14 +94,20 @@ public class WaveManagerEditorWindow : EditorWindow
             RefreshAssets();
         }
 
-        if (GUILayout.Button("+ Nowa Fala (Kolejny Dzień)", EditorStyles.toolbarButton, GUILayout.Width(175)))
+        if (GUILayout.Button("+ Nowa Fala", EditorStyles.toolbarButton, GUILayout.Width(100)))
         {
             CreateNewWaveAsset();
         }
 
-        if (selectedWave != null && GUILayout.Button("Duplikuj Wybraną Falę", EditorStyles.toolbarButton, GUILayout.Width(150)))
+        if (selectedWave != null && GUILayout.Button("Duplikuj Wybraną", EditorStyles.toolbarButton, GUILayout.Width(130)))
         {
             DuplicateSelectedWave();
+        }
+
+        if (GUILayout.Button("Migracja Tierów", EditorStyles.toolbarButton, GUILayout.Width(110)))
+        {
+            EnemyTierMigrationTool.MigrateAll();
+            RefreshAssets();
         }
 
         GUILayout.FlexibleSpace();
@@ -208,10 +220,11 @@ public class WaveManagerEditorWindow : EditorWindow
         selectedWave.waveMessage = EditorGUILayout.TextField("Komunikat Fali (waveMessage)", selectedWave.waveMessage);
         selectedWave.etherPool = Mathf.Max(0, EditorGUILayout.IntField("Pula Etheru Fali (etherPool)", selectedWave.etherPool));
         selectedWave.customSpawnInterval = Mathf.Max(0f, EditorGUILayout.FloatField("Interwał Spawnu (0 = domyślny)", selectedWave.customSpawnInterval));
-        selectedWave.hpMultiplier = Mathf.Max(0.1f, EditorGUILayout.FloatField("Mnożnik HP Fali", selectedWave.hpMultiplier <= 0f ? 1f : selectedWave.hpMultiplier));
-        selectedWave.speedMultiplier = Mathf.Max(0.1f, EditorGUILayout.FloatField("Mnożnik Prędkości Fali", selectedWave.speedMultiplier <= 0f ? 1f : selectedWave.speedMultiplier));
         selectedWave.shuffleEnemies = EditorGUILayout.Toggle("Wymieszaj Kolejność (Shuffle)", selectedWave.shuffleEnemies);
         selectedWave.allowRandomElites = EditorGUILayout.Toggle("Losowe Elity wg EnemyData", selectedWave.allowRandomElites);
+
+        EditorGUILayout.Space(2);
+        EditorGUILayout.HelpBox("Tryb Tierowy: Statystyki wrogów wynikają z wybranego Tieru (T1-T4). Skalowanie (1.1^a) włącza się po ostatniej zdefiniowanej fali.", MessageType.None);
         EditorGUILayout.EndVertical();
 
         EditorGUILayout.Space(8);
@@ -222,18 +235,20 @@ public class WaveManagerEditorWindow : EditorWindow
         EditorGUILayout.Space(8);
 
         // Sekcja 3: Szybkie dodawanie grup wrogów
-        EditorGUILayout.LabelField("Szybkie dodawanie grupy wrogów:", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Szybkie dodawanie grupy wrogów (Domyślnie Tier 1):", EditorStyles.boldLabel);
         EditorGUILayout.BeginHorizontal();
         foreach (var enemy in allEnemies)
         {
             if (enemy == null) continue;
             string label = string.IsNullOrEmpty(enemy.enemyName) ? enemy.name : enemy.enemyName;
-            if (GUILayout.Button($"+ {label} (HP:{enemy.baseHp})", GUILayout.Height(24)))
+            float t1Hp = enemy.GetTier(1).baseHp;
+            if (GUILayout.Button($"+ {label} (HP:{t1Hp:0.#})", GUILayout.Height(24)))
             {
                 if (selectedWave.enemies == null) selectedWave.enemies = new List<WaveDefinition.WaveEntry>();
                 selectedWave.enemies.Add(new WaveDefinition.WaveEntry
                 {
                     enemy = enemy,
+                    tier = 1,
                     count = 5,
                     forceElite = false
                 });
@@ -262,17 +277,23 @@ public class WaveManagerEditorWindow : EditorWindow
             EditorGUILayout.BeginHorizontal("box");
 
             EditorGUILayout.LabelField($"#{i + 1}", GUILayout.Width(28));
-            entry.enemy = (EnemyData)EditorGUILayout.ObjectField(entry.enemy, typeof(EnemyData), false, GUILayout.Width(180));
-            EditorGUILayout.LabelField("Ilość:", GUILayout.Width(38));
-            entry.count = Mathf.Max(1, EditorGUILayout.IntField(entry.count, GUILayout.Width(50)));
+            entry.enemy = (EnemyData)EditorGUILayout.ObjectField(entry.enemy, typeof(EnemyData), false, GUILayout.Width(170));
 
-            entry.forceElite = EditorGUILayout.ToggleLeft("Cała grupa ELITE", entry.forceElite, GUILayout.Width(125));
+            EditorGUILayout.LabelField("Tier:", GUILayout.Width(30));
+            int currentTier = entry.Tier;
+            entry.tier = EditorGUILayout.IntSlider(currentTier, 1, 4, GUILayout.Width(90));
+
+            EditorGUILayout.LabelField("Ilość:", GUILayout.Width(36));
+            entry.count = Mathf.Max(1, EditorGUILayout.IntField(entry.count, GUILayout.Width(45)));
+
+            entry.forceElite = EditorGUILayout.ToggleLeft("ELITE", entry.forceElite, GUILayout.Width(55));
 
             if (entry.enemy != null)
             {
-                float hpMult = (selectedWave.hpMultiplier > 0f ? selectedWave.hpMultiplier : 1f) * (entry.forceElite ? entry.enemy.eliteHpMultiplier : 1f);
-                float unitHp = entry.enemy.baseHp * hpMult;
-                EditorGUILayout.LabelField($"HP jedn.: {unitHp:0.#} | Suma: {unitHp * entry.count:0.#}", EditorStyles.miniLabel);
+                var tStats = entry.enemy.GetTier(entry.Tier);
+                float baseHp = tStats != null ? tStats.baseHp : entry.enemy.baseHp;
+                float unitHp = baseHp * (entry.forceElite ? entry.enemy.eliteHpMultiplier : 1f);
+                EditorGUILayout.LabelField($"HP: {unitHp:0.#} (Σ {unitHp * entry.count:0.#})", EditorStyles.miniLabel);
             }
 
             GUILayout.FlexibleSpace();
@@ -323,7 +344,6 @@ public class WaveManagerEditorWindow : EditorWindow
         int totalEnemies = 0;
         int totalElites = 0;
         float totalHp = 0f;
-        float waveHpMult = wave.hpMultiplier > 0f ? wave.hpMultiplier : 1f;
 
         if (wave.enemies != null)
         {
@@ -332,8 +352,11 @@ public class WaveManagerEditorWindow : EditorWindow
                 if (e.enemy == null || e.count <= 0) continue;
                 totalEnemies += e.count;
                 if (e.forceElite) totalElites += e.count;
-                float mult = waveHpMult * (e.forceElite ? e.enemy.eliteHpMultiplier : 1f);
-                totalHp += e.enemy.baseHp * mult * e.count;
+
+                var tierStats = e.enemy.GetTier(e.Tier);
+                float baseHp = tierStats != null ? tierStats.baseHp : e.enemy.baseHp;
+                float mult = (e.forceElite ? e.enemy.eliteHpMultiplier : 1f);
+                totalHp += baseHp * mult * e.count;
             }
         }
 
@@ -345,10 +368,23 @@ public class WaveManagerEditorWindow : EditorWindow
         int eth40 = Mathf.RoundToInt(wave.etherPool * 0.4f);
         int eth20 = Mathf.RoundToInt(wave.etherPool * 0.2f);
 
+        int maxDefinedDay = allWaves.Count > 0 ? allWaves.Max(w => w.dayNumber) : 0;
+
         EditorGUILayout.BeginVertical("helpbox");
         EditorGUILayout.LabelField("Podsumowanie Fali", EditorStyles.boldLabel);
         EditorGUILayout.LabelField($"Łącznie wrogów: {totalEnemies} (w tym gwarantowanych Elit: {totalElites})  |  Łączna pula HP: {totalHp:0.#}  |  Czas spawnowania: ~{spawnDuration:0.#}s");
         EditorGUILayout.LabelField($"Pula Etheru: {wave.etherPool} szt.  |  Gwarant wg Ognia: Lvl 1: {eth80} (80%)  •  Lvl 2: {eth60} (60%)  •  Lvl 3: {eth40} (40%)  •  Lvl 4: {eth20} (20%)  •  Lvl 5: 0 (0%)");
+
+        if (maxDefinedDay > 0)
+        {
+            float hpPlus1 = totalHp * Mathf.Pow(1.1f, 1);
+            float hpPlus5 = totalHp * Mathf.Pow(1.1f, 5);
+            float hpPlus10 = totalHp * Mathf.Pow(1.1f, 10);
+            EditorGUILayout.Space(2);
+            EditorGUILayout.LabelField($"Skalowanie late-game (wzór 1.1^a po Dniu {maxDefinedDay}):", EditorStyles.miniBoldLabel);
+            EditorGUILayout.LabelField($"Dzień {maxDefinedDay + 1} (a=1): ×1.10 HP (~{hpPlus1:0.#})  |  Dzień {maxDefinedDay + 5} (a=5): ×1.61 HP (~{hpPlus5:0.#})  |  Dzień {maxDefinedDay + 10} (a=10): ×2.59 HP (~{hpPlus10:0.#})", EditorStyles.miniLabel);
+        }
+
         EditorGUILayout.EndVertical();
     }
 
@@ -376,6 +412,7 @@ public class WaveManagerEditorWindow : EditorWindow
             newWave.enemies.Add(new WaveDefinition.WaveEntry
             {
                 enemy = allEnemies[0],
+                tier = 1,
                 count = 5 + nextDay * 2,
                 forceElite = false
             });
