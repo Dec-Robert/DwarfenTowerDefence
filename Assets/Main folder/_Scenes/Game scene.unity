@@ -3562,9 +3562,9 @@ MonoBehaviour:
   fogHeightScale: 1
   outskirtsFogHeightScale: 0.08
   outskirtsFogYOffset: 0
-  maskResolution: 64
-  chunkRadiusMultiplier: 1
-  fogBlendFalloff: 1
+  maskResolution: 128
+  chunkRadiusMultiplier: 2.15
+  fogBlendFalloff: 0.4
   worldMarginMultiplier: 3
 --- !u!114 &1837610586
 MonoBehaviour:
