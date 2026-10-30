@@ -28,7 +28,13 @@ MonoBehaviour:
   - 1.75
   - 2
   - 2.15
-  allowedTerrain: 0000000003000000
+  allowedTerrain: 00000000030000000a000000
+  elevationRequirement:
+    mode: 0
+    minElevation: 0
+    maxElevation: 0
+    allowedElevations: 
+  allowOnRoad: 0
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
   requiredCitizenRace: 1
@@ -40,7 +46,7 @@ MonoBehaviour:
     amount: 5
   productionPerCycle:
   - type: 4
-    amount: 20
+    amount: 10
   upkeepPerCycle: []
   tier1Upgrades:
   - {fileID: 11400000, guid: 8fab46d0e2fc17848bb55e8ea964cd2e, type: 2}
@@ -52,9 +58,16 @@ MonoBehaviour:
     searchRadius: 1
     resourceYields:
     - resourceType: 4
-      baseBonusPerHex: 5
+      baseBonusPerHex: 6
       onTopProductionBonus: 10
-      penaltyPerUser: 2
+      penaltyPerUser: 3
       minBonus: 0
-  baseMaxWorkers: 1
+  elevationBonus:
+    enabled: 0
+    resourceType: 0
+    onTopBonusPerLevel: 0
+    adjacentBonusPerLevel: 0
+    penaltyPerExtraBuilding: 0
+    searchRadius: 0
+  baseMaxWorkers: 2
   isUnlocked: 1

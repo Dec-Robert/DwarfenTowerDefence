@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 19
   waveMessage: "Ostatnia prosta przed decyduj\u0105cym starciem - nie pozw\xF3l p\u0119kn\u0105\u0107
     murom!"
-  etherPool: 42
+  etherPool: 58
   customSpawnInterval: 0
   hpMultiplier: 7.65
   speedMultiplier: 1.1

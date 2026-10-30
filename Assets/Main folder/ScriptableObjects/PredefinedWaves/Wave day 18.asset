@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 18
   waveMessage: "Pot\u0119\u017Cna nawa\u0142nica spaczenia - ziemia dr\u017Cy pod
     naporem hordy."
-  etherPool: 38
+  etherPool: 56
   customSpawnInterval: 0
   hpMultiplier: 6.83
   speedMultiplier: 1.1

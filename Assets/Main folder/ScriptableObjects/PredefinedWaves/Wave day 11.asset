@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 11
   waveMessage: "Nowy tydzie\u0144 zmaga\u0144 - mg\u0142a staje si\u0119 jeszcze
     g\u0119stsza i ch\u0142odniejsza."
-  etherPool: 22
+  etherPool: 36
   customSpawnInterval: 0
   hpMultiplier: 3.1
   speedMultiplier: 1.05

@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 17
   waveMessage: "Bataliony elitarnych aberracji i zwiadowc\xF3w napieraj\u0105 na
     bastiony obronne."
-  etherPool: 36
+  etherPool: 54
   customSpawnInterval: 0
   hpMultiplier: 6.1
   speedMultiplier: 1.05

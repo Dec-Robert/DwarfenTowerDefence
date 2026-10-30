@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 14
   waveMessage: "B\u0142yskawiczne uderzenie elity mg\u0142y testuje szczelno\u015B\u0107
     obrony."
-  etherPool: 28
+  etherPool: 50
   customSpawnInterval: 0
   hpMultiplier: 4.35
   speedMultiplier: 1.1

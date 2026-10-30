@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 12
   waveMessage: "Stada \u0142owc\xF3w kr\u0105\u017C\u0105 wok\xF3\u0142 mur\xF3w
     w asy\u015Bcie arkanist\xF3w."
-  etherPool: 24
+  etherPool: 40
   customSpawnInterval: 0
   hpMultiplier: 3.47
   speedMultiplier: 1.05

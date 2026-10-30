@@ -26,10 +26,10 @@ public class FogOfWarManager : MonoBehaviour
     [Header("Maska Globalna Mgły")]
     [Tooltip("Rozdzielczość generowanej tekstury maski mgły (np. 128, 256)")]
     public int maskResolution = 128;
-    [Tooltip("Mnożnik promienia chunka w świecie określający wielkość plamy w masce")]
-    public float chunkRadiusMultiplier = 1.8f;
-    [Tooltip("Współczynnik miękkości przejścia na krawędziach")]
-    public float fogBlendFalloff = 0.4f;
+    [Tooltip("Mnożnik promienia chunka w świecie określający zasięg mgły")]
+    public float chunkRadiusMultiplier = 2.2f;
+    [Tooltip("Promień wewnętrznego jednolitego rdzenia fioletowej mgły (0..1)")]
+    [Range(0.2f, 0.8f)] public float coreRadiusRatio = 0.55f;
     [Tooltip("Margines wokół granic mapy (w jednostkach promienia chunka)")]
     public float worldMarginMultiplier = 3.0f;
 
@@ -165,7 +165,7 @@ public class FogOfWarManager : MonoBehaviour
 
     private void InitMaskTexture()
     {
-        int res = Mathf.Max(16, maskResolution);
+        int res = Mathf.Clamp(maskResolution, 32, 512);
 
         if (fogMaskTexture != null && (fogMaskTexture.width != res || fogMaskTexture.height != res))
         {
@@ -206,7 +206,7 @@ public class FogOfWarManager : MonoBehaviour
 
         int res = fogMaskTexture.width;
 
-        // Domyślnie cała mapa to Wilderness (255 = 1.0)
+        // Domyślnie cała mapa to Wilderness (255 = 1.0 / ciemna mgła)
         byte defaultVal = 255;
         for (int i = 0; i < maskPixels.Length; i++)
         {
@@ -215,50 +215,63 @@ public class FogOfWarManager : MonoBehaviour
 
         float chunkWorldRadius = chunkRadius * hexSize * chunkRadiusMultiplier;
         float pixelRadius = (chunkWorldRadius / worldBoundsSize.x) * res;
+        int r = Mathf.CeilToInt(pixelRadius);
 
-        // Wypalamy stan każdego chunka do tekstury
+        // Wypalamy wyłącznie tereny odkryte (Settled) i do odkrycia (Borderlands)
         foreach (var kvp in expansionManager.activeChunks)
         {
+            if (kvp.Value.EffectiveState == ChunkState.Wilderness) continue;
+
             Vector3 center = HexGridMath.GetChunkCenterWorld(kvp.Key, chunkRadius, hexSize, padding);
 
-            // Pozycja w pikselach tekstury
             float u = (center.x - worldBoundsMin.x) / worldBoundsSize.x;
             float v = (center.z - worldBoundsMin.y) / worldBoundsSize.y;
             int px = Mathf.RoundToInt(u * (res - 1));
             int py = Mathf.RoundToInt(v * (res - 1));
 
-            byte targetValue = 255; // Wilderness domyślnie
-            switch (kvp.Value.EffectiveState)
-            {
-                case ChunkState.Settled:
-                case ChunkState.Outskirts:
-                    targetValue = 0; // Odkryte
-                    break;
-                case ChunkState.Borderlands:
-                case ChunkState.Surveying:
-                    targetValue = 128; // Do odkrycia (0.5)
-                    break;
-            }
+            bool isBorderlands = kvp.Value.EffectiveState == ChunkState.Borderlands || kvp.Value.EffectiveState == ChunkState.Surveying;
+            bool isSettled = kvp.Value.EffectiveState == ChunkState.Settled || kvp.Value.EffectiveState == ChunkState.Outskirts;
 
-            // Rysujemy miękkie koło wokół chunku
-            int r = Mathf.CeilToInt(pixelRadius);
             for (int y = -r; y <= r; y++)
             {
+                int targetY = py + y;
+                if (targetY < 0 || targetY >= res) continue;
+
                 for (int x = -r; x <= r; x++)
                 {
                     int targetX = px + x;
-                    int targetY = py + y;
-                    if (targetX < 0 || targetX >= res || targetY < 0 || targetY >= res) continue;
+                    if (targetX < 0 || targetX >= res) continue;
 
                     float distNorm = Mathf.Sqrt(x * x + y * y) / pixelRadius;
                     if (distNorm <= 1.0f)
                     {
                         int idx = targetY * res + targetX;
-                        // Bierzemy mniejszą wartość, aby odkryte tereny i zwiad naturalnie wgryzały się w mrok
-                        if (targetValue < maskPixels[idx].r)
+                        byte candidate = 255;
+
+                        if (isSettled)
                         {
-                            byte blended = (byte)Mathf.Lerp(targetValue, maskPixels[idx].r, distNorm * fogBlendFalloff);
-                            maskPixels[idx] = new Color32(blended, blended, blended, 255);
+                            // Osada: czyste 0 (brak mgły, brak ciemnienia przy krawędzi z Borderlands)
+                            candidate = 0;
+                        }
+                        else if (isBorderlands)
+                        {
+                            // Borderlands:
+                            // Wewnątrz coreRadiusRatio (np. 0.55): czysty, jednolity fiolet (brak sztucznego punktowego światła)
+                            // Na zewnątrz coreRadiusRatio ku 1.0: ciemna mgła napływa z Wilderness (wartość rośnie do 255)
+                            if (distNorm <= coreRadiusRatio)
+                            {
+                                candidate = 0;
+                            }
+                            else
+                            {
+                                float t = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(coreRadiusRatio, 1.0f, distNorm));
+                                candidate = (byte)Mathf.RoundToInt(Mathf.Lerp(0f, 255f, t));
+                            }
+                        }
+
+                        if (candidate < maskPixels[idx].r)
+                        {
+                            maskPixels[idx] = new Color32(candidate, candidate, candidate, 255);
                         }
                     }
                 }

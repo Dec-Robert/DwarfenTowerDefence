@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dayNumber: 2
   waveMessage: 
-  etherPool: 4
+  etherPool: 6
   customSpawnInterval: 0
   hpMultiplier: 1.12
   speedMultiplier: 1
@@ -23,5 +23,5 @@ MonoBehaviour:
   enemies:
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
     tier: 1
-    count: 7
+    count: 4
     forceElite: 0

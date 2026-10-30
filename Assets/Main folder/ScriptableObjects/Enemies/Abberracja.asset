@@ -14,41 +14,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
   sprite: {fileID: 0}
-  threatCost: 4
+  threatCost: 3
   enemyName: Abberracja
   tiers:
   - prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
     sprite: {fileID: 0}
     baseHp: 380
     moveSpeed: 0.75
-    armor: 50
-    magicResist: 0
+    armor: 40
+    magicResist: 20
     dodgeChance: 0
   - prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
     sprite: {fileID: 0}
-    baseHp: 380
-    moveSpeed: 0.75
+    baseHp: 760
+    moveSpeed: 1.5
     armor: 50
-    magicResist: 0
+    magicResist: 25
     dodgeChance: 0
   - prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
     sprite: {fileID: 0}
-    baseHp: 380
-    moveSpeed: 0.75
-    armor: 50
-    magicResist: 0
+    baseHp: 1330
+    moveSpeed: 2.25
+    armor: 60
+    magicResist: 30
     dodgeChance: 0
   - prefab: {fileID: 6987379787904698027, guid: 301c2c952d094218a5845962b1b5f24f, type: 3}
     sprite: {fileID: 0}
-    baseHp: 380
-    moveSpeed: 0.75
-    armor: 50
-    magicResist: 0
+    baseHp: 2090
+    moveSpeed: 3
+    armor: 70
+    magicResist: 35
     dodgeChance: 0
   baseHp: 380
   moveSpeed: 0.75
-  armor: 50
-  magicResist: 0
+  armor: 40
+  magicResist: 20
   dodgeChance: 0
   rank: 0
   canBeElite: 1

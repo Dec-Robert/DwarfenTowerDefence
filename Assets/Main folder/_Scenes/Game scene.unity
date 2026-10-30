@@ -194,7 +194,7 @@ MonoBehaviour:
     phaseName: Zmierzch
     sunEulerAngles: {x: 14, y: -60, z: 0}
     sunColor: {r: 0.92, g: 0.46, b: 0.18, a: 1}
-    sunIntensity: 0.65
+    sunIntensity: 0.95
     ambientSkyColor: {r: 0.2, g: 0.12, b: 0.18, a: 1}
     ambientEquatorColor: {r: 0.13, g: 0.08, b: 0.11, a: 1}
     ambientGroundColor: {r: 0.05, g: 0.03, b: 0.04, a: 1}
@@ -205,7 +205,7 @@ MonoBehaviour:
     phaseName: Noc
     sunEulerAngles: {x: 70, y: -30, z: 0}
     sunColor: {r: 0.36, g: 0.34, b: 0.7, a: 1}
-    sunIntensity: 0.45
+    sunIntensity: 0.65
     ambientSkyColor: {r: 0.11, g: 0.1, b: 0.22, a: 1}
     ambientEquatorColor: {r: 0.075, g: 0.065, b: 0.15, a: 1}
     ambientGroundColor: {r: 0.035, g: 0.03, b: 0.07, a: 1}
@@ -3554,7 +3554,7 @@ MonoBehaviour:
   mapVisualizer: {fileID: 1837610584}
   mapGenerator: {fileID: 1837610582}
   defaultFogMaterial: {fileID: -876546973899608171, guid: 9c8afe04d5ea9ce40be87e68e5f82fba, type: 3}
-  borderlandsFogMaterial: {fileID: -876546973899608171, guid: e2767fe3a19ad6248aa59182a1ea2177, type: 3}
+  borderlandsFogMaterial: {fileID: -876546973899608171, guid: 9c8afe04d5ea9ce40be87e68e5f82fba, type: 3}
   surveyingFogMaterial: {fileID: 2100000, guid: d9b8120594697c24e968d0dd2918c202, type: 2}
   outskirtsFogMaterial: {fileID: 2100000, guid: 69087ab46eb2d144499180d014dba817, type: 2}
   fogPrefab: {fileID: 3870602923655417153, guid: 3ace50b7f41b02447ba50c08e65fdf93, type: 3}
@@ -3563,8 +3563,8 @@ MonoBehaviour:
   outskirtsFogHeightScale: 0.08
   outskirtsFogYOffset: 0
   maskResolution: 128
-  chunkRadiusMultiplier: 2.15
-  fogBlendFalloff: 0.4
+  chunkRadiusMultiplier: 2.2
+  coreRadiusRatio: 0.55
   worldMarginMultiplier: 3
 --- !u!114 &1837610586
 MonoBehaviour:
@@ -32912,7 +32912,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1039.68, y: -116}
+  m_AnchoredPosition: {x: 1040.4, y: -116}
   m_SizeDelta: {x: 252, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &1789562790987711619

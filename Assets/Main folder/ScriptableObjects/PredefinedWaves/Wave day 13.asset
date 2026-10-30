@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 13
   waveMessage: "Czarne od\u0142amy ska\u0142 o\u017Cywaj\u0105 - zwi\u0119kszona
     obecno\u015B\u0107 aberracji!"
-  etherPool: 26
+  etherPool: 45
   customSpawnInterval: 0
   hpMultiplier: 3.88
   speedMultiplier: 1.05

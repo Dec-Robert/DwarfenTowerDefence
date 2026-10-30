@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 16
   waveMessage: "Niesko\u0144czona masa zniekszta\u0142conych cia\u0142 wylewa si\u0119
     z mgielnych szczelin."
-  etherPool: 34
+  etherPool: 52
   customSpawnInterval: 0
   hpMultiplier: 5.45
   speedMultiplier: 1.05

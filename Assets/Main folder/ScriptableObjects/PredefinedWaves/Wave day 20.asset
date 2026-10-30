@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 20
   waveMessage: "FINA\u0141: Zwiastun Pustki i pot\u0119\u017Cna armia Mg\u0142y przypuszczaj\u0105
     ostateczny szturm!"
-  etherPool: 50
+  etherPool: 60
   customSpawnInterval: 0
   hpMultiplier: 8.57
   speedMultiplier: 1.15

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 6
   waveMessage: 
-  etherPool: 12
+  etherPool: 16
   customSpawnInterval: 0
   hpMultiplier: 1.76
   speedMultiplier: 1
@@ -29,7 +29,7 @@ MonoBehaviour:
     tier: 1
     count: 2
     forceElite: 0
-  - enemy: {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
-    tier: 1
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 2
     count: 2
     forceElite: 0

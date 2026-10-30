@@ -29,6 +29,12 @@ MonoBehaviour:
   - 2
   - 2.15
   allowedTerrain: 02000000
+  elevationRequirement:
+    mode: 0
+    minElevation: 0
+    maxElevation: 0
+    allowedElevations: 
+  allowOnRoad: 0
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
   requiredCitizenRace: 1
@@ -74,5 +80,12 @@ MonoBehaviour:
       onTopProductionBonus: 2
       penaltyPerUser: 1
       minBonus: 0
-  baseMaxWorkers: 1
+  elevationBonus:
+    enabled: 0
+    resourceType: 0
+    onTopBonusPerLevel: 0
+    adjacentBonusPerLevel: 0
+    penaltyPerExtraBuilding: 0
+    searchRadius: 0
+  baseMaxWorkers: 2
   isUnlocked: 1

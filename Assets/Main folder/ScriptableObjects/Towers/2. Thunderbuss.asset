@@ -29,13 +29,19 @@ MonoBehaviour:
   - 1.35
   - 1.4
   allowedTerrain: 0600000001000000030000000500000000000000
+  elevationRequirement:
+    mode: 0
+    minElevation: 0
+    maxElevation: 0
+    allowedElevations: 
+  allowOnRoad: 0
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
   requiredCitizenRace: 1
   isOutpost: 0
   constructionCost:
   - type: 0
-    amount: 5
+    amount: 4
   - type: 1
     amount: 5
   productionPerCycle: []
@@ -43,7 +49,14 @@ MonoBehaviour:
   tier1Upgrades: []
   prefab: {fileID: 8971562941549741592, guid: 0dd23a8d04b71da4391811711c2cac6f, type: 3}
   bonusRules: []
-  baseMaxWorkers: 1
+  elevationBonus:
+    enabled: 0
+    resourceType: 0
+    onTopBonusPerLevel: 0
+    adjacentBonusPerLevel: 0
+    penaltyPerExtraBuilding: 0
+    searchRadius: 0
+  baseMaxWorkers: 2
   isUnlocked: 0
   baseRange: 5
   baseDamage: 20

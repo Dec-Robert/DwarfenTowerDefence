@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 15
   waveMessage: "MINI-BOSS: Zwiastun Mg\u0142y powraca na czele pot\u0119\u017Cnej
     armii cieni!"
-  etherPool: 32
+  etherPool: 50
   customSpawnInterval: 0
   hpMultiplier: 4.87
   speedMultiplier: 1.05
