@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "\u0141\u0105czy krasnoludzk\u0105 mechanik\u0119 pi\u0142 z elfickim
     wyczuciem le\u015Bnej flory. Zapewnia drewno niezb\u0119dne do wznoszenia umocnie\u0144
     oraz karmienia p\u0142omienia odp\u0119dzaj\u0105cego mg\u0142\u0119."
-  icon: {fileID: 21300000, guid: a68db608862073a43aaba14e1e37f98c, type: 3}
+  icon: {fileID: 21300000, guid: 99d7e40a4d585644e8c2c7cc7e7c00cc, type: 3}
   type: 0
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.75
   - 2
   - 2.15
-  allowedTerrain: 01000000000000000a000000
+  allowedTerrain: 01000000000000000a00000003000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -58,10 +58,10 @@ MonoBehaviour:
     searchRadius: 1
     resourceYields:
     - resourceType: 1
-      baseBonusPerHex: 4
+      baseBonusPerHex: 2
       onTopProductionBonus: 6
-      penaltyPerUser: 2
-      minBonus: 0
+      penaltyPerUser: 1
+      minBonus: 1
   elevationBonus:
     enabled: 0
     resourceType: 0

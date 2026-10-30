@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "Tradycyjne ludzkie rolnictwo wsparte szama\u0144sk\u0105 magi\u0105
     elf\xF3w, kt\xF3ra oczyszcza gleb\u0119 ze skazy mg\u0142y. Karmi obro\u0144c\xF3w
     bastionu i zapobiega kl\u0119sce g\u0142odu."
-  icon: {fileID: 21300000, guid: 2fb0f4b651ac8624c876d40ea6a5aa7f, type: 3}
+  icon: {fileID: 21300000, guid: 4e1aa674e380df948915e055758443f2, type: 3}
   type: 0
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.75
   - 2
   - 2.15
-  allowedTerrain: 00000000030000000a000000
+  allowedTerrain: 00000000030000000a00000001000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -58,10 +58,10 @@ MonoBehaviour:
     searchRadius: 1
     resourceYields:
     - resourceType: 4
-      baseBonusPerHex: 6
-      onTopProductionBonus: 10
-      penaltyPerUser: 3
-      minBonus: 0
+      baseBonusPerHex: 4
+      onTopProductionBonus: 8
+      penaltyPerUser: 2
+      minBonus: 1
   elevationBonus:
     enabled: 0
     resourceType: 0
