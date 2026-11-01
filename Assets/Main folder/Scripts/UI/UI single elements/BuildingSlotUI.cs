@@ -39,6 +39,22 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [Header("Interaction")]
     [SerializeField] private Button selectButton;
 
+    [Header("Affordability Visuals")]
+    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private float disabledAlpha = 0.6f;
+    [SerializeField] private Color costAvailableColor = new Color(0.63f, 0.63f, 0.63f, 1f); // #A0A0A0 szary
+    [SerializeField] private Color costMissingColor = new Color(0.94f, 0.33f, 0.31f, 1f);   // #EF5350 czerwony
+
+    private class CostSlotEntry
+    {
+        public SingleResourceUI ui;
+        public ResourceType type;
+        public int amount;
+    }
+
+    private readonly List<CostSlotEntry> costEntries = new List<CostSlotEntry>();
+    private bool isSubscribedToResource;
+
     private void Awake()
     {
         if (selectButton == null)
@@ -50,17 +66,128 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         {
             selectButton.onClick.AddListener(OnSlotClicked);
         }
+
+        if (canvasGroup == null)
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
+        }
     }
+
     private void OnEnable()
     {
+        SubscribeToResourceManager();
+        UpdateAffordability();
         StartCoroutine(DelayedLayoutRefresh());
+    }
+
+    private void Start()
+    {
+        SubscribeToResourceManager();
+        UpdateAffordability();
     }
 
     private void OnDisable()
     {
+        UnsubscribeFromResourceManager();
         if (Tooltip_BuildingExtraInfo.Instance != null)
         {
             Tooltip_BuildingExtraInfo.Instance.HideTooltip();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        UnsubscribeFromResourceManager();
+        if (selectButton != null)
+        {
+            selectButton.onClick.RemoveListener(OnSlotClicked);
+        }
+    }
+
+    private void SubscribeToResourceManager()
+    {
+        if (isSubscribedToResource || ResourceManager.Instance == null) return;
+        ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
+        isSubscribedToResource = true;
+    }
+
+    private void UnsubscribeFromResourceManager()
+    {
+        if (!isSubscribedToResource) return;
+        if (ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
+        }
+        isSubscribedToResource = false;
+    }
+
+    private void HandleResourceChanged(ResourceType type, int amount)
+    {
+        UpdateAffordability();
+    }
+
+    public bool CanAfford()
+    {
+        if (buildingData == null || buildingData.constructionCost == null || buildingData.constructionCost.Count == 0)
+            return true;
+
+        if (ResourceManager.Instance == null)
+            return true;
+
+        foreach (var cost in buildingData.constructionCost)
+        {
+            if (cost.amount > 0 && !ResourceManager.Instance.CanAfford(cost.type, cost.amount))
+                return false;
+        }
+
+        return true;
+    }
+
+    public void UpdateAffordability()
+    {
+        if (buildingData == null) return;
+
+        bool canAffordAll = true;
+
+        if (costEntries.Count > 0)
+        {
+            foreach (var entry in costEntries)
+            {
+                bool canAffordThis = entry.amount <= 0 || (ResourceManager.Instance != null && ResourceManager.Instance.CanAfford(entry.type, entry.amount));
+                if (!canAffordThis)
+                {
+                    canAffordAll = false;
+                }
+
+                if (entry.ui != null)
+                {
+                    entry.ui.SetTextColor(canAffordThis ? costAvailableColor : costMissingColor);
+                }
+            }
+        }
+
+        if (canvasGroup == null)
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup == null && gameObject != null)
+            {
+                canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
+        }
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = canAffordAll ? 1.0f : disabledAlpha;
+            canvasGroup.blocksRaycasts = true;
+        }
+
+        if (selectButton != null)
+        {
+            selectButton.interactable = canAffordAll;
         }
     }
 
@@ -82,6 +209,8 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     private void OnSlotClicked()
     {
+        if (!CanAfford()) return;
+
         if (Tooltip_BuildingExtraInfo.Instance != null)
         {
             Tooltip_BuildingExtraInfo.Instance.HideTooltip();
@@ -152,6 +281,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (costContainer == null) return;
 
         ClearContainer(costContainer);
+        costEntries.Clear();
 
         if (buildingData.constructionCost != null && resourceSlotPrefab != null)
         {
@@ -163,9 +293,12 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
                 if (resourceUI != null)
                 {
                     resourceUI.Setup(cost.type, cost.amount);
+                    costEntries.Add(new CostSlotEntry { ui = resourceUI, type = cost.type, amount = cost.amount });
                 }
             }
         }
+
+        UpdateAffordability();
     }
 
     private void SetUpBattle()

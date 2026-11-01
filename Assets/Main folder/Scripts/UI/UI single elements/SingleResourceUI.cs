@@ -99,4 +99,12 @@ public class SingleResourceUI : MonoBehaviour
     {
         Setup(type, (float)value, visuals);
     }
+
+    public void SetTextColor(Color color)
+    {
+        if (ammount != null)
+        {
+            ammount.color = color;
+        }
+    }
 }

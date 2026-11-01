@@ -13,7 +13,7 @@ public static class AttachRuneForgeScripts
 
     static AttachRuneForgeScripts()
     {
-        EditorApplication.delayCall += Execute;
+        // EditorApplication.delayCall += Execute;
     }
 
     [MenuItem("Tools/Attach Rune Forge UI Scripts")]

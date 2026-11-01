@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingName: Dwarven house
   description: 
-  icon: {fileID: 21300000, guid: d48145da6deef7f44aea82598941ae9c, type: 3}
+  icon: {fileID: 21300000, guid: 399a464512864618b8ba3f90f9267f86, type: 3}
   type: 2
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7

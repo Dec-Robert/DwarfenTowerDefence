@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "Postawienie na go \u015Bwiezo odkrytym terenie zabezpiecza go przed
     mg\u0142\u0105 pozwalaj\u0105c budowa\u0107 budynki cywllne. Do tego po up\u0142ywie
     kilku dni mo\u017Ce zosta\u0107 przekszta\u0142cony za darmo w inny budynek."
-  icon: {fileID: 21300000, guid: 201ba8562aef6974ea5f9dc9e3b40ead, type: 3}
+  icon: {fileID: 21300000, guid: 5501d4ec3f194eb39382fc486356b05c, type: 3}
   type: 3
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7

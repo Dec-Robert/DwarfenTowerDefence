@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "Arcydzie\u0142o zmechanizowanego kowalstwa zasilane par\u0105. Prowadzi
     g\u0119sty, nieprzerwany ogie\u0144 be\u0142tami, dziesi\u0105tkuj\u0105c nacieraj\u0105ce
     hordy zanim zdo\u0142aj\u0105 zewrze\u0107 szyki."
-  icon: {fileID: 21300000, guid: b35b0aeb601ca3248b4529d94239d3cb, type: 3}
+  icon: {fileID: 21300000, guid: a6ab13ac269e431fa05806efc2c82f24, type: 3}
   type: 1
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7

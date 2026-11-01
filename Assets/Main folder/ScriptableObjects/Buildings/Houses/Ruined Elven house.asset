@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingName: Ruined Elf house
   description: 
-  icon: {fileID: 21300000, guid: 06ba1e3080665284eafb05f814c59ab7, type: 3}
+  icon: {fileID: 21300000, guid: 4c1f77d8eadd409c960156fe34c852bb, type: 3}
   type: 2
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7

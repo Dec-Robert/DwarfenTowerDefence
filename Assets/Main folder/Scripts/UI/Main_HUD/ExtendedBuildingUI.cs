@@ -216,6 +216,10 @@ public class ExtendedBuildingUI : MonoBehaviour
             }
 
             entry.gameObject.SetActive(isMatch);
+            if (isMatch && entry.slotUI != null)
+            {
+                entry.slotUI.UpdateAffordability();
+            }
         }
     }
 

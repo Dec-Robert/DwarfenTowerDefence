@@ -84,7 +84,7 @@ MonoBehaviour:
     towerRangeBonus: 0.35
     enemyStatsBonus: -0.15
     runeDropAndRarityBonus: -0.25
-    etherChanceTierLabel: Zerowe
+    etherChanceTierLabel: Bardzo Niskie
     guaranteedEtherPercent: 0
     naturalEtherDropChance: 0.05
     nextDayProductionBonus: 0.05

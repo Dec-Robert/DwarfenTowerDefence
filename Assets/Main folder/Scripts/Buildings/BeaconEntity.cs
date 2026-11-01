@@ -271,7 +271,7 @@ public class BeaconEntity : BuildingEntity
     }
 
     /// <summary>
-    ///     Zwraca etykietę szansy na Ether (np. "Ogromne", "Duże", "Średnie", "Niskie", "Zerowe").
+    ///     Zwraca etykietę szansy na Ether (np. "Ogromne", "Duże", "Średnie", "Niskie", "Bardzo Niskie").
     /// </summary>
     public static string GetEtherChanceLabel()
     {

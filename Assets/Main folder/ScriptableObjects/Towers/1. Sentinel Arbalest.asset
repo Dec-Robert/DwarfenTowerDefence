@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "Solidna, klasyczna machina krasnoludzkiej konstrukcji wspomagana
     elfickim ci\u0119ciwem. Niezawodny fundament obrony przeciw pierwszym falom potwor\xF3w
     z mg\u0142y."
-  icon: {fileID: 21300000, guid: 966fcf7d12ef7d743ac842b2d6d43888, type: 3}
+  icon: {fileID: 21300000, guid: aa62b1b0abec46c69e33940b72e42112, type: 3}
   type: 1
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
@@ -65,7 +65,7 @@ MonoBehaviour:
   fireRate: 2.5
   criticalChancel: 0.1
   criticalDamageMultiplier: 2
-  armorPenetration: 5
+  armorPenetration: 0.05
   magicPenetration: 0
   damageType: 0
   canShootChunk: 0

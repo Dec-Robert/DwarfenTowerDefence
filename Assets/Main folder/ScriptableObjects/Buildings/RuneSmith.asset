@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "Warsztat krasnoludzkich mistrz\xF3w run, w kt\xF3rym pradawne znaki
     wykuwane s\u0105 w \u017Celazie, nadaj\u0105c wie\u017Com obronnym nadnaturaln\u0105
     pot\u0119g\u0119."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: f0bb92ef8e114d84a7746d208fb02104, type: 3}
   type: 3
   workerScalingFactor: 0
   firstWorkerProduction: 0.7
@@ -24,8 +24,14 @@ MonoBehaviour:
   - 0
   - 1
   allowedTerrain: 000000000100000002000000030000000400000005000000
+  elevationRequirement:
+    mode: 0
+    minElevation: 0
+    maxElevation: 0
+    allowedElevations: 
+  allowOnRoad: 0
   requiresOccupiedSpace: 0
-  requiresSpecificCitizen: 1
+  requiresSpecificCitizen: 0
   requiredCitizenRace: 2
   isOutpost: 0
   constructionCost:
@@ -44,5 +50,12 @@ MonoBehaviour:
   tier1Upgrades: []
   prefab: {fileID: 1253841588521944598, guid: 84cdae73d5ef63943aa2dc6ab913954e, type: 3}
   bonusRules: []
+  elevationBonus:
+    enabled: 0
+    resourceType: 0
+    onTopBonusPerLevel: 0
+    adjacentBonusPerLevel: 0
+    penaltyPerExtraBuilding: 0
+    searchRadius: 0
   baseMaxWorkers: 1
   isUnlocked: 1

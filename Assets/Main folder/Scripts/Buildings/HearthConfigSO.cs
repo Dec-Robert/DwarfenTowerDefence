@@ -171,7 +171,7 @@ public class HearthConfigSO : ScriptableObject
                 towerRangeBonus = 0.35f,
                 enemyStatsBonus = -0.15f,
                 runeDropAndRarityBonus = -0.25f,
-                etherChanceTierLabel = "Zerowe",
+                etherChanceTierLabel = "Bardzo Niskie",
                 guaranteedEtherPercent = 0.00f,
                 naturalEtherDropChance = 0.05f,
                 nextDayProductionBonus = 0.05f
@@ -216,9 +216,9 @@ public class HearthConfigSO : ScriptableObject
             levels[3].guaranteedEtherPercent = 0.20f;
             levels[3].naturalEtherDropChance = 0.05f;
         }
-        if (levels[4] != null && (string.IsNullOrEmpty(levels[4].etherChanceTierLabel) || levels[4].etherChanceTierLabel != "Zerowe"))
+        if (levels[4] != null && (string.IsNullOrEmpty(levels[4].etherChanceTierLabel) || levels[4].etherChanceTierLabel == "Zerowe" || levels[4].etherChanceTierLabel != "Bardzo Niskie"))
         {
-            levels[4].etherChanceTierLabel = "Zerowe";
+            levels[4].etherChanceTierLabel = "Bardzo Niskie";
             levels[4].guaranteedEtherPercent = 0.00f;
             levels[4].naturalEtherDropChance = 0.05f;
         }

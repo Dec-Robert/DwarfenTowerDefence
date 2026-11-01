@@ -58,7 +58,7 @@ MonoBehaviour:
     searchRadius: 1
     resourceYields:
     - resourceType: 4
-      baseBonusPerHex: 4
+      baseBonusPerHex: 6
       onTopProductionBonus: 8
       penaltyPerUser: 2
       minBonus: 1

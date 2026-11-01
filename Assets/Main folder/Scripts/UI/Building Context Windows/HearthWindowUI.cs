@@ -418,43 +418,51 @@ public class HearthWindowUI : MonoBehaviour
 
     private void RefreshEffectsUI(HearthLevelData selectedData)
     {
-        // 1. Szybkostrzelność wież obronnych (FireRate)
+        // 1. Szybkostrzelność wież obronnych (FireRate) - ukryj jeśli 0%
+        bool hasFireRate = !Mathf.Approximately(selectedData.towerFireRateBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(0),
             "Szybkostrzelność wież",
             FormatPercentDelta(selectedData.towerFireRateBonus),
             GetPlayerBeneficialColor(selectedData.towerFireRateBonus),
-            GetTowerFireRateDescription(selectedData.towerFireRateBonus)
+            GetTowerFireRateDescription(selectedData.towerFireRateBonus),
+            hasFireRate
         );
 
-        // 2. Zasięg wież obronnych (Range)
+        // 2. Zasięg wież obronnych (Range) - ukryj jeśli 0%
+        bool hasRange = !Mathf.Approximately(selectedData.towerRangeBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(1),
             "Zasięg wież",
             FormatPercentDelta(selectedData.towerRangeBonus),
             GetPlayerBeneficialColor(selectedData.towerRangeBonus),
-            GetTowerRangeDescription(selectedData.towerRangeBonus)
+            GetTowerRangeDescription(selectedData.towerRangeBonus),
+            hasRange
         );
 
-        // 3. Siła i prędkość wrogów (Enemy HP & Speed - ujemny bonus jest korzystny dla gracza!)
+        // 3. Siła i prędkość wrogów (Enemy HP & Speed) - ukryj jeśli 0%
+        bool hasEnemyStats = !Mathf.Approximately(selectedData.enemyStatsBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(2),
             "Siła i prędkość wrogów w nocy",
             FormatPercentDelta(selectedData.enemyStatsBonus),
             GetPlayerBeneficialColor(-selectedData.enemyStatsBonus),
-            GetEnemyStatsDescription(selectedData.enemyStatsBonus)
+            GetEnemyStatsDescription(selectedData.enemyStatsBonus),
+            hasEnemyStats
         );
 
-        // 4. Szansa na drop i rzadkość run (RuneManager)
+        // 4. Szansa na drop i rzadkość run (RuneManager) - ukryj jeśli 0%
+        bool hasRuneDrop = !Mathf.Approximately(selectedData.runeDropAndRarityBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(3),
             "Szansa na drop i rzadkość Run",
             FormatPercentDelta(selectedData.runeDropAndRarityBonus),
             GetPlayerBeneficialColor(selectedData.runeDropAndRarityBonus),
-            GetRuneDropDescription(selectedData.runeDropAndRarityBonus)
+            GetRuneDropDescription(selectedData.runeDropAndRarityBonus),
+            hasRuneDrop
         );
 
-        // 5. Szanse na drop Etheru (Ether Wave Pool & Guarantee)
+        // 5. Szanse na drop Etheru (Ether Wave Pool & Guarantee) - zawsze widoczne
         Color etherColor = GetEtherTierColor(selectedData.guaranteedEtherPercent);
         string etherLabel = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "ŚREDNIE" : selectedData.etherChanceTierLabel.ToUpperInvariant();
         UpdateEffectItem(
@@ -462,31 +470,44 @@ public class HearthWindowUI : MonoBehaviour
             "Szanse na drop Etheru",
             etherLabel,
             etherColor,
-            string.Empty
+            string.Empty,
+            true
         );
 
-        // Dzień 1: Produkcja wszystkich budynków następnego dnia
+        // Dzień 1: Produkcja wszystkich budynków następnego dnia - ukryj jeśli 0%
+        bool hasDayProduction = !Mathf.Approximately(selectedData.nextDayProductionBonus, 0f);
         UpdateEffectItem(
             GetDayEffect(0),
             "Produkcja wszystkich budynków",
             FormatPercentDelta(selectedData.nextDayProductionBonus),
             GetPlayerBeneficialColor(selectedData.nextDayProductionBonus),
-            GetDayProductionDescription(selectedData.nextDayProductionBonus)
+            GetDayProductionDescription(selectedData.nextDayProductionBonus),
+            hasDayProduction
         );
 
-        // Dzień 2: Zużycie węgla tej nocy
-        string coalValueText = selectedData.coalCost <= 0 ? "0 Węgla" : $"-{selectedData.coalCost} Węgla";
-        Color coalColor = selectedData.coalCost <= 0
-            ? ColorPositive
-            : (selectedData.coalCost >= 65 ? ColorAmberGold : ColorNeutral);
+        // Dzień 2: Zużycie węgla tej nocy - usunięte z UI na życzenie użytkownika (pokazane przy poziomie)
+        var dayCoalItem = GetDayEffect(1);
+        if (dayCoalItem != null && dayCoalItem.rootObject != null)
+        {
+            dayCoalItem.rootObject.SetActive(false);
+        }
 
-        UpdateEffectItem(
-            GetDayEffect(1),
-            "Zużycie węgla tej nocy",
-            coalValueText,
-            coalColor,
-            GetCoalCostDescription(selectedData)
-        );
+        RebuildEffectsLayout();
+    }
+
+    private void RebuildEffectsLayout()
+    {
+        var pnlHearth = transform.Find("Pnl_Hearth");
+        if (pnlHearth == null) return;
+
+        var nightList = pnlHearth.Find("Pnl_EffectsColumnsRow/Sec_NightEffects/Pnl_EffectsList") as RectTransform;
+        if (nightList != null) LayoutRebuilder.ForceRebuildLayoutImmediate(nightList);
+
+        var dayList = pnlHearth.Find("Pnl_EffectsColumnsRow/Sec_DayEffects/Pnl_EffectsList") as RectTransform;
+        if (dayList != null) LayoutRebuilder.ForceRebuildLayoutImmediate(dayList);
+
+        var effectsRow = pnlHearth.Find("Pnl_EffectsColumnsRow") as RectTransform;
+        if (effectsRow != null) LayoutRebuilder.ForceRebuildLayoutImmediate(effectsRow);
     }
 
     private void RefreshFooterUI(HearthLevelData selectedData, int currentCoal)
@@ -566,9 +587,15 @@ public class HearthWindowUI : MonoBehaviour
         return null;
     }
 
-    private void UpdateEffectItem(HearthEffectItemRefs item, string title, string valueText, Color valueColor, string desc)
+    private void UpdateEffectItem(HearthEffectItemRefs item, string title, string valueText, Color valueColor, string desc, bool isVisible = true)
     {
         if (item == null) return;
+        if (item.rootObject != null)
+        {
+            item.rootObject.SetActive(isVisible);
+        }
+        if (!isVisible) return;
+
         if (item.txtEffectTitle != null) item.txtEffectTitle.text = title;
         if (item.txtEffectValue != null)
         {

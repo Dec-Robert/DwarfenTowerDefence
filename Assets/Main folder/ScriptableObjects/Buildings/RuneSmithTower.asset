@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingName: Rune tower
   description: "Wie\u017Ce s\u0142u\u017C\u0105ce do wzmacniani ku\u017Ani runicznych."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: f0bb92ef8e114d84a7746d208fb02104, type: 3}
   type: 3
   workerScalingFactor: 0
   firstWorkerProduction: 0.7

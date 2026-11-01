@@ -8656,7 +8656,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 966fcf7d12ef7d743ac842b2d6d43888, type: 3}
+  m_Sprite: {fileID: 21300000, guid: aa62b1b0abec46c69e33940b72e42112, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10121,7 +10121,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 1afd990cd1c03164fae2d9c0068fd288, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8c826cca3919488b962bb2adfa81ae2b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -42039,14 +42039,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.96, g: 0.78, b: 0.28, a: 0.8}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 616f9b5c999f4867bb7436b2d478d873, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -79095,6 +79095,10 @@ MonoBehaviour:
   housingStartingState: {fileID: 2391904671359617878}
   cyclesToGrowth: {fileID: 5399093206235346614}
   selectButton: {fileID: 4878126402694839055}
+  canvasGroup: {fileID: 0}
+  disabledAlpha: 0.6
+  costAvailableColor: {r: 0.63, g: 0.63, b: 0.63, a: 1}
+  costMissingColor: {r: 0.94, g: 0.33, b: 0.31, a: 1}
 --- !u!222 &4905497618588950518
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -86320,14 +86324,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.96, g: 0.78, b: 0.28, a: 0.8}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: a6ab13ac269e431fa05806efc2c82f24, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
