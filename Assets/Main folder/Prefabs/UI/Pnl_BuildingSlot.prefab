@@ -574,6 +574,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
   ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
   resourceType: 3
+  trackResourceManager: 1
   ammount: {fileID: 5597109789729017058}
   icon: {fileID: 6645043172571279673}
 --- !u!1 &1576786500948080803
@@ -984,6 +985,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SingleResourceUI
   ResourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
   resourceType: 3
+  trackResourceManager: 1
   ammount: {fileID: 5605834801045802326}
   icon: {fileID: 499250321428809231}
 --- !u!1 &3324686206483383800
@@ -2065,6 +2067,7 @@ MonoBehaviour:
   battleStatsPanel: {fileID: 1100075434713676600}
   housingStatsPanel: {fileID: 1804806789534966663}
   productionStatsPanel: {fileID: 800123555251151740}
+  descriptionPanel: {fileID: 4364649376402262752}
   dmgText: {fileID: 5162399989431028395}
   attackSpeedText: {fileID: 7650179951119461497}
   productionInfoPanel: {fileID: 5107778471161203364}
@@ -2072,6 +2075,10 @@ MonoBehaviour:
   housingStartingState: {fileID: 5728921003039160973}
   cyclesToGrowth: {fileID: 3422554605947650018}
   selectButton: {fileID: 6696170917524020123}
+  canvasGroup: {fileID: 0}
+  disabledAlpha: 0.6
+  costAvailableColor: {r: 0.63, g: 0.63, b: 0.63, a: 1}
+  costMissingColor: {r: 0.94, g: 0.33, b: 0.31, a: 1}
 --- !u!114 &6696170917524020123
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2534,7 +2541,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Obra\u017Cenia: 100 (Fizyczne)"
+  m_text: "Obra\u017Cenia: 100"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -177,6 +177,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sunLight: {fileID: 410087040}
+  sanctuaryLight: {fileID: 0}
+  sanctuaryLightColor: {r: 1, g: 0.6, b: 0.3, a: 1}
   transitionDuration: 1
   enemyGlowColor: {r: 0.34, g: 0.08, b: 0.68, a: 1}
   morningConfig:
@@ -184,34 +186,40 @@ MonoBehaviour:
     sunEulerAngles: {x: 45, y: -30, z: 0}
     sunColor: {r: 0.9, g: 0.88, b: 0.84, a: 1}
     sunIntensity: 1.15
+    shadowStrength: 0.9
     ambientSkyColor: {r: 0.18, g: 0.2, b: 0.24, a: 1}
     ambientEquatorColor: {r: 0.12, g: 0.13, b: 0.15, a: 1}
     ambientGroundColor: {r: 0.06, g: 0.06, b: 0.07, a: 1}
     fogColor: {r: 0.22, g: 0.25, b: 0.28, a: 1}
     fogDensity: 0.003
     enemyGlow: 0
+    sanctuaryIntensity: 0.25
   duskConfig:
     phaseName: Zmierzch
     sunEulerAngles: {x: 14, y: -60, z: 0}
     sunColor: {r: 0.92, g: 0.46, b: 0.18, a: 1}
     sunIntensity: 0.95
+    shadowStrength: 0.8
     ambientSkyColor: {r: 0.2, g: 0.12, b: 0.18, a: 1}
     ambientEquatorColor: {r: 0.13, g: 0.08, b: 0.11, a: 1}
     ambientGroundColor: {r: 0.05, g: 0.03, b: 0.04, a: 1}
     fogColor: {r: 0.23, g: 0.12, b: 0.21, a: 1}
     fogDensity: 0.005
     enemyGlow: 0
+    sanctuaryIntensity: 0.85
   nightConfig:
     phaseName: Noc
     sunEulerAngles: {x: 70, y: -30, z: 0}
     sunColor: {r: 0.36, g: 0.34, b: 0.7, a: 1}
     sunIntensity: 0.65
+    shadowStrength: 0.55
     ambientSkyColor: {r: 0.11, g: 0.1, b: 0.22, a: 1}
     ambientEquatorColor: {r: 0.075, g: 0.065, b: 0.15, a: 1}
     ambientGroundColor: {r: 0.035, g: 0.03, b: 0.07, a: 1}
     fogColor: {r: 0.11, g: 0.07, b: 0.2, a: 1}
     fogDensity: 0.006
     enemyGlow: 1
+    sanctuaryIntensity: 1.65
 --- !u!1 &57626811
 GameObject:
   m_ObjectHideFlags: 0
@@ -1453,6 +1461,14 @@ MonoBehaviour:
   moveSpeed: 30
   zoomSpeed: 30
   smoothing: 2
+  scrollSpeed: 30
+  scrollSmoothing: 15
+  invertScroll: 0
+  enableRMBDrag: 1
+  enableEdgePan: 1
+  edgePanBorderThickness: 15
+  edgePanSpeed: 0
+  defaultHeight: 25
   minHeight: 15
   maxHeight: 50
   mapLimit: {x: 500, y: 500}
@@ -3454,6 +3470,106 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   config: {fileID: 11400000, guid: 06764a568dfd36b44b81d4458aded597, type: 2}
   playerRunes: []
+--- !u!114 &1471421755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14c2e32b3c6e4fd489b77cbaa8db236c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerationConfig
+  ringRules:
+  - ruleName: Rings 1-2 (Early Survival)
+    ringMin: 1
+    ringMax: 2
+    forestWeight: 30
+    fertileSoilWeight: 20
+    hillWeight: 15
+    mountainWeight: 0
+    sinkholeWeight: 5
+    emptyWeight: 30
+    clusterForests: 1
+    forestClusterChance: 35
+    minForestClusters: 1
+    maxForestClusters: 3
+    clusterMountains: 0
+    mountainClusterChance: 0
+    minMountainClusters: 0
+    maxMountainClusters: 0
+  - ruleName: Rings 3-4 (Expansion & Mining)
+    ringMin: 3
+    ringMax: 4
+    forestWeight: 20
+    fertileSoilWeight: 15
+    hillWeight: 15
+    mountainWeight: 25
+    sinkholeWeight: 5
+    emptyWeight: 20
+    clusterForests: 1
+    forestClusterChance: 25
+    minForestClusters: 1
+    maxForestClusters: 2
+    clusterMountains: 1
+    mountainClusterChance: 30
+    minMountainClusters: 1
+    maxMountainClusters: 2
+  - ruleName: Rings 5+ (Wilderness Frontier)
+    ringMin: 5
+    ringMax: 99
+    forestWeight: 15
+    fertileSoilWeight: 10
+    hillWeight: 20
+    mountainWeight: 30
+    sinkholeWeight: 10
+    emptyWeight: 15
+    clusterForests: 0
+    forestClusterChance: 15
+    minForestClusters: 0
+    maxForestClusters: 1
+    clusterMountains: 1
+    mountainClusterChance: 30
+    minMountainClusters: 1
+    maxMountainClusters: 2
+  guarantees:
+  - guaranteeName: R1-2 Forest >= 10
+    ringMin: 1
+    ringMax: 2
+    feature: 1
+    minCount: 10
+    minDistinctChunks: 1
+    maxAllowed: -1
+  - guaranteeName: R1-2 FertileSoil >= 6
+    ringMin: 1
+    ringMax: 2
+    feature: 3
+    minCount: 6
+    minDistinctChunks: 1
+    maxAllowed: -1
+  - guaranteeName: R1-2 Hill >= 6
+    ringMin: 1
+    ringMax: 2
+    feature: 10
+    minCount: 6
+    minDistinctChunks: 1
+    maxAllowed: -1
+  - guaranteeName: R1-2 Mountain == 0 (Zero Tolerance)
+    ringMin: 1
+    ringMax: 2
+    feature: 2
+    minCount: 0
+    minDistinctChunks: 0
+    maxAllowed: 0
+  - guaranteeName: R3-4 Mountain >= 10 (across >= 2 chunks)
+    ringMin: 3
+    ringMax: 4
+    feature: 2
+    minCount: 10
+    minDistinctChunks: 2
+    maxAllowed: -1
 --- !u!1 &1478630898
 GameObject:
   m_ObjectHideFlags: 0
@@ -4307,8 +4423,10 @@ MonoBehaviour:
     loopFlowRatio: 0.3
     sideBranchChances: 6400000055000000
     branchFlowRatio: 0.3
+  tutorialMap: {fileID: 0}
+  forceUsePredefinedMap: 0
   metaConfig: {fileID: 11400000, guid: 7bc79454d8c98e1499078237d0bd5214, type: 2}
-  terrainConfig: {fileID: 0}
+  terrainConfig: {fileID: 1471421755}
   specialChunkTypes: []
   baseRoadEndLocal: {x: 3, y: -2}
   internalSettings:
@@ -4364,6 +4482,7 @@ MonoBehaviour:
   matBase: {fileID: 2100000, guid: 9c4fa65ee65d1124eb407a3143ee0955, type: 2}
   matBeacon: {fileID: 2100000, guid: 26da7d67a911ba04ea40392c2719aad7, type: 2}
   matDefaultGrass: {fileID: 2100000, guid: b594f1b85ad5d0846afec409306b2049, type: 2}
+  elevationHeightStep: 0.35
 --- !u!114 &1837610585
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7177,7 +7296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.20784315, g: 0.20784315, b: 0.20784315, a: 1}
+  m_Color: {r: 0.20784315, g: 0.20784315, b: 0.20784315, a: 0.9137255}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -12368,7 +12487,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 1}
+  m_Color: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0.9137255}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -70508,11 +70627,11 @@ RectTransform:
   - {fileID: 438453508814225384}
   m_Father: {fileID: 4786043659411503738}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 76}
-  m_Pivot: {x: 1, y: 0}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &4202118201119007999
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119370,12 +119489,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingSlotUI
   buildingNameText: {fileID: 4505490137601869487}
   icon: {fileID: 1062784028903851988}
-  descriptionText: {fileID: 2706612106830891765}
+  descriptionText: {fileID: 0}
   resourceSlotPrefab: {fileID: 1052072117796695905, guid: 99cc2448f8796904cbf4c44b2265d9be, type: 3}
   costContainer: {fileID: 5850120178296197052}
   battleStatsPanel: {fileID: 7227584798404367445}
   housingStatsPanel: {fileID: 2959556944533597121}
   productionStatsPanel: {fileID: 5181978557624120964}
+  descriptionPanel: {fileID: 0}
   dmgText: {fileID: 8139916210792120543}
   attackSpeedText: {fileID: 3913461194104932199}
   productionInfoPanel: {fileID: 3595152347227223992}
@@ -130539,7 +130659,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6382284158918859548}
   - component: {fileID: 2532706380928593696}
-  - component: {fileID: 8331421969615924316}
   - component: {fileID: 5985411208371764558}
   m_Layer: 0
   m_Name: Pnl_Tabs
@@ -133623,7 +133742,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Obra\u017Cenia: 100 (Fizyczne)"
+  m_text: "Obra\u017Cenia: 100"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -136504,36 +136623,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &8331421969615924316
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7936370285339438785}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &8338680548961056034
 MonoBehaviour:
   m_ObjectHideFlags: 0

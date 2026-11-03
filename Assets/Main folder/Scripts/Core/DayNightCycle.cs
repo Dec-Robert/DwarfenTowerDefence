@@ -1,13 +1,17 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
-/// Zarządza oświetleniem globalnym sceny (Directional Light, Ambient, Mgła) w relacji do faz gry (TimePhaseManager).
-/// Zapewnia 1-sekundowe, płynne przejście pomiędzy nastrojami:
-/// - Rano: Chłodny, posępny świt (wysokie słońce, blady beż, chłodny szary ambient)
-/// - Zmierzch: Złowrogi, alarmujący zachód (bardzo niskie słońce, ostre długie cienie, płomienna pomarańcz i purpura)
-/// - Noc: Czytelny granatowo-fioletowy półmrok w świetle księżyca (teren widoczny, ognie osady nadal najjaśniejsze)
-///   oraz fioletowa poświata wrogów (EnemyGlow), włączana tylko w fazie Night.
+/// Dark fantasy: ostatnia osada w umierającym świecie.
+/// Morning: chłodny, pochmurny dzień; Dusk: przygaszony, złowrogi zmierzch;
+/// Night: czytelna granatowa noc, bez czarnych plam na mapie.
+///
+/// Steruje Directional Light, ambientem Trilight, mgłą i EnemyGlow.
+/// Opcjonalnie steruje ciepłym światłem bezpiecznej strefy (sanctuaryLight).
+///
+/// UWAGA: Unity zachowuje wartości zapisane w Inspectorze. Po podmianie skryptu:
+/// menu komponentu (trzy kropki) -> "Zastosuj presety Dark Fantasy".
 /// </summary>
 public class DayNightCycle : MonoBehaviour
 {
@@ -15,101 +19,144 @@ public class DayNightCycle : MonoBehaviour
     public struct PhaseLightingConfig
     {
         public string phaseName;
-        [Header("Światło Słoneczne / Księżycowe")]
+
+        [Header("Światło kierunkowe")]
         public Vector3 sunEulerAngles;
         public Color sunColor;
-        public float sunIntensity;
+        [Min(0f)] public float sunIntensity;
+        [Range(0f, 1f)] public float shadowStrength;
 
-        [Header("Oświetlenie Otoczenia (Ambient)")]
+        [Header("Światło otoczenia (Trilight)")]
         public Color ambientSkyColor;
         public Color ambientEquatorColor;
         public Color ambientGroundColor;
 
-        [Header("Mgła Sceny")]
+        [Header("Mgła")]
         public Color fogColor;
-        public float fogDensity;
+        [Min(0f)] public float fogDensity;
 
-        [Header("Poświata wrogów")]
+        [Header("Dodatkowe światła")]
         [Range(0f, 1f)] public float enemyGlow;
+        [Min(0f)] public float sanctuaryIntensity;
     }
 
     [Header("Referencje")]
-    [Tooltip("Główne światło kierunkowe (Directional Light)")]
+    [Tooltip("Główne Directional Light. Jeśli puste, skrypt spróbuje pobrać Light z tego obiektu.")]
     public Light sunLight;
 
-    [Header("Czas Przejścia")]
-    [Tooltip("Czas trwania przejścia oświetlenia między fazami (w sekundach)")]
-    public float transitionDuration = 1.0f;
+    [Tooltip("Opcjonalny Point/Spot Light umieszczony w centrum osady. Nie przypisuj tu Directional Light.")]
+    public Light sanctuaryLight;
 
-    [Header("Poświata wrogów (emisja, mnożona przez enemyGlow z konfiguracji fazy)")]
-    [Tooltip("Kolor emisji wrogów (HDR). Elity x1.6, bossowie x2.2.")]
+    [Header("Barwa ognia / bezpieczeństwa")]
+    [Tooltip("Ciepła poświata osady; intensywność zależy od fazy.")]
+    public Color sanctuaryLightColor = new Color(1f, 0.60f, 0.30f, 1f);
+
+    [Header("Zmiana fazy")]
+    [Min(0f)]
+    public float transitionDuration = 2.5f;
+
+    [Header("Poświata wrogów")]
+    [Tooltip("Kolor emisji wrogów (HDR). Elity i bossowie zachowują własne mnożniki EnemyGlow.")]
     [ColorUsage(false, true)]
-    public Color enemyGlowColor = new Color(0.34f, 0.08f, 0.68f, 1f);
+    public Color enemyGlowColor = new Color(0.40f, 0.13f, 0.72f, 1f);
 
-    [Header("Konfiguracje Faz")]
-    public PhaseLightingConfig morningConfig = new PhaseLightingConfig
-    {
-        phaseName = "Rano",
-        sunEulerAngles = new Vector3(45f, -30f, 0f),
-        sunColor = new Color(0.90f, 0.88f, 0.84f, 1f),
-        sunIntensity = 1.15f,
-        ambientSkyColor = new Color(0.18f, 0.20f, 0.24f, 1f),
-        ambientEquatorColor = new Color(0.12f, 0.13f, 0.15f, 1f),
-        ambientGroundColor = new Color(0.06f, 0.06f, 0.07f, 1f),
-        fogColor = new Color(0.22f, 0.25f, 0.28f, 1f),
-        fogDensity = 0.003f
-    };
+    [Header("Konfiguracje faz")]
+    public PhaseLightingConfig morningConfig = RecommendedMorning();
+    public PhaseLightingConfig duskConfig = RecommendedDusk();
+    public PhaseLightingConfig nightConfig = RecommendedNight();
 
-    public PhaseLightingConfig duskConfig = new PhaseLightingConfig
+    // Oświetlenie globalne pozostaje raczej neutralne.
+    // Fiolet należy do kataklizmu, a nie do każdej powierzchni na mapie.
+    private static PhaseLightingConfig RecommendedMorning()
     {
-        phaseName = "Zmierzch",
-        sunEulerAngles = new Vector3(14f, -60f, 0f), // Niskie słońce = długie, złowrogie cienie
-        sunColor = new Color(0.92f, 0.46f, 0.18f, 1f), // Płomienna pomarańcz
-        sunIntensity = 0.65f,
-        ambientSkyColor = new Color(0.20f, 0.12f, 0.18f, 1f), // Fioletowo-zmierzchowy ton
-        ambientEquatorColor = new Color(0.13f, 0.08f, 0.11f, 1f),
-        ambientGroundColor = new Color(0.05f, 0.03f, 0.04f, 1f),
-        fogColor = new Color(0.23f, 0.12f, 0.21f, 1f),
-        fogDensity = 0.005f
-    };
+        return new PhaseLightingConfig
+        {
+            phaseName = "Morning - martwy świt",
+            sunEulerAngles = new Vector3(50f, -35f, 0f),
+            sunColor = new Color(0.79f, 0.84f, 0.89f, 1f),
+            sunIntensity = 0.95f,
+            shadowStrength = 0.68f,
 
-    public PhaseLightingConfig nightConfig = new PhaseLightingConfig
+            ambientSkyColor = new Color(0.39f, 0.43f, 0.48f, 1f),
+            ambientEquatorColor = new Color(0.30f, 0.34f, 0.39f, 1f),
+            ambientGroundColor = new Color(0.19f, 0.22f, 0.26f, 1f),
+
+            fogColor = new Color(0.27f, 0.30f, 0.33f, 1f),
+            fogDensity = 0.0028f,
+            enemyGlow = 0f,
+            sanctuaryIntensity = 0.25f
+        };
+    }
+
+    private static PhaseLightingConfig RecommendedDusk()
     {
-        phaseName = "Noc",
-        sunEulerAngles = new Vector3(70f, -30f, 0f), // Chłodne strome światło księżyca
-        sunColor = new Color(0.36f, 0.34f, 0.70f, 1f), // Granatowo-fioletowa poświata księżyca
-        sunIntensity = 0.45f, // Teren czytelny, ale ognie osady nadal wyraźnie jaśniejsze
-        ambientSkyColor = new Color(0.11f, 0.10f, 0.22f, 1f), // Granat z nutą fioletu
-        ambientEquatorColor = new Color(0.075f, 0.065f, 0.15f, 1f),
-        ambientGroundColor = new Color(0.035f, 0.03f, 0.07f, 1f),
-        fogColor = new Color(0.11f, 0.07f, 0.20f, 1f), // Nocna purpura
-        fogDensity = 0.006f,
-        enemyGlow = 1f // Fioletowa poświata wrogów tylko w nocy
-    };
+        return new PhaseLightingConfig
+        {
+            phaseName = "Dusk - ostatnie światło",
+            // Światło jest niskie, ale pada również na górne powierzchnie heksów.
+            sunEulerAngles = new Vector3(32f, -60f, 0f),
+            sunColor = new Color(0.88f, 0.55f, 0.50f, 1f),
+            sunIntensity = 0.82f,
+            shadowStrength = 0.56f,
+
+            // Chłodne wypełnienie zamiast prawie czarnego, purpurowego cienia.
+            ambientSkyColor = new Color(0.34f, 0.34f, 0.43f, 1f),
+            ambientEquatorColor = new Color(0.27f, 0.28f, 0.36f, 1f),
+            ambientGroundColor = new Color(0.19f, 0.20f, 0.28f, 1f),
+
+            fogColor = new Color(0.24f, 0.20f, 0.29f, 1f),
+            fogDensity = 0.0036f,
+            enemyGlow = 0f,
+            sanctuaryIntensity = 0.85f
+        };
+    }
+
+    private static PhaseLightingConfig RecommendedNight()
+    {
+        return new PhaseLightingConfig
+        {
+            phaseName = "Night - obcy półmrok",
+            // Księżyc wysoko: czytelne górne płaszczyzny heksów i roślinność.
+            sunEulerAngles = new Vector3(56f, -35f, 0f),
+            sunColor = new Color(0.54f, 0.66f, 0.83f, 1f),
+            sunIntensity = 0.62f,
+            shadowStrength = 0.38f,
+
+            // Najważniejsza zmiana: ciemny granat, ale nie czerń.
+            ambientSkyColor = new Color(0.29f, 0.34f, 0.45f, 1f),
+            ambientEquatorColor = new Color(0.24f, 0.29f, 0.39f, 1f),
+            ambientGroundColor = new Color(0.17f, 0.21f, 0.30f, 1f),
+
+            fogColor = new Color(0.13f, 0.16f, 0.26f, 1f),
+            fogDensity = 0.0045f,
+            enemyGlow = 1f,
+            sanctuaryIntensity = 1.65f
+        };
+    }
 
     private Coroutine transitionCoroutine;
     private PhaseLightingConfig currentConfig;
+    private TimePhaseManager phaseManager;
 
     private void Awake()
     {
         if (sunLight == null)
             sunLight = GetComponent<Light>();
 
-        // Włączamy zaawansowany ambient Trilight oraz mgłę
-        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+        RenderSettings.ambientMode = AmbientMode.Trilight;
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.ExponentialSquared;
     }
 
     private void Start()
     {
-        if (TimePhaseManager.Instance != null)
+        phaseManager = TimePhaseManager.Instance;
+        if (phaseManager != null)
         {
-            TimePhaseManager.Instance.OnMorningStarted += HandleMorningStarted;
-            TimePhaseManager.Instance.OnDuskStarted += HandleDuskStarted;
-            TimePhaseManager.Instance.OnNightStarted += HandleNightStarted;
-
-            ApplyPhaseImmediate(TimePhaseManager.Instance.CurrentTimePhase);
+            phaseManager.OnMorningStarted += HandleMorningStarted;
+            phaseManager.OnDuskStarted += HandleDuskStarted;
+            phaseManager.OnNightStarted += HandleNightStarted;
+            ApplyPhaseImmediate(phaseManager.CurrentTimePhase);
         }
         else
         {
@@ -119,36 +166,51 @@ public class DayNightCycle : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (TimePhaseManager.Instance != null)
-        {
-            TimePhaseManager.Instance.OnMorningStarted -= HandleMorningStarted;
-            TimePhaseManager.Instance.OnDuskStarted -= HandleDuskStarted;
-            TimePhaseManager.Instance.OnNightStarted -= HandleNightStarted;
-        }
+        if (phaseManager == null) return;
+        phaseManager.OnMorningStarted -= HandleMorningStarted;
+        phaseManager.OnDuskStarted -= HandleDuskStarted;
+        phaseManager.OnNightStarted -= HandleNightStarted;
     }
 
     private void OnValidate()
     {
-        // Strojenie kolorów na żywo: zmiana wartości w Inspectorze w Play Mode od razu przelicza bieżącą fazę.
-        if (!Application.isPlaying || !isActiveAndEnabled || transitionCoroutine != null) return;
+        transitionDuration = Mathf.Max(0f, transitionDuration);
+        if (!Application.isPlaying || !isActiveAndEnabled || transitionCoroutine != null)
+            return;
+
         if (TimePhaseManager.Instance != null)
             ApplyPhaseImmediate(TimePhaseManager.Instance.CurrentTimePhase);
     }
 
-    private void HandleMorningStarted()
+    [ContextMenu("Zastosuj presety Dark Fantasy")]
+    private void ApplyRecommendedPresets()
     {
-        TransitionToConfig(morningConfig, transitionDuration);
+        morningConfig = RecommendedMorning();
+        duskConfig = RecommendedDusk();
+        nightConfig = RecommendedNight();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        if (Application.isPlaying)
+        {
+            if (TimePhaseManager.Instance != null)
+                ApplyPhaseImmediate(TimePhaseManager.Instance.CurrentTimePhase);
+            else
+                ApplyConfigImmediate(morningConfig);
+        }
     }
 
-    private void HandleDuskStarted()
+    // Wsteczna kompatybilność ze starą nazwą menu kontekstowego.
+    [ContextMenu("Zastosuj zalecane ustawienia faz")]
+    private void ApplyRecommendedPresetsLegacy()
     {
-        TransitionToConfig(duskConfig, transitionDuration);
+        ApplyRecommendedPresets();
     }
 
-    private void HandleNightStarted()
-    {
-        TransitionToConfig(nightConfig, transitionDuration);
-    }
+    private void HandleMorningStarted() => TransitionToConfig(morningConfig, transitionDuration);
+    private void HandleDuskStarted() => TransitionToConfig(duskConfig, transitionDuration);
+    private void HandleNightStarted() => TransitionToConfig(nightConfig, transitionDuration);
 
     public void ApplyPhaseImmediate(TimePhases phase)
     {
@@ -181,48 +243,55 @@ public class DayNightCycle : MonoBehaviour
     private void TransitionToConfig(PhaseLightingConfig target, float duration)
     {
         if (transitionCoroutine != null)
+        {
             StopCoroutine(transitionCoroutine);
+            transitionCoroutine = null;
+        }
 
-        if (gameObject.activeInHierarchy)
-            transitionCoroutine = StartCoroutine(TransitionRoutine(currentConfig, target, duration));
-        else
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy || duration <= 0f)
+        {
             ApplyConfigImmediate(target);
+            return;
+        }
+
+        // currentConfig aktualizujemy co klatkę, więc przerwanie animacji nie robi skoku.
+        transitionCoroutine = StartCoroutine(TransitionRoutine(currentConfig, target, duration));
     }
 
     private IEnumerator TransitionRoutine(PhaseLightingConfig start, PhaseLightingConfig target, float duration)
     {
         float elapsed = 0f;
-        Quaternion startRot = Quaternion.Euler(start.sunEulerAngles);
-        Quaternion targetRot = Quaternion.Euler(target.sunEulerAngles);
-
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float smoothT = Mathf.SmoothStep(0f, 1f, t);
-
-            if (sunLight != null)
-            {
-                sunLight.transform.rotation = Quaternion.Slerp(startRot, targetRot, smoothT);
-                sunLight.color = Color.Lerp(start.sunColor, target.sunColor, smoothT);
-                sunLight.intensity = Mathf.Lerp(start.sunIntensity, target.sunIntensity, smoothT);
-            }
-
-            RenderSettings.ambientSkyColor = Color.Lerp(start.ambientSkyColor, target.ambientSkyColor, smoothT);
-            RenderSettings.ambientEquatorColor = Color.Lerp(start.ambientEquatorColor, target.ambientEquatorColor, smoothT);
-            RenderSettings.ambientGroundColor = Color.Lerp(start.ambientGroundColor, target.ambientGroundColor, smoothT);
-
-            RenderSettings.fogColor = Color.Lerp(start.fogColor, target.fogColor, smoothT);
-            RenderSettings.fogDensity = Mathf.Lerp(start.fogDensity, target.fogDensity, smoothT);
-
-            EnemyGlow.SetGlow(Mathf.Lerp(start.enemyGlow, target.enemyGlow, smoothT), enemyGlowColor);
-
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            currentConfig = LerpConfig(start, target, t);
+            ApplyConfigValues(currentConfig);
             yield return null;
         }
 
         currentConfig = target;
         ApplyConfigValues(target);
         transitionCoroutine = null;
+    }
+
+    private static PhaseLightingConfig LerpConfig(PhaseLightingConfig from, PhaseLightingConfig to, float t)
+    {
+        PhaseLightingConfig result = to;
+        result.sunEulerAngles = Quaternion.Slerp(
+            Quaternion.Euler(from.sunEulerAngles),
+            Quaternion.Euler(to.sunEulerAngles), t).eulerAngles;
+        result.sunColor = Color.Lerp(from.sunColor, to.sunColor, t);
+        result.sunIntensity = Mathf.Lerp(from.sunIntensity, to.sunIntensity, t);
+        result.shadowStrength = Mathf.Lerp(from.shadowStrength, to.shadowStrength, t);
+        result.ambientSkyColor = Color.Lerp(from.ambientSkyColor, to.ambientSkyColor, t);
+        result.ambientEquatorColor = Color.Lerp(from.ambientEquatorColor, to.ambientEquatorColor, t);
+        result.ambientGroundColor = Color.Lerp(from.ambientGroundColor, to.ambientGroundColor, t);
+        result.fogColor = Color.Lerp(from.fogColor, to.fogColor, t);
+        result.fogDensity = Mathf.Lerp(from.fogDensity, to.fogDensity, t);
+        result.enemyGlow = Mathf.Lerp(from.enemyGlow, to.enemyGlow, t);
+        result.sanctuaryIntensity = Mathf.Lerp(from.sanctuaryIntensity, to.sanctuaryIntensity, t);
+        return result;
     }
 
     private void ApplyConfigValues(PhaseLightingConfig config)
@@ -232,14 +301,20 @@ public class DayNightCycle : MonoBehaviour
             sunLight.transform.rotation = Quaternion.Euler(config.sunEulerAngles);
             sunLight.color = config.sunColor;
             sunLight.intensity = config.sunIntensity;
+            sunLight.shadowStrength = config.shadowStrength;
         }
 
         RenderSettings.ambientSkyColor = config.ambientSkyColor;
         RenderSettings.ambientEquatorColor = config.ambientEquatorColor;
         RenderSettings.ambientGroundColor = config.ambientGroundColor;
-
         RenderSettings.fogColor = config.fogColor;
         RenderSettings.fogDensity = config.fogDensity;
+
+        if (sanctuaryLight != null && sanctuaryLight != sunLight)
+        {
+            sanctuaryLight.color = sanctuaryLightColor;
+            sanctuaryLight.intensity = config.sanctuaryIntensity;
+        }
 
         EnemyGlow.SetGlow(config.enemyGlow, enemyGlowColor);
     }

@@ -313,13 +313,32 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
         if (tower == null || statSlots.Count < 8) return;
 
+        // Typ obrażeń i kolorystyka
+        string typeName = tower.damageType.ToString();
+        Color typeColor = Color.white;
+        switch (tower.damageType)
+        {
+            case DamageType.Physical:
+                typeName = "Fizyczne";
+                typeColor = new Color32(255, 140, 52, 255);
+                break;
+            case DamageType.Magic:
+                typeName = "Magiczne";
+                typeColor = new Color32(0, 176, 240, 255);
+                break;
+            case DamageType.True:
+                typeName = "Czyste";
+                typeColor = Color.white;
+                break;
+        }
+
         // Stat 0: Zasięg
         statSlots[0].gameObject.SetActive(true);
         statSlots[0].Setup("Zasięg:", tower.baseRange % 1f == 0 ? tower.baseRange.ToString("F0") : tower.baseRange.ToString("F1"));
 
         // Stat 1: Obrażenia
         statSlots[1].gameObject.SetActive(true);
-        statSlots[1].Setup("Obrażenia:", tower.baseDamage.ToString("F0"));
+        statSlots[1].Setup("Obrażenia:", tower.baseDamage.ToString("F0"), typeColor);
 
         // Stat 2: Szybkostrzelność
         statSlots[2].gameObject.SetActive(true);
@@ -343,23 +362,6 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
         // Stat 7: Typ obrażeń
         statSlots[7].gameObject.SetActive(true);
-        string typeName = tower.damageType.ToString();
-        Color typeColor = Color.white;
-        switch (tower.damageType)
-        {
-            case DamageType.Physical:
-                typeName = "Fizyczne";
-                typeColor = new Color32(245, 71, 39, 255);
-                break;
-            case DamageType.Magic:
-                typeName = "Magiczne";
-                typeColor = new Color32(59, 130, 246, 255);
-                break;
-            case DamageType.True:
-                typeName = "Czyste";
-                typeColor = Color.white;
-                break;
-        }
         statSlots[7].Setup("Typ:", typeName, typeColor);
 
         // Deactivate unused stat slots if pool > 8

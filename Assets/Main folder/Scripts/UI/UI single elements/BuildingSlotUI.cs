@@ -23,6 +23,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private GameObject battleStatsPanel;
     [SerializeField] private GameObject housingStatsPanel;
     [SerializeField] private GameObject productionStatsPanel;
+    [SerializeField] private GameObject descriptionPanel;
     
     [Header("Tower")]
     [SerializeField] private TextMeshProUGUI dmgText;
@@ -245,17 +246,17 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
                 icon.gameObject.SetActive(false);
             }
         }
-
-        if (descriptionText != null)
-        {
-            descriptionText.text = string.IsNullOrEmpty(buildingData.description) ? "" : buildingData.description;
-        }
+        
         
         SetUpCosts();
         
         if (battleStatsPanel != null) battleStatsPanel.SetActive(false);
         if (housingStatsPanel != null) housingStatsPanel.SetActive(false);
         if (productionStatsPanel != null) productionStatsPanel.SetActive(false);
+        
+        
+        descriptionPanel.SetActive(false);
+        
 
         switch (buildingData.type)
         {
@@ -272,6 +273,10 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             case BuildingType.Housing:
                 if (housingStatsPanel != null) housingStatsPanel.SetActive(true);
                 SetUpHousing();
+                break;
+            case BuildingType.Utility or BuildingType.Unique:
+                descriptionPanel.SetActive(true);
+                descriptionText.text = string.IsNullOrEmpty(buildingData.description) ? "" : buildingData.description;
                 break;
         }
     }
@@ -307,30 +312,25 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         {
             if (dmgText != null)
             {
-                string damageTypeName;
                 string colorHex;
 
                 switch (towerData.damageType)
                 {
                     case DamageType.Physical:
-                        damageTypeName = "Fizyczne";
-                        colorHex = "#F54727"; 
+                        colorHex = "#FF8C34"; 
                         break;
                     case DamageType.Magic:
-                        damageTypeName = "Magiczne";
-                        colorHex = "#3B82F6"; 
+                        colorHex = "#00B0F0"; 
                         break;
                     case DamageType.True:
-                        damageTypeName = "Czyste";
                         colorHex = "#FFFFFF";
                         break;
                     default:
-                        damageTypeName = towerData.damageType.ToString();
                         colorHex = "#FFFFFF";
                         break;
                 }
 
-                dmgText.text = $"Obrażenia: {towerData.baseDamage} (<color={colorHex}>{damageTypeName}</color>)";
+                dmgText.text = $"Obrażenia: <color={colorHex}>{towerData.baseDamage}</color>";
             }
 
             if (attackSpeedText != null)

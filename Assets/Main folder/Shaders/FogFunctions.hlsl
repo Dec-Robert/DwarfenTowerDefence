@@ -2,20 +2,31 @@
 #define FOG_FUNCTIONS_INCLUDED
 
 // ===================================================================================
-// Funkcje pomocnicze: Bezteksturowy szum 2D oraz animowane kłęby chmur
+// PARAMETRY GRANICY MGŁY (wszystko w jednostkach świata, ~ 1 = rozmiar heksa)
+// Tu stroisz wygląd granicy chunk do odkrycia <-> chunk za daleko
+// ===================================================================================
+#define FOG_WARP_AMOUNT     3.0   // jak mocno falują/wygryzają się krawędzie (0 = jak dawniej)
+#define FOG_WARP_FREQ       0.07  // skala dużych "zatok" i "półwyspów" (mniej = większe kształty)
+#define FOG_SOFTNESS        1.4   // promień rozmycia krawędzi (0 = ostra)
+#define FOG_DETAIL_STRENGTH 0.55  // drobne postrzępienie / wypustki przy samej krawędzi
+#define FOG_DETAIL_FREQ     0.55  // skala tego postrzępienia (więcej = drobniejsze)
+
+// ===================================================================================
+// Szum 2D (bez tekstur)
 // ===================================================================================
 float FogHash2D(float2 p)
 {
-    p = frac(p * float2(123.34, 456.21));
-    p += dot(p, p + 45.32);
-    return frac(p.x * p.y);
+    // hash bez widocznej siatki (stary dawał blokowe artefakty)
+    float3 p3 = frac(float3(p.x, p.y, p.x) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.x + p3.y) * p3.z);
 }
 
 float FogNoise2D(float2 p)
 {
     float2 i = floor(p);
     float2 f = frac(p);
-    f = f * f * (3.0 - 2.0 * f); // Hermite smoothing
+    f = f * f * (3.0 - 2.0 * f);
 
     float a = FogHash2D(i);
     float b = FogHash2D(i + float2(1.0, 0.0));
@@ -25,8 +36,31 @@ float FogNoise2D(float2 p)
     return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
 }
 
+// 4 oktawy, każda obrócona -> brak widocznej siatki, organiczny kształt
+float FogFBM(float2 p)
+{
+    float sum = 0.0;
+    float amp = 0.5;
+    float norm = 0.0;
+
+    [unroll]
+    for (int i = 0; i < 4; i++)
+    {
+        sum += FogNoise2D(p) * amp;
+        norm += amp;
+        p = float2(0.8 * p.x - 0.6 * p.y, 0.6 * p.x + 0.8 * p.y) * 2.03 + 17.1;
+        amp *= 0.5;
+    }
+    return sum / norm; // ~0..1, średnio 0.5
+}
+
+float FogSampleMask(UnityTexture2D FogMask, float2 uv)
+{
+    return SAMPLE_TEXTURE2D(FogMask.tex, FogMask.samplerstate, saturate(uv)).r;
+}
+
 // ===================================================================================
-// Funkcja 1: Miksowanie kolorów mgły w pikselu (Fragment)
+// Funkcja 1: kolor mgły w pikselu
 // ===================================================================================
 void CalculateFog_float(
     float3 WorldPos,
@@ -41,36 +75,51 @@ void CalculateFog_float(
     out float OutWildernessFactor
 )
 {
-    // Bezpieczny odczyt granic: jeśli parametr w grafie jest (0,0,0,0), bierzemy globalny _FogWorldBounds
     float4 bounds = (length(WorldBounds.zw) > 0.001) ? WorldBounds : _FogWorldBounds;
+    float2 size   = max(bounds.zw, float2(0.0001, 0.0001));
 
-    // 1. Odczyt maski bazowej (0.0 = Borderlands/Settled, 1.0 = Wilderness)
-    float2 baseUV = (WorldPos.xz - bounds.xy) / max(bounds.zw, float2(0.0001, 0.0001));
-    baseUV = clamp(baseUV, 0.0, 1.0);
-    float rawMask = SAMPLE_TEXTURE2D(FogMask.tex, FogMask.samplerstate, baseUV).r;
-
-    // 2. Kłębiące się, wieloskalowe obłoki ciemnej mgły (Wilderness)
-    float time = _Time.y;
+    float2 p     = WorldPos.xz;
+    float  time  = _Time.y;
     float2 drift1 = float2(time * 0.035, time * 0.02);
     float2 drift2 = float2(-time * 0.02, time * 0.035);
 
-    float n1 = FogNoise2D(WorldPos.xz * 0.16 + drift1);
-    float n2 = FogNoise2D(WorldPos.xz * 0.35 + drift2 + float2(15.7, 39.2));
-    float darkCloudNoise = n1 * 0.65 + n2 * 0.35; // zakres 0..1
+    // 1. DOMAIN WARPING – przesuwamy punkt, w którym czytamy maskę, o wektor z szumu.
+    //    Dzięki temu sama granica (a nie tylko wartość maski) robi się nieregularna,
+    //    niezależnie od tego jak stromo maska przechodzi z 0 do 1.
+    float2 warp;
+    warp.x = FogFBM(p * FOG_WARP_FREQ + drift1);
+    warp.y = FogFBM(p * FOG_WARP_FREQ + drift2 + float2(37.2, 11.7));
+    warp = (warp - 0.5) * 3.0 * FOG_WARP_AMOUNT;
 
-    // 3. Napływ ciemnej mgły na chunki do odkrycia:
-    // Przy odkrytym terenie (rawMask bliskie 0) encroachmentFactor = 0 (brzeg z osadą jest czysty i regularny)
-    // Im dalej ku Wilderness, tym obłoki ciemnej mgły wpychają mrok głębiej do wnętrza chunka
-    float encroachmentFactor = smoothstep(0.08, 0.60, rawMask);
-    float dynamicMask = rawMask + (darkCloudNoise - 0.40) * (0.45 * encroachmentFactor);
-    dynamicMask = saturate(dynamicMask);
+    // drobna, szybsza warstwa wypustek
+    float2 warpFine;
+    warpFine.x = FogNoise2D(p * 0.9 + drift2 * 2.0);
+    warpFine.y = FogNoise2D(p * 0.9 - drift1 * 2.0 + float2(8.3, 21.9));
+    warp += (warpFine - 0.5) * 1.2;
 
-    // 4. Płynny współczynnik przejścia do ciemnej mgły
+    float2 uv = (p + warp - bounds.xy) / size;
+
+    // 2. MIĘKKA, NIEJEDNOLITA KRAWĘDŹ – 5 próbek maski z promieniem zależnym od szumu
+    float  r  = FOG_SOFTNESS * (0.4 + FogNoise2D(p * 0.3 + drift1)) / size.x;
+    float2 ro = float2(r, r * size.x / size.y);
+
+    float m  = FogSampleMask(FogMask, uv) * 0.36;
+    m += FogSampleMask(FogMask, uv + ro * float2( 1.0,  0.6)) * 0.16;
+    m += FogSampleMask(FogMask, uv + ro * float2(-0.6,  1.0)) * 0.16;
+    m += FogSampleMask(FogMask, uv + ro * float2(-1.0, -0.6)) * 0.16;
+    m += FogSampleMask(FogMask, uv + ro * float2( 0.6, -1.0)) * 0.16;
+
+    // 3. POSTRZĘPIENIE – szum działa tylko w pasie przejścia (m ~ 0.5), więc
+    //    głębokie wnętrza chunków pozostają stabilne, a granica dostaje "chmurowe" wypustki
+    float detail = FogFBM(p * FOG_DETAIL_FREQ + drift2 * 2.0 + float2(15.7, 39.2));
+    float band   = saturate(4.0 * m * (1.0 - m));
+    float dynamicMask = saturate(m + (detail - 0.5) * 2.0 * FOG_DETAIL_STRENGTH * band);
+
+    // 4. Przejście do ciemnej mgły
     float fMin = min(FadeMin, 0.25);
     float fMax = max(FadeMax, 0.80);
     float wilderness = smoothstep(fMin, fMax, dynamicMask);
 
-    // 5. Czysty fiolet bez sztucznego podświetlania środka chunka
     FinalColor = lerp(PurpleColor, DarkColor + VoronoiFlashes * wilderness, wilderness);
     OutWildernessFactor = wilderness;
 }
@@ -88,34 +137,19 @@ void CalculateFog_half(
     out half OutWildernessFactor
 )
 {
-    half4 bounds = (length(WorldBounds.zw) > 0.001) ? WorldBounds : (half4)_FogWorldBounds;
-
-    half2 baseUV = (WorldPos.xz - bounds.xy) / max(bounds.zw, half2(0.0001, 0.0001));
-    baseUV = clamp(baseUV, 0.0, 1.0);
-    half rawMask = SAMPLE_TEXTURE2D(FogMask.tex, FogMask.samplerstate, baseUV).r;
-
-    half time = (half)_Time.y;
-    half2 drift1 = half2(time * (half)0.035, time * (half)0.02);
-    half2 drift2 = half2(-time * (half)0.02, time * (half)0.035);
-
-    half n1 = (half)FogNoise2D((float2)(WorldPos.xz * (half)0.16 + drift1));
-    half n2 = (half)FogNoise2D((float2)(WorldPos.xz * (half)0.35 + drift2 + half2(15.7, 39.2)));
-    half darkCloudNoise = n1 * (half)0.65 + n2 * (half)0.35;
-
-    half encroachmentFactor = smoothstep((half)0.08, (half)0.60, rawMask);
-    half dynamicMask = rawMask + (darkCloudNoise - (half)0.40) * ((half)0.45 * encroachmentFactor);
-    dynamicMask = saturate(dynamicMask);
-
-    half fMin = min(FadeMin, (half)0.25);
-    half fMax = max(FadeMax, (half)0.80);
-    half wilderness = smoothstep(fMin, fMax, dynamicMask);
-
-    FinalColor = lerp(PurpleColor, DarkColor + VoronoiFlashes * wilderness, wilderness);
-    OutWildernessFactor = wilderness;
+    // szum i warping wymagają precyzji float, więc liczymy w float
+    float3 col;
+    float  w;
+    CalculateFog_float((float3)WorldPos, (float4)WorldBounds, FogMask,
+                       (float)FadeMin, (float)FadeMax,
+                       (float3)PurpleColor, (float3)DarkColor, (float3)VoronoiFlashes,
+                       col, w);
+    FinalColor = (half3)col;
+    OutWildernessFactor = (half)w;
 }
 
 // ===================================================================================
-// Funkcja 2: Wierzchołki siatki – brak deformacji zapewnia regularne brzegi z terenem
+// Funkcja 2: wierzchołki – bez zmian
 // ===================================================================================
 void CalculateFogSpill_float(
     float3 ObjectPos,
@@ -128,7 +162,6 @@ void CalculateFogSpill_float(
     out float3 OutPosition
 )
 {
-    // Zwracamy nienaruszoną pozycję wierzchołka, zachowując regularne krawędzie heksów
     OutPosition = ObjectPos;
 }
 

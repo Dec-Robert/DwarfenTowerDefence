@@ -850,15 +850,15 @@ public class TowerContextWindowUI : MonoBehaviour
             {
                 case DamageType.Physical:
                     view.txtCurrentValue.text = "FIZYCZNE";
-                    view.txtCurrentValue.color = new Color(0.95f, 0.45f, 0.25f, 1f);
+                    view.txtCurrentValue.color = new Color32(255, 140, 52, 255);
                     break;
                 case DamageType.Magic:
                     view.txtCurrentValue.text = "MAGICZNE";
-                    view.txtCurrentValue.color = new Color(0.35f, 0.65f, 1f, 1f);
+                    view.txtCurrentValue.color = new Color32(0, 176, 240, 255);
                     break;
                 case DamageType.True:
                     view.txtCurrentValue.text = "CZYSTE";
-                    view.txtCurrentValue.color = new Color(1f, 0.9f, 0.5f, 1f);
+                    view.txtCurrentValue.color = Color.white;
                     break;
             }
         }
