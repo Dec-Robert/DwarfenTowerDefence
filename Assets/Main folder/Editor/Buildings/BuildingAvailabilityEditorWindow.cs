@@ -19,7 +19,7 @@ public class BuildingAvailabilityEditorWindow : EditorWindow
     private GUIStyle headerLabelStyle;
     private bool stylesInitialized;
 
-    [MenuItem("Tools/Buildings/Building Availability Manager")]
+    [MenuItem("Tools/Buildings/Building Availability Manager", priority = 12)]
     public static void ShowWindow()
     {
         var window = GetWindow<BuildingAvailabilityEditorWindow>("Budynki (Włącz/Wyłącz)");

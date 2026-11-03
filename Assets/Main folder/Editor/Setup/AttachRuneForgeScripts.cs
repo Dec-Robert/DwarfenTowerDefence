@@ -16,7 +16,7 @@ public static class AttachRuneForgeScripts
         // EditorApplication.delayCall += Execute;
     }
 
-    [MenuItem("Tools/Attach Rune Forge UI Scripts")]
+    [MenuItem("Tools/Setup & Maintenance/Attach Rune Forge UI Scripts", priority = 301)]
     public static void Execute()
     {
         if (SessionState.GetBool(SessionKey, false)) return;

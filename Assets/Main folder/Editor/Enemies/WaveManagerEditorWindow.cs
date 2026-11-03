@@ -48,15 +48,14 @@ public class WaveManagerEditorWindow : EditorWindow
     // Difficulty Overview state
     private Vector2 overviewScrollPos;
 
-    [MenuItem("Tools/Waves/Wave & Enemy Manager")]
-    [MenuItem("Tools/Waves/Wave Manager")]
+    [MenuItem("Tools/Enemies & Waves/Wave & Enemy Manager", priority = 30)]
     public static void ShowWindow()
     {
         var window = GetWindow<WaveManagerEditorWindow>("Wave & Enemy Manager");
         window.minSize = new Vector2(980, 640);
     }
 
-    [MenuItem("Tools/Waves/Migrate Enemy Tiers and Waves")]
+    [MenuItem("Tools/Enemies & Waves/Migrate Enemy Tiers and Waves", priority = 31)]
     public static void RunMigrationMenuItem()
     {
         EnemyTierMigrationTool.MigrateAll();

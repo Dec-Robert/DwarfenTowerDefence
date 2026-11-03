@@ -1134,7 +1134,7 @@ public class CombatOptimizationTests
     // AUTOMATIC RUNNER FOR EDITMODE / LOG VERIFICATION
     // =========================================================================
 
-    [MenuItem("Tools/Run Combat Optimization Tests")]
+    [MenuItem("Tools/Tests/Run Combat Optimization Tests", priority = 102)]
     [InitializeOnLoadMethod]
     public static void RunTestsOnDomainReload()
     {

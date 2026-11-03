@@ -33,7 +33,7 @@ public class MetaMapConfigEditorWindow : EditorWindow
     // Biblioteka layoutów grupowana po folderach
     private Dictionary<string, List<ChunkLayoutSO>> layoutLibrary = new Dictionary<string, List<ChunkLayoutSO>>();
 
-    [MenuItem("Tools/Map/Meta Map Config & Layout Editor")]
+    [MenuItem("Tools/Map/Meta Map Config & Layout Editor", priority = 60)]
     public static void ShowWindow()
     {
         var window = GetWindow<MetaMapConfigEditorWindow>("Meta Map Editor");

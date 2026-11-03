@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ public static class MetaUpgradeTools
     // MENU ITEMS
     // =========================================================================
 
-    [MenuItem("Tools/Meta Upgrades/1. Nadaj Unikatowe ID")]
+    [MenuItem("Tools/Meta Progression/1. Assign Unique IDs", priority = 51)]
     public static void AssignUniqueIDs()
     {
         var upgrades = LoadAllUpgrades();
@@ -114,7 +114,7 @@ public static class MetaUpgradeTools
 
     // ─────────────────────────────────────────────────────────────────────────
 
-    [MenuItem("Tools/Meta Upgrades/2. Przypisz do MetaUpgradeManager")]
+    [MenuItem("Tools/Meta Progression/2. Assign to MetaUpgradeManager", priority = 52)]
     public static void AssignToManager()
     {
         var upgrades = LoadAllUpgrades();
@@ -203,7 +203,7 @@ public static class MetaUpgradeTools
 
     // ─────────────────────────────────────────────────────────────────────────
 
-    [MenuItem("Tools/Meta Upgrades/3. Zrób oba na raz")]
+    [MenuItem("Tools/Meta Progression/3. Assign IDs & Manager (Full Setup)", priority = 53)]
     public static void AssignIDsAndManager()
     {
         AssignUniqueIDs();
@@ -212,7 +212,7 @@ public static class MetaUpgradeTools
 
     // ─────────────────────────────────────────────────────────────────────────
 
-    [MenuItem("Tools/Meta Upgrades/── Otwórz Graf Zależności")]
+    // Wywoływane bezpośrednio przez Tools/Meta Progression/Meta Upgrade Graph
     public static void OpenGraph()
     {
         MetaUpgradeEditorWindow.OpenWindow();
@@ -222,9 +222,9 @@ public static class MetaUpgradeTools
     // WALIDACJA (pokazuje ilość upgradów w menu)
     // =========================================================================
 
-    [MenuItem("Tools/Meta Upgrades/1. Nadaj Unikatowe ID", true)]
-    [MenuItem("Tools/Meta Upgrades/2. Przypisz do MetaUpgradeManager", true)]
-    [MenuItem("Tools/Meta Upgrades/3. Zrób oba na raz", true)]
+    [MenuItem("Tools/Meta Progression/1. Assign Unique IDs", true)]
+    [MenuItem("Tools/Meta Progression/2. Assign to MetaUpgradeManager", true)]
+    [MenuItem("Tools/Meta Progression/3. Assign IDs & Manager (Full Setup)", true)]
     private static bool ValidateMenu()
     {
         // Szybki check — czy folder istnieje
@@ -336,7 +336,7 @@ public class MetaUpgradeManagerEditor : Editor
 
         EditorGUILayout.Space(4);
 
-        if (GUILayout.Button("📊 Otwórz Graf Zależności", GUILayout.Height(28)))
+    // Wywoływane bezpośrednio przez Tools/Meta Progression/Meta Upgrade Graph
             MetaUpgradeEditorWindow.OpenWindow();
 
         // Podgląd statystyk

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class DailyResourceBalanceTestRunner
 {
-    [MenuItem("Tools/Run Daily Resource Balance Tests")]
+    [MenuItem("Tools/Tests/Run Daily Resource Balance Tests", priority = 103)]
     public static void RunTests()
     {
         var test = new DailyResourceBalanceTests();

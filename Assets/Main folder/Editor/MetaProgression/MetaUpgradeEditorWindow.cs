@@ -138,7 +138,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
     // MENU
     // =========================================================================
 
-    [MenuItem("Tools/Meta Upgrade Graph")]
+    [MenuItem("Tools/Meta Progression/Meta Upgrade Graph", priority = 50)]
     public static void OpenWindow()
     {
         var window = GetWindow<MetaUpgradeEditorWindow>("Meta Upgrade Graph");

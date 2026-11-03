@@ -9,7 +9,7 @@ public class LiveSessionMonitorWindow : EditorWindow
     private Vector2 scrollPos;
     private bool autoRefresh = true;
 
-    [MenuItem("Tools/Debug/Live Session Monitor")]
+    [MenuItem("Tools/Debug/Live Session Monitor", priority = 400)]
     public static void ShowWindow()
     {
         var window = GetWindow<LiveSessionMonitorWindow>("Live Session Monitor");

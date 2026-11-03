@@ -87,7 +87,7 @@ public class RuneManagerEditorWindow : EditorWindow
     private MessageType statusType = MessageType.Info;
     private double statusClearTime;
 
-    [MenuItem("Tools/Rune Manager")]
+    [MenuItem("Tools/Runes/Rune Manager", priority = 40)]
     public static void ShowWindow()
     {
         var window = GetWindow<RuneManagerEditorWindow>("Zarządzanie Runami");

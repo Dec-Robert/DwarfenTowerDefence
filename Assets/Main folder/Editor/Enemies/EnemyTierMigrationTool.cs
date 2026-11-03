@@ -24,7 +24,7 @@ public static class EnemyTierMigrationTool
         };
     }
 
-    [MenuItem("Tools/Waves/Perform Full Tier Migration", priority = 100)]
+    // Wywoływane z menu Tools/Enemies & Waves/Migrate Enemy Tiers and Waves (WaveManagerEditorWindow)
     public static void MigrateAll()
     {
         int enemiesCount = MigrateEnemies();

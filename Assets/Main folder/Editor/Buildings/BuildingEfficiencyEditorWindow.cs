@@ -81,7 +81,7 @@ public class BuildingEfficiencyEditorWindow : EditorWindow
         };
     }
 
-    [MenuItem("Tools/Buildings/Efficiency Table Editor")]
+    [MenuItem("Tools/Buildings/Efficiency Table Editor", priority = 11)]
     public static void ShowWindow()
     {
         var window = GetWindow<BuildingEfficiencyEditorWindow>("Efficiency Table Editor");

@@ -8,7 +8,7 @@ using TMPro;
 
 public class CanvasUIDumper : EditorWindow
 {
-    [MenuItem("Tools/Debug/Eksportuj UI (Tylko Canvas_MAIN_HUD)")]
+    [MenuItem("Tools/Debug/Export UI Hierarchy (Canvas_MAIN_HUD)", priority = 401)]
     public static void DumpCanvas()
     {
         // Szukamy konkretnego obiektu na scenie

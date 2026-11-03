@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class BuildingWorkerOverlayTestRunner
 {
-    [MenuItem("Tools/Run Building Worker Overlay Tests")]
+    [MenuItem("Tools/Tests/Run Building Worker Overlay Tests", priority = 101)]
     public static void RunTests()
     {
         var test = new BuildingWorkerOverlayTests();

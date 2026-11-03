@@ -9,7 +9,7 @@ public static class ChunkLayoutMigrationTool
         return (Mathf.Abs(a.x - b.x) + Mathf.Abs(a.x + a.y - b.x - b.y) + Mathf.Abs(a.y - b.y)) / 2;
     }
 
-    [MenuItem("Tools/Map/Migrate All ChunkLayoutSO to Radius 3")]
+    [MenuItem("Tools/Map/Utilities/Migrate All ChunkLayoutSO to Radius 3", priority = 70)]
     public static void MigrateAllChunkLayoutsToRadius3()
     {
         string[] guids = AssetDatabase.FindAssets("t:ChunkLayoutSO");

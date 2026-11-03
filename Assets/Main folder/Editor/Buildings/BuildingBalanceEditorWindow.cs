@@ -108,7 +108,7 @@ public class BuildingBalanceEditorWindow : EditorWindow
     private GUIStyle warningLabelStyle;
     private bool stylesInitialized = false;
 
-    [MenuItem("Tools/Buildings/Building Balance Editor")]
+    [MenuItem("Tools/Buildings/Building Balance Editor", priority = 10)]
     public static void ShowWindow()
     {
         var window = GetWindow<BuildingBalanceEditorWindow>("Building Balance Editor");

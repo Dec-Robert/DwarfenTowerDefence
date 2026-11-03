@@ -26,7 +26,7 @@ public class BuildingUpgradeTreeEditor : EditorWindow
     private const float NODE_WIDTH = 160f;
     private const float NODE_HEIGHT = 60f;
 
-    [MenuItem("Tools/Buildings/Upgrade Tree Builder")]
+    [MenuItem("Tools/Buildings/Upgrade Tree Builder", priority = 13)]
     public static void ShowWindow()
     {
         var window = GetWindow<BuildingUpgradeTreeEditor>("Upgrade Tree Builder");

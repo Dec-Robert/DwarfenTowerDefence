@@ -151,7 +151,7 @@ public class MapGenerationSimulatorWindow : EditorWindow
     private Vector2 scrollPos;
     private string lastCsvExportPath = string.Empty;
 
-    [MenuItem("Tools/Map/Generation Simulator")]
+    [MenuItem("Tools/Map/Generation Simulator", priority = 61)]
     public static void ShowWindow()
     {
         var window = GetWindow<MapGenerationSimulatorWindow>("Map Simulator");

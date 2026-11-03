@@ -18,7 +18,7 @@ public static class AttachExpeditionScripts
         // EditorApplication.delayCall += Execute;
     }
 
-    [MenuItem("Tools/Attach Expedition UI Scripts")]
+    [MenuItem("Tools/Setup & Maintenance/Attach Expedition UI Scripts", priority = 300)]
     public static void Execute()
     {
         var visualsDB = AssetDatabase.LoadAssetAtPath<ResourceVisualsSO>(VisualsDBPath);

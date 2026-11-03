@@ -9,13 +9,13 @@ public static class FogOfWarPrefabBuilder
     private const string HexMeshGuid = "f083fcd0a9a41284fbf3a9a02a88fedd";
     private const string FogMatGuid = "ecf964584f2921a42a52d9d4bc81e15f";
 
-    [MenuItem("Tools/Map/Rebuild Fog of War Prefab (Radius 3)")]
+    [MenuItem("Tools/Map/Utilities/Rebuild Fog of War Prefab (Radius 3)", priority = 71)]
     public static void RebuildFogPrefabRadius3()
     {
         RebuildFogPrefab(3);
     }
 
-    [MenuItem("Tools/Map/Rebuild Fog of War Prefab (Radius 4)")]
+    [MenuItem("Tools/Map/Utilities/Rebuild Fog of War Prefab (Radius 4)", priority = 72)]
     public static void RebuildFogPrefabRadius4()
     {
         RebuildFogPrefab(4);

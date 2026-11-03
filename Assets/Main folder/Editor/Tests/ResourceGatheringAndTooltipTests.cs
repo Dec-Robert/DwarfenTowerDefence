@@ -358,7 +358,7 @@ public class ResourceGatheringAndTooltipTests
     // AUTOMATIC RUNNER FOR EDITMODE / LOG VERIFICATION
     // =========================================================================
 
-    [MenuItem("Tools/Run Resource Gathering and Tooltip Tests")]
+    [MenuItem("Tools/Tests/Run Resource Gathering and Tooltip Tests", priority = 105)]
     [InitializeOnLoadMethod]
     public static void RunTestsOnDomainReload()
     {

@@ -297,7 +297,7 @@ public class EnemyHealthBarTests
     // AUTOMATIC RUNNER FOR EDITMODE / LOG VERIFICATION
     // =========================================================================
 
-    [MenuItem("Tools/Run Enemy Health Bar Tests")]
+    [MenuItem("Tools/Tests/Run Enemy Health Bar Tests", priority = 104)]
     [InitializeOnLoadMethod]
     public static void RunTestsOnDomainReload()
     {

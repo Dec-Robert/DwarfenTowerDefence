@@ -42,8 +42,7 @@ public class TowerBalanceEditorWindow : EditorWindow
     private float dummyArmor = 30f;
     private float dummyMagicResist = 30f;
 
-    [MenuItem("Tools/Towers/Tower Balance Editor")]
-    [MenuItem("Tools/Towers/Tower Data Modifier")]
+    [MenuItem("Tools/Towers/Tower Balance & Combat Editor", priority = 20)]
     public static void ShowWindow()
     {
         var window = GetWindow<TowerBalanceEditorWindow>("Tower Balance & Combat Editor");

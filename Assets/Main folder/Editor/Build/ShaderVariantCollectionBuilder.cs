@@ -14,7 +14,7 @@ public static class ShaderVariantCollectionBuilder
     private const string ResourceDir = "Assets/Resources";
     private const string CollectionAssetPath = "Assets/Resources/WarmupShaderVariants.shadervariants";
 
-    [MenuItem("Tools/Dwarfen TD/Build Shader Variant Collection", priority = 100)]
+    [MenuItem("Tools/Build & Optimization/Build Shader Variant Collection", priority = 200)]
     [InitializeOnLoadMethod]
     public static void BuildShaderVariantCollection()
     {
@@ -76,7 +76,7 @@ public static class ShaderVariantCollectionBuilder
                   $"Liczba shaderów w kolekcji: {collection.shaderCount}, variantCount: {collection.variantCount}.");
     }
 
-    [MenuItem("Tools/Dwarfen TD/Configure Build Settings Scenes", priority = 101)]
+    [MenuItem("Tools/Build & Optimization/Configure Build Settings Scenes", priority = 201)]
     public static void ConfigureBuildSettingsScenes()
     {
         string mainMenuDemoScene = "Assets/Main folder/_Scenes/MainMenu Demo scene.unity";
