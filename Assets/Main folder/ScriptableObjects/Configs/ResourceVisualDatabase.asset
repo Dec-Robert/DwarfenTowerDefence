@@ -44,11 +44,11 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 8ef720a46238fc84ba67a73f15b2ba3a, type: 3}
   raceVisuals:
   - race: 0
-    icon: {fileID: 21300000, guid: 88ec3e3f5c5873b49a364b493ec7302b, type: 3}
+    icon: {fileID: 21300000, guid: 513737109ade4f9f977e9b69d87066bb, type: 3}
   - race: 1
-    icon: {fileID: 21300000, guid: 68fa02fcf10b4f74e88ebed0fb6d2aff, type: 3}
+    icon: {fileID: 21300000, guid: 293d5b78175049a786b72dbcab3ab772, type: 3}
   - race: 2
-    icon: {fileID: 21300000, guid: 5c7219dc3ccf11a4ea995557a9a14b40, type: 3}
+    icon: {fileID: 21300000, guid: cd8fabb6bb974247b8f522bcc20e8817, type: 3}
   focusVisuals:
   - focus: 0
     icon: {fileID: 21300000, guid: b2d0606dc6fd4b59b84ac3b10fbfddfa, type: 3}

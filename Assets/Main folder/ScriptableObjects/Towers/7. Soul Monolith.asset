@@ -62,7 +62,7 @@ MonoBehaviour:
     searchRadius: 0
   baseMaxWorkers: 2
   isUnlocked: 1
-  baseRange: 3
+  baseRange: 1
   baseDamage: 50
   fireRate: 3
   criticalChancel: 0.05

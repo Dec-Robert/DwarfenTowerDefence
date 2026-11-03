@@ -64,10 +64,10 @@ MonoBehaviour:
   isUnlocked: 1
   baseRange: 4
   baseDamage: 100
-  fireRate: 0.5
+  fireRate: 0.4
   criticalChancel: 0.05
   criticalDamageMultiplier: 2
-  armorPenetration: 0
+  armorPenetration: 0.05
   magicPenetration: 0
   damageType: 0
   canShootChunk: 1

@@ -64,13 +64,13 @@ MonoBehaviour:
     searchRadius: 0
   baseMaxWorkers: 2
   isUnlocked: 1
-  baseRange: 5
+  baseRange: 4
   baseDamage: 10
   fireRate: 0.5
   criticalChancel: 0.02
   criticalDamageMultiplier: 1.5
   armorPenetration: 0
-  magicPenetration: 0
+  magicPenetration: 0.05
   damageType: 1
   canShootChunk: 1
   defaultTargetingPriorities: 

@@ -61,11 +61,11 @@ MonoBehaviour:
   baseMaxWorkers: 2
   isUnlocked: 1
   baseRange: 3
-  baseDamage: 24
-  fireRate: 2.5
+  baseDamage: 50
+  fireRate: 2
   criticalChancel: 0.1
   criticalDamageMultiplier: 2
-  armorPenetration: 0.05
+  armorPenetration: 0.1
   magicPenetration: 0
   damageType: 0
   canShootChunk: 0

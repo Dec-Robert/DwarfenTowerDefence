@@ -62,9 +62,9 @@ MonoBehaviour:
     searchRadius: 0
   baseMaxWorkers: 2
   isUnlocked: 1
-  baseRange: 10
-  baseDamage: 140
-  fireRate: 0.5
+  baseRange: 8
+  baseDamage: 200
+  fireRate: 0.3
   criticalChancel: 0.2
   criticalDamageMultiplier: 2.5
   armorPenetration: 0
