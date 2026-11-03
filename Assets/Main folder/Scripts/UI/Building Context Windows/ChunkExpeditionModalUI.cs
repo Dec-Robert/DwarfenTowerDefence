@@ -349,7 +349,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         // Domyślna liczba elfów
         assignedElves = MapExpansionManager.Instance != null && MapExpansionManager.Instance.costConfig != null
             ? MapExpansionManager.Instance.costConfig.minElvesForSurvey
-            : 2;
+            : 1;
 
         // Domyślnie zakładka ekspedycji
         SwitchTab(true);
@@ -397,7 +397,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
     {
         int minElves = MapExpansionManager.Instance != null && MapExpansionManager.Instance.costConfig != null
             ? MapExpansionManager.Instance.costConfig.minElvesForSurvey
-            : 2;
+            : 1;
 
         if (assignedElves > minElves)
         {
@@ -408,12 +408,16 @@ public class ChunkExpeditionModalUI : MonoBehaviour
 
     private void IncrementElves()
     {
+        int minElves = MapExpansionManager.Instance != null && MapExpansionManager.Instance.costConfig != null
+            ? MapExpansionManager.Instance.costConfig.minElvesForSurvey
+            : 1;
+
         int maxAvailableGear = MapExpansionManager.Instance != null ? MapExpansionManager.Instance.AvailableEquipment : 0;
         int maxAvailableElves = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(Race.Elves) : 0;
         int maxLimit = Mathf.Min(maxAvailableGear, maxAvailableElves);
 
         // Pozwalamy zwiększać do limitu (lub minimum jeśli gracz nie ma jeszcze sprzętu, by widział braki)
-        if (assignedElves < Mathf.Max(2, maxLimit))
+        if (assignedElves < Mathf.Max(minElves, maxLimit))
         {
             assignedElves++;
             RefreshView();
@@ -505,14 +509,10 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         }
 
         // Czas trwania, min skład i koszty
-        bool isRoad = MapExpansionManager.Instance.activeChunks.TryGetValue(currentChunk, out var cd) && cd.isRoadChunk;
-        MissionCost surveyCost = ExpansionCostCalculator.CalculateSurveyCost(
-            currentChunk,
-            MapExpansionManager.Instance.activeChunks,
-            isRoad,
-            config,
-            assignedElves
-        );
+        bool isRoad = MapExpansionManager.Instance != null && MapExpansionManager.Instance.activeChunks.TryGetValue(currentChunk, out var cd) && cd.isRoadChunk;
+        MissionCost surveyCost = MapExpansionManager.Instance != null
+            ? MapExpansionManager.Instance.CalculateSurveyCost(currentChunk, assignedElves)
+            : ExpansionCostCalculator.CalculateSurveyCost(currentChunk, null, isRoad, config, assignedElves);
 
         int duration = surveyCost.days;
         if (txtSurveyDuration != null)
@@ -528,12 +528,14 @@ public class ChunkExpeditionModalUI : MonoBehaviour
 
         int etherCost = surveyCost.etherCost;
         int foodCost = surveyCost.foodCost;
-        UpdateCostRow(pnlSurveyCostRow, etherCost, foodCost);
+        int woodCost = surveyCost.woodCost;
+        UpdateCostRow(pnlSurveyCostRow, etherCost, foodCost, woodCost);
 
         // Walidacja możliwości rozpoczęcia ekspedycji
         bool canStart = MapExpansionManager.Instance.CanStartSurvey(currentChunk, assignedElves, out string reason);
         int currentEther = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(ResourceType.Ether) : 0;
         int currentFood = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(ResourceType.Food) : 0;
+        int currentWood = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(ResourceType.Wood) : 0;
 
         if (btnSendSurvey != null)
         {
@@ -549,7 +551,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
                 else
                 {
                     txtSendSurveyLabel.color = ColorTextRed;
-                    if (currentEther < etherCost || currentFood < foodCost)
+                    if (currentEther < etherCost || currentFood < foodCost || currentWood < woodCost)
                         txtSendSurveyLabel.text = "BRAK ZASOBÓW";
                     else if (idleElves < assignedElves)
                         txtSendSurveyLabel.text = "BRAK WOLNYCH ELFÓW";
@@ -580,12 +582,14 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         MissionCost reconCost = ExpansionCostCalculator.CalculateReconCost(config);
         int etherCost = reconCost.etherCost;
         int foodCost = reconCost.foodCost;
-        UpdateCostRow(pnlReconCostRow, etherCost, foodCost);
+        int woodCost = reconCost.woodCost;
+        UpdateCostRow(pnlReconCostRow, etherCost, foodCost, woodCost);
 
         // Walidacja zwiadu
         bool canStart = MapExpansionManager.Instance.CanStartRecon(currentChunk, out string reason);
         int currentEther = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(ResourceType.Ether) : 0;
         int currentFood = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(ResourceType.Food) : 0;
+        int currentWood = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(ResourceType.Wood) : 0;
 
         if (btnSendRecon != null)
         {
@@ -601,7 +605,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
                 else
                 {
                     txtSendReconLabel.color = ColorTextRed;
-                    if (currentEther < etherCost || currentFood < foodCost)
+                    if (currentEther < etherCost || currentFood < foodCost || currentWood < woodCost)
                         txtSendReconLabel.text = "BRAK ZASOBÓW";
                     else if (idleElves < config.reconElfRequirement)
                         txtSendReconLabel.text = "BRAK WOLNYCH ELFÓW";
@@ -614,32 +618,57 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         }
     }
 
-    private void UpdateCostRow(Transform costRow, int etherCost, int foodCost)
+    private void UpdateCostRow(Transform costRow, int etherCost, int foodCost, int woodCost = 0)
     {
         if (costRow == null) return;
 
-        int currentEther = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(ResourceType.Ether) : 0;
-        int currentFood = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(ResourceType.Food) : 0;
+        var costs = new List<(ResourceType type, int amount)>();
+        if (foodCost > 0) costs.Add((ResourceType.Food, foodCost));
+        if (woodCost > 0) costs.Add((ResourceType.Wood, woodCost));
+        if (etherCost > 0) costs.Add((ResourceType.Ether, etherCost));
 
-        // Szukamy komponentów SingleResourceUI
-        var resourceItems = costRow.GetComponentsInChildren<SingleResourceUI>(true);
-        if (resourceItems != null && resourceItems.Length >= 2)
+        if (costs.Count == 0)
         {
-            // Kryształ Eteru
-            resourceItems[0].Setup(ResourceType.Ether, etherCost, resourceVisuals);
-            var etherTxt = resourceItems[0].GetComponentInChildren<TextMeshProUGUI>();
-            if (etherTxt != null)
-            {
-                etherTxt.color = currentEther >= etherCost ? ColorTextWhite : ColorTextRed;
-            }
+            costs.Add((ResourceType.Food, 0));
+        }
 
-            // Żywność
-            resourceItems[1].Setup(ResourceType.Food, foodCost, resourceVisuals);
-            var foodTxt = resourceItems[1].GetComponentInChildren<TextMeshProUGUI>();
-            if (foodTxt != null)
+        var resourceItems = costRow.GetComponentsInChildren<SingleResourceUI>(true);
+        if (resourceItems == null || resourceItems.Length == 0) return;
+
+        var itemsList = new List<SingleResourceUI>(resourceItems);
+        while (itemsList.Count < costs.Count)
+        {
+            var newGo = Instantiate(itemsList[0].gameObject, costRow);
+            var newComp = newGo.GetComponent<SingleResourceUI>();
+            itemsList.Add(newComp);
+        }
+
+        for (int i = 0; i < itemsList.Count; i++)
+        {
+            if (i < costs.Count)
             {
-                foodTxt.color = currentFood >= foodCost ? ColorTextWhite : ColorTextRed;
+                itemsList[i].gameObject.SetActive(true);
+                var c = costs[i];
+                itemsList[i].Setup(c.type, c.amount, resourceVisuals);
+
+                int currentAmount = ResourceManager.Instance != null ? ResourceManager.Instance.GetResourceAmount(c.type) : 0;
+                Color textColor = currentAmount >= c.amount ? ColorTextWhite : ColorTextRed;
+                itemsList[i].SetTextColor(textColor);
+                var textComp = itemsList[i].GetComponentInChildren<TextMeshProUGUI>();
+                if (textComp != null)
+                {
+                    textComp.color = textColor;
+                }
             }
+            else
+            {
+                itemsList[i].gameObject.SetActive(false);
+            }
+        }
+
+        if (costRow is RectTransform rt)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
         }
     }
 

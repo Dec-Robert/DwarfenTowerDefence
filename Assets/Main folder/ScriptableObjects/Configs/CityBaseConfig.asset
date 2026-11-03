@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: CityBaseConfig
   m_EditorClassIdentifier: 
   startEther: 8
-  startWood: 35
+  startWood: 45
   startStone: 20
   startIron: 0
-  startCoal: 20
+  startCoal: 30
   startFood: 45
   baseCityHP: 20
   overrideHousingData: 0

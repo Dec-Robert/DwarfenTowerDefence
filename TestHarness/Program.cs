@@ -56,6 +56,8 @@ class Program
         _failedTests += AdversarialM4StressTests.RunAll();
         _failedTests += ChallengerMeta4_2Tests.RunAll();
         _failedTests += MetaProgressionTests.RunAll();
+        _failedTests += BuildingProductionQoLTests.RunAll();
+        TestExpansionCostsSuite();
 
         Console.WriteLine("\n=================================================");
         Console.WriteLine($"RESULTS: {_passedTests} PASSED, {_failedTests} FAILED");
@@ -67,6 +69,93 @@ class Program
     // =========================================================================
     // 1. DETERMINISM & DIVERGENCE
     // =========================================================================
+
+    static void TestExpansionCostsSuite()
+    {
+        Console.WriteLine("\n--- EXPANSION COSTS SUITE ---");
+
+        var cfg = (ExpansionCostConfig)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(ExpansionCostConfig));
+        cfg.minElvesForSurvey = 1;
+        cfg.reconFoodCost = 50f;
+        cfg.reconWoodCost = 20f;
+        cfg.reconEtherCost = 0f;
+        cfg.reconDays = 1;
+        cfg.minDays = 1;
+        cfg.maxDays = 7;
+        cfg.maxDistanceForTime = 6;
+        cfg.roadCostMultiplier = 0.6f;
+        cfg.roadTimeMultiplier = 0.7f;
+        cfg.daysReductionPerExtraElf = 1;
+        cfg.minSurveyDays = 1;
+
+        // 1. Tactical Recon
+        Assert(cfg.reconFoodCost == 50f, "Recon Food Cost is 50", $"got {cfg.reconFoodCost}");
+        Assert(cfg.reconWoodCost == 20f, "Recon Wood Cost is 20", $"got {cfg.reconWoodCost}");
+        Assert(cfg.reconEtherCost == 0f, "Recon Ether Cost is 0", $"got {cfg.reconEtherCost}");
+
+        MissionCost reconCost = ExpansionCostCalculator.CalculateReconCost(cfg);
+        Assert(reconCost.foodCost == 50, "Recon foodCost == 50");
+        Assert(reconCost.woodCost == 20, "Recon woodCost == 20");
+        Assert(reconCost.etherCost == 0, "Recon etherCost == 0");
+        Assert(reconCost.CanAfford(0, 50, 20), "Recon CanAfford(0, 50, 20) is true");
+        Assert(!reconCost.CanAfford(0, 49, 20), "Recon CanAfford with 49 food is false");
+        Assert(!reconCost.CanAfford(0, 50, 19), "Recon CanAfford with 19 wood is false");
+
+        // 2. Survey First 4 Chunks (T = 0, 1, 2, 3)
+        Dictionary<Vector2Int, ChunkStateData> chunks = new Dictionary<Vector2Int, ChunkStateData>
+        {
+            { Vector2Int.zero, new ChunkStateData { baseState = ChunkState.Settled } }
+        };
+
+        // T = 0
+        MissionCost c0 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 0);
+        Assert(c0.foodCost == 10, "Survey T=0: Food == 10", $"got {c0.foodCost}");
+        Assert(c0.woodCost == 5, "Survey T=0: Wood == 5", $"got {c0.woodCost}");
+        Assert(c0.etherCost == 0, "Survey T=0: Ether == 0", $"got {c0.etherCost}");
+
+        // T = 1
+        MissionCost c1 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 1);
+        Assert(c1.foodCost == 15, "Survey T=1: Food == 15", $"got {c1.foodCost}");
+        Assert(c1.woodCost == 7, "Survey T=1: Wood == 7", $"got {c1.woodCost}");
+        Assert(c1.etherCost == 0, "Survey T=1: Ether == 0", $"got {c1.etherCost}");
+
+        // T = 2
+        MissionCost c2 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 2);
+        Assert(c2.foodCost == 20, "Survey T=2: Food == 20", $"got {c2.foodCost}");
+        Assert(c2.woodCost == 9, "Survey T=2: Wood == 9", $"got {c2.woodCost}");
+        Assert(c2.etherCost == 0, "Survey T=2: Ether == 0", $"got {c2.etherCost}");
+
+        // T = 3
+        MissionCost c3 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 3);
+        Assert(c3.foodCost == 25, "Survey T=3: Food == 25", $"got {c3.foodCost}");
+        Assert(c3.woodCost == 11, "Survey T=3: Wood == 11", $"got {c3.woodCost}");
+        Assert(c3.etherCost == 0, "Survey T=3: Ether == 0", $"got {c3.etherCost}");
+
+        // 3. Survey Tier 5+ (T >= 4, N = T - 4)
+        // T = 4 (N = 0)
+        MissionCost c4 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 4);
+        Assert(c4.foodCost == 30, "Survey T=4 (N=0): Food == 30", $"got {c4.foodCost}");
+        Assert(c4.woodCost == 15, "Survey T=4 (N=0): Wood == 15", $"got {c4.woodCost}");
+        Assert(c4.etherCost == 4, "Survey T=4 (N=0): Ether == 4", $"got {c4.etherCost}");
+
+        // T = 5 (N = 1)
+        MissionCost c5 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 5);
+        Assert(c5.foodCost == 34, "Survey T=5 (N=1): Food == 34", $"got {c5.foodCost}");
+        Assert(c5.woodCost == 16, "Survey T=5 (N=1): Wood == 16", $"got {c5.woodCost}");
+        Assert(c5.etherCost == 6, "Survey T=5 (N=1): Ether == 6", $"got {c5.etherCost}");
+
+        // T = 6 (N = 2)
+        MissionCost c6 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 6);
+        Assert(c6.foodCost == 38, "Survey T=6 (N=2): Food == 38", $"got {c6.foodCost}");
+        Assert(c6.woodCost == 17, "Survey T=6 (N=2): Wood == 17", $"got {c6.woodCost}");
+        Assert(c6.etherCost == 8, "Survey T=6 (N=2): Ether == 8", $"got {c6.etherCost}");
+
+        // 4. CanAfford 3 resources check
+        Assert(c4.CanAfford(4, 30, 15), "CanAfford with exact resources is true");
+        Assert(!c4.CanAfford(3, 30, 15), "CanAfford with insufficient ether is false");
+        Assert(!c4.CanAfford(4, 29, 15), "CanAfford with insufficient food is false");
+        Assert(!c4.CanAfford(4, 30, 14), "CanAfford with insufficient wood is false");
+    }
 
     static void TestMapRngDeterminismIdenticalSeeds()
     {

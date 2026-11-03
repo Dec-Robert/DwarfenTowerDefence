@@ -36,6 +36,16 @@ public class ExtendedBuildingUI : MonoBehaviour
     [SerializeField] private Color activeTabColor = Color.white;
     [SerializeField] private Color inactiveTabColor = new Color(0.7f, 0.7f, 0.7f, 0.8f);
 
+    [Header("Debug")]
+    [Tooltip("Gdy włączone, wszystkie wieże są widoczne i dostępne niezależnie od stanu odblokowania.")]
+    [SerializeField] private bool unlockAllTowersForDebug = true;
+
+    public bool UnlockAllTowersForDebug
+    {
+        get => unlockAllTowersForDebug;
+        set => unlockAllTowersForDebug = value;
+    }
+
     private class BuildingSlotEntry
     {
         public GameObject gameObject;
@@ -68,6 +78,55 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     private void Start()
     {
+        EnsureAllTowersInDatabase();
+        GenerateBuildingSlots();
+
+        if (closeOnStart)
+        {
+            CloseWindow();
+        }
+        else
+        {
+            OpenCategory(defaultCategory);
+        }
+    }
+
+    public void EnsureAllTowersInDatabase()
+    {
+        if (allBuildingsDatabase == null)
+        {
+            allBuildingsDatabase = new List<BuildingData>();
+        }
+
+        // 1. Zsynchronizuj z SaveManagerem, jeśli jest dostępny
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.EnsureTowersLoaded();
+            if (SaveManager.Instance.allTowers != null)
+            {
+                foreach (var tower in SaveManager.Instance.allTowers)
+                {
+                    if (tower != null && !allBuildingsDatabase.Contains(tower))
+                    {
+                        allBuildingsDatabase.Add(tower);
+                    }
+                }
+            }
+        }
+#if UNITY_EDITOR
+        // 2. W edytorze jako zabezpieczenie wyszukaj wszystkie ScriptableObjecty typu TowerData
+        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:TowerData");
+        foreach (string guid in guids)
+        {
+            string assetPath = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+            TowerData tower = UnityEditor.AssetDatabase.LoadAssetAtPath<TowerData>(assetPath);
+            if (tower != null && !allBuildingsDatabase.Contains(tower))
+            {
+                allBuildingsDatabase.Add(tower);
+            }
+        }
+#endif
+
         if (SaveManager.Instance != null && allBuildingsDatabase != null)
         {
             List<TowerData> towers = new List<TowerData>();
@@ -79,17 +138,6 @@ public class ExtendedBuildingUI : MonoBehaviour
             {
                 SaveManager.Instance.SyncTowersWithSave(towers);
             }
-        }
-
-        GenerateBuildingSlots();
-
-        if (closeOnStart)
-        {
-            CloseWindow();
-        }
-        else
-        {
-            OpenCategory(defaultCategory);
         }
     }
 
@@ -115,9 +163,14 @@ public class ExtendedBuildingUI : MonoBehaviour
 
         if (buildingSlotPrefab == null || buildingsContainer == null) return;
 
+        bool debugUnlockAllTowers = unlockAllTowersForDebug || (SaveManager.Instance != null && SaveManager.Instance.unlockAllTowersForDebug);
+
         foreach (var building in allBuildingsDatabase)
         {
-            if (building == null || !building.isUnlocked) continue;
+            if (building == null) continue;
+
+            bool isUnlocked = building.isUnlocked || (debugUnlockAllTowers && building is TowerData);
+            if (!isUnlocked) continue;
 
             GameObject slotObj = Instantiate(buildingSlotPrefab, buildingsContainer);
             slotObj.SetActive(false);
@@ -195,11 +248,14 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     private void FilterSlots(BuildingType category)
     {
+        bool debugUnlockAllTowers = unlockAllTowersForDebug || (SaveManager.Instance != null && SaveManager.Instance.unlockAllTowersForDebug);
+
         foreach (var entry in slotEntries)
         {
             if (entry.gameObject == null || entry.data == null) continue;
 
-            if (!entry.data.isUnlocked)
+            bool isUnlocked = entry.data.isUnlocked || (debugUnlockAllTowers && entry.data is TowerData);
+            if (!isUnlocked)
             {
                 entry.gameObject.SetActive(false);
                 continue;

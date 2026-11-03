@@ -24,7 +24,9 @@ public class InteractionManager : MonoBehaviour
     public GameObject rangeVisualizerPrefab;
 
     [Header("Podświetlenie zasobów")] public Material resourceHighlightMat;
-    
+
+    [Header("Wizualia Zasobów")]
+    public ResourceVisualsSO resourceVisualsSO;
 
     private BuildingGhostController ghost;
     private HexHighlighter highlighter;
@@ -32,7 +34,13 @@ public class InteractionManager : MonoBehaviour
     private TowerController lastSelectedTower;
     private BuildingPlacer placer;
     public static InteractionManager Instance { get; private set; }
-    
+
+    [Header("Tryb wyboru heksa docelowego")]
+    public bool IsSelectingHexTarget => isSelectingHexTarget;
+    private bool isSelectingHexTarget = false;
+    private TowerController hexTargetingTower;
+    private System.Action onHexTargetSelectionCallback;
+    private HexCell hoveredTargetHex;
 
     public BuildingData SelectedBuilding { get; private set; }
     
@@ -44,19 +52,42 @@ public class InteractionManager : MonoBehaviour
 
     private void Start()
     {
-        ghost = new BuildingGhostController(ghostValidMat, ghostInvalidMat, rangeVisualizerPrefab);
+        if (resourceVisualsSO == null)
+        {
+#if UNITY_EDITOR
+            resourceVisualsSO = UnityEditor.AssetDatabase.LoadAssetAtPath<ResourceVisualsSO>(
+                "Assets/Main folder/ScriptableObjects/Configs/ResourceVisualDatabase.asset");
+#endif
+            if (resourceVisualsSO == null)
+            {
+                var allVisuals = Resources.FindObjectsOfTypeAll<ResourceVisualsSO>();
+                if (allVisuals != null && allVisuals.Length > 0) resourceVisualsSO = allVisuals[0];
+            }
+        }
+
+        ghost = new BuildingGhostController(ghostValidMat, ghostInvalidMat, rangeVisualizerPrefab, resourceVisualsSO);
         placer = new BuildingPlacer(mapGenerator);
         highlighter = new HexHighlighter(mapGenerator, resourceHighlightMat);
     }
 
     private void Update()
     {
-        // PPM – anuluj budowanie
+        // PPM – anuluj budowanie lub wybór celu heksa
         if (Input.GetMouseButtonDown(1))
         {
+            if (isSelectingHexTarget)
+            {
+                CancelHexTargetSelection();
+                return;
+            }
+
             CancelBuilding();
             return;
         }
+
+        // Aktualizacja podglądu heksa w trybie wyboru celu punktowego
+        if (isSelectingHexTarget)
+            UpdateHexTargetSelectionHover();
 
         // Aktualizacja widma jeśli jesteśmy w trybie budowania
         if (SelectedBuilding != null && ghost.IsActive)
@@ -105,7 +136,7 @@ public class InteractionManager : MonoBehaviour
         if (cell == null) return;
 
         var isValid = placer.IsPlacementValid(cell, SelectedBuilding);
-        ghost.MoveTo(cell.transform.position, isValid);
+        ghost.MoveTo(cell.transform.position, isValid, cell, SelectedBuilding);
         highlighter.HighlightFor(SelectedBuilding, cell.chunkCoord, cell.localCoord);
     }
 
@@ -113,8 +144,134 @@ public class InteractionManager : MonoBehaviour
     // Obsługa kliknięcia
     // =========================================================================
 
+    public void StartHexTargetSelection(TowerController tower, System.Action onComplete)
+    {
+        if (tower == null) return;
+
+        if (SelectedBuilding != null)
+            CancelBuilding();
+
+        isSelectingHexTarget = true;
+        hexTargetingTower = tower;
+        onHexTargetSelectionCallback = onComplete;
+        tower.ShowRangeIndicator(true);
+        Debug.Log($"[Interaction] Rozpoczęto wybór heksa docelowego dla: {tower.name}");
+    }
+
+    public void CancelHexTargetSelection()
+    {
+        if (hoveredTargetHex != null)
+        {
+            hoveredTargetHex.ToggleHighlight(false);
+            hoveredTargetHex = null;
+        }
+
+        isSelectingHexTarget = false;
+        var cb = onHexTargetSelectionCallback;
+        onHexTargetSelectionCallback = null;
+        cb?.Invoke();
+        Debug.Log("[Interaction] Anulowano wybór heksa docelowego.");
+    }
+
+    private void FinishHexTargetSelection()
+    {
+        if (hoveredTargetHex != null)
+        {
+            hoveredTargetHex.ToggleHighlight(false);
+            hoveredTargetHex = null;
+        }
+
+        isSelectingHexTarget = false;
+        var cb = onHexTargetSelectionCallback;
+        onHexTargetSelectionCallback = null;
+        cb?.Invoke();
+        Debug.Log("[Interaction] Zatwierdzono wybór heksa docelowego.");
+    }
+
+    private void UpdateHexTargetSelectionHover()
+    {
+        if (hexTargetingTower == null)
+        {
+            CancelHexTargetSelection();
+            return;
+        }
+
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (!Physics.Raycast(ray, out var hit, 1000f, hexLayer))
+        {
+            if (hoveredTargetHex != null)
+            {
+                hoveredTargetHex.ToggleHighlight(false);
+                hoveredTargetHex = null;
+            }
+            return;
+        }
+
+        var cell = hit.collider.GetComponentInParent<HexCell>();
+        if (cell == null)
+        {
+            if (hoveredTargetHex != null)
+            {
+                hoveredTargetHex.ToggleHighlight(false);
+                hoveredTargetHex = null;
+            }
+            return;
+        }
+
+        if (cell != hoveredTargetHex)
+        {
+            if (hoveredTargetHex != null)
+                hoveredTargetHex.ToggleHighlight(false);
+
+            hoveredTargetHex = cell;
+            Vector3 diff = cell.transform.position - hexTargetingTower.transform.position;
+            diff.y = 0;
+            float dist = diff.magnitude;
+            bool inRange = dist <= hexTargetingTower.CurrentWorldRange;
+            hoveredTargetHex.ToggleHighlight(true, inRange ? ghostValidMat : ghostInvalidMat);
+        }
+    }
+
+    private void HandleHexTargetSelectionClick()
+    {
+        if (hexTargetingTower == null)
+        {
+            CancelHexTargetSelection();
+            return;
+        }
+
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (!Physics.Raycast(ray, out var hit, 1000f, hexLayer))
+        {
+            return;
+        }
+
+        var cell = hit.collider.GetComponentInParent<HexCell>();
+        if (cell == null) return;
+
+        Vector3 diff = cell.transform.position - hexTargetingTower.transform.position;
+        diff.y = 0;
+        float dist = diff.magnitude;
+        if (dist <= hexTargetingTower.CurrentWorldRange)
+        {
+            Vector3 targetPos = cell.transform.position;
+            hexTargetingTower.SetGroundTarget(targetPos, cell);
+            FinishHexTargetSelection();
+        }
+        else
+        {
+            Debug.Log("[Interaction] Heks poza zasięgiem wieży!");
+        }
+    }
+
     private void HandleClick()
     {
+        if (isSelectingHexTarget)
+        {
+            HandleHexTargetSelectionClick();
+            return;
+        }
+
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (!Physics.Raycast(ray, out var hit, 1000f))
         {
@@ -147,10 +304,18 @@ public class InteractionManager : MonoBehaviour
 
         if (success && TelemetryManager.Instance != null) TelemetryManager.Instance.addBuilding(SelectedBuilding.buildingName);
         
-        if (success && !Input.GetKey(KeyCode.LeftShift))
-            CancelBuilding();
-        else if (success)
-            UpdateGhostPosition(); 
+        if (success)
+        {
+            if (!Input.GetKey(KeyCode.LeftShift))
+            {
+                CancelBuilding();
+                HandleInspectClick(cell);
+            }
+            else
+            {
+                UpdateGhostPosition();
+            }
+        }
     }
 
     private void HandleInspectClick(HexCell cell)
@@ -228,6 +393,11 @@ public class InteractionManager : MonoBehaviour
     public void DeselectAll()
     {
         Debug.Log("[Interaction] DeselectAll");
+        if (isSelectingHexTarget)
+        {
+            CancelHexTargetSelection();
+        }
+
         if (lastSelectedTower != null)
         {
             lastSelectedTower.ShowRangeIndicator(false);

@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.3
   - 1.35
   - 1.4
-  allowedTerrain: 00000000010000000300000005000000020000000a0000000b000000
+  allowedTerrain: 000000000100000002000000030000000a0000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -50,8 +50,6 @@ MonoBehaviour:
   upkeepPerCycle:
   - type: 2
     amount: 2
-  - type: 3
-    amount: 1
   tier1Upgrades: []
   prefab: {fileID: 7117580149188207224, guid: eca59424e3ae589438b24b6b3c61e4b7, type: 3}
   bonusRules: []
@@ -64,15 +62,15 @@ MonoBehaviour:
     searchRadius: 0
   baseMaxWorkers: 2
   isUnlocked: 1
-  baseRange: 8
-  baseDamage: 80
-  fireRate: 0.4
+  baseRange: 4
+  baseDamage: 100
+  fireRate: 0.5
   criticalChancel: 0.05
   criticalDamageMultiplier: 2
   armorPenetration: 0
   magicPenetration: 0
   damageType: 0
-  canShootChunk: 0
+  canShootChunk: 1
   defaultTargetingPriorities: 
   effects: []
   bulletPrefab: {fileID: 1224714705083670074, guid: dcd606a0a7e63cd4d9775a36bff488e0, type: 3}

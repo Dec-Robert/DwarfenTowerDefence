@@ -22,6 +22,7 @@ public class HexCell : MonoBehaviour
             if (Data == null) return 0;
             if (Data.elevation != 0) return Data.elevation;
             if (Data.feature == HexFeatureType.Hill) return Mathf.Max(1, Data.featureLevel);
+            if (Data.feature == HexFeatureType.Sinkhole) return Data.featureLevel < 0 ? Data.featureLevel : -1;
             return 0;
         }
     }

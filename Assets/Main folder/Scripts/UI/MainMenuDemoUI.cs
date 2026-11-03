@@ -109,6 +109,7 @@ public class MainMenuDemoUI : MonoBehaviour
 
         // Przygotuj modal "Jak Grać"
         SetupHowToPlayModal();
+        if (ShaderPrewarmer.Instance != null) ShaderPrewarmer.Instance.StartWarmup();
     }
 
     private void Update()
@@ -227,7 +228,7 @@ public class MainMenuDemoUI : MonoBehaviour
         Time.timeScale = 1f;
         if (Application.CanStreamedLevelBeLoaded(gameSceneName))
         {
-            SceneManager.LoadScene(gameSceneName);
+            LoadingScreenManager.LoadScene(gameSceneName);
         }
         else
         {

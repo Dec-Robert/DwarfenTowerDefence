@@ -315,7 +315,7 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
         // Stat 0: Zasięg
         statSlots[0].gameObject.SetActive(true);
-        statSlots[0].Setup("Zasięg:", tower.baseRange.ToString("F1"));
+        statSlots[0].Setup("Zasięg:", tower.baseRange % 1f == 0 ? tower.baseRange.ToString("F0") : tower.baseRange.ToString("F1"));
 
         // Stat 1: Obrażenia
         statSlots[1].gameObject.SetActive(true);

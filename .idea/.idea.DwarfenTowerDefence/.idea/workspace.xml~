@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2888b886-5412-4d4f-9203-b890f6a49b5d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Editor/Tests/EnemyHealthBarTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Editor/Tests/EnemyHealthBarTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Editor/ToogleGameObject.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Editor/ToogleGameObject.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Materials/Basic.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Materials/Basic.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Beacon of hope.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Beacon of hope.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Dwarfen house prefab.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Dwarfen house prefab.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Elf house prefab.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Elf house prefab.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Farm.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Farm.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Human house prefab.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Human house prefab.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Mines.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Mines.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Sawmill.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Buildings/Sawmill.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Hex.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/Hex.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/_Unused/Dwarfen house.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/_Unused/Dwarfen house.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/_Unused/Elf house.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/_Unused/Elf house.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Prefabs/_Unused/Human house.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Prefabs/_Unused/Human house.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/ScriptableObjects/Buildings/RuneSmithTower.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/ScriptableObjects/Buildings/RuneSmithTower.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/ScriptableObjects/Starting chunks/Chunk 0_0/Main_layout.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/ScriptableObjects/Starting chunks/Chunk 0_0/Main_layout.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/InteractionManager Components/BuildingGhostController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/InteractionManager Components/BuildingGhostController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/InteractionManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/InteractionManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/Development/DebugCheatManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/Development/DebugCheatManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/Enemies/EnemyHealthBar.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/Enemies/EnemyHealthBar.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/Enemies/EnemyHealthBarManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/Enemies/EnemyHealthBarManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/Map/BuildingProductionRegistry.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/Map/BuildingProductionRegistry.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/Map/HexMapVisualizer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/Map/HexMapVisualizer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/UI/CanvasMainMenuUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/UI/CanvasMainMenuUI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/UI/MainMenuController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/UI/MainMenuController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/Scripts/UI/MainMenuDemoUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/Scripts/UI/MainMenuDemoUI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Main folder/_Scenes/Game scene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Main folder/_Scenes/Game scene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Settings/Build Profiles/New Windows Profile.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/Build Profiles/New Windows Profile.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/GraphicsSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/GraphicsSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/URPProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/URPProjectSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/bin/Debug/net9.0/Assembly-CSharp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/bin/Debug/net9.0/Assembly-CSharp.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/bin/Debug/net9.0/TestHarness.dll" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/bin/Debug/net9.0/TestHarness.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/bin/Debug/net9.0/TestHarness.exe" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/bin/Debug/net9.0/TestHarness.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/lib/Assembly-CSharp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/lib/Assembly-CSharp.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.csproj.AssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.csproj.AssemblyReference.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.csproj.CoreCompileInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.dll" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/TestHarness.sourcelink.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/apphost.exe" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/apphost.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/ref/TestHarness.dll" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/ref/TestHarness.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/refint/TestHarness.dll" beforeDir="false" afterPath="$PROJECT_DIR$/TestHarness/obj/Debug/net9.0/refint/TestHarness.dll" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DpaMonitoringSettings">
+    <option name="firstShow" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/BuildingUpgradeTreeEditor.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/ChunkLayoutEditorWindow.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/HousingBuildingDataEditor.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/LiveSessionMonitor.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/MetaUpgradeEditorWindow.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/MetaUpgradeTools.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/RuneManagerEditorWindow.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/Tests/CombatOptimizationTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Editor/ToogleGameObject.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day 5.asset" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/BuildingRegistry.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/GateEntity.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/HousingEntity.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/InteractionManager Components/BuildingGhostController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/InteractionManager Components/BuildingPlacer.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/InteractionManager Components/HexHighlighter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/InteractionManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/OutpostEntity.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/RuneForgeEntity.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Buildings/RuneTowerEntity.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Core/Public enums.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Enemies/Skills/BarrierSkill.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Enemies/Skills/MaddeningGazeSkill.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Enemies/Skills/ProximityDefenceSkill.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Enemies/Skills/ShadeMinionSkill.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Expansion/ChunkStateData.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Expansion/ScountingMission.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Map/ChunkPathData.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Map/ChunkRegistry.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Map/MapGenerationContext.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Map/PathGeneration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Map/SpecialChunkDefinition.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Map/SpecialChunkPlacer.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Map/TerrainGeneration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Meta progression/CityBaseConfigSO.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Meta progression/HopeMilestoneConfigSO.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Meta progression/MetaUpgradeManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Population/WorkforceManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Runes/RuneDefinitionSO.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Runes/RuneItem.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Runes/RuneManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/Runes/RuneSystemConfigSO.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/Building Context Windows/HearthWindowUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/Building Context Windows/HousingContextWindowUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/Building Context Windows/ProductionContextWindowUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/MainMenuDemoUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/Main_HUD/GateHPUpdaterUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/Main_HUD/PopulationInfoPanelUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/Runes/RuneCardItemUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/Runes/RuneForgeWindowUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/UI single elements/BuildingSlotUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Main folder/Scripts/UI/UI single elements/SingleResourceUI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.universal@1e87cf1dccb8/Shaders/Lit.shader" root0="SKIP_HIGHLIGHTING" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="39rG3SLdB5irnWjs9bkGCGAmWXX" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Device#class com.jetbrains.rider.plugins.unity.run.devices.UnityEditorDeviceKind#com.jetbrains.rider.plugins.unity.run.devices.UnityDevicesProvider#Unity Attach To: Attach to&quot;: &quot;Unity Editor&quot;,
+    &quot;DeviceKind#com.jetbrains.rider.plugins.unity.run.devices.UnityDevicesProvider&quot;: &quot;Unity Editor&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Unity Attach To.Attach to.executor&quot;: &quot;Debug&quot;,
+    &quot;XThreadsFramesViewSplitterKey&quot;: &quot;0.6666667&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;settings.codegpt&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Unity Attach To.Attach to">
+    <configuration name="Standalone Player" type="RunUnityExe" factoryName="Unity Executable">
+      <option name="EXE_PATH" value="F:/Tower Defence Builds/Dev 0.1\Hearthfall.exe" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="F:\Tower Defence Builds\TD Alpha1" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="ENV_FILE_PATHS" value="" />
+      <option name="REDIRECT_INPUT_PATH" value="" />
+      <option name="MIXED_MODE_DEBUG" value="0" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Start Unity" type="RunUnityExe" factoryName="Unity Executable">
+      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.3.6f1\Editor\Unity.exe" />
+      <option name="PROGRAM_PARAMETERS" value="-projectPath &quot;D:\Projekty Unity\DwarfenTowerDefence&quot; -debugCodeOptimization" />
+      <option name="WORKING_DIRECTORY" value="D:\Projekty Unity\DwarfenTowerDefence" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="ENV_FILE_PATHS" value="" />
+      <option name="REDIRECT_INPUT_PATH" value="" />
+      <option name="MIXED_MODE_DEBUG" value="0" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Unit Tests (batch mode)" type="RunUnityExe" factoryName="Unity Executable">
+      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.3.6f1\Editor\Unity.exe" />
+      <option name="PROGRAM_PARAMETERS" value="-runTests -batchmode -projectPath &quot;D:\Projekty Unity\DwarfenTowerDefence&quot; -testResults Logs/results.xml -logFile Logs/Editor.log -testPlatform EditMode -debugCodeOptimization" />
+      <option name="WORKING_DIRECTORY" value="D:\Projekty Unity\DwarfenTowerDefence" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="ENV_FILE_PATHS" value="" />
+      <option name="REDIRECT_INPUT_PATH" value="" />
+      <option name="MIXED_MODE_DEBUG" value="0" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" useMixedMode="false">
+      <option name="allowRunningInParallel" value="false" />
+      <option name="listenPortForConnections" value="false" />
+      <option name="pid" />
+      <option name="projectPathOnTarget" />
+      <option name="runtimes">
+        <list />
+      </option>
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <method v="2" />
+    </configuration>
+    <configuration name="Attach to" type="UnityDevicePlayer" factoryName="UnityAttachToDevicePlayer">
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2888b886-5412-4d4f-9203-b890f6a49b5d" name="Changes" comment="" />
+      <created>1771446577255</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1771446577255</updated>
+      <workItem from="1771446579843" duration="18278000" />
+      <workItem from="1771476299226" duration="1613000" />
+      <workItem from="1771479164366" duration="239000" />
+      <workItem from="1771479423266" duration="41015000" />
+      <workItem from="1771770188654" duration="12318000" />
+      <workItem from="1771895582188" duration="21066000" />
+      <workItem from="1772222788394" duration="27751000" />
+      <workItem from="1772736178955" duration="34742000" />
+      <workItem from="1773523185366" duration="9439000" />
+      <workItem from="1774789521059" duration="2585000" />
+      <workItem from="1775672985196" duration="2858000" />
+      <workItem from="1776280363609" duration="4379000" />
+      <workItem from="1776718741836" duration="1087000" />
+      <workItem from="1776989593021" duration="6210000" />
+      <workItem from="1779025480010" duration="39396000" />
+      <workItem from="1779564776104" duration="16344000" />
+      <workItem from="1779741760136" duration="4196000" />
+      <workItem from="1780673836836" duration="22067000" />
+      <workItem from="1780845025501" duration="28468000" />
+      <workItem from="1781090326632" duration="17429000" />
+      <workItem from="1783944122406" duration="17293000" />
+      <workItem from="1784427942253" duration="1412000" />
+      <workItem from="1784727892359" duration="16432000" />
+      <workItem from="1784941074500" duration="2149000" />
+      <workItem from="1785202079788" duration="13000" />
+      <workItem from="1786925845771" duration="2915000" />
+      <workItem from="1786990751871" duration="2178000" />
+      <workItem from="1786993402718" duration="14994000" />
+      <workItem from="1787065933867" duration="32276000" />
+      <workItem from="1787367665138" duration="4423000" />
+      <workItem from="1787838829472" duration="7083000" />
+      <workItem from="1788782636286" duration="14075000" />
+      <workItem from="1789161091889" duration="4050000" />
+      <workItem from="1790939205109" duration="11872000" />
+      <workItem from="1791054573173" duration="4239000" />
+      <workItem from="1791071188134" duration="704000" />
+      <workItem from="1791072443051" duration="1862000" />
+      <workItem from="1791110915332" duration="6510000" />
+      <workItem from="1791221714767" duration="4794000" />
+      <workItem from="1791417566899" duration="11767000" />
+      <workItem from="1791591959572" duration="4000" />
+      <workItem from="1791592119122" duration="17382000" />
+      <workItem from="1791985414691" duration="8080000" />
+      <workItem from="1792160750143" duration="1058000" />
+      <workItem from="1792162420469" duration="8367000" />
+      <workItem from="1792499042274" duration="3061000" />
+      <workItem from="1793067634827" duration="2616000" />
+      <workItem from="1793222112770" duration="3276000" />
+      <workItem from="1793551272764" duration="3099000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="true" />
+  <component name="UnityProjectDiscoverer">
+    <option name="hasUnityReference" value="true" />
+    <option name="unityProject" value="true" />
+    <option name="unityProjectFolder" value="true" />
+  </component>
+  <component name="UnityUnitTestConfiguration" currentTestLauncher="Both" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.OperationCanceledException" breakIfHandledByOtherCode="false" displayValue="System.OperationCanceledException" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.Tasks.TaskCanceledException" breakIfHandledByOtherCode="false" displayValue="System.Threading.Tasks.TaskCanceledException" />
+          <option name="timeStamp" value="2" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

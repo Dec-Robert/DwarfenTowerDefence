@@ -14,29 +14,44 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingName: Rune tower
   description: "Wie\u017Ce s\u0142u\u017C\u0105ce do wzmacniani ku\u017Ani runicznych."
-  icon: {fileID: 21300000, guid: f0bb92ef8e114d84a7746d208fb02104, type: 3}
+  icon: {fileID: 21300000, guid: eb4d9a029f9c436b90dc156f6f2e7e7d, type: 3}
   type: 3
   workerScalingFactor: 0
   firstWorkerProduction: 0.7
   efficiencyTable:
   - 0
   - 1
-  allowedTerrain: 000000000100000002000000030000000400000005000000
+  allowedTerrain: 0000000001000000020000000300000004000000050000000a0000000b000000
+  elevationRequirement:
+    mode: 0
+    minElevation: 0
+    maxElevation: 0
+    allowedElevations: 
+  allowOnRoad: 0
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
   requiredCitizenRace: 1
   isOutpost: 0
   constructionCost:
   - type: 2
-    amount: 20
-  - type: 5
-    amount: 5
-  - type: 0
     amount: 15
+  - type: 5
+    amount: 10
+  - type: 0
+    amount: 10
   productionPerCycle: []
-  upkeepPerCycle: []
+  upkeepPerCycle:
+  - type: 5
+    amount: 1
   tier1Upgrades: []
   prefab: {fileID: 1253841588521944598, guid: e4ebaf1706ba84b46b677476efc21a57, type: 3}
   bonusRules: []
+  elevationBonus:
+    enabled: 0
+    resourceType: 0
+    onTopBonusPerLevel: 0
+    adjacentBonusPerLevel: 0
+    penaltyPerExtraBuilding: 0
+    searchRadius: 0
   baseMaxWorkers: 1
   isUnlocked: 1

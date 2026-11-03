@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.3
   - 1.35
   - 1.4
-  allowedTerrain: 06000000010000000300000005000000000000000a000000020000000b000000
+  allowedTerrain: 000000000100000002000000030000000a0000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -41,11 +41,15 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 0
-    amount: 5
+    amount: 12
   - type: 1
-    amount: 5
+    amount: 8
   productionPerCycle: []
-  upkeepPerCycle: []
+  upkeepPerCycle:
+  - type: 0
+    amount: 1
+  - type: 1
+    amount: 1
   tier1Upgrades: []
   prefab: {fileID: 3289850919208233257, guid: 438ac62c35dd0034b86f3b1d3adca435, type: 3}
   bonusRules: []
@@ -57,8 +61,8 @@ MonoBehaviour:
     penaltyPerExtraBuilding: 0
     searchRadius: 0
   baseMaxWorkers: 2
-  isUnlocked: 0
-  baseRange: 5
+  isUnlocked: 1
+  baseRange: 3
   baseDamage: 50
   fireRate: 3
   criticalChancel: 0.05

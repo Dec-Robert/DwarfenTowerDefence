@@ -185,11 +185,11 @@ public class CanvasMainMenuUI : MonoBehaviour
 
         if (Application.CanStreamedLevelBeLoaded(mainMenuSceneName))
         {
-            SceneManager.LoadScene(mainMenuSceneName);
+            LoadingScreenManager.LoadScene(mainMenuSceneName, "Powrót do twierdzy...");
         }
         else if (Application.CanStreamedLevelBeLoaded(fallbackMainMenuSceneName))
         {
-            SceneManager.LoadScene(fallbackMainMenuSceneName);
+            LoadingScreenManager.LoadScene(fallbackMainMenuSceneName, "Powrót do twierdzy...");
         }
         else
         {

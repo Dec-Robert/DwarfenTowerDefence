@@ -21,3 +21,10 @@ MonoBehaviour:
   foodPerHex: 5
   roadCostMultiplier: 0.6
   roadTimeMultiplier: 0.7
+  minElvesForSurvey: 1
+  chunksPerExtraSurveyDay: 4
+  reconDays: 1
+  reconElfRequirement: 1
+  reconEtherCost: 0
+  reconFoodCost: 50
+  reconWoodCost: 20

@@ -36,6 +36,52 @@ public class SingleResourceUI : MonoBehaviour
     {
         UpdateIcon();
         Subscribe();
+        EnsureTooltipTrigger();
+    }
+
+    private void EnsureTooltipTrigger()
+    {
+        if (!trackResourceManager || isStaticValue) return;
+
+        AddOrUpdateTrigger(gameObject);
+
+        var img = GetComponent<Image>();
+        if (img != null) img.raycastTarget = true;
+
+        if (icon != null)
+        {
+            icon.raycastTarget = true;
+            AddOrUpdateTrigger(icon.gameObject);
+        }
+
+        if (ammount != null)
+        {
+            ammount.raycastTarget = true;
+            AddOrUpdateTrigger(ammount.gameObject);
+        }
+
+        // Zabezpieczenie dla wszystkich bezpośrednich dzieci (np. kontenerów, tła)
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            var child = transform.GetChild(i);
+            var graphic = child.GetComponent<Graphic>();
+            if (graphic != null)
+            {
+                graphic.raycastTarget = true;
+                AddOrUpdateTrigger(child.gameObject);
+            }
+        }
+    }
+
+    private void AddOrUpdateTrigger(GameObject go)
+    {
+        if (go == null) return;
+        var trigger = go.GetComponent<ResourceTooltipTrigger>();
+        if (trigger == null)
+        {
+            trigger = go.AddComponent<ResourceTooltipTrigger>();
+        }
+        trigger.Setup(resourceType);
     }
 
     private void OnDisable()

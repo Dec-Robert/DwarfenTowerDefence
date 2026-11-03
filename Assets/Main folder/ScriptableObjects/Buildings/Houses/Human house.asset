@@ -20,6 +20,12 @@ MonoBehaviour:
   firstWorkerProduction: 0.7
   efficiencyTable: []
   allowedTerrain: 060000000300000000000000
+  elevationRequirement:
+    mode: 0
+    minElevation: 0
+    maxElevation: 0
+    allowedElevations: 
+  allowOnRoad: 0
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
   requiredCitizenRace: 1
@@ -28,7 +34,7 @@ MonoBehaviour:
   - type: 1
     amount: 15
   - type: 4
-    amount: 15
+    amount: 20
   - type: 2
     amount: 15
   productionPerCycle: []
@@ -38,6 +44,13 @@ MonoBehaviour:
   tier1Upgrades: []
   prefab: {fileID: 805186248796621080, guid: b33da802702c20b4f91f7a220e374f3e, type: 3}
   bonusRules: []
+  elevationBonus:
+    enabled: 0
+    resourceType: 0
+    onTopBonusPerLevel: 0
+    adjacentBonusPerLevel: 0
+    penaltyPerExtraBuilding: 0
+    searchRadius: 0
   baseMaxWorkers: 1
   isUnlocked: 1
   housingRace: 0
@@ -46,9 +59,7 @@ MonoBehaviour:
   growthDifficultyMultiplier: 1
   baseGrowthTicks: 2
   productionPerResident: []
-  baseDailyUpkeep:
-  - type: 1
-    amount: 1
+  baseDailyUpkeep: []
   upkeepPerResident:
   - type: 4
     amount: 3

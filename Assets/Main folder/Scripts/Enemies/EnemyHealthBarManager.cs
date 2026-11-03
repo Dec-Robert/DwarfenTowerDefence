@@ -31,6 +31,20 @@ public class EnemyHealthBarManager : MonoBehaviour
     [SerializeField] private bool isVisible = true;
     public static event Action<bool> OnVisibilityChanged;
 
+    [Header("Materiał paska")]
+    [Tooltip("Dedykowany materiał z shaderem Custom/EnemyHealthBar zapobiegający strippingowi shadera w buildzie")]
+    [SerializeField] private Material barMaterial;
+
+    public Material BarMaterial
+    {
+        get => barMaterial;
+        set
+        {
+            barMaterial = value;
+            s_SharedBarMaterial = value;
+        }
+    }
+
     public bool IsVisible
     {
         get => isVisible;
@@ -108,6 +122,10 @@ public class EnemyHealthBarManager : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
+            if (barMaterial != null)
+            {
+                s_SharedBarMaterial = barMaterial;
+            }
         }
         else if (_instance != this)
         {
@@ -124,16 +142,23 @@ public class EnemyHealthBarManager : MonoBehaviour
     {
         if (s_SharedBarMaterial == null)
         {
-            Shader shader = Shader.Find("Custom/EnemyHealthBar")
-                         ?? Shader.Find("Universal Render Pipeline/Unlit")
-                         ?? Shader.Find("Unlit/Color");
-
-            if (shader != null)
+            if (Instance != null && Instance.barMaterial != null)
             {
-                s_SharedBarMaterial = new Material(shader)
+                s_SharedBarMaterial = Instance.barMaterial;
+            }
+            else
+            {
+                Shader shader = Shader.Find("Custom/EnemyHealthBar")
+                             ?? Shader.Find("Universal Render Pipeline/Unlit")
+                             ?? Shader.Find("Unlit/Color");
+
+                if (shader != null)
                 {
-                    name = "EnemyHealthBar_SharedMat"
-                };
+                    s_SharedBarMaterial = new Material(shader)
+                    {
+                        name = "EnemyHealthBar_SharedMat"
+                    };
+                }
             }
         }
         return s_SharedBarMaterial;

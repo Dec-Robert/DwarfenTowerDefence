@@ -13,8 +13,12 @@ public struct HexOverride
     public Vector2Int localCoord;
     public HexFeatureType feature;
     public int featureLevel;
+    [Tooltip("Wysokość heksa (elevation: 0 = płasko, >0 = wzgórze, <0 = zapadlisko).")]
+    public int elevation;
     [Header("Opcjonalny Budynek Startowy")]
-    public BuildingData building; // <--- NOWE POLE
+    public BuildingData building;
+
+    public int EffectiveElevation => elevation != 0 ? elevation : featureLevel;
 }
 
 [CreateAssetMenu(fileName = "NewChunkLayout", menuName = "Map/Predefined Chunk Layout")]

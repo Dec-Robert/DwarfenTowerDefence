@@ -4,8 +4,12 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewTower", menuName = "Game/Tower Data")]
 public class TowerData : BuildingData
 {
+    public const float HexToWorldRangeMultiplier = 2.0f;
+
     [Header("Statystyki Bojowe")] 
-    public float baseRange; // Zasig ataku w jednostkach gry.
+    [Tooltip("Zasięg ataku w liczbie heksów (np. 3 oznacza zasięg do 3 heksów od wieży).")]
+    public float baseRange;
+    public float BaseRangeInWorldUnits => baseRange * HexToWorldRangeMultiplier;
     public float baseDamage;
     public float fireRate; // Strza�y na sekund�
 
@@ -15,7 +19,10 @@ public class TowerData : BuildingData
     public float magicPenetration; // Wartość procentowa, np. 20 = 20% penetracji odporności magicznej
     public DamageType damageType; // Typ obrażeń, np. Physical, Magic, True
 
-    [Header("Celowanie")] public bool canShootChunk;
+        [Header("Celowanie")]
+    [Tooltip("Czy wieża może strzelać w wyznaczony punkt/heks na mapie (np. Bombarda, Crucible).")]
+    public bool canShootChunk;
+    public bool CanTargetGroundHex => canShootChunk;
 
     [Tooltip("Domyślna lista priorytetów (do 3). Puste = domyślnie ClosestOnTrack")]
     public List<TargetingMode> defaultTargetingPriorities;
@@ -25,8 +32,6 @@ public class TowerData : BuildingData
     [Header("Efekty Specjalne")] public List<TowerEffectSO> effects;
 
     public GameObject bulletPrefab;
-
-    private BuildingType type; // Bazowy typ wiez, zawsze ustawiany na Defense w OnValidate()
 
     // To wymusza typ Defense automatycznie w edytorze
     private void OnValidate()

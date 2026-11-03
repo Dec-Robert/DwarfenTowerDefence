@@ -42,6 +42,7 @@ public class TowerContextWindowUI : MonoBehaviour
         public Image imgBackground;
         public TextMeshProUGUI txtSlotNumber;
         public TextMeshProUGUI txtContent;
+        public Image imgIcon;
     }
 
     [System.Serializable]
@@ -51,6 +52,7 @@ public class TowerContextWindowUI : MonoBehaviour
         public Button button;
         public Image imgBackground;
         public TextMeshProUGUI txtLabel;
+        public Image imgIcon;
     }
 
     [System.Serializable]
@@ -327,13 +329,30 @@ public class TowerContextWindowUI : MonoBehaviour
                 Button btn = slotTr.GetComponent<Button>();
                 if (btn == null) btn = slotTr.gameObject.AddComponent<Button>();
 
+                Transform iconTr = slotTr.Find("Img_Icon");
+                Image iconImg = iconTr != null ? iconTr.GetComponent<Image>() : null;
+                if (iconImg == null)
+                {
+                    GameObject iconGo = new GameObject("Img_Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    iconGo.transform.SetParent(slotTr, false);
+                    RectTransform rt = iconGo.GetComponent<RectTransform>();
+                    rt.anchorMin = new Vector2(0.5f, 0.5f);
+                    rt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rt.sizeDelta = new Vector2(28f, 28f);
+                    rt.anchoredPosition = new Vector2(10f, 0f);
+                    iconImg = iconGo.GetComponent<Image>();
+                    iconImg.raycastTarget = false;
+                    iconImg.preserveAspect = true;
+                }
+
                 PrioritySlotView slotView = new PrioritySlotView
                 {
                     slotObject = slotTr.gameObject,
                     slotButton = btn,
                     imgBackground = slotTr.GetComponent<Image>(),
                     txtSlotNumber = slotTr.Find("Txt_SlotNumber")?.GetComponent<TextMeshProUGUI>(),
-                    txtContent = slotTr.Find("Txt_Content")?.GetComponent<TextMeshProUGUI>()
+                    txtContent = slotTr.Find("Txt_Content")?.GetComponent<TextMeshProUGUI>(),
+                    imgIcon = iconImg
                 };
                 prioritySlots.Add(slotView);
             }
@@ -353,12 +372,35 @@ public class TowerContextWindowUI : MonoBehaviour
             Transform btnTr = gridTr.Find("Btn_Target_" + mode);
             if (btnTr != null)
             {
+                Transform iconTr = btnTr.Find("Img_Icon");
+                Image iconImg = iconTr != null ? iconTr.GetComponent<Image>() : null;
+                if (iconImg == null)
+                {
+                    GameObject iconGo = new GameObject("Img_Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    iconGo.transform.SetParent(btnTr, false);
+                    RectTransform rt = iconGo.GetComponent<RectTransform>();
+                    rt.anchorMin = new Vector2(0.5f, 0.5f);
+                    rt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rt.sizeDelta = new Vector2(32f, 32f);
+                    rt.anchoredPosition = Vector2.zero;
+                    iconImg = iconGo.GetComponent<Image>();
+                    iconImg.raycastTarget = false;
+                    iconImg.preserveAspect = true;
+                }
+
+                TextMeshProUGUI txt = btnTr.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+                if (txt != null)
+                {
+                    txt.gameObject.SetActive(false);
+                }
+
                 TargetingButtonView tb = new TargetingButtonView
                 {
                     mode = mode,
                     button = btnTr.GetComponent<Button>(),
                     imgBackground = btnTr.GetComponent<Image>(),
-                    txtLabel = btnTr.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                    txtLabel = txt,
+                    imgIcon = iconImg
                 };
                 targetingButtons.Add(tb);
             }
@@ -689,6 +731,7 @@ public class TowerContextWindowUI : MonoBehaviour
             string unit = "";
             bool isFloat = true;
             bool isPercent = false;
+            int decimals = 2;
 
             switch (statView.statType)
             {
@@ -709,8 +752,9 @@ public class TowerContextWindowUI : MonoBehaviour
                 case BattleStats.Range:
                     baseVal = tData != null ? tData.baseRange : currentStats.range;
                     curVal = currentStats.range;
-                    unit = " M";
-                    isFloat = false;
+                    unit = "";
+                    isFloat = (curVal % 1f != 0 || baseVal % 1f != 0);
+                    decimals = 1;
                     break;
 
                 case BattleStats.CriticalChancel:
@@ -750,14 +794,18 @@ public class TowerContextWindowUI : MonoBehaviour
                     continue;
             }
 
-            FormatNumericalStat(statView, baseVal, curVal, unit, isFloat, isPercent);
+            FormatNumericalStat(statView, baseVal, curVal, unit, isFloat, isPercent, decimals);
         }
     }
 
-    private void FormatNumericalStat(CombatStatItemView view, float baseVal, float curVal, string unit, bool isFloat, bool isPercent)
+    private void FormatNumericalStat(CombatStatItemView view, float baseVal, float curVal, string unit, bool isFloat, bool isPercent, int decimals = 2)
     {
-        string curStr = isFloat ? curVal.ToString("F2") + unit : Mathf.RoundToInt(curVal) + unit;
-        string baseStr = isFloat ? baseVal.ToString("F2") + unit : Mathf.RoundToInt(baseVal) + unit;
+        string curStr = isFloat
+            ? ((decimals == 1 && curVal % 1f == 0) ? Mathf.RoundToInt(curVal).ToString() : curVal.ToString($"F{decimals}")) + unit
+            : Mathf.RoundToInt(curVal) + unit;
+        string baseStr = isFloat
+            ? ((decimals == 1 && baseVal % 1f == 0) ? Mathf.RoundToInt(baseVal).ToString() : baseVal.ToString($"F{decimals}")) + unit
+            : Mathf.RoundToInt(baseVal) + unit;
 
         bool isModified = Mathf.Abs(curVal - baseVal) > 0.01f;
 
@@ -833,10 +881,18 @@ public class TowerContextWindowUI : MonoBehaviour
             if (i < activeRules.Count)
             {
                 TargetingMode mode = activeRules[i];
+                if (slot.imgIcon != null)
+                {
+                    slot.imgIcon.gameObject.SetActive(true);
+                    if (resourceVisualsSO != null)
+                    {
+                        slot.imgIcon.sprite = resourceVisualsSO.GetIcon(mode);
+                        slot.imgIcon.color = Color.white;
+                    }
+                }
                 if (slot.txtContent != null)
                 {
-                    slot.txtContent.text = GetTargetingModeShortName(mode);
-                    slot.txtContent.color = Color.white;
+                    slot.txtContent.gameObject.SetActive(false);
                 }
                 if (slot.imgBackground != null)
                 {
@@ -846,10 +902,18 @@ public class TowerContextWindowUI : MonoBehaviour
             else if (i == 0 && activeRules.Count == 0)
             {
                 // Slot 1 pusty -> domyślny wyszarzony Closest
+                if (slot.imgIcon != null)
+                {
+                    slot.imgIcon.gameObject.SetActive(true);
+                    if (resourceVisualsSO != null)
+                    {
+                        slot.imgIcon.sprite = resourceVisualsSO.GetIcon(TargetingMode.Closest);
+                        slot.imgIcon.color = new Color(0.55f, 0.6f, 0.65f, 0.45f);
+                    }
+                }
                 if (slot.txtContent != null)
                 {
-                    slot.txtContent.text = "Najbliżej\n(Domyślny)";
-                    slot.txtContent.color = new Color(0.55f, 0.6f, 0.65f, 0.7f);
+                    slot.txtContent.gameObject.SetActive(false);
                 }
                 if (slot.imgBackground != null)
                 {
@@ -858,9 +922,14 @@ public class TowerContextWindowUI : MonoBehaviour
             }
             else
             {
+                if (slot.imgIcon != null)
+                {
+                    slot.imgIcon.gameObject.SetActive(false);
+                }
                 if (slot.txtContent != null)
                 {
-                    slot.txtContent.text = "[Pusty]";
+                    slot.txtContent.gameObject.SetActive(true);
+                    slot.txtContent.text = "-";
                     slot.txtContent.color = new Color(0.35f, 0.35f, 0.35f, 0.6f);
                 }
                 if (slot.imgBackground != null)
@@ -875,17 +944,49 @@ public class TowerContextWindowUI : MonoBehaviour
         {
             if (tb.button == null) continue;
 
-            bool isSelected = activeRules.Contains(tb.mode);
+            if (tb.mode == TargetingMode.Chunk)
+            {
+                bool canTargetHex = currentTower.controller != null &&
+                                    currentTower.controller.towerData != null &&
+                                    currentTower.controller.towerData.canShootChunk;
+                tb.button.gameObject.SetActive(canTargetHex);
+                if (!canTargetHex) continue;
+            }
+
+            bool isSelectingThisHex = tb.mode == TargetingMode.Chunk &&
+                                      InteractionManager.Instance != null &&
+                                      InteractionManager.Instance.IsSelectingHexTarget;
+            bool isSelected = (tb.mode == TargetingMode.Chunk && currentTower.controller != null && currentTower.controller.HasGroundTarget) || activeRules.Contains(tb.mode);
+
             if (tb.imgBackground != null)
             {
-                tb.imgBackground.color = isSelected
-                    ? new Color(0.2f, 0.45f, 0.75f, 0.95f) // Podświetlony aktywny cel
-                    : new Color(0.16f, 0.18f, 0.22f, 0.95f);
+                if (isSelectingThisHex)
+                {
+                    // Lekkie jasne podświetlenie sygnalizujące tryb wyboru heksa na mapie
+                    tb.imgBackground.color = new Color(0.35f, 0.65f, 0.95f, 1f);
+                }
+                else if (isSelected)
+                {
+                    tb.imgBackground.color = new Color(0.2f, 0.45f, 0.75f, 0.95f); // Podświetlony aktywny cel
+                }
+                else
+                {
+                    tb.imgBackground.color = new Color(0.16f, 0.18f, 0.22f, 0.95f);
+                }
+            }
+
+            if (tb.imgIcon != null)
+            {
+                if (resourceVisualsSO != null)
+                {
+                    tb.imgIcon.sprite = resourceVisualsSO.GetIcon(tb.mode);
+                }
+                tb.imgIcon.color = (isSelected || isSelectingThisHex) ? Color.white : new Color(0.7f, 0.72f, 0.78f, 0.85f);
             }
 
             if (tb.txtLabel != null)
             {
-                tb.txtLabel.color = isSelected ? Color.white : new Color(0.85f, 0.85f, 0.85f);
+                tb.txtLabel.gameObject.SetActive(false);
             }
         }
     }
@@ -977,7 +1078,14 @@ public class TowerContextWindowUI : MonoBehaviour
         var rules = currentTower.controller.activeTargetingRules;
         if (rules != null && slotIndex < rules.Count)
         {
-            rules.RemoveAt(slotIndex);
+            if (rules[slotIndex] == TargetingMode.Chunk)
+            {
+                currentTower.controller.ClearGroundTarget();
+            }
+            else
+            {
+                rules.RemoveAt(slotIndex);
+            }
             RefreshPrioritiesUI();
         }
     }
@@ -985,6 +1093,32 @@ public class TowerContextWindowUI : MonoBehaviour
     private void OnTargetingOptionClicked(TargetingMode mode)
     {
         if (currentTower == null || currentTower.controller == null) return;
+
+        if (mode == TargetingMode.Chunk)
+        {
+            if (InteractionManager.Instance != null && InteractionManager.Instance.IsSelectingHexTarget)
+            {
+                // Ponowne kliknięcie w trakcie wyboru -> anuluj tryb wyboru
+                InteractionManager.Instance.CancelHexTargetSelection();
+                RefreshPrioritiesUI();
+                return;
+            }
+
+            if (currentTower.controller.HasGroundTarget)
+            {
+                currentTower.controller.ClearGroundTarget();
+                RefreshPrioritiesUI();
+            }
+            else
+            {
+                InteractionManager.Instance?.StartHexTargetSelection(currentTower.controller, () =>
+                {
+                    RefreshPrioritiesUI();
+                });
+                RefreshPrioritiesUI();
+            }
+            return;
+        }
 
         var rules = currentTower.controller.activeTargetingRules;
         if (rules == null)

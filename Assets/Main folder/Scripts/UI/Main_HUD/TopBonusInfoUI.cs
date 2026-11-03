@@ -96,6 +96,7 @@ public class TopBonusInfoUI : MonoBehaviour
     private void Start()
     {
         SubscribeEvents();
+        EnsureTooltipTriggers();
         RefreshUI();
     }
 
@@ -174,6 +175,51 @@ public class TopBonusInfoUI : MonoBehaviour
             amountText = txt,
             defaultBgColor = defaultColor
         });
+
+        AddTrigger(child.gameObject, resType);
+        if (bgImage != null)
+        {
+            bgImage.raycastTarget = true;
+            AddTrigger(bgImage.gameObject, resType);
+        }
+        if (txt != null)
+        {
+            txt.raycastTarget = true;
+            AddTrigger(txt.gameObject, resType);
+        }
+    }
+
+    private void EnsureTooltipTriggers()
+    {
+        if (bonusSlots == null) return;
+        foreach (var slot in bonusSlots)
+        {
+            if (slot.rootObject == null) continue;
+            AddTrigger(slot.rootObject, slot.resourceType);
+
+            if (slot.backgroundImage != null)
+            {
+                slot.backgroundImage.raycastTarget = true;
+                AddTrigger(slot.backgroundImage.gameObject, slot.resourceType);
+            }
+
+            if (slot.amountText != null)
+            {
+                slot.amountText.raycastTarget = true;
+                AddTrigger(slot.amountText.gameObject, slot.resourceType);
+            }
+        }
+    }
+
+    private void AddTrigger(GameObject go, ResourceType type)
+    {
+        if (go == null) return;
+        var trigger = go.GetComponent<ResourceTooltipTrigger>();
+        if (trigger == null)
+        {
+            trigger = go.AddComponent<ResourceTooltipTrigger>();
+        }
+        trigger.Setup(type);
     }
 
     /// <summary>

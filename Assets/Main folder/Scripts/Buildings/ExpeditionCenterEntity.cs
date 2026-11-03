@@ -13,7 +13,7 @@ public class ExpeditionCenterEntity : BuildingEntity
 
     public int EquipmentProvided => (isBuildingActive && gameObject.activeInHierarchy) ? equipmentProvided : 0;
 
-    public bool CanSendMission => MapExpansionManager.Instance != null && MapExpansionManager.Instance.AvailableEquipment >= 2;
+    public bool CanSendMission => MapExpansionManager.Instance != null && MapExpansionManager.Instance.AvailableEquipment >= (MapExpansionManager.Instance.costConfig != null ? MapExpansionManager.Instance.costConfig.minElvesForSurvey : 1);
 
     public override void Initialize(BuildingData buildingData)
     {
@@ -64,7 +64,7 @@ public class ExpeditionCenterEntity : BuildingEntity
     /// <summary>
     /// Metoda pomocnicza dla wysyłania misji (np. z poziomu UI budynku).
     /// </summary>
-    public bool StartMission(Vector2Int targetChunk, int elfCount = 2)
+    public bool StartMission(Vector2Int targetChunk, int elfCount = 1)
     {
         if (MapExpansionManager.Instance == null) return false;
         return MapExpansionManager.Instance.TryStartSurvey(targetChunk, elfCount);

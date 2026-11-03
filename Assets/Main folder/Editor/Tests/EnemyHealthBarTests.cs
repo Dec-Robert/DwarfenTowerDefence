@@ -15,6 +15,7 @@ public class EnemyHealthBarTests
     {
         testGameObjects = new List<GameObject>();
         EnemyRegistry.Clear();
+        ResetManagerStatics();
     }
 
     [TearDown]
@@ -32,6 +33,13 @@ public class EnemyHealthBarTests
             }
             testGameObjects.Clear();
         }
+        ResetManagerStatics();
+    }
+
+    private static void ResetManagerStatics()
+    {
+        MethodInfo reset = typeof(EnemyHealthBarManager).GetMethod("ResetStatics", BindingFlags.NonPublic | BindingFlags.Static);
+        reset?.Invoke(null, null);
     }
 
     // =========================================================================
@@ -263,6 +271,26 @@ public class EnemyHealthBarTests
         // Pasek zdrowia nadal musi mieć swój PropertyBlock i zaktualizowaną wartość HP
         Assert.IsTrue(barRenderer.HasPropertyBlock(), "Pasek zdrowia nie może utracić PropertyBlocka po ResetColor()");
         Assert.AreEqual(400f, stats.GetCurrentHealth(), 0.1f);
+    }
+
+    [Test]
+    public void Test13_SharedMaterial_UsesCustomShaderAndPrefersManagerReference()
+    {
+        // 1. Domyślny fallback materiału powinien mieć shader Custom/EnemyHealthBar
+        Material mat = EnemyHealthBarManager.GetSharedBarMaterial();
+        Assert.IsNotNull(mat, "Materiału nie udało się utworzyć / pobrać.");
+        Assert.IsNotNull(mat.shader, "Materiał nie posiada przypisanego shadera.");
+        Assert.AreEqual("Custom/EnemyHealthBar", mat.shader.name, "Shader paska zdrowia musi być Custom/EnemyHealthBar");
+
+        // 2. Jeśli manager ma bezpośrednią referencję do barMaterial, to GetSharedBarMaterial zwraca ten materiał
+        GameObject mgrObj = new GameObject("TestHealthBarManager");
+        EnemyHealthBarManager mgr = mgrObj.AddComponent<EnemyHealthBarManager>();
+        testGameObjects.Add(mgrObj);
+
+        Material customMat = new Material(mat.shader) { name = "CustomAssignedBarMat" };
+        mgr.BarMaterial = customMat;
+
+        Assert.AreSame(customMat, EnemyHealthBarManager.GetSharedBarMaterial(), "GetSharedBarMaterial powinien zwrócić referencję z Managera");
     }
 
     // =========================================================================

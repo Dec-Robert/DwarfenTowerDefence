@@ -26,6 +26,10 @@ public class TowerController : MonoBehaviour
     [SerializeField] private float criticalMultiplier;
     [SerializeField] private bool isAimed = false;
 
+    public float CurrentRange => currentRange;
+    public float CurrentWorldRange => (currentRange > 0 ? currentRange : (towerData ? towerData.baseRange : 0)) * TowerData.HexToWorldRangeMultiplier;
+    public bool IsNightTime => TimePhaseManager.Instance == null || TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night;
+
     [HideInInspector] public bool isFeared = false;
 
     private Transform target;
@@ -35,6 +39,17 @@ public class TowerController : MonoBehaviour
     [Header("System Celowania")]
     public List<TargetingMode> activeTargetingRules = new List<TargetingMode>();
     public Vector2Int targetChunkCoord;
+
+    [Header("Celowanie w Heks (Ground Target)")]
+    [SerializeField] private bool hasGroundTarget = false;
+    [SerializeField] private Vector3 groundTargetPosition;
+    [SerializeField] private HexCell targetHexCell;
+    private List<TargetingMode> savedPrioritiesBeforeHexTarget = new List<TargetingMode>();
+    private GameObject targetHexIndicatorInstance;
+
+    public bool HasGroundTarget => hasGroundTarget;
+    public Vector3 GroundTargetPosition => groundTargetPosition;
+    public HexCell TargetHexCell => targetHexCell;
 
     private Transform forcedTarget = null;
 
@@ -65,6 +80,18 @@ public class TowerController : MonoBehaviour
                 activeTargetingRules = new List<TargetingMode> { TargetingMode.ClosestOnTrack };
         }
 
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnNightStarted -= HandleNightStarted;
+            TimePhaseManager.Instance.OnNightStarted += HandleNightStarted;
+        }
+
+        wasNight = IsNightTime;
+        if (wasNight && hasGroundTarget && activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk)
+        {
+            fireCountdown = UnityEngine.Random.Range(0.5f, 1.0f);
+        }
+
         InvokeRepeating(nameof(UpdateTarget), 0f, 0.5f);
     }
 
@@ -82,11 +109,81 @@ public class TowerController : MonoBehaviour
 
         if (!ReferenceEquals(rangeIndicatorInstance, null) && rangeIndicatorInstance.activeSelf)
         {
-            float scale = currentRange * 2f;
+            float scale = CurrentWorldRange * 2f;
             rangeIndicatorInstance.transform.localScale = new Vector3(scale, 1f, scale);
         }
 
         OnStatsChanged?.Invoke();
+    }
+
+    public void SetGroundTarget(Vector3 worldPos, HexCell cell)
+    {
+        hasGroundTarget = true;
+        groundTargetPosition = worldPos;
+        targetHexCell = cell;
+
+        if (activeTargetingRules.Count == 0 || activeTargetingRules[0] != TargetingMode.Chunk)
+        {
+            savedPrioritiesBeforeHexTarget = new List<TargetingMode>(activeTargetingRules);
+        }
+
+        activeTargetingRules.Clear();
+        activeTargetingRules.Add(TargetingMode.Chunk);
+
+        // Opóźnienie pierwszego strzału o losowo 0.5 - 1.0s, aby wieże nie strzelały jednocześnie
+        fireCountdown = UnityEngine.Random.Range(0.5f, 1.0f);
+
+        UpdateTargetHexIndicator(rangeIndicatorInstance != null && rangeIndicatorInstance.activeSelf);
+        OnStatsChanged?.Invoke();
+    }
+
+    public void ClearGroundTarget()
+    {
+        hasGroundTarget = false;
+        targetHexCell = null;
+
+        if (activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk)
+        {
+            activeTargetingRules.Clear();
+            if (savedPrioritiesBeforeHexTarget != null && savedPrioritiesBeforeHexTarget.Count > 0)
+            {
+                activeTargetingRules.AddRange(savedPrioritiesBeforeHexTarget);
+            }
+            else if (towerData != null && towerData.defaultTargetingPriorities != null && towerData.defaultTargetingPriorities.Count > 0)
+            {
+                activeTargetingRules.AddRange(towerData.defaultTargetingPriorities);
+            }
+            else
+            {
+                activeTargetingRules.Add(TargetingMode.ClosestOnTrack);
+            }
+        }
+
+        UpdateTargetHexIndicator(false);
+        OnStatsChanged?.Invoke();
+    }
+
+    private void UpdateTargetHexIndicator(bool show)
+    {
+        if (!hasGroundTarget || !show)
+        {
+            if (targetHexIndicatorInstance != null)
+                targetHexIndicatorInstance.SetActive(false);
+            return;
+        }
+
+        if (targetHexIndicatorInstance == null && rangeIndicatorPrefab != null)
+        {
+            targetHexIndicatorInstance = Instantiate(rangeIndicatorPrefab);
+            targetHexIndicatorInstance.name = "TargetHexIndicator_" + gameObject.name;
+        }
+
+        if (targetHexIndicatorInstance != null)
+        {
+            targetHexIndicatorInstance.transform.position = groundTargetPosition + new Vector3(0, 0.05f, 0);
+            targetHexIndicatorInstance.transform.localScale = new Vector3(1.6f, 1f, 1.6f);
+            targetHexIndicatorInstance.SetActive(true);
+        }
     }
 
     public void ShowRangeIndicator(bool show)
@@ -102,7 +199,7 @@ public class TowerController : MonoBehaviour
             if (rangeIndicatorInstance != null)
             {
                 rangeIndicatorInstance.SetActive(true);
-                float scale = currentRange * 2f;
+                float scale = CurrentWorldRange * 2f;
                 rangeIndicatorInstance.transform.localScale = new Vector3(scale, 1f, scale);
             }
         }
@@ -113,19 +210,65 @@ public class TowerController : MonoBehaviour
                 rangeIndicatorInstance.SetActive(false);
             }
         }
+
+        UpdateTargetHexIndicator(show);
+    }
+
+    private void OnEnable()
+    {
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnNightStarted -= HandleNightStarted;
+            TimePhaseManager.Instance.OnNightStarted += HandleNightStarted;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnNightStarted -= HandleNightStarted;
+        }
+
+        if (targetHexIndicatorInstance != null)
+            targetHexIndicatorInstance.SetActive(false);
+    }
+
+    private void HandleNightStarted()
+    {
+        if (hasGroundTarget && activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk)
+        {
+            fireCountdown = UnityEngine.Random.Range(0.5f, 1.0f);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (targetHexIndicatorInstance != null)
+            Destroy(targetHexIndicatorInstance);
     }
 
     private void UpdateTarget()
     {
-        if (!canShoot)
+        if (!canShoot || !IsNightTime)
         {
             target = null;
             return;
         }
 
+        if (hasGroundTarget && activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk)
+        {
+            target = null;
+            return;
+        }
+
+        float worldRange = CurrentWorldRange;
+
         if (forcedTarget != null)
         {
-            if (Vector3.Distance(transform.position, forcedTarget.position) <= currentRange)
+            Vector3 diff = forcedTarget.position - transform.position;
+            diff.y = 0;
+            if (diff.sqrMagnitude <= worldRange * worldRange)
             {
                 target = forcedTarget;
                 return;
@@ -136,15 +279,6 @@ public class TowerController : MonoBehaviour
             }
         }
 
-        if (activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk)
-        {
-            if (towerData != null && towerData.canShootChunk)
-            {
-                target = null;
-                return;
-            }
-        }
-
         List<EnemyStats> current = candidateBufferA;
         List<EnemyStats> next = candidateBufferB;
         current.Clear();
@@ -152,13 +286,15 @@ public class TowerController : MonoBehaviour
 
         List<EnemyStats> allEnemies = EnemyRegistry.ActiveEnemies;
         Vector3 towerPos = transform.position;
-        float rangeSqr = currentRange * currentRange;
+        float rangeSqr = worldRange * worldRange;
 
         for (int i = 0; i < allEnemies.Count; i++)
         {
             EnemyStats enemy = allEnemies[i];
             if (enemy == null) continue;
-            if ((towerPos - enemy.transform.position).sqrMagnitude <= rangeSqr)
+            Vector3 diff = enemy.transform.position - towerPos;
+            diff.y = 0;
+            if (diff.sqrMagnitude <= rangeSqr)
             {
                 current.Add(enemy);
             }
@@ -198,16 +334,44 @@ public class TowerController : MonoBehaviour
         candidateBufferB.Clear();
     }
 
+    private bool wasNight = false;
+
     private void Update()
     {
-        if (!canShoot || target == null)
+        bool isNight = IsNightTime;
+        if (isNight && !wasNight)
+        {
+            if (hasGroundTarget && activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk)
+            {
+                fireCountdown = UnityEngine.Random.Range(0.5f, 1.0f);
+            }
+        }
+        wasNight = isNight;
+
+        if (!canShoot || !isNight)
         {
             isAimed = false;
             return;
         }
 
-        LockOnTarget();
-        CheckIfAimed();
+        bool isGroundMode = hasGroundTarget && activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk;
+
+        if (isGroundMode)
+        {
+            LockOnGroundTarget();
+            CheckIfAimedGround();
+        }
+        else
+        {
+            if (target == null)
+            {
+                isAimed = false;
+                return;
+            }
+
+            LockOnTarget();
+            CheckIfAimed();
+        }
 
         if (fireCountdown <= 0f)
         {
@@ -215,14 +379,14 @@ public class TowerController : MonoBehaviour
             {
                 if (isAimed)
                 {
-                    Shoot();
+                    Shoot(isGroundMode);
                     if (currentFireRate > 0)
                         fireCountdown = 1f / currentFireRate;
                 }
             }
             else
             {
-                Shoot();
+                Shoot(isGroundMode);
                 if (currentFireRate > 0)
                     fireCountdown = 1f / currentFireRate;
             }
@@ -230,10 +394,38 @@ public class TowerController : MonoBehaviour
         fireCountdown -= Time.deltaTime;
     }
 
+    private void LockOnGroundTarget()
+    {
+        if (partToRotate == null) return;
+        Vector3 dir = groundTargetPosition - transform.position;
+        dir.y = 0;
+        if (dir != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(dir);
+            Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRotation, Time.deltaTime * turnSpeed).eulerAngles;
+            partToRotate.rotation = Quaternion.Euler(0f, rotation.y, 0f);
+        }
+    }
+
+    private void CheckIfAimedGround()
+    {
+        if (partToRotate == null)
+        {
+            isAimed = true;
+            return;
+        }
+
+        Vector3 directionToTarget = (groundTargetPosition - transform.position).normalized;
+        directionToTarget.y = 0;
+        float angle = Vector3.Angle(partToRotate.forward, directionToTarget);
+        isAimed = angle <= shootAngleMargin;
+    }
+
     private void LockOnTarget()
     {
         if (partToRotate == null || target == null) return;
         Vector3 dir = target.position - transform.position;
+        dir.y = 0;
         if (dir != Vector3.zero)
         {
             Quaternion lookRotation = Quaternion.LookRotation(dir);
@@ -251,7 +443,7 @@ public class TowerController : MonoBehaviour
         isAimed = angle <= shootAngleMargin;
     }
 
-    private void Shoot()
+    private void Shoot(bool isGroundMode = false)
     {
         if (towerData == null || towerData.bulletPrefab == null) return;
 
@@ -279,33 +471,37 @@ public class TowerController : MonoBehaviour
 
             Vector3 targetPos;
 
-            if (target != null)
+            if (isGroundMode)
+            {
+                Vector3 toTarget = groundTargetPosition - transform.position;
+                toTarget.y = 0;
+                float dist = toTarget.magnitude;
+                float worldRange = CurrentWorldRange;
+                Vector3 effectiveGroundPos = groundTargetPosition;
+                if (dist > worldRange && dist > 0.001f)
+                {
+                    effectiveGroundPos = transform.position + (toTarget / dist) * worldRange;
+                }
+                targetPos = effectiveGroundPos;
+                projectile.Launch(null, targetPos, firePoint);
+            }
+            else if (target != null)
             {
                 targetPos = target.position;
+                projectile.Launch(target, targetPos, firePoint);
             }
             else
             {
-                if (activeTargetingRules.Count > 0 && activeTargetingRules[0] == TargetingMode.Chunk && towerData.canShootChunk)
-                {
-                    int radius = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.chunkRadius : 3;
-                    float hexSize = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.hexSize : 1f;
-                    float pad = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.padding : 0f;
-                    targetPos = HexGridMath.GetChunkCenterWorld(targetChunkCoord, radius, hexSize, pad);
-                }
-                else
-                {
-                    targetPos = spawnPos + (spawnRot * Vector3.forward * 5f);
-                }
+                targetPos = spawnPos + (spawnRot * Vector3.forward * 5f);
+                projectile.Launch(null, targetPos, firePoint);
             }
-
-            projectile.Launch(target, targetPos, firePoint);
         }
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = canShoot ? Color.cyan : Color.red;
-        Gizmos.DrawWireSphere(transform.position, currentRange > 0 ? currentRange : (towerData ? towerData.baseRange : 0));
+        Gizmos.DrawWireSphere(transform.position, CurrentWorldRange);
 
         if (partToRotate != null)
         {
@@ -349,14 +545,18 @@ public class TowerController : MonoBehaviour
                 {
                     EnemyStats e = input[i];
                     if (e == null) continue;
-                    float d = Vector3.Distance(towerPos, e.transform.position);
+                    Vector3 diff = e.transform.position - towerPos;
+                    diff.y = 0;
+                    float d = diff.magnitude;
                     if (d < minDistance) minDistance = d;
                 }
                 for (int i = 0; i < input.Count; i++)
                 {
                     EnemyStats e = input[i];
                     if (e == null) continue;
-                    if (Mathf.Abs(Vector3.Distance(towerPos, e.transform.position) - minDistance) <= FilterEpsilon)
+                    Vector3 diff = e.transform.position - towerPos;
+                    diff.y = 0;
+                    if (Mathf.Abs(diff.magnitude - minDistance) <= FilterEpsilon)
                     {
                         output.Add(e);
                     }
@@ -371,14 +571,18 @@ public class TowerController : MonoBehaviour
                 {
                     EnemyStats e = input[i];
                     if (e == null) continue;
-                    float d = Vector3.Distance(towerPos, e.transform.position);
+                    Vector3 diff = e.transform.position - towerPos;
+                    diff.y = 0;
+                    float d = diff.magnitude;
                     if (d > maxDistance) maxDistance = d;
                 }
                 for (int i = 0; i < input.Count; i++)
                 {
                     EnemyStats e = input[i];
                     if (e == null) continue;
-                    if (Mathf.Abs(Vector3.Distance(towerPos, e.transform.position) - maxDistance) <= FilterEpsilon)
+                    Vector3 diff = e.transform.position - towerPos;
+                    diff.y = 0;
+                    if (Mathf.Abs(diff.magnitude - maxDistance) <= FilterEpsilon)
                     {
                         output.Add(e);
                     }

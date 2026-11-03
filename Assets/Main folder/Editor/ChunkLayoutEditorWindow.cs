@@ -332,6 +332,8 @@ public class MetaMapConfigEditorWindow : EditorWindow
         if (hasOverride)
         {
             if (hexData.feature != HexFeatureType.None) labelText += $"\n{hexData.feature}";
+            int elev = hexData.EffectiveElevation;
+            if (elev != 0) labelText += $"\n<color=#66ccff>H:{elev:+0;-0}</color>";
             if (hexData.building != null) labelText += $"\n<color=#ffaa00>[{hexData.building.name}]</color>";
         }
 
@@ -399,7 +401,8 @@ public class MetaMapConfigEditorWindow : EditorWindow
         EditorGUI.BeginChangeCheck();
 
         HexFeatureType newFeature = (HexFeatureType)EditorGUILayout.EnumPopup("Typ Terenu", currentOverride.feature);
-        int newLevel = EditorGUILayout.IntSlider("Poziom Terenu", currentOverride.featureLevel, -5, 5);
+        int currentElev = currentOverride.EffectiveElevation;
+        int newLevel = EditorGUILayout.IntSlider("Wysokość / Poziom Terenu", currentElev, -5, 5);
         BuildingData newBuilding = (BuildingData)EditorGUILayout.ObjectField("Budynek Startowy", currentOverride.building, typeof(BuildingData), false);
 
         if (EditorGUI.EndChangeCheck())
@@ -407,6 +410,7 @@ public class MetaMapConfigEditorWindow : EditorWindow
             currentOverride.localCoord = coord;
             currentOverride.feature = newFeature;
             currentOverride.featureLevel = newLevel;
+            currentOverride.elevation = newLevel;
             currentOverride.building = newBuilding;
             
             SaveOverrideToSO();
@@ -526,11 +530,15 @@ public class MetaMapConfigEditorWindow : EditorWindow
         {
             hasOverrideSelected = true;
             currentOverride = match[0];
+            if (currentOverride.elevation == 0 && currentOverride.featureLevel != 0)
+            {
+                currentOverride.elevation = currentOverride.featureLevel;
+            }
         }
         else
         {
             hasOverrideSelected = false;
-            currentOverride = new HexOverride { localCoord = selectedHex.Value, feature = HexFeatureType.None, featureLevel = 0, building = null };
+            currentOverride = new HexOverride { localCoord = selectedHex.Value, feature = HexFeatureType.None, featureLevel = 0, elevation = 0, building = null };
         }
     }
 
@@ -540,7 +548,7 @@ public class MetaMapConfigEditorWindow : EditorWindow
         if (targetLayout.hexes == null) targetLayout.hexes = new List<HexOverride>();
         targetLayout.hexes.RemoveAll(h => h.localCoord == selectedHex.Value);
         
-        if (currentOverride.feature != HexFeatureType.None || currentOverride.building != null || currentOverride.featureLevel != 0)
+        if (currentOverride.feature != HexFeatureType.None || currentOverride.building != null || currentOverride.elevation != 0 || currentOverride.featureLevel != 0)
         {
             targetLayout.hexes.Add(currentOverride);
             hasOverrideSelected = true;

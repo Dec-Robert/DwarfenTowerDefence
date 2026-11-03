@@ -24,6 +24,7 @@ public class ScoutingMission
 
     public float etherPaid;
     public float foodPaid;
+    public float woodPaid;
 
     // ─── Powiązany budynek (opcjonalny, zachowany dla kompatybilności) ───────
     public ExpeditionCenterEntity sourceCenter;
@@ -39,7 +40,8 @@ public class ScoutingMission
         float ether,
         float food,
         List<Citizen> elvesList,
-        ExpeditionCenterEntity center = null)
+        ExpeditionCenterEntity center = null,
+        float wood = 0f)
     {
         return new ScoutingMission
         {
@@ -52,6 +54,7 @@ public class ScoutingMission
             assignedElves = elvesList != null ? new List<Citizen>(elvesList) : new List<Citizen>(),
             etherPaid     = ether,
             foodPaid      = food,
+            woodPaid      = wood,
             sourceCenter  = center
         };
     }
@@ -63,7 +66,8 @@ public class ScoutingMission
         float ether,
         float food,
         List<Citizen> elvesList,
-        ExpeditionCenterEntity center = null)
+        ExpeditionCenterEntity center = null,
+        float wood = 0f)
     {
         return new ScoutingMission
         {
@@ -76,6 +80,7 @@ public class ScoutingMission
             assignedElves = elvesList != null ? new List<Citizen>(elvesList) : new List<Citizen>(),
             etherPaid     = ether,
             foodPaid      = food,
+            woodPaid      = wood,
             sourceCenter  = center
         };
     }

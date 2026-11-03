@@ -34,6 +34,31 @@ public class MapExpansionManager : MonoBehaviour
     public int AvailableEquipment => Mathf.Max(0, TotalEquipment - UsedEquipment);
     public IReadOnlyList<ScoutingMission> ActiveMissions => activeMissions;
 
+    // ─── Skalowanie Odkrytymi Terenami ────────────────────────────────────────
+    private int initialDiscoveredChunkCount = 1;
+    public int InitialDiscoveredChunkCount => initialDiscoveredChunkCount;
+
+    public int DiscoveredChunkCount
+    {
+        get
+        {
+            if (activeChunks == null) return 0;
+            int count = 0;
+            foreach (var kvp in activeChunks)
+            {
+                if (kvp.Value.baseState == ChunkState.Settled || kvp.Value.baseState == ChunkState.Outskirts)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+    }
+
+    public int ExtraDiscoveredChunks => Mathf.Max(0, DiscoveredChunkCount - initialDiscoveredChunkCount);
+    public int ActiveSurveyMissionCount => activeMissions != null ? activeMissions.Count(m => m.missionType == ScoutingMissionType.Survey) : 0;
+    public int DiscoveredOrSurveyingExtraChunks => ExtraDiscoveredChunks + ActiveSurveyMissionCount;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -217,6 +242,8 @@ public class MapExpansionManager : MonoBehaviour
                 startSettled.Add(roadCoord);
             }
         }
+
+        initialDiscoveredChunkCount = startSettled.Count;
 
         PropagateBorderlands();
 
@@ -496,9 +523,14 @@ public class MapExpansionManager : MonoBehaviour
         var cost = CalculateSurveyCost(coord, elfCount);
         if (ResourceManager.Instance != null && !cost.CanAfford(
                 ResourceManager.Instance.GetResourceAmount(ResourceType.Ether),
-                ResourceManager.Instance.GetResourceAmount(ResourceType.Food)))
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Food),
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Wood)))
         {
-            reason = $"Niewystarczające zasoby (Wymagane: {cost.etherCost} Kryształ Eteru, {cost.foodCost} Jedzenia).";
+            var parts = new List<string>();
+            if (cost.foodCost > 0) parts.Add($"{cost.foodCost} Jedzenia");
+            if (cost.woodCost > 0) parts.Add($"{cost.woodCost} Drewna");
+            if (cost.etherCost > 0) parts.Add($"{cost.etherCost} Kryształ Eteru");
+            reason = $"Niewystarczające zasoby (Wymagane: {string.Join(", ", parts)}).";
             return false;
         }
 
@@ -514,8 +546,9 @@ public class MapExpansionManager : MonoBehaviour
 
         if (ResourceManager.Instance != null)
         {
-            ResourceManager.Instance.SpendResource(ResourceType.Ether, cost.etherCost);
-            ResourceManager.Instance.SpendResource(ResourceType.Food, cost.foodCost);
+            if (cost.etherCost > 0) ResourceManager.Instance.SpendResource(ResourceType.Ether, cost.etherCost);
+            if (cost.foodCost > 0) ResourceManager.Instance.SpendResource(ResourceType.Food, cost.foodCost);
+            if (cost.woodCost > 0) ResourceManager.Instance.SpendResource(ResourceType.Wood, cost.woodCost);
         }
 
         List<Citizen> assignedElves = null;
@@ -524,7 +557,7 @@ public class MapExpansionManager : MonoBehaviour
             WorkforceManager.Instance.TryAssignExpeditionWorkers(elfCount, out assignedElves);
         }
 
-        var mission = ScoutingMission.CreateSurvey(coord, cost.days, elfCount, cost.etherCost, cost.foodCost, assignedElves);
+        var mission = ScoutingMission.CreateSurvey(coord, cost.days, elfCount, cost.etherCost, cost.foodCost, assignedElves, wood: cost.woodCost);
         activeMissions.Add(mission);
 
         var data = activeChunks[coord];
@@ -579,9 +612,14 @@ public class MapExpansionManager : MonoBehaviour
         var cost = CalculateReconCost();
         if (ResourceManager.Instance != null && !cost.CanAfford(
                 ResourceManager.Instance.GetResourceAmount(ResourceType.Ether),
-                ResourceManager.Instance.GetResourceAmount(ResourceType.Food)))
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Food),
+                ResourceManager.Instance.GetResourceAmount(ResourceType.Wood)))
         {
-            reason = $"Niewystarczające zasoby (Wymagane: {cost.etherCost} Kryształ Eteru, {cost.foodCost} Jedzenia).";
+            var parts = new List<string>();
+            if (cost.foodCost > 0) parts.Add($"{cost.foodCost} Jedzenia");
+            if (cost.woodCost > 0) parts.Add($"{cost.woodCost} Drewna");
+            if (cost.etherCost > 0) parts.Add($"{cost.etherCost} Kryształ Eteru");
+            reason = $"Niewystarczające zasoby (Wymagane: {string.Join(", ", parts)}).";
             return false;
         }
 
@@ -594,12 +632,13 @@ public class MapExpansionManager : MonoBehaviour
         if (!CanStartRecon(coord, out _)) return false;
 
         var cost = CalculateReconCost();
-        int reqElves = costConfig != null ? costConfig.reconElfRequirement : 3;
+        int reqElves = costConfig != null ? costConfig.reconElfRequirement : 1;
 
         if (ResourceManager.Instance != null)
         {
-            ResourceManager.Instance.SpendResource(ResourceType.Ether, cost.etherCost);
-            ResourceManager.Instance.SpendResource(ResourceType.Food, cost.foodCost);
+            if (cost.etherCost > 0) ResourceManager.Instance.SpendResource(ResourceType.Ether, cost.etherCost);
+            if (cost.foodCost > 0) ResourceManager.Instance.SpendResource(ResourceType.Food, cost.foodCost);
+            if (cost.woodCost > 0) ResourceManager.Instance.SpendResource(ResourceType.Wood, cost.woodCost);
         }
 
         List<Citizen> assignedElves = null;
@@ -608,7 +647,7 @@ public class MapExpansionManager : MonoBehaviour
             WorkforceManager.Instance.TryAssignExpeditionWorkers(reqElves, out assignedElves);
         }
 
-        var mission = ScoutingMission.CreateRecon(coord, cost.days, reqElves, cost.etherCost, cost.foodCost, assignedElves);
+        var mission = ScoutingMission.CreateRecon(coord, cost.days, reqElves, cost.etherCost, cost.foodCost, assignedElves, wood: cost.woodCost);
         activeMissions.Add(mission);
 
         var data = activeChunks[coord];
@@ -622,7 +661,7 @@ public class MapExpansionManager : MonoBehaviour
     public MissionCost CalculateSurveyCost(Vector2Int targetChunk, int elfCount)
     {
         bool isRoad = activeChunks.TryGetValue(targetChunk, out var d) && d.isRoadChunk;
-        return ExpansionCostCalculator.CalculateSurveyCost(targetChunk, activeChunks, isRoad, costConfig, elfCount);
+        return ExpansionCostCalculator.CalculateSurveyCost(targetChunk, activeChunks, isRoad, costConfig, elfCount, DiscoveredOrSurveyingExtraChunks);
     }
 
     public MissionCost CalculateReconCost()

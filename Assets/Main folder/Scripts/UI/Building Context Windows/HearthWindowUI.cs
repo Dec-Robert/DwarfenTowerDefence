@@ -105,11 +105,16 @@ public class HearthWindowUI : MonoBehaviour
             WorkforceManager.Instance.OnWorkforceStatsChanged += HandleWorkforceStatsChanged;
         }
 
+        BeaconEntity.OnHearthStateChanged -= RefreshAllUI;
+        BeaconEntity.OnHearthStateChanged += RefreshAllUI;
+
         RefreshAllUI();
     }
 
     private void OnDisable()
     {
+        BeaconEntity.OnHearthStateChanged -= RefreshAllUI;
+
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
@@ -315,8 +320,9 @@ public class HearthWindowUI : MonoBehaviour
             if (card == null || card.rootObject == null) continue;
 
             HearthLevelData data = config.GetLevelData(i + 1);
+            int coalCost = BeaconEntity.GetCoalCost(data);
             bool isSelected = (data.levelIndex == currentSelectedLevel);
-            bool canAfford = currentCoal >= data.coalCost;
+            bool canAfford = currentCoal >= coalCost;
 
             if (card.background != null)
             {
@@ -345,7 +351,7 @@ public class HearthWindowUI : MonoBehaviour
                 card.txtLevelIndex.color = isSelected ? ColorGoldHighlight : new Color(0.68f, 0.65f, 0.60f, 1f);
             }
 
-            bool isFree = data.coalCost <= 0;
+            bool isFree = coalCost <= 0;
             if (card.coalCostObject != null) card.coalCostObject.SetActive(!isFree);
             if (card.badgeFreeObject != null) card.badgeFreeObject.SetActive(isFree);
 
@@ -353,12 +359,12 @@ public class HearthWindowUI : MonoBehaviour
             {
                 if (card.coalCostSingleUI != null)
                 {
-                    card.coalCostSingleUI.Setup(ResourceType.Coal, data.coalCost);
+                    card.coalCostSingleUI.Setup(ResourceType.Coal, coalCost);
                 }
 
                 if (card.txtCoalCostAmount != null)
                 {
-                    card.txtCoalCostAmount.text = data.coalCost.ToString();
+                    card.txtCoalCostAmount.text = coalCost.ToString();
                     card.txtCoalCostAmount.color = canAfford ? Color.white : ColorNegative;
                 }
             }
@@ -514,11 +520,12 @@ public class HearthWindowUI : MonoBehaviour
     {
         bool isDusk = TimePhaseManager.Instance == null || TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Dusk;
         bool canIgniteNow = !isPreviewOnly && isDusk;
-        bool hasEnoughCoal = currentCoal >= selectedData.coalCost;
+        int coalCost = BeaconEntity.GetCoalCost(selectedData);
+        bool hasEnoughCoal = currentCoal >= coalCost;
 
         if (txtSummaryHeader != null)
         {
-            string costStr = selectedData.coalCost <= 0 ? "0 Węgla" : $"{selectedData.coalCost} Węgla";
+            string costStr = coalCost <= 0 ? "0 Węgla" : $"{coalCost} Węgla";
             txtSummaryHeader.text = $"WYBRANO: POZIOM {selectedData.levelIndex} – {selectedData.title.ToUpperInvariant()} (KOSZT: {costStr.ToUpperInvariant()})";
             txtSummaryHeader.color = selectedData.accentColor;
         }
@@ -532,13 +539,13 @@ public class HearthWindowUI : MonoBehaviour
             }
             else if (!hasEnoughCoal)
             {
-                int missing = selectedData.coalCost - currentCoal;
+                int missing = coalCost - currentCoal;
                 txtSummaryDetails.text = $"Brak wystarczającej ilości węgla w skarbcu! Brakuje jeszcze {missing} szt. Węgla (posiadasz: {currentCoal}).";
                 txtSummaryDetails.color = ColorNegative;
             }
             else
             {
-                int remaining = currentCoal - selectedData.coalCost;
+                int remaining = currentCoal - coalCost;
                 string etherTier = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "Średnie" : selectedData.etherChanceTierLabel;
                 txtSummaryDetails.text = $"Po rozpaleniu pozostanie {remaining} Węgla. Szanse na Ether: {etherTier}.";
                 txtSummaryDetails.color = new Color(0.68f, 0.65f, 0.60f, 1f);
@@ -563,7 +570,7 @@ public class HearthWindowUI : MonoBehaviour
                 }
                 else if (!hasEnoughCoal)
                 {
-                    txtIgniteLabel.text = $"BRAK WĘGLA ({currentCoal}/{selectedData.coalCost})";
+                    txtIgniteLabel.text = $"BRAK WĘGLA ({currentCoal}/{coalCost})";
                 }
                 else
                 {
@@ -662,12 +669,13 @@ public class HearthWindowUI : MonoBehaviour
         return "Wszystkie kopalnie, tartaki i warsztaty pracują następnego dnia ze 100% bazowej wydajności.";
     }
 
-    private static string GetCoalCostDescription(HearthLevelData data)
+    private static string GetCoalCostDescription(HearthLevelData data, int coalCost = -1)
     {
-        if (data.coalCost <= 0) return "Wygaszone palenisko nie zużywa węgla, lecz wystawia twierdzę i robotników na dotkliwy chłód.";
-        if (data.levelIndex <= 2) return $"Oszczędne spalanie ({data.coalCost} szt. węgla) pozwala zachować zapasy kosztem lekkiego osłabienia.";
-        if (data.levelIndex == 3) return $"Standardowy przydział paliwa ({data.coalCost} szt. węgla) utrzymuje pełną równowagę w twierdzy.";
-        return $"Intensywne spalanie ({data.coalCost} szt. węgla) zapewnia potężne wsparcie obronne i gospodarcze.";
+        if (coalCost < 0) coalCost = BeaconEntity.GetCoalCost(data);
+        if (coalCost <= 0) return "Wygaszone palenisko nie zużywa węgla, lecz wystawia twierdzę i robotników na dotkliwy chłód.";
+        if (data.levelIndex <= 2) return $"Oszczędne spalanie ({coalCost} szt. węgla) pozwala zachować zapasy kosztem lekkiego osłabienia.";
+        if (data.levelIndex == 3) return $"Standardowy przydział paliwa ({coalCost} szt. węgla) utrzymuje pełną równowagę w twierdzy.";
+        return $"Intensywne spalanie ({coalCost} szt. węgla) zapewnia potężne wsparcie obronne i gospodarcze.";
     }
 
     private static Color GetEtherTierColor(float guaranteedPercent)

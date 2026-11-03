@@ -23,7 +23,7 @@ MonoBehaviour:
   efficiencyTable:
   - 0
   - 1
-  allowedTerrain: 000000000100000002000000030000000400000005000000
+  allowedTerrain: 0000000001000000020000000300000004000000050000000a0000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -36,17 +36,15 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 0
-    amount: 20
+    amount: 25
   - type: 2
-    amount: 40
+    amount: 55
   - type: 5
-    amount: 10
-  - type: 1
-    amount: 40
+    amount: 20
   productionPerCycle: []
   upkeepPerCycle:
-  - type: 3
-    amount: 2
+  - type: 5
+    amount: 4
   tier1Upgrades: []
   prefab: {fileID: 1253841588521944598, guid: 84cdae73d5ef63943aa2dc6ab913954e, type: 3}
   bonusRules: []

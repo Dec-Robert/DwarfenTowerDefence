@@ -47,7 +47,6 @@ public class TimeUI : MonoBehaviour
             btnNextPhase.onClick.AddListener(OnNextPhaseButtonClicked);
             
             TimePhaseManager.Instance.OnGameSpeedChange += SetNightText;
-            
         }
 
         ChangeToMorning();
@@ -81,7 +80,6 @@ public class TimeUI : MonoBehaviour
             btnPlay.onClick.RemoveAllListeners();
             btnFast.onClick.RemoveAllListeners();
             btnNextPhase.onClick.RemoveAllListeners();
-            
 
             TimePhaseManager.Instance.OnGameSpeedChange -= SetNightText;
         }
@@ -100,9 +98,8 @@ public class TimeUI : MonoBehaviour
     
     private void ChangeToNight()
     {
-        string etherTier = BeaconEntity.GetEtherChanceLabel();
-        string phaseTitle = string.IsNullOrEmpty(etherTier) ? "Night" : $"Night ({etherTier})";
-        SetPhaseVisuals(nightBackground, nightText, phaseTitle);
+        float speed = TimePhaseManager.Instance != null ? Time.timeScale : 1f;
+        SetPhaseVisuals(nightBackground, nightText, $"NIGHT [{speed}]");
         ChangeHangingPhase(true);
     }
 
@@ -120,7 +117,7 @@ public class TimeUI : MonoBehaviour
         {
             dayText.color = txtColor;
             int day = TimePhaseManager.Instance != null ? Mathf.Max(1, TimePhaseManager.Instance.CurrentDay) : 1;
-            dayText.text = $"Day {day}";
+            dayText.text = $"DAY {day}";
         }
     }
 
@@ -133,8 +130,6 @@ public class TimeUI : MonoBehaviour
 
     private void SetNightText(float gameState)
     {
-        string etherTier = BeaconEntity.GetEtherChanceLabel();
-        string suffix = string.IsNullOrEmpty(etherTier) ? "" : $" [{etherTier}]";
-        phaseText.text = $"Night [{gameState}]{suffix}";
+        phaseText.text = $"NIGHT [{gameState}]";
     }
 }

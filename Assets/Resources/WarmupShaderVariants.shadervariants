@@ -1,0 +1,113 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!200 &20000000
+ShaderVariantCollection:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: WarmupShaderVariants
+  m_Shaders:
+  - first: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+      - keywords: _ALPHAPREMULTIPLY_ON _EMISSION _SURFACE_TYPE_TRANSPARENT
+        passType: 13
+      - keywords: _ALPHAPREMULTIPLY_ON _SURFACE_TYPE_TRANSPARENT
+        passType: 13
+      - keywords: _ALPHATEST_ON _SPECULAR_SETUP
+        passType: 13
+      - keywords: _EMISSION
+        passType: 13
+      - keywords: _EMISSION _ENVIRONMENTREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+        passType: 13
+      - keywords: _NORMALMAP
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: ad62e598d85e9f74e8468db5754e10ed, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: e870469b612de5f438cf2a7f2dc8b3db, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: efcfe4eff4a744a41bd35dbd086b97b0, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: 8f76d3820ae66994da7d0d2e0a0a9915, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: 4800000, guid: a9e6be88c8a44bd69b64b1b05b4e79a1, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: 4800000, guid: f04050ced3414be98d4c1f58b61727be, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: 4800000, guid: b9967ae9d39d4c55a1612c784edf6bd4, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: 4800000, guid: 8f2c41ee940e4020995a1998c8483c16, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: 4800000, guid: 4fa54313b31c4d5e8999eeababc88901, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: 4800000, guid: c7e8565282b1eb84b8946a73f8c0adad, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: 9c8afe04d5ea9ce40be87e68e5f82fba, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: e2767fe3a19ad6248aa59182a1ea2177, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13

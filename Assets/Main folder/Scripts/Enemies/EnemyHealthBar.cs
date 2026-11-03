@@ -107,6 +107,15 @@ public class EnemyHealthBar : MonoBehaviour
         EnemyHealthBarManager.OnVisibilityChanged -= HandleVisibilityChanged;
     }
 
+    private void OnDestroy()
+    {
+        if (stats != null)
+        {
+            stats.OnHealthChanged -= HandleHealthChanged;
+        }
+        EnemyHealthBarManager.OnVisibilityChanged -= HandleVisibilityChanged;
+    }
+
     private void LateUpdate()
     {
         UpdateTransform();
@@ -157,7 +166,7 @@ public class EnemyHealthBar : MonoBehaviour
 
         float fillRatio = maxHealth > 0f ? Mathf.Clamp01(currentHealth / maxHealth) : 0f;
 
-        EnemyHealthBarManager.EvaluateTier(maxHealth, out Color barColor, out float segmentHpValue, out float visualSegmentCount);
+        EnemyHealthBarManager.EvaluateTier(maxHp: maxHealth, out Color barColor, out float segmentHpValue, out float visualSegmentCount);
         EnemyHealthBarManager.GetStylingColors(out Color bg, out Color border, out Color divider);
 
         propertyBlock.SetColor(s_BarColorId, barColor);
@@ -180,6 +189,7 @@ public class EnemyHealthBar : MonoBehaviour
 
     private void HandleVisibilityChanged(bool visible)
     {
+        if (this == null) return;
         UpdateVisibility(visible);
     }
 

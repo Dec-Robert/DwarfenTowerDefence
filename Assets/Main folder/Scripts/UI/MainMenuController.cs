@@ -23,6 +23,7 @@ public class MainMenuController : MonoBehaviour
 
     private void Start()
     {
+        if (ShaderPrewarmer.Instance != null) ShaderPrewarmer.Instance.StartWarmup();
         // Jeśli UI Toolkit nie posiada zdefiniowanego drzewa (brak uxml w projekcie po refaktoryzacji),
         // automatycznie załaduj scenę MainMenu Demo scene
         if (uiDocument == null || uiDocument.visualTreeAsset == null)
@@ -79,7 +80,7 @@ public class MainMenuController : MonoBehaviour
         Time.timeScale = 1f;
         if (Application.CanStreamedLevelBeLoaded(gameSceneName))
         {
-            SceneManager.LoadScene(gameSceneName);
+            LoadingScreenManager.LoadScene(gameSceneName);
         }
         else
         {

@@ -36,6 +36,9 @@ public class BeaconEntity : BuildingEntity
     public static float PendingNextDayProductionBonus { get; private set; } = 0f;
     public static float ActiveDayProductionBonus { get; private set; } = 0f;
 
+    public static bool HasBuiltFirstOutpost { get; private set; }
+    public static int FirstOutpostPlacedDay { get; private set; } = -1;
+
     public static event Action OnHearthStateChanged;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -54,6 +57,8 @@ public class BeaconEntity : BuildingEntity
         ActiveNightNaturalDropChance = 0.05f;
         PendingNextDayProductionBonus = 0f;
         ActiveDayProductionBonus = 0f;
+        HasBuiltFirstOutpost = false;
+        FirstOutpostPlacedDay = -1;
         OnHearthStateChanged = null;
     }
 
@@ -112,6 +117,45 @@ public class BeaconEntity : BuildingEntity
         return fallbackConfig;
     }
 
+    public static void NotifyOutpostPlaced()
+    {
+        if (!HasBuiltFirstOutpost)
+        {
+            HasBuiltFirstOutpost = true;
+            FirstOutpostPlacedDay = TimePhaseManager.Instance != null ? TimePhaseManager.Instance.CurrentDay : 1;
+            OnHearthStateChanged?.Invoke();
+        }
+    }
+
+    public static int GetCurrentN()
+    {
+        HearthConfigSO config = GetConfig();
+        int baseN = config != null ? config.baseN : 5;
+        if (!HasBuiltFirstOutpost || FirstOutpostPlacedDay < 0)
+        {
+            return baseN;
+        }
+        int currentDay = TimePhaseManager.Instance != null ? TimePhaseManager.Instance.CurrentDay : 1;
+        int daysPassed = Mathf.Max(0, currentDay - FirstOutpostPlacedDay);
+        int nIncrease = config != null ? config.nIncreasePerDay : 1;
+        return baseN + (daysPassed * nIncrease);
+    }
+
+    public static int GetCoalCostForLevel(int levelIndex)
+    {
+        if (levelIndex <= 1) return 0;
+        HearthConfigSO config = GetConfig();
+        HearthLevelData levelData = config.GetLevelData(levelIndex);
+        return GetCoalCost(levelData);
+    }
+
+    public static int GetCoalCost(HearthLevelData levelData)
+    {
+        if (levelData == null || levelData.levelIndex <= 1) return 0;
+        int n = GetCurrentN();
+        return levelData.GetCoalCost(n);
+    }
+
     /// <summary>
     ///     Rozpala Palenisko na wybrany poziom (1–5), pobiera węgiel, nakłada efekty nocne
     ///     i przełącza fazę gry z Dusk na Night.
@@ -122,17 +166,18 @@ public class BeaconEntity : BuildingEntity
 
         HearthConfigSO config = GetConfig();
         HearthLevelData levelData = config.GetLevelData(levelIndex);
+        int coalCost = GetCoalCostForLevel(levelIndex);
 
-        if (levelData.coalCost > 0 && ResourceManager.Instance != null)
+        if (coalCost > 0 && ResourceManager.Instance != null)
         {
             var costList = new List<ResourceCost>
             {
-                new ResourceCost { type = ResourceType.Coal, amount = levelData.coalCost }
+                new ResourceCost { type = ResourceType.Coal, amount = coalCost }
             };
 
             if (!ResourceManager.Instance.SpendResources(costList))
             {
-                Debug.LogWarning($"[BeaconEntity] Brak wystarczającej ilości węgla ({levelData.coalCost}) na rozpalenie poziomu {levelIndex}!");
+                Debug.LogWarning($"[BeaconEntity] Brak wystarczającej ilości węgla ({coalCost}) na rozpalenie poziomu {levelIndex}!");
                 return false;
             }
         }
@@ -155,7 +200,7 @@ public class BeaconEntity : BuildingEntity
         ApplyTowerNightModifiers(levelData);
 
         Debug.Log($"[BeaconEntity] Rozpalono Wielkie Palenisko – Poziom {levelData.levelIndex} ({levelData.title}). " +
-                  $"Koszt Węgla: {levelData.coalCost}, Wieże Szybkostrzelność: {levelData.towerFireRateBonus:+0%;-0%;0%}, " +
+                  $"Koszt Węgla: {coalCost}, Wieże Szybkostrzelność: {levelData.towerFireRateBonus:+0%;-0%;0%}, " +
                   $"Wieże Zasięg: {levelData.towerRangeBonus:+0%;-0%;0%}, " +
                   $"Wrogowie: {levelData.enemyStatsBonus:+0%;-0%;0%}, Runy: {levelData.runeDropAndRarityBonus:+0%;-0%;0%}, " +
                   $"Ether Szansa: {levelData.etherChanceTierLabel} ({levelData.guaranteedEtherPercent:P0} gwarant), " +

@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "Wie\u017Ca zasilana cz\u0105stk\u0105 \u015Bwi\u0119tego p\u0142omienia
     bastionu. Po\u0142\u0105czenie krasnoludzkiego tygla i elfickiej magii \u017Cywio\u0142\xF3w,
     obracaj\u0105ce w popi\xF3\u0142 wszelk\u0105 spaczon\u0105 mg\u0142\u0105 abominacj\u0119."
-  icon: {fileID: 21300000, guid: b35b0aeb601ca3248b4529d94239d3cb, type: 3}
+  icon: {fileID: 21300000, guid: 213c522968e145d990826a3d8227d373, type: 3}
   type: 1
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.3
   - 1.35
   - 1.4
-  allowedTerrain: 0600000001000000030000000500000000000000020000000a0000000b000000
+  allowedTerrain: 000000000100000002000000030000000a0000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -48,9 +48,9 @@ MonoBehaviour:
     amount: 5
   productionPerCycle: []
   upkeepPerCycle:
-  - type: 1
-    amount: 2
   - type: 2
+    amount: 2
+  - type: 3
     amount: 2
   tier1Upgrades: []
   prefab: {fileID: 6103551412309873435, guid: ea11b7e379f6b794eb5bcd66bca96113, type: 3}
@@ -63,7 +63,7 @@ MonoBehaviour:
     penaltyPerExtraBuilding: 0
     searchRadius: 0
   baseMaxWorkers: 2
-  isUnlocked: 0
+  isUnlocked: 1
   baseRange: 5
   baseDamage: 10
   fireRate: 0.5
@@ -72,7 +72,7 @@ MonoBehaviour:
   armorPenetration: 0
   magicPenetration: 0
   damageType: 1
-  canShootChunk: 0
+  canShootChunk: 1
   defaultTargetingPriorities: 
   effects: []
   bulletPrefab: {fileID: 1508738095332709406, guid: 4beda3b611723064b9efc1b8a4fd0ecf, type: 3}

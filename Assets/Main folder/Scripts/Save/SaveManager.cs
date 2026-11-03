@@ -19,10 +19,28 @@ public class SaveManager : MonoBehaviour
     [Header("Katalog Wiez")]
     public List<TowerData> allTowers = new List<TowerData>();
 
+    [Header("Debug")]
+    [Tooltip("Gdy włączone, wszystkie wieże są domyślnie odblokowane w celach testowych/debugowania.")]
+    public bool unlockAllTowersForDebug = true;
+
     public string SavePath
     {
         get => savePath;
         set => savePath = value;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void AutoInitialize()
+    {
+        if (Instance == null)
+        {
+            var existing = FindAnyObjectByType<SaveManager>();
+            if (existing == null)
+            {
+                var go = new GameObject("[SaveManager]");
+                existing = go.AddComponent<SaveManager>();
+            }
+        }
     }
 
     private void Awake()
@@ -240,6 +258,11 @@ public class SaveManager : MonoBehaviour
         foreach (var tower in listToSync)
         {
             if (ReferenceEquals(tower, null)) continue;
+            if (unlockAllTowersForDebug)
+            {
+                tower.isUnlocked = true;
+                continue;
+            }
             string tName = null;
             try { tName = tower.name; } catch { }
             tower.isUnlocked = (!string.IsNullOrEmpty(tName) && currentSaveData.unlockedTowerIDs.Contains(tName)) ||

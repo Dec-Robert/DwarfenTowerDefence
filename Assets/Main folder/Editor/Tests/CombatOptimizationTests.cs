@@ -123,7 +123,7 @@ public class CombatOptimizationTests
     private static void SetTowerRange(TowerController tower, float range)
     {
         FieldInfo field = typeof(TowerController).GetField("currentRange", BindingFlags.NonPublic | BindingFlags.Instance);
-        field?.SetValue(tower, range);
+        field?.SetValue(tower, range / TowerData.HexToWorldRangeMultiplier);
     }
 
     private static void InvokeUpdateTarget(TowerController tower)
@@ -925,6 +925,209 @@ public class CombatOptimizationTests
         MeshRenderer mr = enemyObj.GetComponent<MeshRenderer>();
         Assert.IsFalse(mr.HasPropertyBlock(), "After rapid damage and ResetColor, property block must be cleared!");
         Assert.IsFalse(mr.sharedMaterial.name.Contains("(Instance)"), "No material leaks after 50 rapid damage calls!");
+    }
+
+    [Test]
+    public void Test46_GroundTargeting_SetGroundTarget_SetsMaxPriority_AndSavesPreviousPriorities()
+    {
+        TowerController tower = CreateTower(Vector3.zero, 10f, TargetingMode.Furthest, TargetingMode.LeastHP);
+        Vector3 targetPos = new Vector3(3f, 0f, 0f);
+
+        tower.SetGroundTarget(targetPos, null);
+
+        Assert.IsTrue(tower.HasGroundTarget, "Tower must have active ground target");
+        Assert.AreEqual(targetPos, tower.GroundTargetPosition, "Ground target position must match assigned coordinates");
+        Assert.AreEqual(1, tower.activeTargetingRules.Count, "Active targeting rules must contain exactly 1 rule (Chunk)");
+        Assert.AreEqual(TargetingMode.Chunk, tower.activeTargetingRules[0], "Top priority must be Chunk");
+    }
+
+    [Test]
+    public void Test47_GroundTargeting_ClearGroundTarget_RestoresSavedPriorities()
+    {
+        TowerController tower = CreateTower(Vector3.zero, 10f, TargetingMode.Furthest, TargetingMode.LeastHP);
+        Vector3 targetPos = new Vector3(3f, 0f, 0f);
+
+        tower.SetGroundTarget(targetPos, null);
+        tower.ClearGroundTarget();
+
+        Assert.IsFalse(tower.HasGroundTarget, "Tower ground target must be cleared");
+        Assert.AreEqual(2, tower.activeTargetingRules.Count, "Active rules must restore 2 original rules");
+        Assert.AreEqual(TargetingMode.Furthest, tower.activeTargetingRules[0], "Rule 0 must restore Furthest");
+        Assert.AreEqual(TargetingMode.LeastHP, tower.activeTargetingRules[1], "Rule 1 must restore LeastHP");
+    }
+
+    [Test]
+    public void Test48_GroundTargeting_FirstShotDelayedByRandom05To1Sec()
+    {
+        TowerController tower = CreateTower(Vector3.zero, 10f, TargetingMode.Closest);
+        Vector3 targetPos = new Vector3(3f, 0f, 0f);
+
+        tower.SetGroundTarget(targetPos, null);
+
+        FieldInfo fireCountdownField = typeof(TowerController).GetField("fireCountdown", BindingFlags.NonPublic | BindingFlags.Instance);
+        float delay = (float)fireCountdownField.GetValue(tower);
+
+        Assert.GreaterOrEqual(delay, 0.499f, "First shot delay must be at least 0.5s");
+        Assert.LessOrEqual(delay, 1.001f, "First shot delay must be at most 1.0s");
+    }
+
+    [Test]
+    public void Test49_GroundTargeting_RangeReduction_DoesNotBlockShootingOrAiming()
+    {
+        TowerController tower = CreateTower(Vector3.zero, 10f, TargetingMode.Closest);
+        Vector3 targetPos = new Vector3(8f, 0f, 0f); // initially in range (8 <= 10)
+
+        tower.SetGroundTarget(targetPos, null);
+
+        // Simulate range penalty (e.g. Hearth Level 1 -20%, reduced to 5 world units)
+        SetTowerRange(tower, 5f);
+        Assert.Less(tower.CurrentWorldRange, Vector3.Distance(tower.transform.position, targetPos), "Target must now be beyond tower current range");
+
+        // Invoke Update via reflection
+        MethodInfo updateMethod = typeof(TowerController).GetMethod("Update", BindingFlags.NonPublic | BindingFlags.Instance);
+        updateMethod?.Invoke(tower, null);
+
+        FieldInfo isAimedField = typeof(TowerController).GetField("isAimed", BindingFlags.NonPublic | BindingFlags.Instance);
+        bool isAimed = (bool)isAimedField.GetValue(tower);
+
+        Assert.IsTrue(isAimed, "Tower must still aim/be aimed at ground target even when target is beyond debuffed range");
+    }
+
+    [Test]
+    public void Test50_Expedition_MinElvesIsOne()
+    {
+        ExpansionCostConfig cfg = ScriptableObject.CreateInstance<ExpansionCostConfig>();
+        cfg.minElvesForSurvey = 1;
+        cfg.minDays = 2;
+        cfg.maxDays = 5;
+
+        Dictionary<Vector2Int, ChunkStateData> chunks = new Dictionary<Vector2Int, ChunkStateData>
+        {
+            { Vector2Int.zero, new ChunkStateData { baseState = ChunkState.Settled } }
+        };
+
+        MissionCost cost1Elf = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 0);
+        Assert.AreEqual(1, cfg.minElvesForSurvey, "minElvesForSurvey must be 1");
+        Assert.GreaterOrEqual(cost1Elf.days, 1, "Survey duration must be at least 1 day with 1 elf");
+    }
+
+    [Test]
+    public void Test51_Expedition_DurationScalesWithDiscoveredChunks_Every4Chunks()
+    {
+        ExpansionCostConfig cfg = ScriptableObject.CreateInstance<ExpansionCostConfig>();
+        cfg.minElvesForSurvey = 1;
+        cfg.minDays = 2;
+        cfg.maxDays = 5;
+        cfg.chunksPerExtraSurveyDay = 4;
+
+        Dictionary<Vector2Int, ChunkStateData> chunks = new Dictionary<Vector2Int, ChunkStateData>
+        {
+            { Vector2Int.zero, new ChunkStateData { baseState = ChunkState.Settled } }
+        };
+
+        // 0 extra chunks
+        MissionCost cost0 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 0);
+
+        // 3 extra chunks (less than 4, no extra days)
+        MissionCost cost3 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 3);
+        Assert.AreEqual(cost0.days, cost3.days, "3 extra chunks (< 4) must not add extra days");
+
+        // 4 extra chunks (+1 day)
+        MissionCost cost4 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 4);
+        Assert.AreEqual(cost0.days + 1, cost4.days, "4 extra chunks must increase duration by exactly 1 day");
+
+        // 8 extra chunks (+2 days)
+        MissionCost cost8 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 8);
+        Assert.AreEqual(cost0.days + 2, cost8.days, "8 extra chunks must increase duration by exactly 2 days");
+    }
+
+    [Test]
+    public void Test52_StarterHousing_RuinedDwarfHouse_DoesNotConsumeStone()
+    {
+        HousingBuildingData ruinedDwarfHouse = UnityEditor.AssetDatabase.LoadAssetAtPath<HousingBuildingData>(
+            "Assets/Main folder/ScriptableObjects/Buildings/Houses/Ruined Dwarven house.asset");
+
+        Assert.IsNotNull(ruinedDwarfHouse, "Ruined Dwarven house asset must exist");
+        Assert.IsNotNull(ruinedDwarfHouse.upkeepPerResident, "upkeepPerResident must not be null");
+
+        foreach (var cost in ruinedDwarfHouse.upkeepPerResident)
+        {
+            Assert.AreNotEqual(ResourceType.Stone, cost.type, "Ruined Dwarven house population must not consume Stone!");
+            Assert.AreEqual(ResourceType.Food, cost.type, "Ruined Dwarven house population must only consume Food!");
+        }
+    }
+
+    [Test]
+    public void Test53_TacticalRecon_Costs50FoodAnd20Wood_ZeroEther()
+    {
+        ExpansionCostConfig cfg = ScriptableObject.CreateInstance<ExpansionCostConfig>();
+        Assert.AreEqual(50f, cfg.reconFoodCost, "Default reconFoodCost must be 50");
+        Assert.AreEqual(20f, cfg.reconWoodCost, "Default reconWoodCost must be 20");
+        Assert.AreEqual(0f, cfg.reconEtherCost, "Default reconEtherCost must be 0");
+
+        MissionCost reconCost = ExpansionCostCalculator.CalculateReconCost(cfg);
+        Assert.AreEqual(50, reconCost.foodCost, "Recon foodCost must be 50");
+        Assert.AreEqual(20, reconCost.woodCost, "Recon woodCost must be 20");
+        Assert.AreEqual(0, reconCost.etherCost, "Recon etherCost must be 0");
+        Assert.IsTrue(reconCost.CanAfford(0, 50, 20), "CanAfford with 0 ether, 50 food, 20 wood must be true");
+        Assert.IsFalse(reconCost.CanAfford(0, 49, 20), "CanAfford with insufficient food must be false");
+        Assert.IsFalse(reconCost.CanAfford(0, 50, 19), "CanAfford with insufficient wood must be false");
+    }
+
+    [Test]
+    public void Test54_SurveyCosts_First4TiersAndTier5Plus_ScalesCorrectly()
+    {
+        ExpansionCostConfig cfg = ScriptableObject.CreateInstance<ExpansionCostConfig>();
+        cfg.minElvesForSurvey = 1;
+
+        Dictionary<Vector2Int, ChunkStateData> chunks = new Dictionary<Vector2Int, ChunkStateData>
+        {
+            { Vector2Int.zero, new ChunkStateData { baseState = ChunkState.Settled } }
+        };
+
+        // First 4 territories (T = 0, 1, 2, 3):
+        // T=0: Food 10, Wood 5, Ether 0
+        MissionCost c0 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 0);
+        Assert.AreEqual(10, c0.foodCost, "T=0: Food must be 10");
+        Assert.AreEqual(5, c0.woodCost, "T=0: Wood must be 5");
+        Assert.AreEqual(0, c0.etherCost, "T=0: Ether must be 0");
+
+        // T=1: Food 15, Wood 7, Ether 0
+        MissionCost c1 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 1);
+        Assert.AreEqual(15, c1.foodCost, "T=1: Food must be 15 (+5)");
+        Assert.AreEqual(7, c1.woodCost, "T=1: Wood must be 7 (+2)");
+        Assert.AreEqual(0, c1.etherCost, "T=1: Ether must be 0");
+
+        // T=2: Food 20, Wood 9, Ether 0
+        MissionCost c2 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 2);
+        Assert.AreEqual(20, c2.foodCost, "T=2: Food must be 20 (+5)");
+        Assert.AreEqual(9, c2.woodCost, "T=2: Wood must be 9 (+2)");
+        Assert.AreEqual(0, c2.etherCost, "T=2: Ether must be 0");
+
+        // T=3: Food 25, Wood 11, Ether 0
+        MissionCost c3 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 3);
+        Assert.AreEqual(25, c3.foodCost, "T=3: Food must be 25 (+5)");
+        Assert.AreEqual(11, c3.woodCost, "T=3: Wood must be 11 (+2)");
+        Assert.AreEqual(0, c3.etherCost, "T=3: Ether must be 0");
+
+        // Tier 5+ (T >= 4, N = T - 4):
+        // T=4 (N=0): Food 30, Ether 4, Wood 15
+        MissionCost c4 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 4);
+        Assert.AreEqual(30, c4.foodCost, "T=4 (N=0): Food must be 30");
+        Assert.AreEqual(15, c4.woodCost, "T=4 (N=0): Wood must be 15");
+        Assert.AreEqual(4, c4.etherCost, "T=4 (N=0): Ether must be 4");
+
+        // T=5 (N=1): Food 34, Ether 6, Wood 16
+        MissionCost c5 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 5);
+        Assert.AreEqual(34, c5.foodCost, "T=5 (N=1): Food must be 34 (30 + 1*4)");
+        Assert.AreEqual(16, c5.woodCost, "T=5 (N=1): Wood must be 16 (15 + 1*1)");
+        Assert.AreEqual(6, c5.etherCost, "T=5 (N=1): Ether must be 6 (4 + 1*2)");
+
+        // T=6 (N=2): Food 38, Ether 8, Wood 17
+        MissionCost c6 = ExpansionCostCalculator.CalculateSurveyCost(new Vector2Int(1, 0), chunks, false, cfg, 1, 6);
+        Assert.AreEqual(38, c6.foodCost, "T=6 (N=2): Food must be 38 (30 + 2*4)");
+        Assert.AreEqual(17, c6.woodCost, "T=6 (N=2): Wood must be 17 (15 + 2*1)");
+        Assert.AreEqual(8, c6.etherCost, "T=6 (N=2): Ether must be 8 (4 + 2*2)");
     }
 
     // =========================================================================

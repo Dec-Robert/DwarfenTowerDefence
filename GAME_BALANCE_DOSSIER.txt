@@ -1,0 +1,413 @@
+================================================================================
+                    KOMPENDIUM BALANSU I SYSTEM PROMPT DLA AI
+               PROJEKT: DWARFEN TOWER DEFENCE (ROGUELITE NA 50 NOCY)
+================================================================================
+
+[INSTRUKCJA WYWOŁANIA DLA MODELU AI]
+Skopiuj cały poniższy dokument do nowego wątku ChatGPT (np. GPT-4o / Claude 3.5 Sonnet / Gemini Pro).
+Agent natychmiast wcieli się w zadaną rolę i rozpocznie krytyczny audyt gry.
+
+--------------------------------------------------------------------------------
+CZĘŚĆ 0: SYSTEM PROMPT & ZADANIA DLA AGENTA AI (TWOJA ROLA)
+--------------------------------------------------------------------------------
+Jesteś bezwzględnym, wybitnym Głównym Projektantem Balansu (Principal Game Balancer & Systems Architect) z wieloletnim doświadczeniem w grach typu roguelite/city-builder/tower-defense (Against the Storm, Frostpunk, They Are Billions, Rogue Tower, Factorio).
+
+Twoim celem jest kompleksowy, matematyczny i systemowy audyt balansu gry "DwarfenTowerDefence", która celuje w pełny cykl 50 NOCY w formule roguelite.
+
+TWOJE NASTAWIENIE:
+1. Nie słodzisz, nie chwalisz bezpodstawnie i nie piszesz ogólników.
+2. Kwestionujesz każdą liczbę i każdy przelicznik w pętli surowcowej.
+3. Szukasz "no-brainerów" (strategii dominujących niszczących frajdę z wyboru), "martwych ulepszeń" (upgrades, których nikt nigdy nie kupi), pułapek na gracza (noob-traps) oraz matematycznych punktów załamania (softlocków ekonomicznych).
+4. Szczególną uwagę przykładasz do WPŁYWU GENERATORA MAPY NA PROGRESJĘ: losowości heksów, twardych reguł pierścieni (brak gór w R1-2!), kosztów i czasu trwania ekspedycji oraz ryzyka uziemienia gracza przez zły rzut kością (RNG).
+5. Oceniasz relację między runem (50 nocy) a meta-progresją (drzewo 88 węzłów, koszty 25-500+ Nadziei): czy gra wymaga patologicznego grindu, czy może meta zbyt szybko trywializuje rozgrywkę.
+6. Proponujesz twarde, konkretne formuły matematyczne i korekty parametrów (zamiast "warto zwiększyć produkcję", podajesz "zmień z 8 na 11 lub obniż upkeep z 12 na 7").
+
+WYMÓG NA PIERWSZĄ ODPOWIEDŹ:
+Gdy użytkownik wklei Ci ten plik, Twoja PIERWSZA odpowiedź MUSI:
+a) Potwierdzić wejście w rolę bezlitosnego Balancera.
+b) Przedstawić "5 NAJBARDZIEJ KRYTYCZNYCH PUNKTÓW ZAŁAMANIA BALANSU" (Top 5 Failure Points / Bottlenecks), które natychmiast rzucają Ci się w oczy z analizy poniższych danych (ze szczególnym uwzględnieniem zależności surowców od generatora mapy i pętli węgla/Paleniska).
+c) Zadać twórcy 3 kluczowe pytania decyzyjne, by przejść do szczegółowej rekalibracji poszczególnych modułów.
+
+================================================================================
+CZĘŚĆ 1: FILOZOFIA GRY I RAMY STRUKTURALNE (ROGUELITE NA 50 NOCY)
+================================================================================
+1. Rdzeń pętli:
+   Gra łączy tower defense na siatce heksagonalnej z ekonomicznym city-builderem i mechaniką roguelite.
+   Doba dzieli się na fazy:
+   - PORANEK (Morning): Produkcja surowców, konsumpcja żywności, rozpatrzenie wypraw zwiadowczych/ekspedycji, decyzje budowlane, rekrutacja pracowników.
+   - ZMIERZCH (Dusk): Wybór poziomu Paleniska (Hearth) na nadchodzącą noc, alokacja węgla, ostateczne ustawienie obrony i załóg wież.
+   - NOC (Night): Atak fal wrogów po wygenerowanych ścieżkach ze spawnerów w głąb bazy. Wieże strzelają, zużywając amunicję/upkeep. Zwycięstwo nocy daje Eter oraz szansę na Runy.
+
+2. Skala 50 Nocy (Docelowy podział trudności):
+   - NOCE 1-10 (Wczesne Przetrwanie / Early Survival):
+     Baza w Pierścieniu 0-2. Walka z podstawowymi szkieletami i blobami. Gracz opiera się na drewnie, kamieniu i farmach. Węgiel tylko z Retorty (lub zapasów startowych). Pierwsze wyprawy zwiadowcze na granice.
+   - NOCE 11-25 (Ekspansja i Górnictwo / Mid-Game):
+     Konieczność dotarcia do Pierścieni 3-4, gdzie pojawiają się Góry. Budowa Kopalni (węgiel + żelazo). Pojawienie się wrogów opancerzonych (Aberracje) i zwinnych (Mist Stalkers). Wymóg wież wyższych tierów (Repetier Parowy, Bombarda) i Kuźni Run.
+   - NOCE 26-40 (Zarządzanie Kryzysowe / Late-Game):
+     Złożone rozgałęzienia dróg, wielościeżkowe ataki wrogów, potężne zapotrzebowanie na węgiel do Paleniska (Hearth Lvl 4-5) i amunicję wież. Wymóg zaawansowanych synergii rasowych (Krasnoludy + Elfy + Ludzie) i run wyższych rzadkości.
+   - NOCE 41-50 (Endgame / Apex Siege):
+     Fale potężnych potworów z bossami (Herald of the Mist - 5000+ HP), elity z modyfikatorami. Każdy błąd w łańcuchu dostaw surowców lub brak węgla w Palenisku oznacza natychmiastowe zniszczenie Głównej Bramy.
+
+================================================================================
+CZĘŚĆ 2: BAZA EKONOMICZNA I MATRYCA PRODUKCJI SUROWCÓW
+================================================================================
+1. Zasoby w grze:
+   - DREWNO (Wood - Typ 1): Podstawowy budulec umocnień, domów i paliwo do Retorty.
+   - KAMIEŃ (Stone - Typ 2): Fundamenty wież, mury, kopalnie, kuźnie.
+   - WĘGIEL (Coal - Typ 3): KLUCZOWE PALIWO PALENISKA (Hearth) oraz upkeep wież parowych/bombard i kuźni.
+   - JEDZENIE (Food - Typ 4): Utrzymanie mieszkańców (upkeep na głowę) oraz finansowanie wypraw ekspedycyjnych (Scouting/Expansion).
+   - ŻELAZO (Iron - Typ 5): Zaawansowane wieże (Repetier, Iglica Cieni), Kuźnia Run, ulepszenia militarne.
+   - ETER (Ether - Typ 0): Magiczny surowiec z nocnych fal wrogów. Wymagany do budowy wszystkich wież, domów wyższych ras i ekspedycji na mapie.
+   - NADZIEJA (Hope): Waluta meta-progresji zachowywana pomiędzy runami.
+
+2. Zasoby startowe miasta (CityBaseConfig.asset):
+   - Startowy Eter: 8
+   - Startowe Drewno: 35
+   - Startowy Kamień: 20
+   - Startowy Węgiel: 20
+   - Startowe Jedzenie: 45
+   - Startowe Żelazo: 0
+   - Punkty Życia Bazy (Główna Brama): 20 HP
+
+3. Matryca Budynków Cywilnych i Produkcyjnych:
+   +--------------------+----------------+-------------------+--------------------+------------------------+-------------+---------------------+
+   | Budynek            | Koszt Budowy   | Baza Produkcji    | Upkeep / Cykl      | Wymagania Terenu       | Max Robotn. | Mnożnik Robotników  |
+   +--------------------+----------------+-------------------+--------------------+------------------------+-------------+---------------------+
+   | Tartak (Sawmill)   | 10 D, 5 K      | 4 Drewna          | 0                  | Las / Wzgórze / Równina| 2           | 1: 1.0, 2: 1.25     |
+   |                    |                | +Bonus: Las (+6 na|                    |                        |             | Ekstrapolacja:      |
+   |                    |                | heksie, +4 sąsiad)|                    |                        |             | +15-20% per extra   |
+   | Kamieniołom (Quarry| 15 D, 5 K      | 8 Kamienia        | 2 Drewna           | Wzgórze / Równina      | 2           | 1: 1.0, 2: 1.25     |
+   |                    |                | +Bonus: Wzniesien.|                    | (Elevation bonus)      |             |                     |
+   | Farma (Farm)       | 10 D, 5 K      | 10 Jedzenia       | 0                  | Żyzna Gleba / Równina  | 2           | 1: 1.0, 2: 1.25     |
+   |                    |                | +Bonus: Gleba (+8 |                    |                        |             |                     |
+   |                    |                | na heks, +6 sąsiad|                    |                        |             |                     |
+   | Retorta (Retort)   | 25 D, 20 K     | 8 Węgla           | 12 DREWNA (!)      | Równina / Wzgórze      | 2 (Ludzie)  | 1: 1.0, 2: 1.25     |
+   | Kopalnia (Mines)   | 35 D, 35 K,    | 6 Węgla,          | 6 Drewna,          | TYLKO GÓRA             | 2 (Krasnol.)| 1: 1.0, 2: 1.25     |
+   |                    | 10 Eter        | 2 Żelaza          | 4 Kamienia         | (Niedostępne w R1-2!)  |             | +Bonus sąsiedztwa   |
+   | Centrum Ekspedycji | 20 D, 15 K     | Sprzęt na zwiady  | 0                  | Dowolny                | 1           | Daje sloty wypraw   |
+   | Posterunek (Outpost| 10 D, 5 K      | Zabezpiecza chunk | 0                  | Nowo odkryty chunk     | 1           | Przekształcalny     |
+   | Kuźnia Run         | 40 D, 40 K,    | Rzemiosło runiczne| 2 Węgla            | Dowolny                | 1 (Krasnol.)| Fuzja, Transmutacja |
+   |                    | 20 Eter, 10 Ż  |                   |                    |                        |             |                     |
+   | Wieża Runiczna     | 20 K, 15 Eter, | Wzmocnienie Kuźni | 0                  | Dowolny (limit z meta) | 1           | Zwiększa sloty run  |
+   |                    | 5 Żelazo       |                   |                    |                        |             |                     |
+   +--------------------+----------------+-------------------+--------------------+------------------------+-------------+---------------------+
+
+4. KRYTYCZNA ANALIZA WĄSKIEGO GARDŁA WĘGLA I DREWNA:
+   - Zauważ: Retorta produkuje 8 węgla, ale POŻERA 12 DREWNA na cykl!
+   - Tartak bez bonusów leśnych daje 4 drewna (z 1 pracownikiem) lub 5 drewna (z 2 pracownikami).
+   - Oznacza to, że utrzymanie 1 Retorty wymaga pracy AŻ 2-3 TARTAKÓW i pochłania 4-6 pracowników wyłącznie po to, by uzyskać 8-10 węgla!
+   - A Palenisko (Hearth) na poziomie 3 (neutralnym) pożera 30 węgla co noc! Na poziomie 5 pożera 60 węgla!
+   - To oznacza, że opieranie się na Retorcie bez natychmiastowej ekspedycji do Gór jest matematycznym samobójstwem ekonomicznym!
+
+================================================================================
+CZĘŚĆ 3: GENERATOR MAPY, EKSPANSJA I WPŁYW RNG NA ROZGRYWKĘ (GŁÓWNY PUNKT)
+================================================================================
+1. Struktura siatki heksagonalnej:
+   - Świat generowany jest w oparciu o Chunki o promieniu chunkRadius = 3.
+   - 1 Chunk = dokładnie 37 heksów (układ osiowy, pierścień centralny + 3 warstwy).
+   - Baza znajduje się na Chunku Centralnym (Ring 0).
+   - Ścieżki wrogów biegną od spawnerów do Bazy; początkowe 2 chunki od bazy to strefa bezpieczna (safeStartChunks = 2, brak rozdroży, min. długość drogi = 6 heksów na chunk).
+
+2. Twarde Reguły Pierścieni Terenu (TerrainGenerationConfig.cs):
+   A) PIERŚCIENIE 1-2 (Strefa Wczesnego Przetrwania - Early Survival):
+      - Wagi losowania cech: Las (30), Żyzna Gleba (20), Wzgórze (15), Pusta Trawa (30), Zapadlisko (5), GÓRY: 0.
+      - Twarde gwarancje budżetowe (Zero Tolerance!):
+        * Las: MINIMUM 10 heksów.
+        * Żyzna Gleba: MINIMUM 6 heksów.
+        * Wzgórza: MINIMUM 6 heksów.
+        * GÓRY: DOKŁADNIE 0 (Zero Tolerance na Góry w Ring 1-2!).
+      - Klastry lasu: Szansa 35%, 1-3 klastry na chunk.
+      - SKUTEK DLA GRACZA: W promieniu pierwszych 2 chunków od bazy NIE MA ANI JEDNEJ GÓRY. Gracz NIE MOŻE postawić Kopalni. Całe żelazo wynosi 0, a węgiel musi pochodzić wyłącznie ze startowych 20 jednostek lub z morderczo drogiej Retorty!
+
+   B) PIERŚCIENIE 3-4 (Strefa Ekspansji i Górnictwa - Expansion & Mining):
+      - Wagi: Góry (25), Las (20), Żyzna Gleba (15), Wzgórze (15), Pusta Trawa (20), Zapadlisko (5).
+      - Twarde gwarancje:
+        * Góry: MINIMUM 10 heksów rozproszonych na co najmniej 2 chunkach.
+      - Klastry gór: Szansa 30%, 1-2 klastry na chunk.
+      - Klastry lasu: Szansa 25%, 1-2 klastry na chunk.
+
+   C) PIERŚCIENIE 5+ (Dzicz i Krawędź Mapy - Wilderness Frontier):
+      - Wagi: Góry (30), Wzgórza (20), Las (15), Pusta Trawa (15), Zapadlisko (10), Żyzna Gleba (10).
+
+3. Mechanika Zwiadu i Ekspansji (MapExpansionManager & ExpansionCostConfig):
+   - Stan Chunka: Wilderness (nieodkryty, mgła) -> Borderlands (dostępny do zwiadu/ekspedycji) -> Claimed (zajęty przez Posterunek/Outpost).
+   - ZWIAD (Recon):
+     Centrum Ekspedycyjne wysyła zwiadowców (kosztuje sprzęt TotalEquipment). Zwiad ujawnia:
+     * Czy przez chunk biegnie ścieżka wrogów.
+     * Czy jest tam rozdroże.
+     * Obfitość surowców (Las, Góra, Łąka): Brak / Znikome (Scarce) / Umiarkowane (Moderate) / Obfite (Abundant).
+   - EKSPEDYCJA (Przejęcie Chunka):
+     * Koszt Bazowy: 20 Eteru, 10 Jedzenia.
+     * Koszt Dystansu: +5 Eteru i +5 Jedzenia za KAŻDY heks odległości od bazy!
+     * Mnożnik Drogi: Jeśli chunk leży na wytyczonej drodze -> Koszt x0.6, Czas trwania x0.7!
+     * Czas trwania misji: od 1 do 7 dni (zależnie od dystansu).
+     * Po dotarciu ekspedycji: Stawiany jest Posterunek (Outpost - koszt 10 Drewna, 5 Kamienia), który po kilku dniach można darmowo przekształcić w budynek produkcyjny.
+
+4. KLUCZOWE PYTANIA AUDYTOWE DOTYCZĄCE GENERATORA MAPY:
+   - Czy gracz ma wystarczająco dużo Eteru i Jedzenia w dniach 3-7, by sfinansować ekspedycję do Pierścienia 3 (Góry)?
+     Koszt ekspedycji na odległość np. 8 heksów poza drogą: 20 + 8*5 = 60 Eteru i 50 Jedzenia! Skąd gracz ma wziąć 60 Eteru, skoro fala 1-3 daje zaledwie 3-8 Eteru?
+   - Czy nie dochodzi tu do paradoksu: "Aby zdobyć węgiel na Palenisko, musisz zdobyć góry w R3. Aby zdobyć góry, musisz wydać mnóstwo Eteru. Aby zdobyć Eter, musisz przetrwać noce. Aby przetrwać noce, musisz palić węgiel w Palenisku"?
+   - Jak bardzo RNG układu drogi wpływa na wygrywalność runu? Czy jeśli droga ominie góry w R3, run jest natychmiast przegrany?
+
+================================================================================
+CZĘŚĆ 4: LUDNOŚĆ, RASY I KONSUMPCJA ŻYWNOŚCI (HOUSING & POPULATION)
+================================================================================
+1. Rasy i role w społeczeństwie:
+   - LUDZIE (Humans): Podstawa siły roboczej, obsługa Retorty, farm i administracji. Dają bonus wydajności przy licznej załodze wież.
+   - ELFY (Elves): Zwiadowcy, leśnicy, bonus do zasięgu wież i szansy na trafienie krytyczne.
+   - KRASNOLUDY (Dwarves): Górnicy, kowale run, obsługa ciężkich machin oblężniczych. Dają potężne bonusy do obrażeń wież i przebicia pancerza.
+
+2. Początkowa populacja z bazy (CityBaseConfig):
+   - Ludzie: 1 mieszkaniec (pojemność bazy: 4)
+   - Elfy: 0 mieszkańców (pojemność bazy: 3)
+   - Krasnoludy: 0 mieszkańców (pojemność bazy: 3)
+
+3. Domy i Koszty Utrzymania Mieszkańców:
+   +--------------------+-----------------------+-------------+-------------+---------------------+---------------------+
+   | Typ Domu          | Koszt Budowy          | Start / Max | Upkeep Domu | Upkeep Mieszkańca   | Koszt Wzrostu (Pop) |
+   +--------------------+-----------------------+-------------+-------------+---------------------+---------------------+
+   | Dom Ludzi          | 15 D, 15 K, 15 Jedz.  | 2 / 5       | 1 Drewno    | 3 JEDZENIA / dobę   | 6 Nadwyżki Jedzenia |
+   | Dom Elfów          | 25 D, 15 Jedz., 6 Eter| 1 / 4       | 1 Drewno    | 3 JEDZENIA / dobę   | 8 Nadwyżki Jedzenia |
+   | Dom Krasnoludów    | 10 D, 25 K, 15 J, 8 E | 0 (!) / 3   | 1 Kamień    | 4 JEDZENIA / dobę   | 10 Nadwyżki Jedzenia|
+   +--------------------+-----------------------+-------------+-------------+---------------------+---------------------+
+
+4. Bilans Żywnościowy:
+   - 1 Farma bez bonusów: 10 Jedzenia na dobę (z 1 pracownikiem) lub 12.5 (z 2 pracownikami).
+   - 1 Farma na żyznej glebie z sąsiedztwem: 18-24 Jedzenia na dobę.
+   - 1 Człowiek/Elf zjada 3 jedzenia dziennie. 1 Krasnolud zjada 4 jedzenia dziennie.
+   - 10 mieszkańców zjada 30-35 jedzenia KAŻDEGO DNIA!
+   - Dodatkowo każda ekspedycja pożera 10-50 jedzenia jednorazowo!
+   - Każdy nowy obywatel wymaga zablokowania 6-10 jednostek nadwyżki żywności.
+
+================================================================================
+CZĘŚĆ 5: CYKL PALENISKA (HEARTH) I ZARZĄDZANIE RYZYKIEM NOCY
+================================================================================
+Palenisko w centrum osady odpędza Zabójczą Mgłę. Gracz co wieczór decyduje, ile węgla wrzucić w ogień (poziomy 1-5 w HearthConfig.asset):
+
++----+---------------------+------------+-----------+-----------+------------+------------+--------------------+---------------------+
+| Lvl| Nazwa Poziomu       | Koszt Węgl.| Wieże RoF | Wieże Rng | Wrogowie HP| Drop Run   | Eter z Fali (Drop) | Produkcja Nast. Dnia|
++----+---------------------+------------+-----------+-----------+------------+------------+--------------------+---------------------+
+| 1  | Wygasły Popiół      | 0 Węgla    | -20%      | -20%      | +15% HP/Spd| +35% szans | 80% GWARANTOWANY   | 0%                  |
+|    | (Ryzyko / Chciwość) |            |           |           |            |            | (Ogromne)          |                     |
+| 2  | Tlący się Żar       | 15 Węgla   | -10%      | -10%      | +5% HP/Spd | +15% szans | 60% GWARANTOWANY   | 0%                  |
+|    | (Oszczędność)       |            |           |           |            |            | (Duże)             |                     |
+| 3  | Zrównoważony Płomień| 30 Węgla   | 0% (Baza) | 0% (Baza) | 0% (Baza)  | 0% (Baza)  | 40% GWARANTOWANY   | 0%                  |
+|    | (Neutralny)         |            |           |           |            |            | (Średnie)          |                     |
+| 4  | Jasny Ogień         | 45 Węgla   | +15%      | +15%      | -5% HP/Spd | -10% szans | 20% GWARANTOWANY   | 0%                  |
+|    | (Wzmocnienie)       |            |           |           |            |            | (Niskie)           |                     |
+| 5  | Palenisko Magmy     | 60 Węgla   | +35%      | +35%      | -15% HP/Spd| -25% szans | 0% GWARANTOWANY    | +5% Produkcji       |
+|    | (Maksymalna Moc)    |            |           |           |            |            | (Tylko 5% z wroga) |                     |
++----+---------------------+------------+-----------+-----------+------------+------------+--------------------+---------------------+
+
+DYLEMAT PROJEKTOWY PALENISKA:
+- Zauważ paradoks chciwości: Wygasły Popiół daje aż 80% puli Eteru i +35% rzadkich run, ale dramatycznie osłabia wieże (-20% RoF i zasięgu) i wzmacnia wrogów (+15% HP i prędkości).
+- Z kolei Palenisko Magmy kosztuje aż 60 WĘGLA, niemal całkowicie odcina dopływ Eteru (0% gwarantowanego dropu), ale daje +35% mocy wieżom.
+- Czy gracz ma motywację palić węgiel we wczesnej grze, skoro desperacko potrzebuje Eteru na budowę wież i ekspansję?
+
+================================================================================
+CZĘŚĆ 6: SYSTEM WALKI – WIEŻE, WROGOWIE I SYNERGIE ZAŁÓG
+================================================================================
+1. System Draftu Wież:
+   - Na starcie nowego profilu gry odblokowane są tylko 2 wieże bazowe:
+     * 1. Arbalet (Sentinel Arbalest)
+     * 6. Bombarda Królewska (Royal Bombard)
+   - Pozostałe 5 wież jest ZABLOKOWANYCH. Gracz odblokowuje je poprzez wykupienie węzłów "Nowa wieża 1..5" w drzewku meta-progresji (system draftu: gracz wybiera 1 z pozostałych zablokowanych wież, trwale dodając ją do puli).
+
+2. Matryca 7 Wież Obronnych:
+   +----+----------------------+--------------+----------------+-------+------+------+--------+--------+--------+--------+-------------+
+   | Lp | Nazwa Wieży          | Koszt Budowy | Upkeep / Cykl  | Dmg   | RoF  | DPS  | Zasięg | ArmPen | MagPen | DmgTyp | Załoga (Max)|
+   +----+----------------------+--------------+----------------+-------+------+------+--------+--------+--------+--------+-------------+
+   | 1  | Arbalet (Sentinel)   | 20 D, 2 Eter | 2 Drewna       | 24    | 2.50 | 60.0 | 12.0   | 5%     | 0%     | Fizycz.| 2           |
+   | 2  | Garłacz Gromowy      | 5 D, 4 Eter  | 0              | 20    | 3.00 | 60.0 | 5.0    | 0%     | 0%     | Fizycz.| 2           |
+   | 3  | Repetier Parowy      | 10 D, 10 K,  | 1 Kamień,      | 12    | 7.50 | 90.0 | 10.4   | 0%     | 0%     | Fizycz.| 2           |
+   |    |                      | 6 W, 4 Ż, 12E| 2 Węgla        |       |      |      |        |        |        |        |             |
+   | 4  | Tygiel Pożogi        | 5 K, 5 Węgiel| 2 Drewna,      | 10    | 0.50 | 5.0* | 5.0    | 0%     | 0%     | Magicz.| 2           |
+   |    |                      | 10 Eter      | 2 Kamienia     | (*ciągły strumień)  |        |        |        |        |             |
+   | 5  | Iglica Cieni         | 25 D, 15 K,  | 3 Drewna,      | 140   | 0.50 | 70.0 | 19.2   | 0%     | 0%     | Magicz.| 2           |
+   |    | (Shadow Spire)       | 6 Ż, 18 Eter | 1 Eter (!)     |       |      |      | (Snajp)|        |        |        |             |
+   | 6  | Bombarda Królewska   | 16 K, 4 D,   | 2 Kamienia,    | 80    | 0.40 | 32.0 | 8.0    | 0%     | 0%     | Fizycz.| 2           |
+   |    | (Royal Bombard)      | 4 Eter       | 1 Węgiel       | (AoE obszarowe)     |        |        |        |        |             |
+   | 7  | Monolit Dusz         | 5 D, 5 Eter  | 0              | 50    | 3.00 | 150.0| 5.0    | 0%     | 0%     | Magicz.| 2           |
+   +----+----------------------+--------------+----------------+-------+------+------+--------+--------+--------+--------+-------------+
+   *Uwaga: Repetier i Bombarda pożerają WĘGIEL w upkeepie! Zbudowanie 4 Repetierów i 2 Bombard pożera 10 WĘGLA CO CYKL!
+
+3. Załoga Wież i Synergie Rasowe (TowerEntity.cs):
+   Wieże posiadają sloty załogi (bazowo 2 sloty, zwiększane przez ulepszenia meta "BonusTowerCrewSlots"):
+   - Krasnolud w załodze: +8% Obrażeń oraz +5% Przebicia Pancerza za KAŻDEGO krasnoluda.
+   - Elf w załodze: +10% Zasięgu oraz +5% Szansy na Trafienie Krytyczne za KAŻDEGO elfa.
+   - Ludzie w załodze: Zgromadzenie co najmniej 4 ludzi w załodze daje potężny bonus +20% ogólnej wydajności wieży.
+
+4. Przeciwnicy (ScriptableObjects/Enemies) i Skalowanie Tierów:
+   +--------------------+--------+---------+-------+-------+----------+-------+------------------------------------------+
+   | Wróg               | Threat | Baza HP | Speed | Pancer| Odp.Mag. | Unik  | Cechy Specjalne / Rola                   |
+   +--------------------+--------+---------+-------+-------+----------+-------+------------------------------------------+
+   | Skeleton           | 1      | 50      | 3.00  | 0     | 0        | 0%    | Mięso armatnie, liczne hordy             |
+   | Blob               | 3      | 300     | 1.00  | 10    | 10       | 0%    | Wolny tank, absorbuje pociski            |
+   | Arcanist           | 2      | 50      | 2.50  | 0     | 10       | 10%   | Mag dystansowy, nakłada debuffy          |
+   | Mist Stalker       | 4      | 80      | 5.00  | 0     | 0        | 10%   | EKSTREMALNIE SZYBKI flanker, omija ogień |
+   | Abberracja         | 3      | 380     | 0.75  | 40    | 20       | 0%    | Ciężki pancerz (wymaga ArmPen / Magii)   |
+   | Herald of the Mist | 10     | 5000    | 0.65  | 30    | 30       | 30%   | BOSS. Aura strachu, ogromna pula HP      |
+   +--------------------+--------+---------+-------+-------+----------+-------+------------------------------------------+
+   Wrogowie ewoluują w 4 Tierach:
+   - Tier 1: Wartości bazowe (np. Skeleton 50 HP, 0 Pancerza)
+   - Tier 2: 3x HP, lekki pancerz (Skeleton 150 HP, 5 Pancerza)
+   - Tier 3: 10x HP, średni pancerz (Skeleton 500 HP, 20 Pancerza, 5% uniku)
+   - Tier 4: 20x HP, potężny pancerz (Skeleton 1000 HP, 50 Pancerza, 10% uniku)
+   - Wrogowie Elitarni: Dodatkowy mnożnik x2 HP i x1.3 Prędkości!
+
+================================================================================
+CZĘŚĆ 7: DRZEWO 88 WĘZŁÓW META-PROGRESJI (PEŁNA LISTA Z KODU)
+================================================================================
+Drzewo ulepszeń w Menu Głównym jest skierowanym grafem acyklicznym (DAG) o 11 poziomach głębokości, zakorzenionym w węźle 'Start'.
+Walutą zakupu jest NADZIEJA (Hope). Zakupy są trwałe (brak mechaniki respec).
+Mgła Wojny (Fog of War) w menu:
+- Poziom i: Wykupione
+- Poziom i+1: Dostępne i w pełni czytelne
+- Poziom i+2: Zamazane (tajemniczy krok w przód, sylwetka/?)
+- Poziom i+3+: Całkowicie ukryte
+
+PEŁNY WYKAZ WSZYSTKICH 88 WĘZŁÓW W BAZIE DANYCH GRY:
+Lp.  | ID                           | Nazwa Ulepszenia                 | Koszt  | Wartość  | Efekt
+------------------------------------------------------------------------------------------------------------------------
+1    | start                        | Start                            | 0      | -        | None (Tranzytowy / Wizualny)
+2    | elfy_1                       | Elfy 1                           | 10     | -        | None (Tranzytowy / Wizualny)
+3    | krasnoludy_1                 | Krasnoludy 1                     | 10     | -        | None (Tranzytowy / Wizualny)
+4    | elfy_2                       | Elfy 2                           | 75     | -        | None (Tranzytowy / Wizualny)
+5    | elfy_expedition_profit_1     | Elfy Expedition Profit 1         | 75     | 10.0     | StartingEther (+Eter startowy)
+6    | elfy_expedition_center_1     | Elfy Expedition center 1         | 75     | 0.15     | SpecificBuildingUpgradeCostReduction (Zniżka ulepszenia budynku)
+7    | krasnoludy_2                 | Krasnoludy 2                     | 80     | 1.0      | UnlockRuneRarity_Uncommon (Odblokowanie run Uncommon w Kuźni)
+8    | krasnoludy_wieza_1           | Krasnoludy Wieża 1               | 85     | 1.0      | RuneTowerLimit (+Limit Wież Runicznych)
+9    | krasnoludy_kuznia_1          | Krasnoludy Kuźnia 1              | 90     | 1.0      | Typ 119
+10   | produkcja_budynkow_5         | Produkcja budynkow 5             | 100    | -        | None (Tranzytowy / Wizualny)
+11   | elfy_3                       | Elfy 3                           | 125    | 0.05     | ProductionSynergy_Elf (Synergia produkcji Elfów)
+12   | elfy_expedition_profit_2     | Elfy Expedition Profit 2         | 125    | 20.0     | StartingEther (+Eter startowy)
+13   | elfy_expedition_center_2     | Elfy Expedition center 2         | 125    | 0.15     | ExpansionCostReduction (Redukcja kosztu ekspansji)
+14   | elfy_speed_expedition_1      | Elfy speed expedition 1          | 125    | 0.1      | None (Tranzytowy / Wizualny)
+15   | mury_miejsce_1               | Mury Miejsce 1                   | 125    | 5.0      | GateBaseHP (+HP Bramy chunkowej)
+16   | nowa_wieza_1                 | Nowa wieża 1                     | 125    | 1.0      | TowerDraftUnlock (Draft nowej wieży z 5 zablokowanych)
+17   | hearth_1                     | Hearth 1                         | 130    | 5.0      | None (Tranzytowy / Wizualny)
+18   | krasnoludy_3                 | Krasnoludy 3                     | 130    | 0.05     | None (Tranzytowy / Wizualny)
+19   | krasnoludy_side_1            | Krasnoludy side 1                | 130    | 1.0      | HousingMaxResidents_Dwarves (+Max mieszkańców - Krasnoludy)
+20   | narzedzie_ludu               | Narzędzie ludu                   | 130    | 1.0      | BonusProductionWorkers (+Slot robotników fabryk)
+21   | krasnoludy_wieza_2           | Krasnoludy Wieża 2               | 135    | 1.0      | RuneTowerLimit (+Limit Wież Runicznych)
+22   | krasnoludy_kuznia_2          | Krasnoludy Kuźnia 2              | 140    | 1.0      | Typ 120
+23   | krasnoludy_run_1             | Krasnoludy Run 1                 | 140    | 1.0      | UnlockRuneRarity_Rare (Odblokowanie run Rare w Kuźni)
+24   | all_towers_upgrade_1_a       | All towers upgrade 1 a           | 175    | 10.0     | TowerGlobalArmorPenetration (+Przebicie pancerza wież)
+25   | all_towers_upgrade_1_b       | All towers upgrade 1 b           | 175    | 10.0     | TowerGlobalMagicPenetration (+Przebicie magii wież)
+26   | elfy_chunki_1                | Elfy Chunki 1                    | 175    | -        | None (Tranzytowy / Wizualny)
+27   | mury_miejsce_2               | Mury Miejsce 2                   | 175    | 5.0      | GateBaseHP (+HP Bramy chunkowej)
+28   | nowa_wieza_2                 | Nowa wieża 2                     | 175    | 2.0      | TowerDraftUnlock (Draft nowej wieży z 5 zablokowanych)
+29   | production_spec_1            | Production Spec 1                | 175    | -        | None (Tranzytowy / Wizualny)
+30   | ulepszenie_wiez_1            | Ulepszenie Wież I                | 175    | -        | None (Tranzytowy / Wizualny)
+31   | elfy_4                       | Elfy 4                           | 180    | 0.1      | TowerCrewSynergy_Elf (Synergia załogi Elfów)
+32   | elfy_expedition_profit_3     | Elfy Expedition Profit 3         | 180    | 30.0     | StartingEther (+Eter startowy)
+33   | elfy_expedition_center_3     | Elfy Expedition center 3         | 180    | 0.2      | ExpansionCostReduction (Redukcja kosztu ekspansji)
+34   | elfy_speed_expedition_2      | Elfy speed expedition 2          | 180    | 0.25     | None (Tranzytowy / Wizualny)
+35   | hearth_2                     | Hearth 2                         | 180    | 0.15     | None (Tranzytowy / Wizualny)
+36   | krasnoludy_side_2            | Krasnoludy side 2                | 180    | 1.0      | HousingStartPopulation (+Startowa populacja domów)
+37   | hearth_producion_1           | Hearth Producion 1               | 185    | 0.1      | BuildingPassiveEfficiency (+Pasywna wydajność)
+38   | krasnoludy_wieza_3           | Krasnoludy Wieża 3               | 185    | 1.0      | RuneTowerLimit (+Limit Wież Runicznych)
+39   | narzedzie_ludu_2             | Narzędzie ludu II                | 185    | 1.0      | BonusProductionWorkers (+Slot robotników fabryk)
+40   | zaawansowany_trening_1       | Zaawansowany trening 1           | 185    | 1.0      | BonusTowerCrewSlots (+Slot załogi wieży)
+41   | krasnoludy_4                 | Krasnoludy 4                     | 190    | 0.08     | TowerCrewSynergy_Dwarf (Synergia załogi Krasnoludów)
+42   | krasnoludy_run_2             | Krasnoludy Run 2                 | 190    | 1.0      | UnlockRuneRarity_Legendary (Odblokowanie run Legendary w Kuźni)
+43   | nowa_wieza_3                 | Nowa wieża 3                     | 225    | 3.0      | TowerDraftUnlock (Draft nowej wieży z 5 zablokowanych)
+44   | all_towers_upgrade_2_a       | All towers upgrade 2 a           | 250    | 0.05     | TowerGlobalFireRate (+Szybkostrzelność wież)
+45   | all_towers_upgrade_2_b       | All towers upgrade 2 b           | 250    | 5.0      | TowerGlobalDamage (+Obrażenia wież)
+46   | elfy_chunki_2                | Elfy Chunki 2                    | 250    | -        | None (Tranzytowy / Wizualny)
+47   | production_spec_2            | Production Spec 2                | 250    | -        | None (Tranzytowy / Wizualny)
+48   | ulepszenie_wiez_2            | Ulepszenie Wież II               | 250    | -        | None (Tranzytowy / Wizualny)
+49   | hearth_3                     | Hearth 3                         | 260    | 0.2      | None (Tranzytowy / Wizualny)
+50   | mury_miejsce_3               | Mury Miejsce 3                   | 260    | 10.0     | GateBaseHP (+HP Bramy chunkowej)
+51   | produkcja_budynkow_1         | Produkcja budynkow 1             | 270    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+52   | elfy_expedition_final        | Elfy Expedition Final            | 275    | 1.0      | UniqueChunkUnlock (Odblokowanie unikalnego chunka)
+53   | hearth_producion_2           | Hearth Producion 2               | 275    | 0.05     | BuildingPassiveEfficiency (+Pasywna wydajność)
+54   | potencjal_ziemi_1            | Potencjal ziemi 1                | 275    | 2.0      | HousingStartPopulation (+Startowa populacja domów)
+55   | krasnoludy_wieza_4           | Krasnoludy Wieża 4               | 280    | 1.0      | RuneTowerLimit (+Limit Wież Runicznych)
+56   | narzedzie_ludu_3             | Narzędzie ludu III               | 280    | 1.0      | BonusProductionWorkers (+Slot robotników fabryk)
+57   | zaawansowany_trening_2       | Zaawansowany trening 2           | 280    | 1.0      | BonusTowerCrewSlots (+Slot załogi wieży)
+58   | krasnoludy_run_3             | Krasnoludy Run 3                 | 300    | 1.0      | UnlockRuneRarity_Cursed (Odblokowanie run Cursed w Kuźni)
+59   | mury_miejsce_4               | Mury Miejsce 4                   | 300    | -        | None (Tranzytowy / Wizualny)
+60   | production_spec_3            | Production Spec 3                | 300    | -        | None (Tranzytowy / Wizualny)
+61   | krasnoludy_run_szansa_1      | Krasnoludy Run Szansa 1          | 320    | 0.1      | RuneDropChance_Uncommon (+Szansa dropu run Uncommon)
+62   | produkcja_budynkow_2         | Produkcja budynkow 2             | 320    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+63   | nowa_wieza_4                 | Nowa wieża 4                     | 325    | 4.0      | TowerDraftUnlock (Draft nowej wieży z 5 zablokowanych)
+64   | narzedzie_ludu_4             | Narzędzie ludu IV                | 330    | 1.0      | BonusProductionWorkers (+Slot robotników fabryk)
+65   | zaawansowany_trening_3       | Zaawansowany trening 3           | 330    | 1.0      | BonusTowerCrewSlots (+Slot załogi wieży)
+66   | all_towers_upgrade_3_b       | All towers upgrade 3  b          | 350    | 5.0      | TowerGlobalDamage (+Obrażenia wież)
+67   | all_towers_upgrade_3_a       | All towers upgrade 3 a           | 350    | 0.05     | TowerGlobalFireRate (+Szybkostrzelność wież)
+68   | krasnoludy_run_4             | Krasnoludy Run 4                 | 350    | 1.0      | Typ 121
+69   | ulepszenie_wiez_3            | Ulepszenie Wież III              | 350    | -        | None (Tranzytowy / Wizualny)
+70   | zapomnine_rowniny_1          | Zapomnine rowniny 1              | 350    | 1.0      | UniqueChunkUnlock (Odblokowanie unikalnego chunka)
+71   | all_towers_upgrade_4_a       | All towers upgrade 4 a           | 400    | 0.05     | TowerGlobalFireRate (+Szybkostrzelność wież)
+72   | all_towers_upgrade_4_b       | All towers upgrade 4 b           | 400    | 5.0      | TowerGlobalDamage (+Obrażenia wież)
+73   | nowa_wieza_5                 | Nowa wieża 5                     | 400    | 5.0      | TowerDraftUnlock (Draft nowej wieży z 5 zablokowanych)
+74   | ulepszenie_wiez_4            | Ulepszenie Wież IV               | 400    | -        | None (Tranzytowy / Wizualny)
+75   | krasnoludy_run_szansa_2      | Krasnoludy Run Szansa 2          | 420    | 0.05     | RuneDropChance_Rare (+Szansa dropu run Rare)
+76   | produkcja_budynkow_3         | Produkcja budynkow 3             | 420    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+77   | narzedzie_ludu_5             | Narzędzie ludu V                 | 425    | 1.0      | BonusProductionWorkers (+Slot robotników fabryk)
+78   | potencjal_ziemi_1a           | Potencjal ziemi 1a               | 425    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+79   | zaawansowany_trening_4       | Zaawansowany trening 4           | 425    | 1.0      | BonusTowerCrewSlots (+Slot załogi wieży)
+80   | krasnoludy_run_szansa_3      | Krasnoludy Run Szansa 3          | 450    | 0.03     | RuneDropChance_Legendary (+Szansa dropu run Legendary)
+81   | ludzka_wytrwalosc_1          | Ludzka wytrwałość I              | 450    | 0.2      | ProductionSynergy_Human (Synergia produkcji Ludzi)
+82   | potencjal_ziemi_1b_2         | Potencjal ziemi 1b               | 450    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+83   | potencjal_ziemi_2a           | Potencjal ziemi 2a               | 450    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+84   | produkcja_budynkow_4         | Produkcja budynkow 4             | 450    | 1.0      | SpecificBuildingProductionBonus (+Bonus produkcji budynku)
+85   | zapomnine_rowniny_2          | Zapomnine rowniny 2              | 450    | 2.0      | UniqueChunkUnlock (Odblokowanie unikalnego chunka)
+86   | zaawansowany_trening_5       | Zaawansowany trening 5           | 475    | 1.0      | BonusTowerCrewSlots (+Slot załogi wieży)
+87   | zapomnine_rowniny_3          | Zapomnine rowniny 3              | 475    | 3.0      | UniqueChunkUnlock (Odblokowanie unikalnego chunka)
+88   | ludzka_wytrwalosc_2          | Ludzka wytrwałość II             | 500    | 0.2      | TowerCrewSynergy_Human (Synergia załogi Ludzi)
+89   | potencjal_ziemi_2b           | Potencjal ziemi 2b               | 500    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+90   | potencjal_ziemi_3a           | Potencjal ziemi 3a               | 525    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+91   | potencjal_ziemi_3b           | Potencjal ziemi 3b               | 550    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+92   | potencjal_ziemi_3b_ii        | Potencjal ziemi 3b II            | 600    | 1.0      | BuildingTerrainBonusMultiplier (Mnożnik bonusu terenu)
+
+================================================================================
+CZĘŚĆ 8: SYSTEM ZDOBYWANIA NADZIEI (HOPE ECONOMY DESIGN CHALLENGE)
+================================================================================
+STAN OBECNY W KODZIE:
+W klasie `HopeSessionManager.cs` metoda `CalculateFinalHope()` zwraca sztywną wartość `1`.
+Istnieje struktura konfiguracji `HopeMilestoneConfigSO.cs`, która przewiduje nagradzanie gracza za:
+- Liczbę przetrwanych nocy (NightsSurvived)
+- Zabitych wrogów i bossów (EnemiesKilled, BossesKilled)
+- Wielkość populacji (TotalPopulation, SpecificRacePopulation)
+- Zbudowane wieże i budynki produkcyjne
+- Wykute runy rzadkie i przeklęte (LegendaryOrCursedRunesObtained)
+
+WYZWANIE BALANSOWE DLA CIEBIE:
+Zsumowany koszt wykupienia całego drzewa 88 ulepszeń wynosi około 18 000 - 22 000 punktów Nadziei!
+Węzły wczesne kosztują 10-75 Nadziei, średnie 125-250, a potężne węzły końcowe 300-500+ Nadziei.
+Musisz zaproponować formułę matematyczną przyznawania Nadziei za run, która spełni założenia:
+1. Porażka na fali 5 (nieudany early game) powinna dawać około 30-50 Nadziei (starczy na 1 małe ulepszenie).
+2. Dotarcie do fali 20 (mid-game) powinno dawać około 250-400 Nadziei (pozwala na zakup 1-2 solidnych węzłów).
+3. Pokonanie 50 nocy (pełne zwycięstwo runu) powinno dawać 1200-1800 Nadziei.
+4. Całe drzewo powinno wymagać około 25-35 pełnych prób (runów) do wymaksowania, z poczuciem stałego, namacalnego postępu po każdej próbie.
+
+================================================================================
+CZĘŚĆ 9: ZESTAW PYTAŃ I WYZWAŃ AUDYTOWYCH DLA AGENTA (ROZPOCZNIJ OD TEGO)
+================================================================================
+Gdy użytkownik wklei ten plik, przeanalizuj powyższe dane i odpowiedz, skupiając się na:
+
+1. WPŁYW GENERATORA MAPY NA EKONOMIĘ 1-50:
+   - Czy reguła "0 Gór w Pierścieniach 1-2" nie jest zbyt brutalnym dławikiem dla gracza?
+   - Jak gracz ma przetrwać pierwsze 10 nocy bez naturalnego węgla, skoro Retorta pożera 12 drewna za jedyne 8 węgla?
+   - Oblicz czas zwrotu inwestycji (Payback Period) dla Kopalni w Pierścieniu 3:
+     (Koszt ekspedycji: 60 Eteru + 50 Jedzenia) + (Koszt Kopalni: 35 D + 35 K + 10 Eter) + Upkeep (6 D + 4 K co cykl). Ile nocy Kopalnia musi pracować, by gracz wyszedł na zero?
+
+2. PĘTLA PALENISKA (HEARTH) – RYZYKO VS ZYSK:
+   - Czy poziom 1 (Wygasły Popiół - 0 węgla, 80% Eteru, +35% run) nie jest exploitowany przez graczy w pierwszych 5 nocach, by zgromadzić gigantyczny zapas Eteru kosztem minimalnego ryzyka przy słabych wrogach?
+   - Czy koszty 45 i 60 węgla na noc (poziomy 4 i 5) są w ogóle osiągalne przed 25. nocą bez doprowadzenia osady do bankructwa surowcowego?
+
+3. BALANS WIEŻ I UPKEEP AMUNICJI:
+   - Dlaczego Repetier Parowy (90 DPS) pożera węgiel i kamień, a Monolit Dusz (150 DPS!) ma zerowy upkeep i kosztuje tylko 5 Drewna i 5 Eteru? Czy Monolit Dusz nie jest rażąco przepakowany (overpowered)?
+   - Jak poradzić sobie z faktem, że wieże fizyczne bez krasnoludzkiej załogi zadają 0 obrażeń opancerzonym Aberracjom w późniejszych falach?
+
+4. STRUKTURA DRZEWA META-PROGRESJI:
+   - Wskaż 3 ulepszenia w drzewie, które są bezużyteczne ("martwe węzły") w obecnej formule.
+   - Wskaż 3 ulepszenia, które są obowiązkowym wyborem ("must-have"), niszczącym różnorodność buildów.
+
+5. FORMUŁA NADZIEI:
+   - Przedstaw konkretny wzór matematyczny na wyliczanie punktów Nadziei po przegranym lub wygranym runie na bazie nocy, wrogów i kamieni milowych.
+
+PRZYSTĄP DO AUDYTU. Przedstaw swoje Top 5 Failure Points i rozpocznij dyskusję z twórcą gry.
+================================================================================

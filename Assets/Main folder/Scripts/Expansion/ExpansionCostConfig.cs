@@ -23,16 +23,24 @@ public class ExpansionCostConfig : ScriptableObject
     [Range(0f, 1f)] public float roadTimeMultiplier = 0.7f;
 
     [Header("Skalowanie Elfami (Pełna Ekspedycja)")]
-    public int minElvesForSurvey = 2;
+    public int minElvesForSurvey = 1;
     public int daysReductionPerExtraElf = 1;
     public int minSurveyDays = 1;
+
+    [Header("Skalowanie Odkrytymi Terenami")]
+    [Tooltip("Mnożnik kosztu za każdy odkryty chunk ponad stan początkowy (np. 0.15 = +15% per chunk) dla pełnej ekspedycji (Survey).")]
+    public float costMultiplierPerDiscoveredChunk = 0.15f;
+
+    [Tooltip("Liczba odkrytych chunków ponad stan początkowy, co którą bazowy czas wyprawy wzrasta o 1 dzień (np. 4 = co 4 zbadane chunki +1 dzień). 0 = wyłączone.")]
+    public int chunksPerExtraSurveyDay = 4;
 
     [Header("Krótka Ekspedycja (Recon / Zwiad)")]
     public int reconDays = 1;
     public int reconElfRequirement = 1;
     [FormerlySerializedAs("reconGoldCost")]
-    public float reconEtherCost = 15f;
-    public float reconFoodCost = 10f;
+    public float reconEtherCost = 0f;
+    public float reconFoodCost = 50f;
+    public float reconWoodCost = 20f;
 
     [Header("Przedziały Raportu Zwiadu")]
     [Tooltip("Maksymalna liczba heksów dla poziomu 'Znikome' (np. 1-2).")]
@@ -51,7 +59,7 @@ public static class ExpansionCostCalculator
         bool isRoadChunk,
         ExpansionCostConfig cfg)
     {
-        int minElves = cfg != null ? cfg.minElvesForSurvey : 2;
+        int minElves = (object)cfg != null ? cfg.minElvesForSurvey : 2;
         return CalculateSurveyCost(targetChunk, activeChunks, isRoadChunk, cfg, minElves);
     }
 
@@ -60,18 +68,27 @@ public static class ExpansionCostCalculator
         Dictionary<Vector2Int, ChunkStateData> activeChunks,
         bool isRoadChunk,
         ExpansionCostConfig cfg,
-        int elfCount)
+        int elfCount,
+        int extraDiscoveredChunks = -1)
     {
-        if (cfg == null)
+        if ((object)cfg == null)
         {
             return new MissionCost
             {
-                etherCost = 30,
+                etherCost = 0,
                 foodCost = 10,
+                woodCost = 5,
                 days = 1,
                 distance = 1,
                 isRoad = isRoadChunk
             };
+        }
+
+        if (extraDiscoveredChunks < 0)
+        {
+            extraDiscoveredChunks = MapExpansionManager.Instance != null
+                ? MapExpansionManager.Instance.DiscoveredOrSurveyingExtraChunks
+                : 0;
         }
 
         int distance = GetMinDistanceToRevealed(targetChunk, activeChunks);
@@ -79,14 +96,39 @@ public static class ExpansionCostCalculator
         float timeRatio = Mathf.Clamp01((float)(distance - 1) / Mathf.Max(1, cfg.maxDistanceForTime - 1));
         int baseDays = Mathf.RoundToInt(Mathf.Lerp(cfg.minDays, cfg.maxDays, timeRatio));
 
-        float ether = cfg.baseEtherCost + cfg.etherPerHex * (distance - 1);
-        float food = cfg.baseFoodCost + cfg.foodPerHex * (distance - 1);
+        // Obliczanie bazowych kosztów wg liczby odkrytych terenów / terenów w trakcie eksploracji
+        int totalExploredOrExploring = extraDiscoveredChunks;
+        float food;
+        float wood;
+        float ether;
+
+        if (totalExploredOrExploring < 4)
+        {
+            int t = Mathf.Max(0, totalExploredOrExploring);
+            food = 10f + t * 5f;
+            wood = 5f + t * 2f;
+            ether = 0f;
+        }
+        else
+        {
+            int n = totalExploredOrExploring - 4;
+            food = 30f + n * 4f;
+            ether = 4f + n * 2f;
+            wood = 15f + n * 1f;
+        }
 
         if (isRoadChunk)
         {
             ether *= cfg.roadCostMultiplier;
             food *= cfg.roadCostMultiplier;
+            wood *= cfg.roadCostMultiplier;
             baseDays = Mathf.Max(1, Mathf.RoundToInt(baseDays * cfg.roadTimeMultiplier));
+        }
+
+        if (extraDiscoveredChunks > 0 && cfg.chunksPerExtraSurveyDay > 0)
+        {
+            int extraDays = extraDiscoveredChunks / cfg.chunksPerExtraSurveyDay;
+            baseDays += extraDays;
         }
 
         int clampedElves = Mathf.Max(cfg.minElvesForSurvey, elfCount);
@@ -97,11 +139,13 @@ public static class ExpansionCostCalculator
         float elfCostMultiplier = (float)clampedElves / Mathf.Max(1, cfg.minElvesForSurvey);
         ether *= elfCostMultiplier;
         food *= elfCostMultiplier;
+        wood *= elfCostMultiplier;
 
         return new MissionCost
         {
             etherCost = Mathf.RoundToInt(ether),
             foodCost = Mathf.RoundToInt(food),
+            woodCost = Mathf.RoundToInt(wood),
             days = finalDays,
             distance = distance,
             isRoad = isRoadChunk
@@ -110,12 +154,13 @@ public static class ExpansionCostCalculator
 
     public static MissionCost CalculateReconCost(ExpansionCostConfig cfg)
     {
-        if (cfg == null)
+        if ((object)cfg == null)
         {
             return new MissionCost
             {
-                etherCost = 15,
-                foodCost = 10,
+                etherCost = 0,
+                foodCost = 50,
+                woodCost = 20,
                 days = 1,
                 distance = 1,
                 isRoad = false
@@ -126,6 +171,7 @@ public static class ExpansionCostCalculator
         {
             etherCost = Mathf.RoundToInt(cfg.reconEtherCost),
             foodCost = Mathf.RoundToInt(cfg.reconFoodCost),
+            woodCost = Mathf.RoundToInt(cfg.reconWoodCost),
             days = cfg.reconDays,
             distance = 1,
             isRoad = false
@@ -136,8 +182,8 @@ public static class ExpansionCostCalculator
     {
         if (count <= 0) return ReconAbundance.None;
 
-        int scarceMax = cfg != null ? cfg.scarceMaxCount : 2;
-        int moderateMax = cfg != null ? cfg.moderateMaxCount : 5;
+        int scarceMax = (object)cfg != null ? cfg.scarceMaxCount : 2;
+        int moderateMax = (object)cfg != null ? cfg.moderateMaxCount : 5;
 
         if (count <= scarceMax) return ReconAbundance.Scarce;
         if (count <= moderateMax) return ReconAbundance.Moderate;
@@ -186,9 +232,14 @@ public struct MissionCost
 {
     public int etherCost;
     public int foodCost;
+    public int woodCost;
     public int days;
     public int distance;
     public bool isRoad;
 
-    public bool CanAfford(float ether, float food) => ether >= etherCost && food >= foodCost;
+    public bool CanAfford(float ether, float food, float wood) =>
+        ether >= etherCost && food >= foodCost && wood >= woodCost;
+
+    public bool CanAfford(float ether, float food) =>
+        ether >= etherCost && food >= foodCost && woodCost <= 0;
 }

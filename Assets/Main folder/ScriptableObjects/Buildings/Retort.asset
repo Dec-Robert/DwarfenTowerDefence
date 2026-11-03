@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.75
   - 2
   - 2.15
-  allowedTerrain: 00000000010000000a00000003000000
+  allowedTerrain: 00000000010000000a000000030000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -46,10 +46,10 @@ MonoBehaviour:
     amount: 20
   productionPerCycle:
   - type: 3
-    amount: 8
+    amount: 10
   upkeepPerCycle:
   - type: 1
-    amount: 12
+    amount: 8
   tier1Upgrades: []
   prefab: {fileID: 4011031713050108421, guid: 07c2962ef65bb134394603a64ca2250e, type: 3}
   bonusRules: []
@@ -60,5 +60,5 @@ MonoBehaviour:
     adjacentBonusPerLevel: 0
     penaltyPerExtraBuilding: 0
     searchRadius: 0
-  baseMaxWorkers: 2
+  baseMaxWorkers: 1
   isUnlocked: 1

@@ -38,6 +38,15 @@ public class HexMapVisualizer : MonoBehaviour
 
     private Dictionary<Vector2Int, Dictionary<Vector2Int, HexCell>> visualHexGrid = new Dictionary<Vector2Int, Dictionary<Vector2Int, HexCell>>();
 
+    public void RegisterHexCell(Vector2Int chunkCoord, Vector2Int localCoord, HexCell cell)
+    {
+        if (!visualHexGrid.ContainsKey(chunkCoord))
+        {
+            visualHexGrid[chunkCoord] = new Dictionary<Vector2Int, HexCell>();
+        }
+        visualHexGrid[chunkCoord][localCoord] = cell;
+    }
+
 
     private void Awake()
     {

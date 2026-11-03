@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ToggleGameObject
 {
-    [MenuItem("GameObject/Toggle Active State %q", false, 0)]
+    [MenuItem("Edit/Toggle Active State %q", false, 0)]
     static void ToggleActiveState()
         {
         foreach (GameObject obj in Selection.gameObjects)

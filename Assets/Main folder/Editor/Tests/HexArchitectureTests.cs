@@ -238,4 +238,28 @@ public class HexArchitectureTests
         Assert.IsTrue(roadCell.IsRoad);
         Assert.IsFalse(standardData.allowOnRoad);
     }
+
+    [Test]
+    public void Test13_SinkholeFeature_ReturnsNegativeElevation()
+    {
+        GameObject go = new GameObject("TestHexSinkhole");
+        createdObjects.Add(go);
+
+        HexCell cell = go.AddComponent<HexCell>();
+        HexCellData data = new HexCellData
+        {
+            chunkCoord = new Vector2Int(0, 0),
+            localCoord = new Vector2Int(1, 1),
+            elevation = 0,
+            feature = HexFeatureType.Sinkhole,
+            featureLevel = -2
+        };
+
+        cell.Initialize(data);
+
+        Assert.AreEqual(-2, cell.Elevation);
+        Assert.IsTrue(cell.IsCavity);
+        Assert.IsFalse(cell.IsFlat);
+        Assert.IsFalse(cell.IsHill);
+    }
 }

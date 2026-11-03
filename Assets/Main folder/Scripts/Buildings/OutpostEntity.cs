@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -51,6 +51,8 @@ public class OutpostEntity : BuildingEntity
         {
             MapExpansionManager.Instance.RegisterOutpost(this, chunkCoord, daysUntilTransform);
         }
+
+        BeaconEntity.NotifyOutpostPlaced();
     }
 
     public void CompleteSettlement()

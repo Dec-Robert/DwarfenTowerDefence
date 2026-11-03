@@ -23,7 +23,7 @@ MonoBehaviour:
   efficiencyTable:
   - 0
   - 1
-  allowedTerrain: 000000000100000002000000030000000400000005000000
+  allowedTerrain: 0000000001000000020000000300000004000000050000000a0000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -39,6 +39,8 @@ MonoBehaviour:
     amount: 20
   - type: 2
     amount: 15
+  - type: 4
+    amount: 20
   productionPerCycle: []
   upkeepPerCycle: []
   tier1Upgrades: []

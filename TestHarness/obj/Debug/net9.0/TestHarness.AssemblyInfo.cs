@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TestHarness")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2dd3daaaeb30d6a9aacde326793bcb4e7796ae3b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1588f881aba14fe8ce9c1eba2b2e84a367487147")]
 [assembly: System.Reflection.AssemblyProductAttribute("TestHarness")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TestHarness")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

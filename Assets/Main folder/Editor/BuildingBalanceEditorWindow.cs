@@ -86,8 +86,17 @@ public class BuildingBalanceEditorWindow : EditorWindow
         public float fireRate;
     }
 
-    // --- Zasoby (ResourceType) w kolejności kolumn ---
-    private static readonly ResourceType[] MonitoredResources = (ResourceType[])Enum.GetValues(typeof(ResourceType));
+    // --- Zasoby (ResourceType) w kolejności kolumn (dokładnie 1 slot na Kryształ Eteru) ---
+    private static readonly ResourceType[] MonitoredResources = new ResourceType[]
+    {
+        ResourceType.Ether,
+        ResourceType.Wood,
+        ResourceType.Stone,
+        ResourceType.Coal,
+        ResourceType.Food,
+        ResourceType.Iron,
+        ResourceType.Hope
+    };
 
     // --- Style IMGUI ---
     private GUIStyle headerBoxStyle;
@@ -1720,15 +1729,27 @@ public class BuildingBalanceEditorWindow : EditorWindow
                 {
                     var y = rule.resourceYields[yIdx];
                     EditorGUILayout.BeginHorizontal();
-                    ResourceType newRes = (ResourceType)EditorGUILayout.EnumPopup(y.resourceType, GUILayout.Width(100));
-                    float newBase = EditorGUILayout.FloatField("Baza:", y.baseBonusPerHex, GUILayout.Width(120));
-                    float newOnTop = EditorGUILayout.FloatField("On-Top:", y.onTopProductionBonus, GUILayout.Width(120));
-                    float newPen = EditorGUILayout.FloatField("Kara/gracz:", y.penaltyPerUser, GUILayout.Width(120));
-                    float newMin = EditorGUILayout.FloatField("Min:", y.minBonus, GUILayout.Width(100));
 
-                    if (newRes != y.resourceType || Mathf.Abs(newBase - y.baseBonusPerHex) > 0.001f ||
-                        Mathf.Abs(newOnTop - y.onTopProductionBonus) > 0.001f || Mathf.Abs(newPen - y.penaltyPerUser) > 0.001f ||
-                        Mathf.Abs(newMin - y.minBonus) > 0.001f)
+                    EditorGUI.BeginChangeCheck();
+                    ResourceType newRes = (ResourceType)EditorGUILayout.EnumPopup(y.resourceType, GUILayout.Width(100));
+
+                    GUILayout.Space(6);
+                    GUILayout.Label(new GUIContent("Baza:", "Bazowy bonus generowany z każdego sąsiadującego heksa"), GUILayout.Width(38));
+                    float newBase = EditorGUILayout.FloatField(y.baseBonusPerHex, GUILayout.Width(60));
+
+                    GUILayout.Space(6);
+                    GUILayout.Label(new GUIContent("On-Top:", "Bonus produkcyjny, jeśli budynek stoi bezpośrednio na tym heksie"), GUILayout.Width(52));
+                    float newOnTop = EditorGUILayout.FloatField(y.onTopProductionBonus, GUILayout.Width(60));
+
+                    GUILayout.Space(6);
+                    GUILayout.Label(new GUIContent("Kara/gracz:", "Kara za każdego dodatkowego użytkownika współdzielącego ten heks"), GUILayout.Width(72));
+                    float newPen = EditorGUILayout.FloatField(y.penaltyPerUser, GUILayout.Width(60));
+
+                    GUILayout.Space(6);
+                    GUILayout.Label(new GUIContent("Min:", "Minimalny gwarantowany zysk z heksa po uwzględnieniu kary"), GUILayout.Width(30));
+                    float newMin = EditorGUILayout.FloatField(y.minBonus, GUILayout.Width(60));
+
+                    if (EditorGUI.EndChangeCheck())
                     {
                         Undo.RecordObject(b, "Edycja surowca terenu");
                         y.resourceType = newRes;
@@ -1740,8 +1761,9 @@ public class BuildingBalanceEditorWindow : EditorWindow
                         EditorUtility.SetDirty(b);
                     }
 
+                    GUILayout.Space(8);
                     GUI.backgroundColor = new Color(1f, 0.7f, 0.7f);
-                    if (GUILayout.Button("X", EditorStyles.miniButton, GUILayout.Width(24)))
+                    if (GUILayout.Button("✕", EditorStyles.miniButton, GUILayout.Width(24)))
                     {
                         Undo.RecordObject(b, "Usuń surowiec z reguły");
                         rule.resourceYields.RemoveAt(yIdx);
@@ -1750,6 +1772,8 @@ public class BuildingBalanceEditorWindow : EditorWindow
                         break;
                     }
                     GUI.backgroundColor = Color.white;
+
+                    GUILayout.FlexibleSpace();
                     EditorGUILayout.EndHorizontal();
                 }
 

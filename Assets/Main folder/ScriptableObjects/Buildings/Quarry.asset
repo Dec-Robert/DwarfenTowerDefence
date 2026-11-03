@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.75
   - 2
   - 2.15
-  allowedTerrain: 0000000001000000030000000a000000
+  allowedTerrain: 0000000001000000030000000a0000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
     amount: 5
   productionPerCycle:
   - type: 2
-    amount: 8
+    amount: 6
   upkeepPerCycle:
   - type: 1
     amount: 2
@@ -56,9 +56,9 @@ MonoBehaviour:
   elevationBonus:
     enabled: 1
     resourceType: 2
-    onTopBonusPerLevel: 1
+    onTopBonusPerLevel: 1.5
     adjacentBonusPerLevel: 0.5
     penaltyPerExtraBuilding: 3
     searchRadius: 1
-  baseMaxWorkers: 2
+  baseMaxWorkers: 1
   isUnlocked: 1

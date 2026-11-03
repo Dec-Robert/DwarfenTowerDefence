@@ -40,7 +40,17 @@ public class BuildingPlacer
         }
         else
         {
-            if (data.allowedTerrain != null && data.allowedTerrain.Count > 0 && !data.allowedTerrain.Contains(cell.Feature)) return false;
+            bool isAllowed = data.allowedTerrain == null || data.allowedTerrain.Count == 0 || data.allowedTerrain.Contains(cell.Feature);
+            if (!isAllowed)
+            {
+                // Wzgórza (Hill) i Zapadliska (Sinkhole) to poziomy wysokości (+ i -) na podłożu trawiastym (None)
+                if ((cell.Feature == HexFeatureType.Hill || cell.Feature == HexFeatureType.Sinkhole) && data.allowedTerrain.Contains(HexFeatureType.None))
+                {
+                    isAllowed = true;
+                }
+            }
+
+            if (!isAllowed) return false;
         }
 
         if (cell.HasBuilding()) return false;

@@ -44,7 +44,11 @@ public class DebugCheatManager : MonoBehaviour
         "rune clear",
         "hope",
         "meta_all",
-        "meta_new"
+        "meta reset",
+        "meta_reset",
+        "meta_new",
+        "towers",
+        "towers_all"
     };
 
     private struct LogEntry
@@ -363,7 +367,17 @@ public class DebugCheatManager : MonoBehaviour
                     break;
 
                 case "meta_new":
-                    HandleMetaNew();
+                case "meta_reset":
+                    HandleMetaReset(parts);
+                    break;
+
+                case "meta":
+                    HandleMetaGeneric(parts);
+                    break;
+
+                case "towers":
+                case "towers_all":
+                    HandleTowers(parts);
                     break;
 
                 default:
@@ -378,6 +392,39 @@ public class DebugCheatManager : MonoBehaviour
 
         // Automatyczne przewinięcie na sam dół logów
         scrollPosition.y = float.MaxValue;
+    }
+
+    private void HandleTowers(string[] parts)
+    {
+        bool targetState = true;
+        if (parts.Length > 1)
+        {
+            string arg = parts[1].ToLowerInvariant();
+            if (arg == "0" || arg == "false" || arg == "off" || arg == "reset") targetState = false;
+        }
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.unlockAllTowersForDebug = targetState;
+            SaveManager.Instance.EnsureTowersLoaded();
+            if (SaveManager.Instance.allTowers != null)
+            {
+                SaveManager.Instance.SyncTowersWithSave(SaveManager.Instance.allTowers);
+            }
+        }
+
+        if (ExtendedBuildingUI.Instance != null)
+        {
+            ExtendedBuildingUI.Instance.UnlockAllTowersForDebug = targetState;
+            ExtendedBuildingUI.Instance.EnsureAllTowersInDatabase();
+            ExtendedBuildingUI.Instance.RefreshAvailableBuildings();
+            if (ExtendedBuildingUI.Instance.IsOpen)
+            {
+                ExtendedBuildingUI.Instance.OpenCategory(ExtendedBuildingUI.Instance.CurrentCategory);
+            }
+        }
+
+        LogSuccess($"[DebugCheat] Odblokowanie wszystkich wież: {(targetState ? "WŁĄCZONE (Wszystkie 7 wież odblokowane)" : "WYŁĄCZONE (Zgodnie z zapisem gry)")}");
     }
 
     // =========================================================================
@@ -427,7 +474,8 @@ public class DebugCheatManager : MonoBehaviour
                     LogInfo("<b>meta_all</b> - Odblokowuje wszystkie meta-upgrady, aplikuje ich efekty i zapisuje w save.");
                     break;
                 case "meta_new":
-                    LogInfo("<b>meta_new</b> - Blokuje wszystkie meta-upgrady, resetuje listę w save i odświeża grę.");
+                case "meta_reset":
+                    LogInfo("<b>meta reset [all|0]</b> | <b>meta_reset</b> - Blokuje wszystkie ulepszenia, przywraca wieże startowe i resetuje save. Z opcją 'all' zeruje też Hope.");
                     break;
                 default:
                     LogInfo($"Brak szczegółowego opisu dla '{sub}'.");
@@ -447,7 +495,7 @@ public class DebugCheatManager : MonoBehaviour
         LogInfo("• <b>rune_random &lt;ilość&gt;</b> | <b>rune_random &lt;rarity&gt; &lt;ilość&gt;</b> - Generowanie run");
         LogInfo("• <b>rune_stat &lt;rarity&gt; &lt;stat&gt;</b> | <b>rune clear</b> - Konkretne runy / czyszczenie");
         LogInfo("• <b>hope &lt;ilość&gt;</b> - Dodaje punkty nadziei do sesji");
-        LogInfo("• <b>meta_all</b> | <b>meta_new</b> - Odblokowanie / reset meta-progresji");
+        LogInfo("• <b>meta reset [all]</b> | <b>meta all</b> - Pełny reset lub odblokowanie meta-progresji");
         LogInfo("• <b>clear</b> - Czyszczenie logów konsoli | <b>help &lt;komenda&gt;</b> - Szczegóły komendy");
     }
 
@@ -827,26 +875,84 @@ public class DebugCheatManager : MonoBehaviour
         LogSuccess($"Dodano +{amount} punktów nadziei do sesji.");
     }
 
-    private void HandleMetaAll()
+    private List<MetaUpgradeSO> GetAllMetaUpgradeAssets()
     {
-        if (MetaUpgradeManager.Instance == null)
+        var set = new HashSet<MetaUpgradeSO>();
+
+        if (MetaUpgradeManager.Instance != null && MetaUpgradeManager.Instance.allUpgrades != null)
         {
-            LogError("MetaUpgradeManager.Instance nie istnieje na scenie.");
+            foreach (var u in MetaUpgradeManager.Instance.allUpgrades)
+            {
+                if (u != null) set.Add(u);
+            }
+        }
+
+        if (MetaGraphControllerUI.Instance != null && MetaGraphControllerUI.Instance.AllUpgrades != null)
+        {
+            foreach (var u in MetaGraphControllerUI.Instance.AllUpgrades)
+            {
+                if (u != null) set.Add(u);
+            }
+        }
+
+#if UNITY_EDITOR
+        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:MetaUpgradeSO");
+        foreach (string guid in guids)
+        {
+            string p = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+            MetaUpgradeSO so = UnityEditor.AssetDatabase.LoadAssetAtPath<MetaUpgradeSO>(p);
+            if (so != null) set.Add(so);
+        }
+#else
+        MetaUpgradeSO[] loaded = Resources.FindObjectsOfTypeAll<MetaUpgradeSO>();
+        if (loaded != null)
+        {
+            foreach (var u in loaded)
+            {
+                if (u != null) set.Add(u);
+            }
+        }
+#endif
+
+        return set.ToList();
+    }
+
+    private void HandleMetaGeneric(string[] parts)
+    {
+        if (parts.Length < 2)
+        {
+            LogInfo("Użycie: <b>meta reset [all|0]</b> | <b>meta all</b>");
             return;
         }
 
-        int count = 0;
-        foreach (var upgrade in MetaUpgradeManager.Instance.allUpgrades)
+        string sub = parts[1].ToLowerInvariant();
+        if (sub == "reset" || sub == "new" || sub == "clear")
         {
-            if (upgrade != null)
+            HandleMetaReset(parts);
+        }
+        else if (sub == "all")
+        {
+            HandleMetaAll();
+        }
+        else
+        {
+            LogError($"Nieznana podkomenda meta: '{sub}'. Użyj: 'meta reset', 'meta all'.");
+        }
+    }
+
+    private void HandleMetaAll()
+    {
+        var allUpgrades = GetAllMetaUpgradeAssets();
+        int count = 0;
+        foreach (var upgrade in allUpgrades)
+        {
+            if (upgrade == null) continue;
+            upgrade.isUnlocked = true;
+            if (SaveManager.Instance != null && !SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Contains(upgrade.id))
             {
-                upgrade.isUnlocked = true;
-                if (SaveManager.Instance != null && !SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Contains(upgrade.id))
-                {
-                    SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Add(upgrade.id);
-                }
-                count++;
+                SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Add(upgrade.id);
             }
+            count++;
         }
 
         if (SaveManager.Instance != null)
@@ -854,36 +960,116 @@ public class DebugCheatManager : MonoBehaviour
             SaveManager.Instance.SaveGame();
         }
 
-        MetaUpgradeManager.Instance.ReapplyAllUpgrades();
+        if (MetaUpgradeManager.Instance != null)
+        {
+            MetaUpgradeManager.Instance.ReapplyAllUpgrades();
+        }
+
+        if (MetaGraphControllerUI.Instance != null)
+        {
+            MetaGraphControllerUI.Instance.UpdateHopeCurrency();
+            MetaGraphControllerUI.Instance.RefreshGraph();
+        }
+
         LogSuccess($"Odblokowano wszystkie meta-ulepszenia ({count}) i zapisano stan gry.");
     }
 
-    private void HandleMetaNew()
+    private void HandleMetaReset(string[] parts = null)
     {
-        if (MetaUpgradeManager.Instance == null)
-        {
-            LogError("MetaUpgradeManager.Instance nie istnieje na scenie.");
-            return;
-        }
+        bool resetHope = false;
+        int customHope = -1;
 
-        foreach (var upgrade in MetaUpgradeManager.Instance.allUpgrades)
+        if (parts != null)
         {
-            if (upgrade != null)
+            for (int i = 1; i < parts.Length; i++)
             {
-                upgrade.isUnlocked = false;
+                string p = parts[i].ToLowerInvariant();
+                if (p == "all" || p == "0" || p == "zero" || p == "clear")
+                {
+                    resetHope = true;
+                }
+                else if (p == "hope" && i + 1 < parts.Length && int.TryParse(parts[i + 1], out int hVal))
+                {
+                    customHope = hVal;
+                }
             }
         }
 
-        if (SaveManager.Instance != null)
+        var allUpgrades = GetAllMetaUpgradeAssets();
+        int count = 0;
+        foreach (var upgrade in allUpgrades)
+        {
+            if (upgrade == null) continue;
+            upgrade.isUnlocked = false;
+            if (upgrade.hasVariants)
+            {
+                if (upgrade.variantA != null) upgrade.variantA.isUnlocked = false;
+                if (upgrade.variantB != null) upgrade.variantB.isUnlocked = false;
+            }
+            count++;
+        }
+
+        if (SaveManager.Instance != null && SaveManager.Instance.currentSaveData != null)
         {
             SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Clear();
+            SaveManager.Instance.currentSaveData.unlockedTowerIDs = new List<string>(SaveManager.DefaultStarterTowerIDs);
+
+            if (resetHope)
+            {
+                SaveManager.Instance.currentSaveData.totalHope = 0;
+            }
+            else if (customHope >= 0)
+            {
+                SaveManager.Instance.currentSaveData.totalHope = customHope;
+            }
+
+            if (SaveManager.Instance.allTowers != null && SaveManager.Instance.allTowers.Count > 0)
+            {
+                var starterSet = new HashSet<string>(SaveManager.DefaultStarterTowerIDs);
+                foreach (var tower in SaveManager.Instance.allTowers)
+                {
+                    if (tower != null)
+                    {
+                        tower.isUnlocked = (!string.IsNullOrEmpty(tower.name) && starterSet.Contains(tower.name)) ||
+                                           (!string.IsNullOrEmpty(tower.buildingName) && starterSet.Contains(tower.buildingName));
+                    }
+                }
+            }
+
             SaveManager.Instance.SaveGame();
         }
 
-        MetaUpgradeManager.Instance.ReapplyAllUpgrades();
-        LogSuccess("Zablokowano wszystkie meta-ulepszenia i zresetowano save'a.");
-    }
+        if (MetaUpgradeManager.Instance != null)
+        {
+            MetaUpgradeManager.Instance.ReapplyAllUpgrades();
+        }
 
+        if (MetaGraphControllerUI.Instance != null)
+        {
+            MetaGraphControllerUI.Instance.UpdateHopeCurrency();
+            MetaGraphControllerUI.Instance.RefreshGraph();
+        }
+
+        if (resetHope)
+        {
+            if (HopeSessionManager.Instance != null)
+            {
+                HopeSessionManager.Instance.earnedHopeList?.Clear();
+            }
+
+            if (ResourceManager.Instance != null)
+            {
+                int currentHope = ResourceManager.Instance.GetResourceAmount(ResourceType.Hope);
+                if (currentHope > 0)
+                {
+                    ResourceManager.Instance.SpendResource(ResourceType.Hope, currentHope);
+                }
+            }
+        }
+
+        string hopeInfo = resetHope ? " (Hope: 0)" : (customHope >= 0 ? $" (Hope: {customHope})" : " (Hope zachowane)");
+        LogSuccess($"Zresetowano meta-progresję: zablokowano {count} ulepszeń, przywrócono wieże startowe{hopeInfo} i zapisano stan gry.");
+    }
     // =========================================================================
     // HELPERY LOGOWANIA W KONSOLI
     // =========================================================================

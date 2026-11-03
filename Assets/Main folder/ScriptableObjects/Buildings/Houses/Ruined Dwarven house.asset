@@ -44,8 +44,6 @@ MonoBehaviour:
   upkeepPerResident:
   - type: 4
     amount: 6
-  - type: 2
-    amount: 1
   growthSurplusCost:
   - type: 4
     amount: 8

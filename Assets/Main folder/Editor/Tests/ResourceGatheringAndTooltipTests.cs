@@ -142,6 +142,35 @@ public class ResourceGatheringAndTooltipTests
         Assert.IsFalse(buildingPlacer.IsPlacementValid(hillCell, mines), "Mines blocked on Hill");
     }
 
+    [Test]
+    public void Test02B_Tower_CanBeBuiltOnElevation_Zero_Positive_AndNegative()
+    {
+        Vector2Int chunk = Vector2Int.zero;
+        HexCell flatCell = CreateCell(chunk, new Vector2Int(1, 1), HexFeatureType.None, elevation: 0);
+        HexCell hillElevCell = CreateCell(chunk, new Vector2Int(1, 2), HexFeatureType.None, elevation: 2);
+        HexCell cavityElevCell = CreateCell(chunk, new Vector2Int(1, 3), HexFeatureType.None, elevation: -2);
+        HexCell hillFeatureCell = CreateCell(chunk, new Vector2Int(1, 4), HexFeatureType.Hill, elevation: 1);
+        HexCell sinkholeFeatureCell = CreateCell(chunk, new Vector2Int(1, 5), HexFeatureType.Sinkhole, elevation: -1);
+
+        TowerData tower = ScriptableObject.CreateInstance<TowerData>();
+        tower.buildingName = "TestTower";
+        tower.type = BuildingType.Defense;
+        tower.elevationRequirement = new ElevationRequirement { mode = ElevationFilterMode.Any };
+        tower.allowedTerrain = new List<HexFeatureType>
+        {
+            HexFeatureType.None,
+            HexFeatureType.Forest,
+            HexFeatureType.Mountain,
+            HexFeatureType.Meadow
+        };
+
+        Assert.IsTrue(buildingPlacer.IsPlacementValid(flatCell, tower), "Tower should be allowed on flat (elevation 0)");
+        Assert.IsTrue(buildingPlacer.IsPlacementValid(hillElevCell, tower), "Tower should be allowed on hill (elevation +2)");
+        Assert.IsTrue(buildingPlacer.IsPlacementValid(cavityElevCell, tower), "Tower should be allowed on cavity (elevation -2)");
+        Assert.IsTrue(buildingPlacer.IsPlacementValid(hillFeatureCell, tower), "Tower should be allowed on Hill feature (+)");
+        Assert.IsTrue(buildingPlacer.IsPlacementValid(sinkholeFeatureCell, tower), "Tower should be allowed on Sinkhole feature (-)");
+    }
+
     // =========================================================================
     // 2. KAMIENIOŁOM (QUARRY) I BONUSY WYSOKOŚCIOWE
     // =========================================================================

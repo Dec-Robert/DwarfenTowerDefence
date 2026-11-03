@@ -24,6 +24,12 @@ MonoBehaviour:
   - 0
   - 1
   allowedTerrain: 
+  elevationRequirement:
+    mode: 0
+    minElevation: 0
+    maxElevation: 0
+    allowedElevations: 
+  allowOnRoad: 0
   requiresOccupiedSpace: 0
   requiresSpecificCitizen: 0
   requiredCitizenRace: 1
@@ -34,5 +40,12 @@ MonoBehaviour:
   tier1Upgrades: []
   prefab: {fileID: 0}
   bonusRules: []
+  elevationBonus:
+    enabled: 0
+    resourceType: 0
+    onTopBonusPerLevel: 0
+    adjacentBonusPerLevel: 0
+    penaltyPerExtraBuilding: 0
+    searchRadius: 0
   baseMaxWorkers: 1
   isUnlocked: 0

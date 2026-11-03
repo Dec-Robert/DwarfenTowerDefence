@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "Smuk\u0142a iglica wzniesiona dzi\u0119ki zakazanej wiedzy mrocznych
     elf\xF3w. Wystrzeliwuje skupione wi\u0105zki cienia, poluj\u0105c na najgro\u017Aniejsze
     abominacje z zab\xF3jcz\u0105 precyzj\u0105."
-  icon: {fileID: 21300000, guid: b35b0aeb601ca3248b4529d94239d3cb, type: 3}
+  icon: {fileID: 21300000, guid: febbb46a8ae74890bb83486edaea7693, type: 3}
   type: 1
   workerScalingFactor: 0.25
   firstWorkerProduction: 0.7
@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.3
   - 1.35
   - 1.4
-  allowedTerrain: 0600000001000000030000000500000000000000020000000a0000000b000000
+  allowedTerrain: 000000000100000002000000030000000a0000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -42,18 +42,14 @@ MonoBehaviour:
   constructionCost:
   - type: 0
     amount: 18
-  - type: 1
-    amount: 25
   - type: 2
     amount: 15
   - type: 5
     amount: 6
   productionPerCycle: []
   upkeepPerCycle:
-  - type: 1
-    amount: 3
   - type: 0
-    amount: 1
+    amount: 2
   tier1Upgrades: []
   prefab: {fileID: 7215377244750508747, guid: 2c5fc50d9f1b0334d9a648c4d9b23a44, type: 3}
   bonusRules: []
@@ -66,7 +62,7 @@ MonoBehaviour:
     searchRadius: 0
   baseMaxWorkers: 2
   isUnlocked: 1
-  baseRange: 19.2
+  baseRange: 10
   baseDamage: 140
   fireRate: 0.5
   criticalChancel: 0.2

@@ -14,56 +14,84 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 0
   hexes:
-  - localCoord: {x: 0, y: 0}
-    feature: 7
-    featureLevel: 0
-    building: {fileID: 0}
-  - localCoord: {x: 0, y: 1}
-    feature: 6
-    featureLevel: 0
-    building: {fileID: 0}
   - localCoord: {x: -3, y: 3}
     feature: 1
     featureLevel: 0
-    building: {fileID: 0}
-  - localCoord: {x: 2, y: -3}
-    feature: 5
-    featureLevel: 0
-    building: {fileID: 0}
-  - localCoord: {x: 2, y: -2}
-    feature: 5
-    featureLevel: 0
-    building: {fileID: 0}
-  - localCoord: {x: 0, y: -2}
-    feature: 5
-    featureLevel: 0
+    elevation: 0
     building: {fileID: 0}
   - localCoord: {x: -2, y: 1}
     feature: 1
     featureLevel: 0
+    elevation: 0
     building: {fileID: 0}
   - localCoord: {x: -1, y: 3}
     feature: 0
     featureLevel: 0
+    elevation: 0
     building: {fileID: 11400000, guid: e9c583205d7d3ae4ba6507920a29842f, type: 2}
   - localCoord: {x: -2, y: 2}
     feature: 0
     featureLevel: 0
+    elevation: 0
     building: {fileID: 11400000, guid: 35ac171f20cd74644b97f5cd7acdd113, type: 2}
   - localCoord: {x: 1, y: -2}
     feature: 0
     featureLevel: 0
+    elevation: 0
     building: {fileID: 11400000, guid: fc69ce64a035f86478d06d70307cc2a6, type: 2}
   - localCoord: {x: 0, y: 2}
     feature: 3
     featureLevel: 2
+    elevation: 0
     building: {fileID: 0}
   - localCoord: {x: 0, y: 3}
     feature: 3
     featureLevel: 1
+    elevation: 0
     building: {fileID: 0}
-  - localCoord: {x: 2, y: -1}
-    feature: 5
+  - localCoord: {x: 0, y: -2}
+    feature: 0
+    featureLevel: -1
+    elevation: 0
+    building: {fileID: 0}
+  - localCoord: {x: 0, y: -1}
+    feature: 0
+    featureLevel: -2
+    elevation: 0
+    building: {fileID: 0}
+  - localCoord: {x: 1, y: -1}
+    feature: 0
+    featureLevel: -3
+    elevation: -3
+    building: {fileID: 0}
+  - localCoord: {x: -3, y: 0}
+    feature: 0
+    featureLevel: 2
+    elevation: 2
+    building: {fileID: 0}
+  - localCoord: {x: -2, y: -1}
+    feature: 0
+    featureLevel: 1
+    elevation: 1
+    building: {fileID: 0}
+  - localCoord: {x: -2, y: 0}
+    feature: 0
+    featureLevel: 1
+    elevation: 1
+    building: {fileID: 0}
+  - localCoord: {x: -3, y: 1}
+    feature: 0
+    featureLevel: 3
+    elevation: 3
+    building: {fileID: 0}
+  - localCoord: {x: -3, y: 2}
+    feature: 1
     featureLevel: 0
+    elevation: 0
+    building: {fileID: 0}
+  - localCoord: {x: 1, y: 1}
+    feature: 3
+    featureLevel: 0
+    elevation: 0
     building: {fileID: 0}
   roadConnectionEdge: {x: 3, y: -2}

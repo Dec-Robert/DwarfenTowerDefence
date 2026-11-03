@@ -28,7 +28,7 @@ MonoBehaviour:
   - 1.75
   - 2
   - 2.15
-  allowedTerrain: 00000000030000000a00000001000000
+  allowedTerrain: 00000000030000000a000000010000000b000000
   elevationRequirement:
     mode: 0
     minElevation: 0
@@ -69,5 +69,5 @@ MonoBehaviour:
     adjacentBonusPerLevel: 0
     penaltyPerExtraBuilding: 0
     searchRadius: 0
-  baseMaxWorkers: 2
+  baseMaxWorkers: 1
   isUnlocked: 1

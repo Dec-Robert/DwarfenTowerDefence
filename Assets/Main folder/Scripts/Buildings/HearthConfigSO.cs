@@ -13,8 +13,18 @@ public class HearthLevelData
     public Sprite levelIcon;
 
     [Header("Koszt rozpalenia")]
+    [Tooltip("Mnożnik n dla tego poziomu (np. Poziom 1 = 0, Poziom 2 = 1, Poziom 3 = 2, itd.).")]
+    public int coalCostMultiplier = 0;
+
+    [Tooltip("Bazowy koszt węgla.")]
     [Min(0)]
     public int coalCost = 0;
+
+    public int GetCoalCost(int currentN)
+    {
+        if (levelIndex <= 1 || coalCostMultiplier <= 0) return 0;
+        return Mathf.Max(0, coalCostMultiplier * currentN);
+    }
 
     [Header("Modyfikatory Nocne (np. -0.20 = -20%, +0.35 = +35%)")]
     [Tooltip("Modyfikator szybkostrzelności wszystkich wież w nocy (TowerStatType.FireRate)")]
@@ -54,6 +64,14 @@ public class HearthLevelData
 [CreateAssetMenu(fileName = "HearthConfig", menuName = "RTS/Buildings/Hearth Config")]
 public class HearthConfigSO : ScriptableObject
 {
+    [Header("Skalowanie Nocnego Ognia")]
+    [Tooltip("Wartość bazowa n (koszty poziomów 1-5 to: 0n, 1n, 2n, 3n, 4n). Domyślnie 5.")]
+    public int baseN = 5;
+
+    [Tooltip("Przyrost wartości n na każdy kolejny dzień po postawieniu pierwszego posterunku. Domyślnie 1.")]
+    public int nIncreasePerDay = 1;
+
+    [Header("Poziomy Paleniska")]
     public HearthLevelData[] levels = new HearthLevelData[5];
 
     private void OnEnable()
@@ -81,6 +99,7 @@ public class HearthConfigSO : ScriptableObject
                 title = "Wygasły Popiół",
                 tagText = "RYZYKO / ŁUPY",
                 accentColor = new Color(0.58f, 0.36f, 0.82f, 1f),
+                coalCostMultiplier = 0,
                 coalCost = 0,
                 towerDamageBonus = 0f,
                 towerFireRateBonus = -0.20f,
@@ -102,7 +121,8 @@ public class HearthConfigSO : ScriptableObject
                 title = "Tlący się Żar",
                 tagText = "OSZCZĘDNOŚĆ",
                 accentColor = new Color(0.75f, 0.42f, 0.32f, 1f),
-                coalCost = 15,
+                coalCostMultiplier = 1,
+                coalCost = 5,
                 towerDamageBonus = 0f,
                 towerFireRateBonus = -0.10f,
                 towerRangeBonus = -0.10f,
@@ -123,7 +143,8 @@ public class HearthConfigSO : ScriptableObject
                 title = "Zrównoważony Płomień",
                 tagText = "NEUTRALNY",
                 accentColor = new Color(0.28f, 0.56f, 0.78f, 1f),
-                coalCost = 35,
+                coalCostMultiplier = 2,
+                coalCost = 10,
                 towerDamageBonus = 0f,
                 towerFireRateBonus = 0f,
                 towerRangeBonus = 0f,
@@ -144,7 +165,8 @@ public class HearthConfigSO : ScriptableObject
                 title = "Jasny Ogień",
                 tagText = "WZMOCNIENIE",
                 accentColor = new Color(0.85f, 0.62f, 0.18f, 1f),
-                coalCost = 65,
+                coalCostMultiplier = 3,
+                coalCost = 15,
                 towerDamageBonus = 0f,
                 towerFireRateBonus = 0.15f,
                 towerRangeBonus = 0.15f,
@@ -165,7 +187,8 @@ public class HearthConfigSO : ScriptableObject
                 title = "Palenisko Magmy",
                 tagText = "MAKS. MOC",
                 accentColor = new Color(0.95f, 0.36f, 0.12f, 1f),
-                coalCost = 110,
+                coalCostMultiplier = 4,
+                coalCost = 20,
                 towerDamageBonus = 0f,
                 towerFireRateBonus = 0.35f,
                 towerRangeBonus = 0.35f,
@@ -184,6 +207,10 @@ public class HearthConfigSO : ScriptableObject
             if (levels[i] != null)
             {
                 levels[i].towerDamageBonus = 0f;
+                if (levels[i].levelIndex > 1 && levels[i].coalCostMultiplier == 0)
+                {
+                    levels[i].coalCostMultiplier = levels[i].levelIndex - 1;
+                }
                 if (Mathf.Approximately(levels[i].towerRangeBonus, 0f) && !Mathf.Approximately(levels[i].towerFireRateBonus, 0f))
                 {
                     levels[i].towerRangeBonus = levels[i].towerFireRateBonus;

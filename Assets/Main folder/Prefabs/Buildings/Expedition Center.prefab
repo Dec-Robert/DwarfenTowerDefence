@@ -280,7 +280,7 @@ MonoBehaviour:
   isBuildingActive: 1
   upkeepPriority: 1
   hasBeenUsed: 0
-  equipmentProvided: 2
+  equipmentProvided: 1
 --- !u!1 &2079395213390724578
 GameObject:
   m_ObjectHideFlags: 0
