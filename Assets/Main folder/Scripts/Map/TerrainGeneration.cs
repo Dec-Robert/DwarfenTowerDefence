@@ -83,11 +83,11 @@ public class TerrainGenerator
     /// <summary>Krok 2 – Generuje teren dla wszystkich chunków (reguły pierścieni bez biomów).</summary>
     public void GenerateTerrain()
     {
+        // 1. Zapewnij dane heksów i nanieś ścieżki wrogów
         foreach (var chunkCoord in ctx.allValidChunks)
         {
             EnsureChunkData(chunkCoord);
 
-            // Nanosi ścieżki na dane terenu
             if (ctx.chunkPaths.TryGetValue(chunkCoord, out var pathData) && pathData.internalPath != null)
             {
                 foreach (var pathHex in pathData.internalPath)
@@ -96,13 +96,41 @@ public class TerrainGenerator
                         ctx.worldData[chunkCoord][pathHex].isPath = true;
                 }
             }
+        }
 
-            // Featuresy generowane tylko dla nie-meta chunków
-            bool isMeta = registry != null ? registry.IsMetaChunk(chunkCoord) : (chunkCoord == Vector2Int.zero);
-            if (!isMeta)
+        // 2. Wyznacz chunki przyczółka drogi (pierwszy chunk drogi wkraczający w nowy ring od strony bazy)
+        var bridgeheadChunks = new HashSet<Vector2Int>();
+        var seenRingsOnRoad = new HashSet<int>();
+        if (ctx.generatedChunkSequence != null && ctx.generatedChunkSequence.Count > 0)
+        {
+            // Indeksy od bazy na zewnątrz: seqCount - 1 w dół do 0
+            for (int i = ctx.generatedChunkSequence.Count - 1; i >= 0; i--)
             {
-                FillChunkFeatures(chunkCoord);
+                Vector2Int c = ctx.generatedChunkSequence[i];
+                int r = HexGridMath.GetDistance(Vector2Int.zero, c);
+                if (r > 1 && !seenRingsOnRoad.Contains(r))
+                {
+                    seenRingsOnRoad.Add(r);
+                    bridgeheadChunks.Add(c);
+                }
             }
+        }
+
+        // 3. Posortuj chunki deterministycznie od bazy na zewnątrz
+        var nonMetaChunks = ctx.allValidChunks
+            .Where(c => !(registry != null ? registry.IsMetaChunk(c) : (c == Vector2Int.zero)))
+            .OrderBy(c => HexGridMath.GetDistance(Vector2Int.zero, c))
+            .ThenBy(c => c.x)
+            .ThenBy(c => c.y)
+            .ToList();
+
+        var chunksWithMountainCluster = new HashSet<Vector2Int>();
+        int mountainPity = 0;
+
+        foreach (var chunkCoord in nonMetaChunks)
+        {
+            bool isBridgehead = bridgeheadChunks.Contains(chunkCoord);
+            FillChunkFeatures(chunkCoord, isBridgehead, chunksWithMountainCluster, ref mountainPity);
         }
 
         // Punkty specjalne bazy
@@ -340,6 +368,7 @@ public class TerrainGenerator
             cell.featureLevel = GetDefaultLevelForFeature(g.feature, ctx.Rng);
             if (g.feature == HexFeatureType.Hill) cell.elevation = Mathf.Max(1, cell.featureLevel);
             else if (g.feature == HexFeatureType.Sinkhole) cell.elevation = cell.featureLevel < 0 ? cell.featureLevel : -1;
+            else if (g.feature == HexFeatureType.Mountain) cell.elevation = 3;
             placed++;
         }
     }
@@ -415,6 +444,7 @@ public class TerrainGenerator
         cells[seed].featureLevel = GetDefaultLevelForFeature(feat, ctx.Rng);
         if (feat == HexFeatureType.Hill) cells[seed].elevation = Mathf.Max(1, cells[seed].featureLevel);
         else if (feat == HexFeatureType.Sinkhole) cells[seed].elevation = cells[seed].featureLevel < 0 ? cells[seed].featureLevel : -1;
+        else if (feat == HexFeatureType.Mountain) cells[seed].elevation = 3;
         available.Remove(seed);
         int placed = 1;
 
@@ -430,6 +460,7 @@ public class TerrainGenerator
                 cells[n].featureLevel = GetDefaultLevelForFeature(feat, ctx.Rng);
                 if (feat == HexFeatureType.Hill) cells[n].elevation = Mathf.Max(1, cells[n].featureLevel);
                 else if (feat == HexFeatureType.Sinkhole) cells[n].elevation = cells[n].featureLevel < 0 ? cells[n].featureLevel : -1;
+                else if (feat == HexFeatureType.Mountain) cells[n].elevation = 3;
                 available.Remove(n);
                 placed++;
             }
@@ -442,6 +473,7 @@ public class TerrainGenerator
             cells[next].featureLevel = GetDefaultLevelForFeature(feat, ctx.Rng);
             if (feat == HexFeatureType.Hill) cells[next].elevation = Mathf.Max(1, cells[next].featureLevel);
             else if (feat == HexFeatureType.Sinkhole) cells[next].elevation = cells[next].featureLevel < 0 ? cells[next].featureLevel : -1;
+            else if (feat == HexFeatureType.Mountain) cells[next].elevation = 3;
             available.RemoveAt(0);
             placed++;
         }
@@ -463,17 +495,22 @@ public class TerrainGenerator
     // Logika generowania wewnątrz chunku (FillChunkFeatures)
     // =========================================================================
 
-    private void FillChunkFeatures(Vector2Int chunkCoord)
+    private void FillChunkFeatures(
+        Vector2Int chunkCoord,
+        bool isBridgehead,
+        HashSet<Vector2Int> chunksWithMountainCluster,
+        ref int mountainPity)
     {
         if (!ctx.worldData.ContainsKey(chunkCoord)) return;
 
         var chunkCells = ctx.worldData[chunkCoord];
 
-        // Wyznacz pierścień odległości od bazy (0,0)
-        int ring = HexGridMath.GetDistance(Vector2Int.zero, chunkCoord);
+        // Wyznacz pierścień odległości od bazy (0,0) oraz regułę przyczółka (ring - 1 dla pierwszej drogi w ringu)
+        int actualRing = HexGridMath.GetDistance(Vector2Int.zero, chunkCoord);
+        int effectiveRing = isBridgehead ? Mathf.Max(1, actualRing - 1) : actualRing;
 
         var config = (object)terrainConfig != null ? terrainConfig : TerrainGenerationConfig.CreateDefault();
-        var rule = config.GetRuleForRing(ring);
+        var rule = config.GetRuleForRing(effectiveRing);
 
         var available = chunkCells.Keys
             .Where(k => !chunkCells[k].isPath && chunkCells[k].feature == HexFeatureType.None)
@@ -486,24 +523,24 @@ public class TerrainGenerator
             PlaceForestClusters(chunkCells, available, rule);
         }
 
-        // Krok B: Klastry górskie (tylko w pierścieniach >= 3, NIGDY w Ring 1-2!)
-        if (ring >= 3 && rule != null && rule.enableMountainClusters)
+        // Krok B: Klastry górskie (tylko w pierścieniach >= 3, z karą sąsiedztwa i mechanizmem pity)
+        if (effectiveRing >= 3 && rule != null && rule.enableMountainClusters)
         {
             available = chunkCells.Keys
                 .Where(k => !chunkCells[k].isPath && chunkCells[k].feature == HexFeatureType.None)
                 .OrderBy(k => k.x).ThenBy(k => k.y)
                 .ToList();
 
-            PlaceMountainClusters(chunkCells, available, rule);
+            PlaceMountainClusters(chunkCells, available, rule, chunkCoord, chunksWithMountainCluster, ref mountainPity);
         }
 
-        // Krok C: Rozproszone featuresy na pozostałych heksach
+        // Krok C: Rozproszone featuresy na pozostałych heksach (wMountain = 0, szczyty 50% ze wzgórz max level w R2+)
         available = chunkCells.Keys
             .Where(k => !chunkCells[k].isPath && chunkCells[k].feature == HexFeatureType.None)
             .OrderBy(k => k.x).ThenBy(k => k.y)
             .ToList();
 
-        PlaceScatteredFeatures(chunkCells, available, rule, ring);
+        PlaceScatteredFeatures(chunkCells, available, rule, effectiveRing);
     }
 
     private void PlaceForestClusters(
@@ -557,48 +594,133 @@ public class TerrainGenerator
     private void PlaceMountainClusters(
         Dictionary<Vector2Int, HexCellData> chunkCells,
         List<Vector2Int> available,
-        RingFeatureRule rule)
+        RingFeatureRule rule,
+        Vector2Int chunkCoord,
+        HashSet<Vector2Int> chunksWithMountainCluster,
+        ref int mountainPity)
     {
-        int[] neighborChances = { 60, 45, 30, 15, 0 };
-        Vector2Int countRange = rule != null ? rule.mountainClusterCountRange : new Vector2Int(1, 2);
-        int clusterChance = rule != null ? rule.mountainClusterChance : 30;
+        if (available.Count < 2) return;
 
-        int numClusters = ctx.Rng != null ? ctx.Rng.Range(countRange.x, countRange.y + 1) : Random.Range(countRange.x, countRange.y + 1);
+        // Sprawdź sąsiedztwo z istniejącym klastrem gór
+        bool hasMountainNeighbor = HexGridMath.GetNeighbors(chunkCoord).Any(n => chunksWithMountainCluster.Contains(n));
 
-        for (int i = 0; i < numClusters; i++)
+        int baseChance = rule != null ? rule.mountainClusterChance : 35;
+        // Kara sąsiedztwa: jeśli sąsiad ma już góry, szansa na góry spada
+        int effectiveChance = hasMountainNeighbor ? Mathf.Max(5, Mathf.RoundToInt(baseChance * 0.35f)) : baseChance;
+
+        int roll = ctx.Rng != null ? ctx.Rng.Range(0, 100) : Random.Range(0, 100);
+
+        if (roll >= effectiveChance)
         {
-            if (available.Count == 0) break;
-            int roll = ctx.Rng != null ? ctx.Rng.Range(0, 100) : Random.Range(0, 100);
-            if (roll >= clusterChance) continue;
-
-            int centerIdx = ctx.Rng != null ? ctx.Rng.Range(0, available.Count) : Random.Range(0, available.Count);
-            Vector2Int center = available[centerIdx];
-            if (!chunkCells.ContainsKey(center) || chunkCells[center].isPath
-                || chunkCells[center].feature != HexFeatureType.None) continue;
-
-            chunkCells[center].feature = HexFeatureType.Mountain;
-            chunkCells[center].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
-            available.Remove(center);
-
-            var neighbors = HexGridMath.GetNeighbors(center);
-            ShuffleList(neighbors);
-
-            for (int nIdx = 0; nIdx < neighbors.Count; nIdx++)
+            // Pominięto losowanie klastra
+            // Jeśli pominięto z powodu RNG (a nie kary sąsiedztwa), zwiększamy licznik pity
+            if (!hasMountainNeighbor)
             {
-                var neighbor = neighbors[nIdx];
-                if (!chunkCells.ContainsKey(neighbor)) continue;
-                if (chunkCells[neighbor].isPath || chunkCells[neighbor].feature != HexFeatureType.None) continue;
-
-                int chance = nIdx < neighborChances.Length ? neighborChances[nIdx] : 0;
-                int nRoll = ctx.Rng != null ? ctx.Rng.Range(0, 100) : Random.Range(0, 100);
-                if (nRoll < chance)
-                {
-                    chunkCells[neighbor].feature = HexFeatureType.Mountain;
-                    chunkCells[neighbor].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
-                    available.Remove(neighbor);
-                }
-                else break;
+                mountainPity = Mathf.Min(3, mountainPity + 1);
             }
+            return;
+        }
+
+        // Udany roll! Generujemy góry w tym chunku
+        int currentPity = mountainPity;
+        mountainPity = 0; // Reset pity
+
+        int clusterSize = RollMountainClusterSize(currentPity);
+        PlaceContiguousMountainCluster(chunkCells, available, clusterSize);
+        chunksWithMountainCluster.Add(chunkCoord);
+
+        // Wyjątek: jeśli klaster był mały (2 lub 3 heksy), dopuszczamy 2. mały klaster (szansa 40%)
+        if (clusterSize <= 3 && available.Count >= 2)
+        {
+            int secondRoll = ctx.Rng != null ? ctx.Rng.Range(0, 100) : Random.Range(0, 100);
+            if (secondRoll < 40)
+            {
+                int secondSize = RollSmallMountainClusterSize();
+                PlaceContiguousMountainCluster(chunkCells, available, secondSize);
+            }
+        }
+    }
+
+    private int RollMountainClusterSize(int pity)
+    {
+        // Wagi rozmiaru klastra: 2 (waga 20), 3 (waga 25), 4 (waga 25), 5 (waga 15), 6 (waga 15)
+        int[] weights = { 20, 25, 25, 15, 15 };
+        int[] sizes =   {  2,  3,  4,  5,  6 };
+
+        int totalWeight = 0;
+        for (int i = 0; i < weights.Length; i++) totalWeight += weights[i];
+
+        int roll = ctx.Rng != null ? ctx.Rng.Range(0, totalWeight) : Random.Range(0, totalWeight);
+        int chosenSize = 3;
+        int cumulative = 0;
+        for (int i = 0; i < weights.Length; i++)
+        {
+            cumulative += weights[i];
+            if (roll < cumulative)
+            {
+                chosenSize = sizes[i];
+                break;
+            }
+        }
+
+        // Mechanizm Pity przesuwa rozmiar ku górze (+pity, max 6)
+        if (pity > 0)
+        {
+            chosenSize = Mathf.Min(6, chosenSize + pity);
+        }
+
+        return chosenSize;
+    }
+
+    private int RollSmallMountainClusterSize()
+    {
+        int roll = ctx.Rng != null ? ctx.Rng.Range(0, 100) : Random.Range(0, 100);
+        return roll < 50 ? 2 : 3;
+    }
+
+    private void PlaceContiguousMountainCluster(
+        Dictionary<Vector2Int, HexCellData> chunkCells,
+        List<Vector2Int> available,
+        int targetSize)
+    {
+        if (available.Count == 0 || targetSize <= 0) return;
+
+        int centerIdx = ctx.Rng != null ? ctx.Rng.Range(0, available.Count) : Random.Range(0, available.Count);
+        Vector2Int center = available[centerIdx];
+        available.RemoveAt(centerIdx);
+
+        chunkCells[center].feature = HexFeatureType.Mountain;
+        chunkCells[center].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
+        chunkCells[center].elevation = 3;
+
+        var clusterHexes = new List<Vector2Int> { center };
+
+        while (clusterHexes.Count < targetSize)
+        {
+            var candidates = new List<Vector2Int>();
+            foreach (var h in clusterHexes)
+            {
+                var neighbors = HexGridMath.GetNeighbors(h);
+                foreach (var n in neighbors)
+                {
+                    if (available.Contains(n) && !candidates.Contains(n))
+                    {
+                        candidates.Add(n);
+                    }
+                }
+            }
+
+            if (candidates.Count == 0) break;
+
+            int pickIdx = ctx.Rng != null ? ctx.Rng.Range(0, candidates.Count) : Random.Range(0, candidates.Count);
+            Vector2Int nextHex = candidates[pickIdx];
+            available.Remove(nextHex);
+
+            chunkCells[nextHex].feature = HexFeatureType.Mountain;
+            chunkCells[nextHex].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
+            chunkCells[nextHex].elevation = 3;
+
+            clusterHexes.Add(nextHex);
         }
     }
 
@@ -608,7 +730,8 @@ public class TerrainGenerator
         RingFeatureRule rule,
         int ring)
     {
-        int wMountain = (ring <= 2) ? 0 : (rule != null ? rule.weightMountain : 5);
+        // Góry powstają WYŁĄCZNIE w klastrach lub jako organiczne szczyty ze wzgórz max poziomu
+        int wMountain = 0;
         int wHill = rule != null ? rule.weightHill : 15;
         int wSoil = rule != null ? rule.weightFertileSoil : 15;
         int wForest = rule != null ? rule.weightForest : 20;
@@ -624,22 +747,37 @@ public class TerrainGenerator
 
             int cumulative = 0;
 
-            // Mountain (jeśli ring >= 3 i wMountain > 0)
-            cumulative += wMountain;
-            if (roll < cumulative)
+            // Mountain (brak w losowaniu rozproszonym)
+            if (wMountain > 0)
             {
-                chunkCells[hex].feature = HexFeatureType.Mountain;
-                chunkCells[hex].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
-                continue;
+                cumulative += wMountain;
+                if (roll < cumulative)
+                {
+                    chunkCells[hex].feature = HexFeatureType.Mountain;
+                    chunkCells[hex].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
+                    chunkCells[hex].elevation = 3;
+                    continue;
+                }
             }
 
-            // Hill
+            // Hill (ze szczytem górskim 50% przy maksymalnym poziomie w Ring >= 2)
             cumulative += wHill;
             if (roll < cumulative)
             {
-                chunkCells[hex].feature = HexFeatureType.Hill;
-                chunkCells[hex].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
-                chunkCells[hex].elevation = Mathf.Max(1, chunkCells[hex].featureLevel);
+                int hillLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1; // 1..3
+                if (hillLevel == 3 && ring >= 2 && (ctx.Rng != null ? ctx.Rng.Range(0, 100) : Random.Range(0, 100)) < 50)
+                {
+                    // Organiczny szczyt górski (poza limitami klastrów chunka)
+                    chunkCells[hex].feature = HexFeatureType.Mountain;
+                    chunkCells[hex].featureLevel = 3;
+                    chunkCells[hex].elevation = 3;
+                }
+                else
+                {
+                    chunkCells[hex].feature = HexFeatureType.Hill;
+                    chunkCells[hex].featureLevel = hillLevel;
+                    chunkCells[hex].elevation = Mathf.Max(1, hillLevel);
+                }
                 continue;
             }
 
@@ -674,7 +812,6 @@ public class TerrainGenerator
             // None (trawa)
             chunkCells[hex].feature = HexFeatureType.None;
             chunkCells[hex].featureLevel = 0;
-
         }
     }
 

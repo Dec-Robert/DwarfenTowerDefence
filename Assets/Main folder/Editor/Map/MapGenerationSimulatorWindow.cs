@@ -32,6 +32,8 @@ public class MapGenerationSimulatorWindow : EditorWindow
         public int r12FertileSoil;
         public int r12Hill;
         public int r12Mountain;
+        public int r1Mountain;
+        public int r2Mountain;
         public int r12Sinkhole;
         public int r34Forest;
         public int r34FertileSoil;
@@ -484,7 +486,11 @@ public class MapGenerationSimulatorWindow : EditorWindow
                         case HexFeatureType.Forest: row.r12Forest++; break;
                         case HexFeatureType.FertileSoil: row.r12FertileSoil++; break;
                         case HexFeatureType.Hill: row.r12Hill++; break;
-                        case HexFeatureType.Mountain: row.r12Mountain++; break;
+                        case HexFeatureType.Mountain:
+                            row.r12Mountain++;
+                            if (ring == 1) row.r1Mountain++;
+                            else if (ring == 2) row.r2Mountain++;
+                            break;
                         case HexFeatureType.Sinkhole: row.r12Sinkhole++; break;
                     }
                 }
@@ -510,16 +516,16 @@ public class MapGenerationSimulatorWindow : EditorWindow
         bool gForest = row.r12Forest >= 10;
         bool gFertile = row.r12FertileSoil >= 6;
         bool gHill = row.r12Hill >= 6;
-        bool gNoR12Mtn = row.r12Mountain == 0;
+        bool gNoR1Mtn = row.r1Mountain == 0;
         bool gR34Mtn = row.r34Mountain >= 10 && row.r34MountainChunks >= 2;
 
         if (!gForest) reasons.Add($"R12_Forest={row.r12Forest}<10");
         if (!gFertile) reasons.Add($"R12_Fertile={row.r12FertileSoil}<6");
         if (!gHill) reasons.Add($"R12_Hill={row.r12Hill}<6");
-        if (!gNoR12Mtn) reasons.Add($"R12_Mountain={row.r12Mountain}!=0");
+        if (!gNoR1Mtn) reasons.Add($"R1_Mountain={row.r1Mountain}!=0");
         if (!gR34Mtn) reasons.Add($"R34_Mountain={row.r34Mountain}({row.r34MountainChunks} chunks)");
 
-        row.guaranteesMet = gForest && gFertile && gHill && gNoR12Mtn && gR34Mtn;
+        row.guaranteesMet = gForest && gFertile && gHill && gNoR1Mtn && gR34Mtn;
         row.failureReason = string.Join("; ", reasons);
 
         return row;

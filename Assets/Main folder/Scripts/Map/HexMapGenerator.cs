@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -366,7 +366,7 @@ public class HexMapGenerator : MonoBehaviour
             }
         }
 
-        ctx.chunkTypes[map.playerBase.chunkCoord] = ChunkType.Base;
+        ctx.chunkTypes[map.playerBase.chunkCoord] = ChunkType.MetaSafe;
         return ctx;
     }
 }

@@ -195,61 +195,95 @@ public class TerrainGenerationConfig : ScriptableObject
                 return ringRules[ringRules.Count - 1];
         }
 
-        return new RingFeatureRule(ring, ring, 25, 20, 15, ring <= 2 ? 0 : 20, 5, 35);
+        return new RingFeatureRule(ring, ring, 20, 15, 15, 0, 5, 45);
     }
 
     /// <summary>
-    /// Wypełnia instancję domyślnymi regułami i gwarancjami zgodnymi z dokumentem balansu.
+    /// Wypełnia instancję domyślnymi regułami i gwarancjami zgodnymi ze zbalansowaną krzywą wolnej przestrzeni.
     /// </summary>
     public void InitializeDefaults()
     {
         ringRules = new List<RingFeatureRule>
         {
-            // Pierścienie 1–2: Strefa przetrwania (wysoki las, żyzna gleba, wzgórza, 0 GÓR)
+            // Pierścień 1: Strefa startowa przetrwania (wysoka gęstość lasu i gleby, 0 GÓR, ~20% trawy)
             new RingFeatureRule(
-                min: 1, max: 2,
-                forest: 30, fertile: 20, hill: 15, mountain: 0, sinkhole: 5, empty: 30,
-                clusterF: true, clusterFChance: 35, minFClusters: 1, maxFClusters: 3,
+                min: 1, max: 1,
+                forest: 35, fertile: 25, hill: 15, mountain: 0, sinkhole: 5, empty: 20,
+                clusterF: true, clusterFChance: 35, minFClusters: 1, maxFClusters: 2,
                 clusterM: false, clusterMChance: 0, minMClusters: 0, maxMClusters: 0,
-                name: "Rings 1-2 (Early Survival)"
+                name: "Ring 1 (Starting Core)"
             ),
 
-            // Pierścienie 3–4: Strefa ekspansji i górnictwa (góry pod kopalnie węgla i żelaza)
+            // Pierścień 2: Rozszerzenie startowe (~35% trawy, brak klastrów gór, zwiastuny gór ze wzgórz max level)
             new RingFeatureRule(
-                min: 3, max: 4,
-                forest: 20, fertile: 15, hill: 15, mountain: 25, sinkhole: 5, empty: 20,
+                min: 2, max: 2,
+                forest: 25, fertile: 20, hill: 15, mountain: 0, sinkhole: 5, empty: 35,
+                clusterF: true, clusterFChance: 30, minFClusters: 1, maxFClusters: 2,
+                clusterM: false, clusterMChance: 0, minMClusters: 0, maxMClusters: 0,
+                name: "Ring 2 (Settlement Outskirts)"
+            ),
+
+            // Pierścień 3: Początek doliny wolnej przestrzeni (~50% trawy, pierwsze klastry gór 2-6)
+            new RingFeatureRule(
+                min: 3, max: 3,
+                forest: 15, fertile: 15, hill: 15, mountain: 0, sinkhole: 5, empty: 50,
+                clusterF: true, clusterFChance: 20, minFClusters: 1, maxFClusters: 2,
+                clusterM: true, clusterMChance: 35, minMClusters: 1, maxMClusters: 1,
+                name: "Ring 3 (Expansion Valley Entry)"
+            ),
+
+            // Pierścień 4: Szczyt polany / doliny (~65% trawy, rzadsze skupiska surowców pod kopalnie i tartaki)
+            new RingFeatureRule(
+                min: 4, max: 4,
+                forest: 10, fertile: 10, hill: 10, mountain: 0, sinkhole: 5, empty: 65,
+                clusterF: true, clusterFChance: 15, minFClusters: 1, maxFClusters: 1,
+                clusterM: true, clusterMChance: 35, minMClusters: 1, maxMClusters: 1,
+                name: "Ring 4 (Great Glade Peak)"
+            ),
+
+            // Pierścień 5: Wyjście z doliny w stronę dziczy (~50% trawy)
+            new RingFeatureRule(
+                min: 5, max: 5,
+                forest: 15, fertile: 15, hill: 15, mountain: 0, sinkhole: 5, empty: 50,
+                clusterF: true, clusterFChance: 20, minFClusters: 1, maxFClusters: 2,
+                clusterM: true, clusterMChance: 35, minMClusters: 1, maxMClusters: 1,
+                name: "Ring 5 (Frontier Valley Exit)"
+            ),
+
+            // Pierścień 6: Kres cywilizacji (~35% trawy, gęstsze wzgórza i lasy)
+            new RingFeatureRule(
+                min: 6, max: 6,
+                forest: 20, fertile: 15, hill: 20, mountain: 0, sinkhole: 10, empty: 35,
                 clusterF: true, clusterFChance: 25, minFClusters: 1, maxFClusters: 2,
-                clusterM: true, clusterMChance: 30, minMClusters: 1, maxMClusters: 2,
-                name: "Rings 3-4 (Expansion & Mining)"
+                clusterM: true, clusterMChance: 40, minMClusters: 1, maxMClusters: 1,
+                name: "Ring 6 (Wilderness Edge)"
             ),
 
-            // Pierścienie 5+: Dzicz i krawędź mapy (dużo gór, wzgórz, trudny teren)
+            // Pierścień 7+: Głęboka dzicz (wysoka gęstość surowców, wzgórz i zapadlisk, ~20% trawy)
             new RingFeatureRule(
-                min: 5, max: 99,
-                forest: 15, fertile: 10, hill: 20, mountain: 30, sinkhole: 10, empty: 15,
-                clusterF: false, clusterFChance: 15, minFClusters: 0, maxFClusters: 1,
-                clusterM: true, clusterMChance: 30, minMClusters: 1, maxMClusters: 2,
-                name: "Rings 5+ (Wilderness Frontier)"
+                min: 7, max: 99,
+                forest: 20, fertile: 15, hill: 25, mountain: 0, sinkhole: 15, empty: 20,
+                clusterF: true, clusterFChance: 30, minFClusters: 1, maxFClusters: 2,
+                clusterM: true, clusterMChance: 45, minMClusters: 1, maxMClusters: 1,
+                name: "Rings 7+ (Deep Wilderness)"
             )
         };
 
         guarantees = new List<ResourceGuarantee>
         {
-            // Gwarancje Pierścieni 1–2
+            // Gwarancje Pierścienia 1 (Ścisły zakaz gór w samym rdzeniu bazy)
+            new ResourceGuarantee(1, 1, HexFeatureType.Mountain, minCnt: 0, minDistinct: 0, maxAll: 0, name: "R1 Mountain == 0 (Zero Tolerance)"),
+
+            // Gwarancje Pierścieni 1–2 (Zasoby startowe przetrwania)
             new ResourceGuarantee(1, 2, HexFeatureType.Forest, minCnt: 10, minDistinct: 1, maxAll: -1, name: "R1-2 Forest >= 10"),
             new ResourceGuarantee(1, 2, HexFeatureType.FertileSoil, minCnt: 6, minDistinct: 1, maxAll: -1, name: "R1-2 FertileSoil >= 6"),
             new ResourceGuarantee(1, 2, HexFeatureType.Hill, minCnt: 6, minDistinct: 1, maxAll: -1, name: "R1-2 Hill >= 6"),
-            new ResourceGuarantee(1, 2, HexFeatureType.Mountain, minCnt: 0, minDistinct: 0, maxAll: 0, name: "R1-2 Mountain == 0 (Zero Tolerance)"),
 
-            // Gwarancje Pierścieni 3–4
+            // Gwarancje Pierścieni 3–4 (Pasma górnicze w co najmniej 2 różnych chunkach)
             new ResourceGuarantee(3, 4, HexFeatureType.Mountain, minCnt: 10, minDistinct: 2, maxAll: -1, name: "R3-4 Mountain >= 10 (across >= 2 chunks)")
         };
     }
 
-    /// <summary>
-    /// Fabryka tworząca instancję ScriptableObject ze standardową konfiguracją w pamięci.
-    /// Bezpieczna dla środowisk bez uruchomionego silnika Unity (fallback na 'new' w testach CLI).
-    /// </summary>
     public static TerrainGenerationConfig CreateDefault()
     {
         TerrainGenerationConfig config = null;

@@ -338,7 +338,7 @@ public class MapGenerationTests
         {
             MapGenerationContext ctx = gen.BuildMapData(seed);
 
-            int r12Forest = 0, r12Fertile = 0, r12Hill = 0, r12Mountain = 0;
+            int r12Forest = 0, r12Fertile = 0, r12Hill = 0, r12Mountain = 0, r1Mountain = 0;
             int r34Mountain = 0;
             var r34MtnChunks = new HashSet<Vector2Int>();
 
@@ -362,7 +362,7 @@ public class MapGenerationTests
                         if (cell.feature == HexFeatureType.Forest) r12Forest++;
                         else if (cell.feature == HexFeatureType.FertileSoil) r12Fertile++;
                         else if (cell.feature == HexFeatureType.Hill) r12Hill++;
-                        else if (cell.feature == HexFeatureType.Mountain) r12Mountain++;
+                        else if (cell.feature == HexFeatureType.Mountain) { r12Mountain++; if (ring == 1) r1Mountain++; }
                     }
                     else if (ring >= 3 && ring <= 4)
                     {
@@ -375,7 +375,7 @@ public class MapGenerationTests
                 }
             }
 
-            Assert.AreEqual(0, r12Mountain, $"Seed {seed}: Ring 1-2 Mountain count must be 0");
+            Assert.AreEqual(0, r1Mountain, $"Seed {seed}: Ring 1 Mountain count must be 0");
             Assert.GreaterOrEqual(r12Forest, 10, $"Seed {seed}: Ring 1-2 Forest must be >= 10, got {r12Forest}");
             Assert.GreaterOrEqual(r12Fertile, 6, $"Seed {seed}: Ring 1-2 FertileSoil must be >= 6, got {r12Fertile}");
             Assert.GreaterOrEqual(r12Hill, 6, $"Seed {seed}: Ring 1-2 Hill must be >= 6, got {r12Hill}");

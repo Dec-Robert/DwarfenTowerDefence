@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public class HexMapVisualizer : MonoBehaviour
@@ -30,6 +30,10 @@ public class HexMapVisualizer : MonoBehaviour
 
     [Header("Materiał Domyślny")]
     public Material matDefaultGrass;
+
+    [Header("Ustawienia Wysokosci Terenu (Elevation)")]
+    [Tooltip("Wysokosc pionowa (Y) przypadajaca na kazdy poziom wzniesienia (gory, wzgorza) i zapadliny.")]
+    public float elevationHeightStep = 0.35f;
 
     private Transform mapHolder;
 
@@ -106,9 +110,26 @@ public class HexMapVisualizer : MonoBehaviour
                     // Modyfikacja wysoko�ci dla specjalnych teren�w
                     // Modyfikacja wysokości dla specjalnych terenów
                     float heightOffset = 0f;
-                    if (cellData.elevation != 0) heightOffset = cellData.elevation * 0.1f;
-                    else if (cellData.feature == HexFeatureType.Hill) heightOffset = cellData.featureLevel * 0.1f;
-                    else if (cellData.feature == HexFeatureType.Sinkhole) heightOffset = cellData.featureLevel * 0.1f;
+                    if (cellData.isRoad)
+                    {
+                        heightOffset = 0f;
+                    }
+                    else if (cellData.elevation != 0)
+                    {
+                        heightOffset = cellData.elevation * elevationHeightStep;
+                    }
+                    else if (cellData.feature == HexFeatureType.Hill)
+                    {
+                        heightOffset = Mathf.Max(1, cellData.featureLevel) * elevationHeightStep;
+                    }
+                    else if (cellData.feature == HexFeatureType.Sinkhole)
+                    {
+                        heightOffset = (cellData.featureLevel < 0 ? cellData.featureLevel : -1) * elevationHeightStep;
+                    }
+                    else if (cellData.feature == HexFeatureType.Mountain)
+                    {
+                        heightOffset = 3f * elevationHeightStep;
+                    }
 
                     Vector3 finalPos = basePos + Vector3.up * heightOffset;
 

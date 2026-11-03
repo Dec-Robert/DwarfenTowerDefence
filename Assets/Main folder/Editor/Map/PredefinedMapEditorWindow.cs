@@ -230,14 +230,14 @@ public class PredefinedMapEditorWindow : EditorWindow
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("Trawa")) { brushFeature = HexFeatureType.None; brushElevation = 0; }
                 if (GUILayout.Button("Las")) { brushFeature = HexFeatureType.Forest; brushFeatureLevel = 1; }
-                if (GUILayout.Button("Kamień")) { brushFeature = HexFeatureType.Stone; brushFeatureLevel = 1; }
-                if (GUILayout.Button("Żelazo")) { brushFeature = HexFeatureType.Iron; brushFeatureLevel = 1; }
+                if (GUILayout.Button("Łąka")) { brushFeature = HexFeatureType.Meadow; brushFeatureLevel = 1; }
+                if (GUILayout.Button("Góra")) { brushFeature = HexFeatureType.Mountain; brushElevation = 2; }
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("Węgiel")) { brushFeature = HexFeatureType.Coal; brushFeatureLevel = 1; }
-                if (GUILayout.Button("Woda")) { brushFeature = HexFeatureType.Water; brushElevation = -1; }
-                if (GUILayout.Button("Góra")) { brushFeature = HexFeatureType.Mountain; brushElevation = 2; }
-                if (GUILayout.Button("Wzgórze")) { brushFeature = HexFeatureType.Hill; brushElevation = 1; }
+                if (GUILayout.Button("Wzgórze (Elev +1)")) { brushElevation = 1; }
+                if (GUILayout.Button("Wzgórze (Elev +2)")) { brushElevation = 2; }
+                if (GUILayout.Button("Zapadlisko (Elev -1)")) { brushElevation = -1; }
+                if (GUILayout.Button("Płasko (Elev 0)")) { brushElevation = 0; }
                 EditorGUILayout.EndHorizontal();
                 break;
 
@@ -526,7 +526,19 @@ public class PredefinedMapEditorWindow : EditorWindow
             else if (hexData.feature != HexFeatureType.None)
             {
                 text = hexData.feature.ToString();
-                if (hexData.elevation != 0) text += $"\n{hexData.elevation:+0;-0}";
+                int eff = hexData.elevation;
+                if (eff == 0)
+                {
+                    if (hexData.feature == HexFeatureType.Hill) eff = Mathf.Max(1, hexData.featureLevel);
+                    else if (hexData.feature == HexFeatureType.Sinkhole) eff = hexData.featureLevel < 0 ? hexData.featureLevel : -1;
+                    else if (hexData.feature == HexFeatureType.Mountain) eff = 3;
+                }
+                if (eff > 0) text += $"\n▲+{eff}";
+                else if (eff < 0) text += $"\n▼{eff}";
+            }
+            else if (hexData.elevation != 0)
+            {
+                text = hexData.elevation > 0 ? $"▲+{hexData.elevation}" : $"▼{hexData.elevation}";
             }
             else if (hexData.isRoad)
             {
@@ -555,19 +567,39 @@ public class PredefinedMapEditorWindow : EditorWindow
             return new Color(0.33f, 0.52f, 0.28f);
         }
 
-        return hexData.feature switch
+        Color baseCol = hexData.feature switch
         {
             HexFeatureType.Forest => new Color(0.14f, 0.40f, 0.16f),
-            HexFeatureType.Stone => new Color(0.52f, 0.52f, 0.55f),
-            HexFeatureType.Iron => new Color(0.68f, 0.44f, 0.28f),
-            HexFeatureType.Coal => new Color(0.20f, 0.20f, 0.22f),
-            HexFeatureType.Water => new Color(0.18f, 0.42f, 0.75f),
             HexFeatureType.Mountain => new Color(0.42f, 0.36f, 0.30f),
             HexFeatureType.Meadow => new Color(0.45f, 0.68f, 0.25f),
             HexFeatureType.Hill => new Color(0.50f, 0.55f, 0.30f),
             HexFeatureType.Sinkhole => new Color(0.24f, 0.28f, 0.24f),
             _ => new Color(0.33f, 0.52f, 0.28f)
         };
+
+        // Cieniowanie w oparciu o wysokość (Elevation):
+        int effectiveElev = hexData.elevation;
+        if (effectiveElev == 0)
+        {
+            if (hexData.feature == HexFeatureType.Hill) effectiveElev = Mathf.Max(1, hexData.featureLevel);
+            else if (hexData.feature == HexFeatureType.Sinkhole) effectiveElev = hexData.featureLevel < 0 ? hexData.featureLevel : -1;
+            else if (hexData.feature == HexFeatureType.Mountain) effectiveElev = 3;
+        }
+
+        if (effectiveElev > 0)
+        {
+            // Wyraźne podświetlenie wzniesień (tarasy)
+            float t = Mathf.Clamp01(effectiveElev * 0.14f);
+            baseCol = Color.Lerp(baseCol, Color.white, t);
+        }
+        else if (effectiveElev < 0)
+        {
+            // Wyraźne przyciemnienie zapadlin
+            float t = Mathf.Clamp01(Mathf.Abs(effectiveElev) * 0.18f);
+            baseCol = Color.Lerp(baseCol, Color.black, t);
+        }
+
+        return baseCol;
     }
 
     private void DrawRoadFlowOverlay(int radius)
