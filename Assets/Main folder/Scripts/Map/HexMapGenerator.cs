@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -54,6 +54,15 @@ public class HexMapGenerator : MonoBehaviour
 
     [Header("Topologia Ścieżek (M2)")]
     public RoadTopologySettings topologySettings = new RoadTopologySettings();
+
+        [Header("Predefiniowana Mapa (Tutorial / Pierwsza Gra)")]
+    [Tooltip("Opcjonalny asset predefiniowanej mapy.")]
+    public PredefinedMapLayoutSO tutorialMap;
+    [Tooltip("Gdy zaznaczone, ZAWSZE wymusza załadowanie tutorialMap zamiast generacji losowej (przydatne do testów).")]
+    public bool forceUsePredefinedMap = false;
+
+    private bool isUsingPredefinedMap = false;
+    public bool IsUsingPredefinedMap => isUsingPredefinedMap;
 
     [Header("Meta Progresja Mapy")]
     public MetaMapConfig metaConfig;
@@ -290,5 +299,74 @@ public class HexMapGenerator : MonoBehaviour
         terrainGen = new TerrainGenerator(ctx, registry, metaConfig, chunkRadius, terrainConfig);
 
         specialPlacer = new SpecialChunkPlacer(ctx, registry, specialChunkTypes);
+    }
+
+    public MapGenerationContext BuildPredefinedMapData(PredefinedMapLayoutSO map)
+    {
+        isUsingPredefinedMap = true;
+        ctx = new MapGenerationContext(seed);
+
+        if (map == null || map.chunks == null) return ctx;
+
+        if (map.chunkRadius > 0)
+        {
+            chunkRadius = map.chunkRadius;
+        }
+
+        foreach (var pChunk in map.chunks)
+        {
+            ctx.allValidChunks.Add(pChunk.chunkCoord);
+            if (!ctx.worldData.ContainsKey(pChunk.chunkCoord))
+            {
+                ctx.worldData[pChunk.chunkCoord] = new Dictionary<Vector2Int, HexCellData>();
+            }
+
+            if (pChunk.hexes != null)
+            {
+                foreach (var pHex in pChunk.hexes)
+                {
+                    var cell = new HexCellData
+                    {
+                        chunkCoord = pChunk.chunkCoord,
+                        localCoord = pHex.localCoord,
+                        gridCoord = PredefinedMapLayoutSO.PredefinedToGlobalHex(pChunk.chunkCoord, pHex.localCoord, chunkRadius),
+                        elevation = pHex.elevation,
+                        feature = pHex.feature,
+                        featureLevel = pHex.featureLevel,
+                        isRoad = pHex.isRoad,
+                        startingBuilding = pHex.startingBuilding
+                    };
+                    ctx.worldData[pChunk.chunkCoord][pHex.localCoord] = cell;
+                }
+            }
+        }
+
+        baseRoadEndLocal = map.playerBase.localCoord;
+        if (map.startingBaseBuilding != null && ctx.worldData.TryGetValue(map.playerBase.chunkCoord, out var baseChunkCells))
+        {
+            if (baseChunkCells.TryGetValue(map.playerBase.localCoord, out var baseHexCell))
+            {
+                baseHexCell.startingBuilding = map.startingBaseBuilding;
+            }
+        }
+
+        if (map.enemySpawners != null && map.enemySpawners.Count > 0)
+        {
+            ctx.mainSpawnerChunk = map.enemySpawners[0].chunkCoord;
+            ctx.chunkTypes[ctx.mainSpawnerChunk] = ChunkType.Spawner;
+
+            for (int i = 1; i < map.enemySpawners.Count; i++)
+            {
+                var extraChunk = map.enemySpawners[i].chunkCoord;
+                if (!ctx.extraSpawnerChunks.Contains(extraChunk))
+                {
+                    ctx.extraSpawnerChunks.Add(extraChunk);
+                }
+                ctx.chunkTypes[extraChunk] = ChunkType.Spawner;
+            }
+        }
+
+        ctx.chunkTypes[map.playerBase.chunkCoord] = ChunkType.Base;
+        return ctx;
     }
 }

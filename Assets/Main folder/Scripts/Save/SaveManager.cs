@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
 using System.Collections.Generic;
@@ -368,12 +368,13 @@ public class SaveManager : MonoBehaviour
                 if (i < data.unlockedTowerIDs.Count - 1) sb.Append(",");
                 sb.AppendLine();
             }
-            sb.AppendLine("    ]");
+            sb.AppendLine("    ],");
         }
         else
         {
-            sb.AppendLine("]");
+            sb.AppendLine("],");
         }
+        sb.AppendLine($"    \"isTutorialCompleted\": {(data.isTutorialCompleted ? "true" : "false")}");
         sb.AppendLine("}");
         return sb.ToString();
     }
@@ -409,6 +410,24 @@ public class SaveManager : MonoBehaviour
             }
         }
 
+        var matchTutorial = System.Text.RegularExpressions.Regex.Match(json, "\"isTutorialCompleted\"\\s*:\\s*(true|false)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (matchTutorial.Success && bool.TryParse(matchTutorial.Groups[1].Value, out bool tut))
+        {
+            data.isTutorialCompleted = tut;
+        }
+
         return data;
+    }
+
+    public bool HasCompletedTutorial()
+    {
+        return currentSaveData != null && currentSaveData.isTutorialCompleted;
+    }
+
+    public void SetTutorialCompleted(bool completed = true)
+    {
+        if (currentSaveData == null) currentSaveData = new SaveData();
+        currentSaveData.isTutorialCompleted = completed;
+        SaveGame();
     }
 }
