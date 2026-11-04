@@ -7,7 +7,7 @@ public static class FogOfWarPrefabBuilder
 {
     private const string PrefabPath = "Assets/Main folder/Prefabs/Terrain/Fog of war.prefab";
     private const string HexMeshGuid = "f083fcd0a9a41284fbf3a9a02a88fedd";
-    private const string FogMatGuid = "ecf964584f2921a42a52d9d4bc81e15f";
+    private const string FogMatGuid = "d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6";
 
     [MenuItem("Tools/Map/Utilities/Rebuild Fog of War Prefab (Radius 3)", priority = 71)]
     public static void RebuildFogPrefabRadius3()

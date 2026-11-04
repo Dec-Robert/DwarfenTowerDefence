@@ -51,6 +51,7 @@ public class ShaderPrewarmer : MonoBehaviour
         "Custom/Road",
         "Custom/Sinkhole",
         "Custom/EnemyHealthBar",
+        "Custom/MistHLSL", // Shader mgly wojny (HLSL)
         "Universal Render Pipeline/Lit",
         "Universal Render Pipeline/Simple Lit",
         "Universal Render Pipeline/Unlit",

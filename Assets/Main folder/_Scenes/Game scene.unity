@@ -4504,8 +4504,8 @@ MonoBehaviour:
   expansionManager: {fileID: 1837610586}
   mapVisualizer: {fileID: 1837610584}
   mapGenerator: {fileID: 1837610582}
-  defaultFogMaterial: {fileID: -876546973899608171, guid: 9c8afe04d5ea9ce40be87e68e5f82fba, type: 3}
-  borderlandsFogMaterial: {fileID: -876546973899608171, guid: 9c8afe04d5ea9ce40be87e68e5f82fba, type: 3}
+  defaultFogMaterial: {fileID: 2100000, guid: d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6, type: 2}
+  borderlandsFogMaterial: {fileID: 2100000, guid: d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6, type: 2}
   surveyingFogMaterial: {fileID: 2100000, guid: d9b8120594697c24e968d0dd2918c202, type: 2}
   outskirtsFogMaterial: {fileID: 2100000, guid: 69087ab46eb2d144499180d014dba817, type: 2}
   fogPrefab: {fileID: 3870602923655417153, guid: 3ace50b7f41b02447ba50c08e65fdf93, type: 3}
