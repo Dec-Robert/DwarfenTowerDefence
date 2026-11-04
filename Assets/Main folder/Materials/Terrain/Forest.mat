@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Forest
+  m_Shader: {fileID: 4800000, guid: e3119c47dde04ad28eb9eea38b4986e0, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _AmbientBoost: 0.5
+    - _DetailScale: 2.2
+    - _DetailStrength: 0.45
+    - _ForestFloorScale: 0.45
+    - _HexBorderNoiseStrength: 0.35
+    - _HexBorderStrength: 0.35
+    - _HexBorderWidth: 0.07
+    - _HexRadius: 1
+    - _LitterAmount: 0.22
+    - _LitterScale: 1.4
+    - _MossAmount: 0.18
+    - _MossScale: 0.85
+    - _QuantizeSteps: 4
+    - _RootsStrength: 0.15
+    - _Smoothness: 0.04
+    - _TexelDensity: 16
+    m_Colors:
+    - _DryNeedlesColor: {r: 0.475, g: 0.392, b: 0.282, a: 1}
+    - _ForestBaseColor: {r: 0.161, g: 0.169, b: 0.125, a: 1}
+    - _LeafLitterColor: {r: 0.255, g: 0.22, b: 0.165, a: 1}
+    - _MossColor: {r: 0.275, g: 0.314, b: 0.224, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public class HexMapVisualizer : MonoBehaviour
@@ -12,12 +12,24 @@ public class HexMapVisualizer : MonoBehaviour
     public GameObject prefabFertile;
     public GameObject prefabMeadow;
 
-    // --- NOWO��: Prefaby Specjalne ---
-    [Header("Prefaby Budynk�w Specjalnych")]
+    [Header("Mountain Configuration")]
+    [Tooltip("Prefab modelu 3D dla szczytu gory (np. MountainTop).")]
+    public GameObject mountainTopPrefab;
+    [Tooltip("Pionowe przesuniecie prefabu szczytu gory.")]
+    public float mountainTopYOffset = 0f;
+    [Tooltip("Mnoznik skali prefabu szczytu gory.")]
+    public float mountainTopScaleMultiplier = 1f;
+    [Tooltip("Deterministyczny losowy obrot szczytu gory wokol osi Y.")]
+    public bool randomizeMountainRotation = true;
+    [Tooltip("Dedykowany material scian bocznych gory z przejsciem geologicznym (HexSide_Mountain).")]
+    public Material matSideMountain;
+
+    // --- Prefaby Specjalne ---
+    [Header("Prefaby Budynków Specjalnych")]
     public GameObject prefabBase;   // Kapitol
     public GameObject prefabBeacon; // Beacon of Hope
 
-    [Header("Materia�y Specjalne")]
+    [Header("Materiały Specjalne")]
     public Material matPath;
     public Material matForest;
     public Material matMountain;
@@ -33,11 +45,30 @@ public class HexMapVisualizer : MonoBehaviour
 
     [Header("Ustawienia Wysokosci Terenu (Elevation)")]
     [Tooltip("Wysokosc pionowa (Y) przypadajaca na kazdy poziom wzniesienia (gory, wzgorza) i zapadliny.")]
-    public float elevationHeightStep = 0.35f;
+    public float elevationHeightStep = 0.25f;
+
+    [Header("Boczne Sciany Heksow (Geometria Proceduralna)")]
+    [Tooltip("Generuje proceduralny mesh heksa: submesh 0 = gora, submesh 1 = boczne sciany dopasowane do sasiadow. Wylaczenie przywraca oryginalny mesh prefabu.")]
+    public bool generateSideWalls = true;
+    [Tooltip("Material bocznych scian (submesh 1). Docelowo shader HexSideTerrain. Gdy pusty - uzywany jest material gornej powierzchni.")]
+    public Material matSide;
+    [Tooltip("Poziom Y (lokalny w chunku), do ktorego schodza sciany na zewnetrznej krawedzi mapy. Powinien lezec ponizej najglebszego zapadliska.")]
+    public float mapEdgeBottomY = -1.4f;
+    [Tooltip("Ukryty pas sciany pod powierzchnia sasiada. Powinien byc >= HexCell.liftOffset, aby podniesiony (podswietlony) heks nie odslanial szczeliny. 0 = wylaczone.")]
+    public float liftSkirtDepth = 0.25f;
+
+    // Cache meshy terenu - heksy o identycznym ukladzie krawedzi wspoldziela jeden mesh.
+    private readonly Dictionary<string, Mesh> terrainMeshCache = new Dictionary<string, Mesh>();
+    private readonly HexTerrainMeshBuilder.EdgeSpec[] edgeBuffer = new HexTerrainMeshBuilder.EdgeSpec[6];
+
+    private HashSet<Vector2Int> globalRoadMap;
+    private Dictionary<Vector2Int, float> globalHeightsMap;
+    private int cachedChunkRadius = 3;
+    private float cachedHexRadius = 1.02f;
 
     private Transform mapHolder;
 
-    // S�ownik przechowuj�cy fizyczne obiekty chunk�w
+    // Słownik przechowujący fizyczne obiekty chunków
     private Dictionary<Vector2Int, GameObject> chunkGameObjects = new Dictionary<Vector2Int, GameObject>();
 
     private Dictionary<Vector2Int, Dictionary<Vector2Int, HexCell>> visualHexGrid = new Dictionary<Vector2Int, Dictionary<Vector2Int, HexCell>>();
@@ -51,11 +82,11 @@ public class HexMapVisualizer : MonoBehaviour
         visualHexGrid[chunkCoord][localCoord] = cell;
     }
 
-
     private void Awake()
     {
         Instance = this;
     }
+
     public GameObject GetChunkGameObject(Vector2Int coord)
     {
         if (chunkGameObjects.ContainsKey(coord)) return chunkGameObjects[coord];
@@ -69,7 +100,10 @@ public class HexMapVisualizer : MonoBehaviour
             float hexSize,
             float padding)
     {
-        ClearMap(); // Czy�ci stare obiekty i s�owniki (visualHexGrid i chunkGameObjects)
+        ClearMap(); // Czyści stare obiekty i słowniki (visualHexGrid i chunkGameObjects)
+
+        cachedChunkRadius = chunkRadius;
+        cachedHexRadius = hexSize + padding;
 
         if (mapHolder == null)
         {
@@ -77,26 +111,42 @@ public class HexMapVisualizer : MonoBehaviour
             mapHolder.parent = transform.parent;
         }
 
+        // Globalne mapy (axial -> Y oraz axial -> isRoad) - potrzebne na granicach chunkow.
+        globalHeightsMap = generateSideWalls ? BuildGlobalHeightMap(worldData, allValidChunks, chunkRadius) : null;
+        globalRoadMap = BuildGlobalRoadMap(worldData, allValidChunks, chunkRadius);
+
+        // Synchronizacja parametrów bocznych ścian z generatorem mapy
+        if (matSide != null)
+        {
+            matSide.SetFloat("_HeightStep", elevationHeightStep);
+            matSide.SetFloat("_BaseHeightY", 0f);
+        }
+        if (matSideMountain != null)
+        {
+            matSideMountain.SetFloat("_HeightStep", elevationHeightStep);
+            matSideMountain.SetFloat("_BaseHeightY", 0f);
+        }
+
         foreach (var chunkCoord in allValidChunks)
         {
             Vector3 centerWorld = HexGridMath.GetChunkCenterWorld(chunkCoord, chunkRadius, hexSize, padding);
+            Vector2Int chunkCenterAxial = HexGridMath.GetChunkCenterAxial(chunkCoord, chunkRadius);
 
             Material chunkBaseMat = matDefaultGrass;
 
-            // Ustalanie biomu i materia�u dla chunku
+            // Ustalanie biomu i materiału dla chunku
             GameObject chunkObj = new GameObject($"Chunk_{chunkCoord.x}_{chunkCoord.y}");
             chunkObj.transform.parent = mapHolder;
             chunkObj.transform.position = centerWorld;
 
-            // Rejestracja w s�owniku GameObject�w (dla Fog of War)
+            // Rejestracja w słowniku GameObjectów (dla Fog of War)
             chunkGameObjects.Add(chunkCoord, chunkObj);
 
-            // --- NOWO��: Inicjalizacja s�ownika heks�w dla tego chunku ---
+            // Inicjalizacja słownika heksów dla tego chunku
             if (!visualHexGrid.ContainsKey(chunkCoord))
             {
                 visualHexGrid[chunkCoord] = new Dictionary<Vector2Int, HexCell>();
             }
-            // -------------------------------------------------------------
 
             if (worldData.ContainsKey(chunkCoord))
             {
@@ -107,29 +157,8 @@ public class HexMapVisualizer : MonoBehaviour
 
                     Vector3 basePos = centerWorld + HexGridMath.AxialToWorld(local.x, local.y, hexSize, padding);
 
-                    // Modyfikacja wysoko�ci dla specjalnych teren�w
                     // Modyfikacja wysokości dla specjalnych terenów
-                    float heightOffset = 0f;
-                    if (cellData.isRoad)
-                    {
-                        heightOffset = 0f;
-                    }
-                    else if (cellData.elevation != 0)
-                    {
-                        heightOffset = cellData.elevation * elevationHeightStep;
-                    }
-                    else if (cellData.feature == HexFeatureType.Hill)
-                    {
-                        heightOffset = Mathf.Max(1, cellData.featureLevel) * elevationHeightStep;
-                    }
-                    else if (cellData.feature == HexFeatureType.Sinkhole)
-                    {
-                        heightOffset = (cellData.featureLevel < 0 ? cellData.featureLevel : -1) * elevationHeightStep;
-                    }
-                    else if (cellData.feature == HexFeatureType.Mountain)
-                    {
-                        heightOffset = 3f * elevationHeightStep;
-                    }
+                    float heightOffset = GetTerrainHeight(cellData);
 
                     Vector3 finalPos = basePos + Vector3.up * heightOffset;
 
@@ -137,19 +166,27 @@ public class HexMapVisualizer : MonoBehaviour
                     GameObject hex = Instantiate(hexPrefab, finalPos, Quaternion.identity, chunkObj.transform);
                     hex.name = $"Hex_{local.x}_{local.y}";
 
+                    Vector2Int globalCoord = chunkCenterAxial + local;
+                    bool isRoadCell = cellData.isRoad || cellData.isPath;
+                    float hillHeight01 = GetHillHeight01(cellData);
+
+                    // Proceduralny mesh: gora + boczne sciany dopasowane do sasiadow
+                    if (globalHeightsMap != null || isRoadCell || hillHeight01 > 0f)
+                    {
+                        ApplyTerrainMesh(hex, globalCoord, heightOffset, globalHeightsMap, hexSize + padding, isRoadCell, hillHeight01);
+                    }
+
                     // Dodanie komponentu logicznego
                     HexCell cellComponent = hex.AddComponent<HexCell>();
                     cellComponent.Initialize(cellData);
 
-                    // --- NOWO��: Rejestracja heksa w szybkim s�owniku ---
-                    // Dzi�ki temu InteractionManager mo�e go znale�� w czasie O(1)
+                    // Rejestracja heksa w szybkim słowniku (O(1) dla InteractionManager)
                     visualHexGrid[chunkCoord].Add(local, cellComponent);
-                    // ----------------------------------------------------
 
-                    // Nak�adanie wizuali�w terenu (Trawa, Las, G�ry)
-                    ApplyVisualsToHex(hex, cellData, chunkBaseMat);
+                    // Nakładanie wizualiów terenu (Trawa, Las, Góry)
+                    ApplyVisualsToHex(hex, cellData, chunkBaseMat, globalCoord);
 
-                    // Budowanie predefiniowanych budynk�w
+                    // Budowanie predefiniowanych budynków
                     if (cellData.startingBuilding != null)
                     {
                         SpawnPredefinedBuilding(hex, cellData.startingBuilding);
@@ -159,9 +196,7 @@ public class HexMapVisualizer : MonoBehaviour
         }
     }
 
-
-
-    void ApplyVisualsToHex(GameObject hexObj, HexCellData data, Material groundMat)
+    void ApplyVisualsToHex(GameObject hexObj, HexCellData data, Material groundMat, Vector2Int globalCoord = default)
     {
         Renderer r = hexObj.GetComponentInChildren<Renderer>();
         if (r == null) return;
@@ -169,6 +204,7 @@ public class HexMapVisualizer : MonoBehaviour
         Material matToUse = groundMat;
         string nameSuffix = "";
         hexObj.transform.localScale = Vector3.one;
+        bool isMountain = false;
 
         if (data.isPath)
         {
@@ -187,24 +223,22 @@ public class HexMapVisualizer : MonoBehaviour
                 case HexFeatureType.Mountain:
                     matToUse = matMountain;
                     nameSuffix = " (Mountain)";
-                    if (prefabMountain != null) SpawnProp(hexObj, prefabMountain);
+                    isMountain = true;
+                    SpawnMountainProp(hexObj, globalCoord);
                     break;
                 case HexFeatureType.Hill:
-                    matToUse = matHill;
+                    matToUse = groundMat; // W nowej architekturze wzgorze zachowuje bazowy material terenu (np. trawy)
                     nameSuffix = $" (Hill +{data.featureLevel})";
                     break;
                 case HexFeatureType.Sinkhole:
                     matToUse = matSinkhole;
                     nameSuffix = $" (Sinkhole {data.featureLevel})";
                     break;
-                                case HexFeatureType.Meadow:
+                case HexFeatureType.Meadow:
                     matToUse = matMeadow != null ? matMeadow : (matFertile != null ? matFertile : groundMat);
                     nameSuffix = " (Meadow)";
                     if (prefabMeadow != null) SpawnProp(hexObj, prefabMeadow);
-                    else if (prefabFertile != null) SpawnProp(hexObj, prefabFertile);
                     break;
-
-                
 
                 case HexFeatureType.Base:
                     matToUse = matBase != null ? matBase : groundMat;
@@ -242,7 +276,7 @@ public class HexMapVisualizer : MonoBehaviour
             }
         }
 
-        r.sharedMaterial = matToUse;
+        ApplyTerrainMaterials(r, matToUse, isMountain);
         hexObj.name += nameSuffix;
     }
 
@@ -261,12 +295,61 @@ public class HexMapVisualizer : MonoBehaviour
         return prop;
     }
 
+    GameObject SpawnMountainProp(GameObject parentHex, Vector2Int globalCoord)
+    {
+        GameObject prefabToUse = mountainTopPrefab != null ? mountainTopPrefab : prefabMountain;
+        if (prefabToUse == null)
+        {
+            return null;
+        }
+
+        HexCell cell = parentHex.GetComponent<HexCell>();
+        if (cell != null && cell.FeatureProp != null)
+        {
+            Destroy(cell.FeatureProp);
+        }
+
+        GameObject prop = Instantiate(prefabToUse, parentHex.transform);
+        prop.name = "MountainTop_Prop";
+        prop.transform.localPosition = new Vector3(0f, mountainTopYOffset, 0f);
+
+        if (randomizeMountainRotation)
+        {
+            int hash = (globalCoord.x * 73856093) ^ (globalCoord.y * 19349663);
+            float rotY = ((float)((hash & 0x7fffffff) % 36000)) / 100f; // [0..360)
+            prop.transform.localRotation = Quaternion.Euler(0f, rotY, 0f);
+        }
+        else
+        {
+            prop.transform.localRotation = Quaternion.identity;
+        }
+
+        prop.transform.localScale = prefabToUse.transform.localScale * mountainTopScaleMultiplier;
+
+        // Wylaczenie colliderow dekoracji, aby nie blokowaly raycastow wyboru terenu ani budowy
+        Collider[] colliders = prop.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            colliders[i].enabled = false;
+        }
+
+        if (cell != null)
+        {
+            cell.RegisterFeatureProp(prop);
+        }
+
+        return prop;
+    }
+
     public void ClearMap()
     {
-        visualHexGrid.Clear(); // <--- WA�NE: Czy�cimy referencje
+        visualHexGrid.Clear();
         chunkGameObjects.Clear();
+        globalRoadMap?.Clear();
+        globalHeightsMap?.Clear();
         if (mapHolder != null) DestroyImmediate(mapHolder.gameObject);
         while (transform.childCount > 0) DestroyImmediate(transform.GetChild(0).gameObject);
+        ReleaseTerrainMeshes();
     }
 
     void SpawnPredefinedBuilding(GameObject hexObj, BuildingData buildingData)
@@ -274,16 +357,11 @@ public class HexMapVisualizer : MonoBehaviour
         if (buildingData.prefab == null) return;
 
         // 1. CZYSZCZENIE TERENU
-        // ApplyVisualsToHex mog�o doda� drzewka lub ska�y jako dzieci heksa.
-        // Musimy je usun��, �eby budynek nie przenika� si� z lasem.
-        // Robimy list� tymczasow�, bo nie mo�na usuwa� obiekt�w podczas iteracji po transform.
         List<GameObject> childrenToDestroy = new List<GameObject>();
         foreach (Transform child in hexObj.transform)
         {
             childrenToDestroy.Add(child.gameObject);
         }
-
-        // Niszczymy dekoracje (u�ywamy DestroyImmediate, bo to dzieje si� w trakcie generowania)
         foreach (var child in childrenToDestroy)
         {
             DestroyImmediate(child);
@@ -294,8 +372,6 @@ public class HexMapVisualizer : MonoBehaviour
         buildingObj.transform.parent = hexObj.transform;
 
         // 3. INICJALIZACJA LOGIKI
-
-        // A. Je�li to wie�a - przeka� dane do kontrolera
         if (buildingData is TowerData towerData)
         {
             var controller = buildingObj.GetComponent<TowerController>();
@@ -305,19 +381,14 @@ public class HexMapVisualizer : MonoBehaviour
             }
         }
 
-        // B. Inicjalizacja BuildingEntity (Logika ekonomii/pracownik�w)
         var entity = buildingObj.GetComponent<BuildingEntity>();
-
-        // Je�li prefab nie ma skryptu (np. prosty model), dodajemy go
         if (entity == null)
         {
-            // Sprawdzamy typ, �eby doda� odpowiedni skrypt (np. TowerEntity dla wie�)
             if (buildingData is TowerData) entity = buildingObj.AddComponent<TowerEntity>();
             else if (buildingData is HousingBuildingData) entity = buildingObj.AddComponent<HousingEntity>();
             else entity = buildingObj.AddComponent<BuildingEntity>();
         }
 
-        // Wymuszamy startow� inicjalizacj�
         entity.Initialize(buildingData);
         HexCell cellComp = hexObj.GetComponent<HexCell>();
         if (cellComp != null) cellComp.SetBuilding(entity);
@@ -341,7 +412,6 @@ public class HexMapVisualizer : MonoBehaviour
         List<GameObject> toDestroy = new List<GameObject>();
         foreach (Transform child in cell.transform)
         {
-            // Ignoruj budynki gracza
             if (child.GetComponent<BuildingEntity>() == null)
             {
                 toDestroy.Add(child.gameObject);
@@ -349,12 +419,180 @@ public class HexMapVisualizer : MonoBehaviour
         }
         foreach (var obj in toDestroy) Destroy(obj);
 
-        // 2. Ustal materiał
+        // 2. Aktualizacja mapy dróg i mesha
+        Vector2Int centerAxial = HexGridMath.GetChunkCenterAxial(chunkCoord, cachedChunkRadius > 0 ? cachedChunkRadius : 3);
+        Vector2Int globalCoord = centerAxial + localCoord;
+        bool isRoad = cellData.isRoad || cellData.isPath;
+        if (globalRoadMap != null)
+        {
+            if (isRoad) globalRoadMap.Add(globalCoord);
+            else globalRoadMap.Remove(globalCoord);
+        }
+
+        float heightOffset = GetTerrainHeight(cellData);
+        float radius = cachedHexRadius > 0f ? cachedHexRadius : 1f;
+        float hillHeight01 = GetHillHeight01(cellData);
+        ApplyTerrainMesh(cell.gameObject, globalCoord, heightOffset, globalHeightsMap, radius, isRoad, hillHeight01);
+
+        // Aktualizuj sąsiednie drogi, jeśli ich maska uległa zmianie
+        for (int k = 0; k < 6; k++)
+        {
+            Vector2Int neighborGlobal = globalCoord + HexTerrainMeshBuilder.Directions[k];
+            if (globalRoadMap != null && globalRoadMap.Contains(neighborGlobal))
+            {
+                foreach (var chunkKvp in visualHexGrid)
+                {
+                    Vector2Int cCenter = HexGridMath.GetChunkCenterAxial(chunkKvp.Key, cachedChunkRadius > 0 ? cachedChunkRadius : 3);
+                    Vector2Int nLocal = neighborGlobal - cCenter;
+                    if (chunkKvp.Value.TryGetValue(nLocal, out HexCell nCell) && nCell != null)
+                    {
+                        float nHeight = GetTerrainHeight(nCell.Data);
+                        ApplyTerrainMesh(nCell.gameObject, neighborGlobal, nHeight, globalHeightsMap, radius, true);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 3. Ustal materiał
         Material chunkBaseMat = matDefaultGrass;
 
-        // 3. Zaaplikuj nowe wizualia
-        ApplyVisualsToHex(cell.gameObject, cellData, chunkBaseMat);
+        // 4. Zaaplikuj nowe wizualia
+        ApplyVisualsToHex(cell.gameObject, cellData, chunkBaseMat, globalCoord);
     }
 
+    // =========================================================================
+    // Geometria terenu: wysokosci, boczne sciany, materialy
+    // =========================================================================
 
+    /// <summary>
+    /// Wysokosc gornej powierzchni heksa (lokalne Y w chunku). Jedyne zrodlo prawdy
+    /// zarowno dla pozycji heksa, jak i dla scian sasiadow.
+    /// </summary>
+    public float GetTerrainHeight(HexCellData cellData)
+    {
+        if (cellData.isRoad) return 0f;
+        if (cellData.elevation != 0) return cellData.elevation * elevationHeightStep;
+        if (cellData.feature == HexFeatureType.Hill) return Mathf.Max(1, cellData.featureLevel) * elevationHeightStep;
+        if (cellData.feature == HexFeatureType.Sinkhole) return (cellData.featureLevel < 0 ? cellData.featureLevel : -1) * elevationHeightStep;
+        if (cellData.feature == HexFeatureType.Mountain) return 4f * elevationHeightStep;
+        return 0f;
+    }
+
+    private Dictionary<Vector2Int, float> BuildGlobalHeightMap(
+        Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData,
+        HashSet<Vector2Int> allValidChunks,
+        int chunkRadius)
+    {
+        var heights = new Dictionary<Vector2Int, float>();
+        foreach (var chunkCoord in allValidChunks)
+        {
+            if (!worldData.TryGetValue(chunkCoord, out var cells)) continue;
+            Vector2Int centerAxial = HexGridMath.GetChunkCenterAxial(chunkCoord, chunkRadius);
+            foreach (var kvp in cells)
+            {
+                heights[centerAxial + kvp.Key] = GetTerrainHeight(kvp.Value);
+            }
+        }
+        return heights;
+    }
+
+    private HashSet<Vector2Int> BuildGlobalRoadMap(
+        Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData,
+        HashSet<Vector2Int> allValidChunks,
+        int chunkRadius)
+    {
+        var roads = new HashSet<Vector2Int>();
+        foreach (var chunkCoord in allValidChunks)
+        {
+            if (!worldData.TryGetValue(chunkCoord, out var cells)) continue;
+            Vector2Int centerAxial = HexGridMath.GetChunkCenterAxial(chunkCoord, chunkRadius);
+            foreach (var kvp in cells)
+            {
+                if (kvp.Value != null && (kvp.Value.isRoad || kvp.Value.isPath))
+                {
+                    roads.Add(centerAxial + kvp.Key);
+                }
+            }
+        }
+        return roads;
+    }
+
+    /// <summary>
+    /// Oblicza 6-bitową maskę krawędzi drogi dla danego globalnego heksa.
+    /// Bit k = 1: krawędź k graniczy z innym terenem lub krawędzią mapy (wymaga pobocza).
+    /// Bit k = 0: krawędź k łączy się z innym heksem Road (brak pobocza).
+    /// </summary>
+    public int ComputeRoadEdgeMask(Vector2Int globalCoord)
+    {
+        int mask = 0;
+        for (int k = 0; k < 6; k++)
+        {
+            Vector2Int neighborCoord = globalCoord + HexTerrainMeshBuilder.Directions[k];
+            bool neighborIsRoad = globalRoadMap != null && globalRoadMap.Contains(neighborCoord);
+            if (!neighborIsRoad)
+            {
+                mask |= (1 << k);
+            }
+        }
+        return mask;
+    }
+
+    private float GetHillHeight01(HexCellData cellData)
+    {
+        // Hill shader na gornej powierzchni zostal wycofany na rzecz bazowego materialu terenu
+        return 0f;
+    }
+
+    private void ApplyTerrainMesh(GameObject hex, Vector2Int globalCoord, float ownHeight, Dictionary<Vector2Int, float> heights, float radius, bool isRoad = false, float hillHeight01 = 0f)
+    {
+        MeshFilter mf = hex.GetComponent<MeshFilter>();
+        if (mf == null) return;
+
+        for (int k = 0; k < 6; k++)
+        {
+            float neighborHeight = 0f;
+            bool hasNeighbor = heights != null && heights.TryGetValue(globalCoord + HexTerrainMeshBuilder.Directions[k], out neighborHeight);
+            edgeBuffer[k] = HexTerrainMeshBuilder.ComputeEdge(ownHeight, hasNeighbor, neighborHeight, mapEdgeBottomY, liftSkirtDepth);
+        }
+
+        int roadMask = isRoad ? ComputeRoadEdgeMask(globalCoord) : 0;
+
+        string key = HexTerrainMeshBuilder.BuildCacheKey(radius, ownHeight, elevationHeightStep, edgeBuffer, roadMask, hillHeight01);
+        if (!terrainMeshCache.TryGetValue(key, out Mesh mesh) || mesh == null)
+        {
+            mesh = HexTerrainMeshBuilder.Build(radius, ownHeight, elevationHeightStep, edgeBuffer, roadMask, hillHeight01);
+            mesh.hideFlags = HideFlags.DontSave;
+            terrainMeshCache[key] = mesh;
+        }
+        mf.sharedMesh = mesh;
+    }
+
+    /// <summary>Slot 0 = gora (material terenu), slot 1 = boczne sciany (matSide / matSideMountain). Dla starego meshu - jeden slot jak dawniej.</summary>
+    private void ApplyTerrainMaterials(Renderer r, Material topMat, bool isMountain = false)
+    {
+        MeshFilter mf = r.GetComponent<MeshFilter>();
+        bool hasSideSubmesh = mf != null && mf.sharedMesh != null && mf.sharedMesh.subMeshCount > HexTerrainMeshBuilder.SideSubmesh;
+        if (!hasSideSubmesh)
+        {
+            r.sharedMaterial = topMat;
+            return;
+        }
+        Material sideMatToUse = (isMountain && matSideMountain != null) ? matSideMountain : (matSide != null ? matSide : topMat);
+        r.sharedMaterials = new Material[] { topMat, sideMatToUse };
+    }
+
+    private void ReleaseTerrainMeshes()
+    {
+        foreach (var mesh in terrainMeshCache.Values)
+        {
+            if (mesh != null) DestroyImmediate(mesh);
+        }
+        terrainMeshCache.Clear();
+    }
+
+    private void OnDestroy()
+    {
+        ReleaseTerrainMeshes();
+    }
 }

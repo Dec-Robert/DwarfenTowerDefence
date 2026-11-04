@@ -59,11 +59,6 @@ MonoBehaviour:
     featureLevel: -2
     elevation: 0
     building: {fileID: 0}
-  - localCoord: {x: 1, y: -1}
-    feature: 0
-    featureLevel: -3
-    elevation: -3
-    building: {fileID: 0}
   - localCoord: {x: -3, y: 0}
     feature: 0
     featureLevel: 2
@@ -93,5 +88,10 @@ MonoBehaviour:
     feature: 3
     featureLevel: 0
     elevation: 0
+    building: {fileID: 0}
+  - localCoord: {x: 1, y: -1}
+    feature: 0
+    featureLevel: -2
+    elevation: -2
     building: {fileID: 0}
   roadConnectionEdge: {x: 3, y: -2}

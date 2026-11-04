@@ -1,23 +1,53 @@
-Shader "Custom/Hill"
+Shader "Custom/Terrain/Hill"
 {
     Properties
     {
-        [Header(Wyzynna Trawa (Highland Grass))]
-        _HighlandGrassDark("Ciemniejsza trawa (Dark Grass)", Color) = (0.24, 0.38, 0.16, 1)
-        _HighlandGrassLight("Jasna trawa wyzynna (Light Grass)", Color) = (0.42, 0.58, 0.22, 1)
-        _GrassScale("Skala trawy (Grass Scale)", Float) = 1.1
-        _GrassSmoothness("Matowosc trawy (Grass Smoothness)", Range(0.0, 1.0)) = 0.05
+        [Header(Debug Diagnostics)]
+        _DebugHillMode("Tryb debugowania (0:Norm, 1:Grid, 2:RockMask, 3:CracksOnly)", Range(0, 3)) = 0
 
-        [Header(Odsłoniecia Skalne na Szczycie (Rock Outcrops))]
-        _RockColorDark("Ciemna skala wapienna (Dark Rock)", Color) = (0.38, 0.38, 0.36, 1)
-        _RockColorLight("Jasna skala (Light Rock)", Color) = (0.60, 0.60, 0.56, 1)
-        _RockOutcropScale("Skala wychodni skalnych (Rock Scale)", Float) = 1.8
-        _RockCoverage("Ilosc skal na szczycie (Rock Coverage)", Range(0.0, 1.0)) = 0.38
-        _RockSmoothness("Gladkosc skaly (Rock Smoothness)", Range(0.0, 1.0)) = 0.18
+        [Header(Hill Level System)]
+        _HillLevel("Poziom wzgorza (0:Grassland, 1..5:Hill)", Range(0.0, 5.0)) = 3.0
+        _LevelRockBoost("Mnoznik ekspozycji skaly - Rock Boost", Range(0.5, 2.0)) = 1.15
+        _LevelGrassReduction("Tempo zanikania trawy - Grass Fade", Range(0.5, 2.0)) = 1.10
 
-        [Header(Klify na Sciankach Bocznych (Cliff Strata))]
-        _CliffStrataScale("Skala pasow klifu (Cliff Scale)", Float) = 4.5
-        _BumpStrength("Sila wypuklosci (Bump Strength)", Range(0.0, 5.0)) = 2.0
+        [Header(Grass Palette)]
+        _GrassBaseColor("Baza trawy wyzynnej - Grass Base", Color) = (0.275, 0.329, 0.220, 1.0)
+        _GrassLightColor("Jasna bujna trawa - Grass Light", Color) = (0.408, 0.482, 0.325, 1.0)
+        _GrassDarkColor("Ciemna trawa w zaglebieniach - Grass Dark", Color) = (0.184, 0.227, 0.149, 1.0)
+
+        [Header(Dry Soil and Transition Palette)]
+        _DrySoilColor("Sucha pylista ziemia - Dry Soil", Color) = (0.412, 0.357, 0.278, 1.0)
+        _TransitionColor("Lagodne przejscie - Soil Transition", Color) = (0.322, 0.278, 0.220, 1.0)
+
+        [Header(Rock and Cracks Palette)]
+        _RockLightColor("Jasna lita plyta skalna - Rock Light", Color) = (0.482, 0.459, 0.404, 1.0)
+        _RockDarkColor("Ciemniejszy lit kamien - Rock Dark", Color) = (0.325, 0.310, 0.275, 1.0)
+        _CrackColor("Szczelina pekniecia - Crack Color", Color) = (0.169, 0.153, 0.137, 1.0)
+        _HexBorderColor("Jasna granica heksa - Border Color", Color) = (0.541, 0.518, 0.455, 1.0)
+
+        [Header(Organic Rock Structure)]
+        _RockChunkScale("Skala wielkich plyt skalnych - Chunk Scale", Float) = 0.45
+        _RockIrregularity("Nieregularnosc pekniec - Warp Strength", Range(0.0, 1.0)) = 0.35
+        _CrackScale("Gestosc szczelin - Crack Scale", Float) = 1.8
+        _CrackWidth("Szerokosc pekniec (ostre) - Crack Width", Range(0.01, 0.12)) = 0.045
+        _DrySoilCoverage("Szerokosc bufora pylu - Soil Fringe", Range(0.05, 0.40)) = 0.22
+        _PatchScale("Skala makro-skupisk - Patch Scale", Float) = 0.50
+        _PatchContrast("Kontrast makro-skupisk - Patch Contrast", Range(0.5, 2.0)) = 1.0
+
+        [Header(Retro Stylization)]
+        _TexelDensity("Gestosc pikseli na heks - Texel Density", Float) = 16.0
+        _ColorSteps("Kwantyzacja odcieni - Color Steps", Range(2.0, 8.0)) = 4.0
+        _DetailStrength("Sila retro-faktury - Detail Strength", Range(0.0, 1.0)) = 0.35
+
+        [Header(Hex Grid Readability)]
+        _HexBorderWidth("Szerokosc granicy heksa - Border Width", Range(0.01, 0.20)) = 0.07
+        _HexBorderStrength("Widocznosc granicy - Border Strength", Range(0.0, 1.0)) = 0.32
+        _HexBorderNoise("Nieregularnosc granicy - Border Noise", Range(0.0, 1.0)) = 0.35
+        _HexRadius("Promien heksa - Hex Radius", Float) = 1.0
+
+        [Header(Lighting and Surface)]
+        _AmbientBoost("Jasnosc w polmroku i nocy - Ambient Boost", Range(0.0, 1.0)) = 0.50
+        _Smoothness("Matowosc skaly i gleby - Smoothness", Range(0.0, 1.0)) = 0.04
     }
 
     SubShader
@@ -53,23 +83,38 @@ Shader "Custom/Hill"
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fog
 
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "TerrainGroundCommon.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _HighlandGrassDark;
-                float4 _HighlandGrassLight;
-                float _GrassScale;
-                float _GrassSmoothness;
-
-                float4 _RockColorDark;
-                float4 _RockColorLight;
-                float _RockOutcropScale;
-                float _RockCoverage;
-                float _RockSmoothness;
-
-                float _CliffStrataScale;
-                float _BumpStrength;
+                float4 _GrassBaseColor;
+                float4 _GrassLightColor;
+                float4 _GrassDarkColor;
+                float4 _DrySoilColor;
+                float4 _TransitionColor;
+                float4 _RockLightColor;
+                float4 _RockDarkColor;
+                float4 _CrackColor;
+                float4 _HexBorderColor;
+                float  _DebugHillMode;
+                float  _HillLevel;
+                float  _LevelRockBoost;
+                float  _LevelGrassReduction;
+                float  _RockChunkScale;
+                float  _RockIrregularity;
+                float  _CrackScale;
+                float  _CrackWidth;
+                float  _DrySoilCoverage;
+                float  _PatchScale;
+                float  _PatchContrast;
+                float  _TexelDensity;
+                float  _ColorSteps;
+                float  _DetailStrength;
+                float  _HexBorderWidth;
+                float  _HexBorderStrength;
+                float  _HexBorderNoise;
+                float  _HexRadius;
+                float  _AmbientBoost;
+                float  _Smoothness;
             CBUFFER_END
 
             struct Attributes
@@ -78,70 +123,21 @@ Shader "Custom/Hill"
                 float3 normalOS     : NORMAL;
                 float4 tangentOS    : TANGENT;
                 float2 uv           : TEXCOORD0;
+                float2 uv1          : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
-                float4 positionCS   : SV_POSITION;
-                float3 positionWS   : TEXCOORD0;
-                float3 normalWS     : TEXCOORD1;
-                float  fogFactor    : TEXCOORD2;
+                float4 positionCS    : SV_POSITION;
+                float3 positionWS    : TEXCOORD0;
+                float3 normalWS      : TEXCOORD1;
+                float  fogFactor     : TEXCOORD2;
+                float2 positionOS_XZ : TEXCOORD3;
+                float  hillLevelAttr : TEXCOORD4;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
-
-            float2 hash2(float2 p)
-            {
-                p = float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3)));
-                return frac(sin(p) * 43758.5453123);
-            }
-
-            float gradientNoise(float2 p)
-            {
-                float2 i = floor(p);
-                float2 f = frac(p);
-                float2 u = f * f * (3.0 - 2.0 * f);
-
-                float2 g00 = hash2(i + float2(0.0, 0.0)) * 2.0 - 1.0;
-                float2 g10 = hash2(i + float2(1.0, 0.0)) * 2.0 - 1.0;
-                float2 g01 = hash2(i + float2(0.0, 1.0)) * 2.0 - 1.0;
-                float2 g11 = hash2(i + float2(1.0, 1.0)) * 2.0 - 1.0;
-
-                float n00 = dot(g00, f - float2(0.0, 0.0));
-                float n10 = dot(g10, f - float2(1.0, 0.0));
-                float n01 = dot(g01, f - float2(0.0, 1.0));
-                float n11 = dot(g11, f - float2(1.0, 1.0));
-
-                return 0.5 + 0.5 * lerp(lerp(n00, n10, u.x), lerp(n01, n11, u.x), u.y);
-            }
-
-            float fbm(float2 p, int octaves)
-            {
-                float val = 0.0;
-                float amp = 0.5;
-                float freq = 1.0;
-                for (int i = 0; i < octaves; i++)
-                {
-                    val += amp * gradientNoise(p * freq);
-                    freq *= 2.0;
-                    amp *= 0.5;
-                }
-                return val;
-            }
-
-            float EvaluateHeight(float3 posWS, float topMask)
-            {
-                float2 wpos = posWS.xz;
-                float grassFbm = fbm(wpos * _GrassScale, 2);
-                float rockNoise = fbm(wpos * _RockOutcropScale, 3);
-                float rockMask = smoothstep(1.0 - _RockCoverage - 0.1, 1.0 - _RockCoverage + 0.1, rockNoise);
-
-                float topHeight = lerp(0.15 * grassFbm, 0.35 + 0.15 * rockNoise, rockMask);
-                float cliffHeight = 0.25 * gradientNoise(float2(posWS.y * _CliffStrataScale, (wpos.x + wpos.y) * 0.5));
-
-                return lerp(cliffHeight, topHeight, topMask);
-            }
 
             Varyings LitPassVertex(Attributes input)
             {
@@ -157,6 +153,10 @@ Shader "Custom/Hill"
                 output.positionWS = vertexInput.positionWS;
                 output.normalWS = normalInput.normalWS;
                 output.fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+                output.positionOS_XZ = input.positionOS.xz;
+
+                // Odczyt poziomu wzgórza z siatki (uv1.y)
+                output.hillLevelAttr = input.uv1.y;
 
                 return output;
             }
@@ -166,61 +166,130 @@ Shader "Custom/Hill"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
-                float2 wpos = input.positionWS.xz;
-                float topMask = smoothstep(0.2, 0.6, input.normalWS.y);
+                float3 normWS = normalize(input.normalWS);
+                float2 worldXZ = input.positionWS.xz;
 
-                // --- 1. Góra Heksa: Trawa Wyżynna i Odsłonięcia Skalne ---
-                float grassFbm = fbm(wpos * _GrassScale, 3);
-                float3 grassCol = lerp(_HighlandGrassDark.rgb, _HighlandGrassLight.rgb, grassFbm);
+                // ---------------------------------------------------------------------
+                // 1. WIRTUALNA SIATKA TEXELI (SPÓJNA Z MEADOW / PSX STYLE)
+                // ---------------------------------------------------------------------
+                float hexDiameter = max(0.001, 2.0 * _HexRadius);
+                float density = max(1.0, _TexelDensity);
 
-                float rockNoise = fbm(wpos * _RockOutcropScale, 3);
-                float rockMask = smoothstep(1.0 - _RockCoverage - 0.1, 1.0 - _RockCoverage + 0.1, rockNoise);
-                float3 rockCol = lerp(_RockColorDark.rgb, _RockColorLight.rgb, rockNoise);
+                float2 texelCoords = (worldXZ / hexDiameter) * density;
+                float2 gridCell = floor(texelCoords);
+                float2 quantizedGrid = gridCell + 0.5;
+                float2 samplePos = (quantizedGrid / density) * hexDiameter;
 
-                float3 topAlbedo = lerp(grassCol, rockCol, rockMask);
-                float topSmoothness = lerp(_GrassSmoothness, _RockSmoothness, rockMask);
+                float2 dTexel = fwidth(texelCoords);
+                float texelScreenSpan = max(dTexel.x, dTexel.y);
+                float aaBlend = smoothstep(0.75, 1.5, texelScreenSpan);
+                float detailFade = 1.0 - smoothstep(1.0, 2.5, texelScreenSpan);
 
-                // --- 2. Boki Heksa: Skalisty Klif z Uwarstwieniem ---
-                float strata = gradientNoise(float2(input.positionWS.y * _CliffStrataScale, (wpos.x + wpos.y) * 0.6));
-                float3 cliffCol = lerp(_RockColorDark.rgb * 0.9, _RockColorLight.rgb * 0.85, strata);
+                float2 retroUV = lerp(samplePos, worldXZ, aaBlend);
 
-                // --- 3. Kompozycja Albedo i Smoothness ---
-                float3 finalAlbedo = lerp(cliffCol, topAlbedo, topMask);
-                float finalSmoothness = lerp(_RockSmoothness, topSmoothness, topMask);
+                // ---------------------------------------------------------------------
+                // 2. POZIOM WZGÓRZA (LEVEL 0..5 LOGIC)
+                // ---------------------------------------------------------------------
+                float currentLevel = _HillLevel;
+                if (input.hillLevelAttr > 0.001)
+                {
+                    currentLevel = input.hillLevelAttr <= 1.0 ? input.hillLevelAttr * 5.0 : input.hillLevelAttr;
+                }
+                currentLevel = clamp(currentLevel, 0.0, 5.0);
+                float levelNorm = currentLevel / 5.0; // 0.0 .. 1.0
 
-                // --- 4. Proceduralny Relief 3D ---
-                float delta = 0.04;
-                float hL = EvaluateHeight(input.positionWS - float3(delta, 0.0, 0.0), topMask);
-                float hR = EvaluateHeight(input.positionWS + float3(delta, 0.0, 0.0), topMask);
-                float hD = EvaluateHeight(input.positionWS - float3(0.0, 0.0, delta), topMask);
-                float hU = EvaluateHeight(input.positionWS + float3(0.0, 0.0, delta), topMask);
+                // Progi ekspozycji geologicznej
+                float rockTarget = saturate(levelNorm * _LevelRockBoost);
+                float grassTarget = saturate(1.0 - levelNorm * _LevelGrassReduction);
 
-                float3 bumpOffset = float3((hL - hR) * _BumpStrength, 0.0, (hD - hU) * _BumpStrength);
-                float3 normalWS = normalize(input.normalWS + bumpOffset);
+                // ---------------------------------------------------------------------
+                // 3. PŁYTY SKALNE (ORGANIC MACRO SLABS - ZERO BRUKU)
+                // ---------------------------------------------------------------------
+                float2 warpOffset = (float2(ValueNoise2D(worldXZ * 1.5 + float2(11.2, 34.5)),
+                                            ValueNoise2D(worldXZ * 1.5 + float2(56.7, 89.1))) - 0.5) * _RockIrregularity;
+                float macroRockNoise = ValueNoise2D((worldXZ + warpOffset) * _RockChunkScale + float2(42.1, 19.8));
+                macroRockNoise = saturate(0.5 + (macroRockNoise - 0.5) * _PatchContrast);
 
-                // --- 5. URP PBR Lighting ---
-                InputData inputData = (InputData)0;
-                inputData.positionWS = input.positionWS;
-                inputData.normalWS = normalWS;
-                inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
-                inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
-                inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
-                inputData.bakedGI = SampleSH(normalWS);
-                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                // Odsłonięcie skały sterowane poziomem wzgórza
+                float rockCutoff = 1.0 - saturate(rockTarget * 0.95);
+                float rockSlabMask = smoothstep(rockCutoff, rockCutoff + 0.10, macroRockNoise);
 
-                SurfaceData surfaceData = (SurfaceData)0;
-                surfaceData.albedo = finalAlbedo;
-                surfaceData.metallic = 0.0;
-                surfaceData.specular = half3(0.04, 0.04, 0.04);
-                surfaceData.smoothness = finalSmoothness;
-                surfaceData.normalTS = half3(0, 0, 1);
-                surfaceData.emission = half3(0, 0, 0);
-                surfaceData.occlusion = 1.0;
-                surfaceData.alpha = 1.0;
+                // Odcień fasetek płyty skalnej z kwantyzacją (PSX retro look)
+                VoronoiResult slabV = FastVoronoi2D(retroUV * (_RockChunkScale * 1.8) + float2(7.3, 19.8));
+                float steppedTone = floor(slabV.cellHash * _ColorSteps + 0.5) / _ColorSteps;
+                float3 slabColor = lerp(_RockDarkColor.rgb, _RockLightColor.rgb, steppedTone);
 
-                half4 finalColor = UniversalFragmentPBR(inputData, surfaceData);
-                finalColor.rgb = MixFog(finalColor.rgb, inputData.fogCoord);
-                return finalColor;
+                // ---------------------------------------------------------------------
+                // 4. NATURALNE PĘKNIĘCIA SKAŁY (ORGANIC THIN CRACKS)
+                // ---------------------------------------------------------------------
+                float2 crackCoord = retroUV * _CrackScale + warpOffset * 2.0;
+                VoronoiResult crackV = FastVoronoi2D(crackCoord);
+                
+                // Pęknięcie to wyłącznie wąska szczelina przy krawędzi komórki (nie fuga bruku!)
+                float crackMask = 1.0 - smoothstep(0.0, _CrackWidth, crackV.crack);
+                crackMask *= rockSlabMask;
+
+                // Zastosowanie pęknięć do koloru skały
+                float3 rockComposite = lerp(slabColor, _CrackColor.rgb, crackMask * 0.85);
+
+                // ---------------------------------------------------------------------
+                // 5. SUCHA PYLISTA ZIEMIA (DRY SOIL FRINGE BUFFER)
+                // ---------------------------------------------------------------------
+                float soilThreshold = max(0.0, rockCutoff - _DrySoilCoverage);
+                float soilFringeMask = smoothstep(soilThreshold, rockCutoff + 0.04, macroRockNoise) * (1.0 - rockSlabMask * 0.90);
+                
+                float soilGrain = ValueNoise2D(retroUV * 3.5 + float2(91.2, 34.7));
+                float3 soilColor = lerp(_TransitionColor.rgb, _DrySoilColor.rgb, soilGrain * 0.55);
+
+                float3 rockAndSoil = lerp(soilColor, rockComposite, rockSlabMask);
+
+                // ---------------------------------------------------------------------
+                // 6. TRAWA WYŻYNNA (GRASS COVERAGE - LEVEL 0..5)
+                // ---------------------------------------------------------------------
+                float grassNoise = ValueNoise2D(worldXZ * _PatchScale + float2(88.3, 51.2));
+                float grassCutoff = 1.0 - saturate(grassTarget * 1.15);
+                float grassMask = smoothstep(grassCutoff, grassCutoff + 0.12, grassNoise);
+                
+                grassMask *= saturate(1.0 - rockSlabMask * 1.15 + crackMask * 0.40);
+
+                float grassTuftNoise = ValueNoise2D(retroUV * 2.0 + float2(22.3, 61.8));
+                float steppedGrass = floor(grassTuftNoise * _ColorSteps + 0.5) / _ColorSteps;
+                float3 grassColor = lerp(_GrassBaseColor.rgb, _GrassLightColor.rgb, steppedGrass * 0.65);
+                grassColor = lerp(grassColor, _GrassDarkColor.rgb, (1.0 - steppedGrass) * 0.30);
+
+                float3 surfaceColor = lerp(rockAndSoil, grassColor, grassMask);
+
+                // ---------------------------------------------------------------------
+                // 7. TRYBY DIAGNOSTYCZNE (_DebugHillMode)
+                // ---------------------------------------------------------------------
+                int debugMode = (int)(_DebugHillMode + 0.5);
+                if (debugMode == 1)
+                {
+                    float checker = (fmod(abs(gridCell.x) + abs(gridCell.y), 2.0) < 1.0) ? 0.05 : 0.95;
+                    return half4(checker, checker, checker, 1.0);
+                }
+                else if (debugMode == 2)
+                {
+                    return half4(rockSlabMask, rockSlabMask, rockSlabMask, 1.0);
+                }
+                else if (debugMode == 3)
+                {
+                    return half4(crackMask, crackMask, crackMask, 1.0);
+                }
+
+                // ---------------------------------------------------------------------
+                // 8. CZYTELNA GRANICA HEKSA I ŚCIANKI BOCZNE
+                // ---------------------------------------------------------------------
+                float borderMask = EvaluateHexBorder(input.positionOS_XZ, worldXZ, _HexRadius, _HexBorderWidth, _HexBorderStrength, _HexBorderNoise);
+                float3 finalTopColor = lerp(surfaceColor, _HexBorderColor.rgb, borderMask);
+
+                // Ścianki boczne heksa (uskoki elewacji do niższych sąsiadów)
+                float topMask = saturate((normWS.y - 0.25) / 0.45);
+                float3 sideColor = EvaluateSideStrataSoil(input.positionWS, normWS, _DrySoilColor.rgb, _RockDarkColor.rgb);
+                float3 finalAlbedo = lerp(sideColor, finalTopColor, topMask);
+
+                // Oświetlenie URP PBR
+                return CalculateTerrainLitPBR(input.positionWS, normWS, input.positionCS, input.fogFactor, finalAlbedo, _Smoothness, _AmbientBoost);
             }
             ENDHLSL
         }
@@ -312,7 +381,7 @@ Shader "Custom/Hill"
             {
                 Varyings output = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
-                UNITY_TRANSFER_INPUT_INSTANCE_ID(input, output);
+                UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);

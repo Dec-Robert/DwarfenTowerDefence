@@ -41,4 +41,15 @@ public static class HexGridMath
         int centerR = cq * -chunkRadius + cr * (chunkRadius + 1);
         return AxialToWorld(centerQ, centerR, size, padding);
     }
+
+    // Zwraca globalne koordynaty axial srodka chunku (ta sama formula co GetChunkCenterWorld).
+    // Globalny heks = GetChunkCenterAxial(chunk) + localCoord.
+    public static Vector2Int GetChunkCenterAxial(Vector2Int chunkCoord, int chunkRadius)
+    {
+        int cq = chunkCoord.x;
+        int cr = chunkCoord.y;
+        return new Vector2Int(
+            cq * (2 * chunkRadius + 1) + cr * chunkRadius,
+            cq * -chunkRadius + cr * (chunkRadius + 1));
+    }
 }

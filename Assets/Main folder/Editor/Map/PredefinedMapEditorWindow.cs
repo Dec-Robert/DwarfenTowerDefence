@@ -222,7 +222,7 @@ public class PredefinedMapEditorWindow : EditorWindow
             case EditorToolMode.Terrain:
                 brushFeature = (HexFeatureType)EditorGUILayout.EnumPopup("Cecha Terenu", brushFeature);
                 brushFeatureLevel = EditorGUILayout.IntSlider("Poziom cechy", brushFeatureLevel, 0, 3);
-                brushElevation = EditorGUILayout.IntSlider("Wysokość (Elevation)", brushElevation, -3, 3);
+                brushElevation = EditorGUILayout.IntSlider("Wysokość (Elevation)", brushElevation, -3, 4);
 
                 // Szybka paleta przycisków
                 EditorGUILayout.Space(4);
@@ -231,7 +231,7 @@ public class PredefinedMapEditorWindow : EditorWindow
                 if (GUILayout.Button("Trawa")) { brushFeature = HexFeatureType.None; brushElevation = 0; }
                 if (GUILayout.Button("Las")) { brushFeature = HexFeatureType.Forest; brushFeatureLevel = 1; }
                 if (GUILayout.Button("Łąka")) { brushFeature = HexFeatureType.Meadow; brushFeatureLevel = 1; }
-                if (GUILayout.Button("Góra")) { brushFeature = HexFeatureType.Mountain; brushElevation = 2; }
+                if (GUILayout.Button("Góra")) { brushFeature = HexFeatureType.Mountain; brushElevation = 4; }
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("Wzgórze (Elev +1)")) { brushElevation = 1; }
@@ -531,7 +531,7 @@ public class PredefinedMapEditorWindow : EditorWindow
                 {
                     if (hexData.feature == HexFeatureType.Hill) eff = Mathf.Max(1, hexData.featureLevel);
                     else if (hexData.feature == HexFeatureType.Sinkhole) eff = hexData.featureLevel < 0 ? hexData.featureLevel : -1;
-                    else if (hexData.feature == HexFeatureType.Mountain) eff = 3;
+                    else if (hexData.feature == HexFeatureType.Mountain) eff = 4;
                 }
                 if (eff > 0) text += $"\n▲+{eff}";
                 else if (eff < 0) text += $"\n▼{eff}";
@@ -583,7 +583,7 @@ public class PredefinedMapEditorWindow : EditorWindow
         {
             if (hexData.feature == HexFeatureType.Hill) effectiveElev = Mathf.Max(1, hexData.featureLevel);
             else if (hexData.feature == HexFeatureType.Sinkhole) effectiveElev = hexData.featureLevel < 0 ? hexData.featureLevel : -1;
-            else if (hexData.feature == HexFeatureType.Mountain) effectiveElev = 3;
+            else if (hexData.feature == HexFeatureType.Mountain) effectiveElev = 4;
         }
 
         if (effectiveElev > 0)
@@ -887,7 +887,7 @@ public class PredefinedMapEditorWindow : EditorWindow
             bool isRoad = EditorGUILayout.Toggle("Droga (isRoad)", hexData.isRoad);
             HexFeatureType feature = (HexFeatureType)EditorGUILayout.EnumPopup("Cecha Terenu", hexData.feature);
             int level = EditorGUILayout.IntSlider("Poziom cechy", hexData.featureLevel, 0, 3);
-            int elevation = EditorGUILayout.IntSlider("Wysokość (Elevation)", hexData.elevation, -3, 3);
+            int elevation = EditorGUILayout.IntSlider("Wysokość (Elevation)", hexData.elevation, -3, 4);
             BuildingData bld = (BuildingData)EditorGUILayout.ObjectField("Budynek", hexData.startingBuilding, typeof(BuildingData), false);
 
             if (EditorGUI.EndChangeCheck())

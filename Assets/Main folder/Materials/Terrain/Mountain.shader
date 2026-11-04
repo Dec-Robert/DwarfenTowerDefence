@@ -1,22 +1,35 @@
-Shader "Custom/Mountain"
+Shader "Custom/Terrain/Mountain"
 {
     Properties
     {
-        [Header(Skala Granitowa (Granite Rock))]
-        _RockColorDark("Ciemny grafit/lupek (Dark Rock)", Color) = (0.18, 0.19, 0.21, 1)
-        _RockColorLight("Jasny granit (Light Rock)", Color) = (0.35, 0.36, 0.38, 1)
-        _RockScale("Skala faktury skaly (Rock Scale)", Float) = 1.4
-        _RockSmoothness("Gladkosc skaly (Rock Smoothness)", Range(0.0, 1.0)) = 0.12
+        [Header(Rock Color Palette)]
+        _RockBaseColor("Bazowa skala - Rock Base", Color) = (0.318, 0.282, 0.255, 1.0)
+        _RockDarkColor("Ciemna szczelina/cienie - Rock Dark", Color) = (0.200, 0.180, 0.173, 1.0)
+        _RockLightColor("Jasna zwietrzala skala - Rock Light", Color) = (0.439, 0.400, 0.365, 1.0)
+        _RockAccentColor("Akcent mineralny/ochra - Rock Accent", Color) = (0.384, 0.349, 0.302, 1.0)
 
-        [Header(Zyly Rudy Mineralnej (Ore Veins))]
-        _OreColor("Kolor rudy (Ore Color)", Color) = (0.84, 0.50, 0.22, 1)
-        _OreScale("Skala zyl rudy (Ore Scale)", Float) = 2.8
-        _OreThreshold("Ilosc rudy (Ore Threshold)", Range(0.5, 0.95)) = 0.74
-        _OreMetallic("Metalicznosc rudy (Ore Metallic)", Range(0.0, 1.0)) = 0.85
-        _OreSmoothness("Polysk rudy (Ore Smoothness)", Range(0.0, 1.0)) = 0.60
+        [Header(Macro Variation)]
+        _MacroScale("Skala makro-plam - Macro Scale", Float) = 0.55
+        _MacroContrast("Kontrast makro - Macro Contrast", Range(0.5, 2.0)) = 1.10
 
-        [Header(Rzezba 3D (Depth and Bump))]
-        _BumpStrength("Sila zrzeszenia skaly (Bump Strength)", Range(0.0, 5.0)) = 2.4
+        [Header(Medium and Micro Detail)]
+        _DetailScale("Skala fasetek skalnych - Detail Scale", Float) = 1.80
+        _DetailStrength("Sila retro-faktury - Detail Strength", Range(0.0, 1.0)) = 0.45
+
+        [Header(Retro Stylization)]
+        _TexelDensity("Gestosc pikseli na heks - Texel Density", Float) = 16.0
+        _QuantizeSteps("Kwantyzacja odcieni - Quantize Steps", Range(2.0, 8.0)) = 4.0
+
+        [Header(Hex Grid Readability)]
+        _HexBorderColor("Kolor granicy heksa - Border Color", Color) = (0.439, 0.400, 0.365, 1.0)
+        _HexBorderWidth("Szerokosc granicy - Border Width", Range(0.01, 0.20)) = 0.06
+        _HexBorderStrength("Widocznosc granicy - Border Strength", Range(0.0, 1.0)) = 0.28
+        _HexBorderNoise("Nieregularnosc granicy - Border Noise", Range(0.0, 1.0)) = 0.35
+        _HexRadius("Promien heksa - Hex Radius", Float) = 1.0
+
+        [Header(Lighting and Surface)]
+        _AmbientBoost("Rozjasnienie polmroku i cieni - Ambient Boost", Range(0.0, 1.0)) = 0.50
+        _Smoothness("Matowosc skaly - Smoothness", Range(0.0, 1.0)) = 0.05
     }
 
     SubShader
@@ -54,112 +67,46 @@ Shader "Custom/Mountain"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "TerrainGroundCommon.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _RockColorDark;
-                float4 _RockColorLight;
-                float _RockScale;
-                float _RockSmoothness;
-
-                float4 _OreColor;
-                float _OreScale;
-                float _OreThreshold;
-                float _OreMetallic;
-                float _OreSmoothness;
-
-                float _BumpStrength;
+                float4 _RockBaseColor;
+                float4 _RockDarkColor;
+                float4 _RockLightColor;
+                float4 _RockAccentColor;
+                float4 _HexBorderColor;
+                float  _MacroScale;
+                float  _MacroContrast;
+                float  _DetailScale;
+                float  _DetailStrength;
+                float  _TexelDensity;
+                float  _QuantizeSteps;
+                float  _HexBorderWidth;
+                float  _HexBorderStrength;
+                float  _HexBorderNoise;
+                float  _HexRadius;
+                float  _AmbientBoost;
+                float  _Smoothness;
             CBUFFER_END
 
             struct Attributes
             {
-                float4 positionOS   : POSITION;
-                float3 normalOS     : NORMAL;
-                float4 tangentOS    : TANGENT;
-                float2 uv           : TEXCOORD0;
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                float2 uv : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
-                float4 positionCS   : SV_POSITION;
-                float3 positionWS   : TEXCOORD0;
-                float3 normalWS     : TEXCOORD1;
-                float  fogFactor    : TEXCOORD2;
+                float4 positionCS : SV_POSITION;
+                float3 positionWS : TEXCOORD0;
+                float3 normalWS : TEXCOORD1;
+                float3 positionOS : TEXCOORD2;
+                float fogFactor : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
-
-            float2 hash2(float2 p)
-            {
-                p = float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3)));
-                return frac(sin(p) * 43758.5453123);
-            }
-
-            float gradientNoise(float2 p)
-            {
-                float2 i = floor(p);
-                float2 f = frac(p);
-                float2 u = f * f * (3.0 - 2.0 * f);
-
-                float2 g00 = hash2(i + float2(0.0, 0.0)) * 2.0 - 1.0;
-                float2 g10 = hash2(i + float2(1.0, 0.0)) * 2.0 - 1.0;
-                float2 g01 = hash2(i + float2(0.0, 1.0)) * 2.0 - 1.0;
-                float2 g11 = hash2(i + float2(1.0, 1.0)) * 2.0 - 1.0;
-
-                float n00 = dot(g00, f - float2(0.0, 0.0));
-                float n10 = dot(g10, f - float2(1.0, 0.0));
-                float n01 = dot(g01, f - float2(0.0, 1.0));
-                float n11 = dot(g11, f - float2(1.0, 1.0));
-
-                return 0.5 + 0.5 * lerp(lerp(n00, n10, u.x), lerp(n01, n11, u.x), u.y);
-            }
-
-            float fbm(float2 p, int octaves)
-            {
-                float val = 0.0;
-                float amp = 0.5;
-                float freq = 1.0;
-                for (int i = 0; i < octaves; i++)
-                {
-                    val += amp * gradientNoise(p * freq);
-                    freq *= 2.0;
-                    amp *= 0.5;
-                }
-                return val;
-            }
-
-            float voronoiCracks(float2 p)
-            {
-                float2 i = floor(p);
-                float2 f = frac(p);
-                float minDist = 10.0;
-
-                for (int y = -1; y <= 1; y++)
-                {
-                    for (int x = -1; x <= 1; x++)
-                    {
-                        float2 neighbor = float2(float(x), float(y));
-                        float2 h = hash2(i + neighbor);
-                        float2 pointInCell = neighbor + 0.1 + 0.8 * h;
-                        float d = length(pointInCell - f);
-                        minDist = min(minDist, d);
-                    }
-                }
-                return minDist;
-            }
-
-            float EvaluateHeight(float2 wpos, float topMask)
-            {
-                float rockFbm = fbm(wpos * _RockScale, 3);
-                float cracks = voronoiCracks(wpos * (_RockScale * 1.5));
-                float rockHeight = 0.25 * rockFbm + 0.15 * cracks;
-
-                // Żyły rudy lekko wgłębione w szczeliny skalne
-                float veinNoise = fbm(wpos * _OreScale + rockFbm * 1.5, 3);
-                float oreMask = smoothstep(_OreThreshold, _OreThreshold + 0.08, veinNoise) * topMask;
-
-                return rockHeight - 0.06 * oreMask;
-            }
 
             Varyings LitPassVertex(Attributes input)
             {
@@ -168,13 +115,14 @@ Shader "Custom/Mountain"
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-                VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
-                VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
+                VertexPositionInputs posInputs = GetVertexPositionInputs(input.positionOS.xyz);
+                VertexNormalInputs normInputs = GetVertexNormalInputs(input.normalOS);
 
-                output.positionCS = vertexInput.positionCS;
-                output.positionWS = vertexInput.positionWS;
-                output.normalWS = normalInput.normalWS;
-                output.fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+                output.positionCS = posInputs.positionCS;
+                output.positionWS = posInputs.positionWS;
+                output.normalWS = normInputs.normalWS;
+                output.positionOS = input.positionOS.xyz;
+                output.fogFactor = ComputeFogFactor(posInputs.positionCS.z);
 
                 return output;
             }
@@ -184,63 +132,80 @@ Shader "Custom/Mountain"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
-                float2 wpos = input.positionWS.xz;
-                float topMask = smoothstep(0.2, 0.6, input.normalWS.y);
+                float2 worldXZ = input.positionWS.xz;
 
-                // --- 1. Faktura Skały Granitowej ---
-                float rockFbm = fbm(wpos * _RockScale, 4);
-                float cracks = voronoiCracks(wpos * (_RockScale * 1.5));
-                float rockTone = saturate(rockFbm * 0.7 + cracks * 0.4);
-                float3 rockColor = lerp(_RockColorDark.rgb, _RockColorLight.rgb, rockTone);
+                // ---------------------------------------------------------------------
+                // 1. WIRTUALNA SIATKA TEXELI (TEXEL DENSITY & RETRO SNAP)
+                // ---------------------------------------------------------------------
+                float hexDiameter = max(0.001, 2.0 * _HexRadius);
+                float density = max(1.0, _TexelDensity);
 
-                // Na ściankach bocznych dodajemy poziome uwarstwienie
-                float strata = gradientNoise(float2(input.positionWS.y * 6.0, wpos.x * 0.5));
-                rockColor *= lerp(0.85 + 0.25 * strata, 1.0, topMask);
+                float2 texelCoords = (worldXZ / hexDiameter) * density;
+                float2 gridCell = floor(texelCoords);
 
-                // --- 2. Żyły Rudy Mineralnej ---
-                float veinNoise = fbm(wpos * _OreScale + rockFbm * 1.5, 3);
-                float oreMask = smoothstep(_OreThreshold, _OreThreshold + 0.08, veinNoise) * topMask;
-                float oreGlint = gradientNoise(wpos * (_OreScale * 3.0));
-                float3 oreCol = _OreColor.rgb * (0.8 + 0.4 * oreGlint);
+                // Antyaliasing na krawedzi texela ze stabilnym fwidth
+                float2 dTex = fwidth(texelCoords);
+                float pixelSpan = max(dTex.x, dTex.y);
+                float snapWeight = saturate(1.0 - pixelSpan * 1.2);
 
-                // --- 3. Kompozycja Materiału ---
-                float3 finalAlbedo = lerp(rockColor, oreCol, oreMask);
-                float finalMetallic = lerp(0.0, _OreMetallic, oreMask);
-                float finalSmoothness = lerp(_RockSmoothness, _OreSmoothness, oreMask);
+                float2 quantizedGrid = gridCell + 0.5;
+                float2 samplePos = (quantizedGrid / density) * hexDiameter;
 
-                // --- 4. Proceduralny Relief 3D ---
-                float delta = 0.04;
-                float hL = EvaluateHeight(wpos - float2(delta, 0.0), topMask);
-                float hR = EvaluateHeight(wpos + float2(delta, 0.0), topMask);
-                float hD = EvaluateHeight(wpos - float2(0.0, delta), topMask);
-                float hU = EvaluateHeight(wpos + float2(0.0, delta), topMask);
+                // Zblizenie do kamery -> wyrazny retro piksel; oddalenie -> plynny brak aliasingu
+                float2 retroUV = lerp(worldXZ, samplePos, snapWeight);
 
-                float3 bumpOffset = float3((hL - hR) * _BumpStrength, 0.0, (hD - hU) * _BumpStrength);
-                float3 normalWS = normalize(input.normalWS + bumpOffset);
+                // ---------------------------------------------------------------------
+                // 2. MACRO VARIATION (ORGANICZNE PLAMY GEOLOGICZNE - ZERO BRUKU)
+                // ---------------------------------------------------------------------
+                float2 warpOffset = (float2(ValueNoise2D(retroUV * (_MacroScale * 1.5) + float2(12.3, 45.6)),
+                                            ValueNoise2D(retroUV * (_MacroScale * 1.5) + float2(78.9, 32.1))) - 0.5) * 0.45;
 
-                // --- 5. URP PBR Lighting ---
-                InputData inputData = (InputData)0;
-                inputData.positionWS = input.positionWS;
-                inputData.normalWS = normalWS;
-                inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
-                inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
-                inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
-                inputData.bakedGI = SampleSH(normalWS);
-                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                float macroNoise = ValueNoise2D((retroUV + warpOffset) * _MacroScale + float2(21.4, 63.8));
+                macroNoise = saturate(0.5 + (macroNoise - 0.5) * _MacroContrast);
 
-                SurfaceData surfaceData = (SurfaceData)0;
-                surfaceData.albedo = finalAlbedo;
-                surfaceData.metallic = finalMetallic;
-                surfaceData.specular = half3(0.04, 0.04, 0.04);
-                surfaceData.smoothness = finalSmoothness;
-                surfaceData.normalTS = half3(0, 0, 1);
-                surfaceData.emission = half3(0, 0, 0);
-                surfaceData.occlusion = 1.0;
-                surfaceData.alpha = 1.0;
+                // ---------------------------------------------------------------------
+                // 3. MEDIUM DETAIL: BEDROCK FACETS (KWANTYZOWANE FASETKI SKALNE)
+                // ---------------------------------------------------------------------
+                // Uwaga: Uzywamy losowego odcienia fasetki (cellHash) z kwantyzacja steps,
+                // bez zadnych obrysow szczelin (f2 - f1), dzieki czemu skala jest lita!
+                VoronoiResult facetV = FastVoronoi2D(retroUV * _DetailScale + warpOffset);
+                float quantSteps = max(1.0, _QuantizeSteps);
+                float steppedTone = floor(facetV.cellHash * quantSteps + 0.5) / quantSteps;
 
-                half4 finalColor = UniversalFragmentPBR(inputData, surfaceData);
-                finalColor.rgb = MixFog(finalColor.rgb, inputData.fogCoord);
-                return finalColor;
+                // Stopniowanie kolorystyczne zaleznie od makro-plam i fasetek:
+                float3 darkToMid = lerp(_RockDarkColor.rgb, _RockBaseColor.rgb, macroNoise);
+                float3 midToLight = lerp(_RockBaseColor.rgb, _RockLightColor.rgb, macroNoise);
+                float3 rockComposite = lerp(darkToMid, midToLight, steppedTone);
+
+                // Cieplejszy akcent mineralny / ochra na wybranych partiach fasetek:
+                float accentNoise = ValueNoise2D(retroUV * (_DetailScale * 0.75) + float2(33.7, 71.2));
+                float accentMask = smoothstep(0.68, 0.88, accentNoise);
+                rockComposite = lerp(rockComposite, _RockAccentColor.rgb, accentMask * 0.38);
+
+                // ---------------------------------------------------------------------
+                // 4. MICRO DETAIL: WZBURZENIE POWIERZCHNI I ZWIETRZELINA (CHISELED GRAIN)
+                // ---------------------------------------------------------------------
+                float microNoise = (ValueNoise2D(retroUV * (_DetailScale * 4.8) + float2(7.3, 19.1)) - 0.5);
+                rockComposite += microNoise * (_DetailStrength * 0.28) * snapWeight;
+
+                // ---------------------------------------------------------------------
+                // 5. CZYTELNOSC SIATKI HEKSOW (HEX BORDER)
+                // ---------------------------------------------------------------------
+                float borderMask = EvaluateHexBorder(input.positionOS.xz, input.positionWS.xz, _HexRadius, _HexBorderWidth, _HexBorderStrength, _HexBorderNoise);
+                float3 finalAlbedo = lerp(rockComposite, _HexBorderColor.rgb, borderMask);
+
+                // ---------------------------------------------------------------------
+                // 6. OSWIETLENIE URP PBR
+                // ---------------------------------------------------------------------
+                return CalculateTerrainLitPBR(
+                    input.positionWS,
+                    input.normalWS,
+                    input.positionCS,
+                    input.fogFactor,
+                    finalAlbedo,
+                    _Smoothness,
+                    _AmbientBoost
+                );
             }
             ENDHLSL
         }
@@ -265,19 +230,17 @@ Shader "Custom/Mountain"
 
             struct Attributes
             {
-                float4 positionOS   : POSITION;
-                float3 normalOS     : NORMAL;
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
-                float4 positionCS   : SV_POSITION;
+                float4 positionCS : SV_POSITION;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
-
-            float3 _LightDirection;
 
             Varyings ShadowPassVertex(Attributes input)
             {
@@ -288,7 +251,8 @@ Shader "Custom/Mountain"
 
                 float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
                 float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
-                output.positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, _LightDirection));
+                output.positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, _MainLightPosition.xyz));
+
                 return output;
             }
 
@@ -317,13 +281,13 @@ Shader "Custom/Mountain"
 
             struct Attributes
             {
-                float4 positionOS   : POSITION;
+                float4 positionOS : POSITION;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
-                float4 positionCS   : SV_POSITION;
+                float4 positionCS : SV_POSITION;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -332,7 +296,7 @@ Shader "Custom/Mountain"
             {
                 Varyings output = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
-                UNITY_TRANSFER_INPUT_INSTANCE_ID(input, output);
+                UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
@@ -347,5 +311,5 @@ Shader "Custom/Mountain"
         }
     }
 
-    FallBack "Universal Render Pipeline/Lit"
+    FallBack "Hidden/Universal Render Pipeline/FallbackError"
 }

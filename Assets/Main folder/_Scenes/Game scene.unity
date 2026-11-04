@@ -24,7 +24,7 @@ RenderSettings:
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 3
+  m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
@@ -200,9 +200,9 @@ MonoBehaviour:
     sunColor: {r: 0.92, g: 0.46, b: 0.18, a: 1}
     sunIntensity: 0.95
     shadowStrength: 0.8
-    ambientSkyColor: {r: 0.2, g: 0.12, b: 0.18, a: 1}
-    ambientEquatorColor: {r: 0.13, g: 0.08, b: 0.11, a: 1}
-    ambientGroundColor: {r: 0.05, g: 0.03, b: 0.04, a: 1}
+    ambientSkyColor: {r: 0.44, g: 0.44, b: 0.56, a: 1}
+    ambientEquatorColor: {r: 0.35, g: 0.36, b: 0.47, a: 1}
+    ambientGroundColor: {r: 0.22, g: 0.23, b: 0.32, a: 1}
     fogColor: {r: 0.23, g: 0.12, b: 0.21, a: 1}
     fogDensity: 0.005
     enemyGlow: 0
@@ -213,9 +213,9 @@ MonoBehaviour:
     sunColor: {r: 0.36, g: 0.34, b: 0.7, a: 1}
     sunIntensity: 0.65
     shadowStrength: 0.55
-    ambientSkyColor: {r: 0.11, g: 0.1, b: 0.22, a: 1}
-    ambientEquatorColor: {r: 0.075, g: 0.065, b: 0.15, a: 1}
-    ambientGroundColor: {r: 0.035, g: 0.03, b: 0.07, a: 1}
+    ambientSkyColor: {r: 0.44, g: 0.51, b: 0.68, a: 1}
+    ambientEquatorColor: {r: 0.36, g: 0.44, b: 0.58, a: 1}
+    ambientGroundColor: {r: 0.22, g: 0.27, b: 0.38, a: 1}
     fogColor: {r: 0.11, g: 0.07, b: 0.2, a: 1}
     fogDensity: 0.006
     enemyGlow: 1
@@ -1464,12 +1464,12 @@ MonoBehaviour:
   scrollSpeed: 30
   scrollSmoothing: 15
   invertScroll: 0
-  enableRMBDrag: 1
+  enableRMBRotation: 1
   enableEdgePan: 1
   edgePanBorderThickness: 15
   edgePanSpeed: 0
   defaultHeight: 25
-  minHeight: 15
+  minHeight: 8
   maxHeight: 50
   mapLimit: {x: 500, y: 500}
   isInputLocked: 0
@@ -4470,19 +4470,25 @@ MonoBehaviour:
   prefabMountain: {fileID: 1362618508886082739, guid: 78cc11c5f7a6dce4fb697cdfc3a13df2, type: 3}
   prefabFertile: {fileID: 4983687469535243513, guid: 39669e049b5dfd74fb42bf4fed8d1d51, type: 3}
   prefabMeadow: {fileID: 0}
+  mountainTopPrefab: {fileID: 1362618508886082739, guid: 78cc11c5f7a6dce4fb697cdfc3a13df2, type: 3}
+  mountainTopYOffset: 0
+  mountainTopScaleMultiplier: 1
+  randomizeMountainRotation: 1
+  matSideMountain: {fileID: 2100000, guid: 3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d, type: 2}
   prefabBase: {fileID: 4011031713050108421, guid: 07c2962ef65bb134394603a64ca2250e, type: 3}
   prefabBeacon: {fileID: 4189068666463913954, guid: e4e39cba01fd49643bcaa5024318311c, type: 3}
   matPath: {fileID: 2100000, guid: d75c9b64f7c92134ab819ad47fad24f6, type: 2}
-  matForest: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
-  matMountain: {fileID: 2100000, guid: ecf964584f2921a42a52d9d4bc81e15f, type: 2}
-  matHill: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
-  matSinkhole: {fileID: 2100000, guid: cff614c30f540a04f8227dd8e83f0747, type: 2}
-  matFertile: {fileID: 2100000, guid: ef06dbb4ec4107c46b4d2d4594557191, type: 2}
-  matMeadow: {fileID: 0}
+  matForest: {fileID: 2100000, guid: 7bad95bd762b450692d7fbfec0c29f64, type: 2}
+  matMountain: {fileID: 2100000, guid: d800da75174d474e92ae9ced53a39f6b, type: 2}
+  matHill: {fileID: 2100000, guid: 1cb97b30713647d68879d54dd2d7aa32, type: 2}
+  matSinkhole: {fileID: 2100000, guid: 2057d46a0c1b466eba379c9417d7eb13, type: 2}
+  matFertile: {fileID: 2100000, guid: a7418ad55bc841d2a912bbf85410fad2, type: 2}
+  matMeadow: {fileID: 2100000, guid: a7418ad55bc841d2a912bbf85410fad2, type: 2}
   matBase: {fileID: 2100000, guid: 9c4fa65ee65d1124eb407a3143ee0955, type: 2}
   matBeacon: {fileID: 2100000, guid: 26da7d67a911ba04ea40392c2719aad7, type: 2}
   matDefaultGrass: {fileID: 2100000, guid: b594f1b85ad5d0846afec409306b2049, type: 2}
-  elevationHeightStep: 0.35
+  elevationHeightStep: 0.25
+  matSide: {fileID: 2100000, guid: 397ebaba128a4cd8b00c50ac5fe29833, type: 2}
 --- !u!114 &1837610585
 MonoBehaviour:
   m_ObjectHideFlags: 0

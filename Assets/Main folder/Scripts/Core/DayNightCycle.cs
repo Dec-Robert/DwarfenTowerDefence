@@ -67,7 +67,7 @@ public class DayNightCycle : MonoBehaviour
 
     // Oświetlenie globalne pozostaje raczej neutralne.
     // Fiolet należy do kataklizmu, a nie do każdej powierzchni na mapie.
-    private static PhaseLightingConfig RecommendedMorning()
+    public static PhaseLightingConfig RecommendedMorning()
     {
         return new PhaseLightingConfig
         {
@@ -88,7 +88,7 @@ public class DayNightCycle : MonoBehaviour
         };
     }
 
-    private static PhaseLightingConfig RecommendedDusk()
+    public static PhaseLightingConfig RecommendedDusk()
     {
         return new PhaseLightingConfig
         {
@@ -99,10 +99,10 @@ public class DayNightCycle : MonoBehaviour
             sunIntensity = 0.82f,
             shadowStrength = 0.56f,
 
-            // Chłodne wypełnienie zamiast prawie czarnego, purpurowego cienia.
-            ambientSkyColor = new Color(0.34f, 0.34f, 0.43f, 1f),
-            ambientEquatorColor = new Color(0.27f, 0.28f, 0.36f, 1f),
-            ambientGroundColor = new Color(0.19f, 0.20f, 0.28f, 1f),
+            // Chłodne wypełnienie o podwyższonej czytelności (+30% ambientu) - zachowuje złowrogi zmierzch
+            ambientSkyColor = new Color(0.44f, 0.44f, 0.56f, 1f),
+            ambientEquatorColor = new Color(0.35f, 0.36f, 0.47f, 1f),
+            ambientGroundColor = new Color(0.22f, 0.23f, 0.32f, 1f),
 
             fogColor = new Color(0.24f, 0.20f, 0.29f, 1f),
             fogDensity = 0.0036f,
@@ -111,7 +111,7 @@ public class DayNightCycle : MonoBehaviour
         };
     }
 
-    private static PhaseLightingConfig RecommendedNight()
+    public static PhaseLightingConfig RecommendedNight()
     {
         return new PhaseLightingConfig
         {
@@ -122,13 +122,90 @@ public class DayNightCycle : MonoBehaviour
             sunIntensity = 0.62f,
             shadowStrength = 0.38f,
 
-            // Najważniejsza zmiana: ciemny granat, ale nie czerń.
-            ambientSkyColor = new Color(0.29f, 0.34f, 0.45f, 1f),
-            ambientEquatorColor = new Color(0.24f, 0.29f, 0.39f, 1f),
-            ambientGroundColor = new Color(0.17f, 0.21f, 0.30f, 1f),
+            // Czytelny, głęboki granat dark fantasy (+50% ambientu) - zapobiega zapadaniu się terenu w czerń
+            ambientSkyColor = new Color(0.44f, 0.51f, 0.68f, 1f),
+            ambientEquatorColor = new Color(0.36f, 0.44f, 0.58f, 1f),
+            ambientGroundColor = new Color(0.22f, 0.27f, 0.38f, 1f),
 
             fogColor = new Color(0.13f, 0.16f, 0.26f, 1f),
             fogDensity = 0.0045f,
+            enemyGlow = 1f,
+            sanctuaryIntensity = 1.65f
+        };
+    }
+
+    // --- POPRZEDNIE PRESETY DLA ŁATWEGO PRZYWRÓCENIA (REVERSIBILITY) ---
+    public static PhaseLightingConfig PreviousDuskV1()
+    {
+        return new PhaseLightingConfig
+        {
+            phaseName = "Dusk - V1",
+            sunEulerAngles = new Vector3(32f, -60f, 0f),
+            sunColor = new Color(0.88f, 0.55f, 0.50f, 1f),
+            sunIntensity = 0.82f,
+            shadowStrength = 0.56f,
+            ambientSkyColor = new Color(0.34f, 0.34f, 0.43f, 1f),
+            ambientEquatorColor = new Color(0.27f, 0.28f, 0.36f, 1f),
+            ambientGroundColor = new Color(0.19f, 0.20f, 0.28f, 1f),
+            fogColor = new Color(0.24f, 0.20f, 0.29f, 1f),
+            fogDensity = 0.0036f,
+            enemyGlow = 0f,
+            sanctuaryIntensity = 0.85f
+        };
+    }
+
+    public static PhaseLightingConfig PreviousNightV1()
+    {
+        return new PhaseLightingConfig
+        {
+            phaseName = "Night - V1",
+            sunEulerAngles = new Vector3(56f, -35f, 0f),
+            sunColor = new Color(0.54f, 0.66f, 0.83f, 1f),
+            sunIntensity = 0.62f,
+            shadowStrength = 0.38f,
+            ambientSkyColor = new Color(0.29f, 0.34f, 0.45f, 1f),
+            ambientEquatorColor = new Color(0.24f, 0.29f, 0.39f, 1f),
+            ambientGroundColor = new Color(0.17f, 0.21f, 0.30f, 1f),
+            fogColor = new Color(0.13f, 0.16f, 0.26f, 1f),
+            fogDensity = 0.0045f,
+            enemyGlow = 1f,
+            sanctuaryIntensity = 1.65f
+        };
+    }
+
+    public static PhaseLightingConfig LegacyDuskScene()
+    {
+        return new PhaseLightingConfig
+        {
+            phaseName = "Dusk - Legacy",
+            sunEulerAngles = new Vector3(14f, -60f, 0f),
+            sunColor = new Color(0.92f, 0.46f, 0.18f, 1f),
+            sunIntensity = 0.95f,
+            shadowStrength = 0.80f,
+            ambientSkyColor = new Color(0.20f, 0.12f, 0.18f, 1f),
+            ambientEquatorColor = new Color(0.13f, 0.08f, 0.11f, 1f),
+            ambientGroundColor = new Color(0.05f, 0.03f, 0.04f, 1f),
+            fogColor = new Color(0.23f, 0.12f, 0.21f, 1f),
+            fogDensity = 0.005f,
+            enemyGlow = 0f,
+            sanctuaryIntensity = 0.85f
+        };
+    }
+
+    public static PhaseLightingConfig LegacyNightScene()
+    {
+        return new PhaseLightingConfig
+        {
+            phaseName = "Night - Legacy",
+            sunEulerAngles = new Vector3(70f, -30f, 0f),
+            sunColor = new Color(0.36f, 0.34f, 0.70f, 1f),
+            sunIntensity = 0.65f,
+            shadowStrength = 0.55f,
+            ambientSkyColor = new Color(0.11f, 0.10f, 0.22f, 1f),
+            ambientEquatorColor = new Color(0.075f, 0.065f, 0.15f, 1f),
+            ambientGroundColor = new Color(0.035f, 0.03f, 0.07f, 1f),
+            fogColor = new Color(0.11f, 0.07f, 0.20f, 1f),
+            fogDensity = 0.006f,
             enemyGlow = 1f,
             sanctuaryIntensity = 1.65f
         };
@@ -183,7 +260,7 @@ public class DayNightCycle : MonoBehaviour
     }
 
     [ContextMenu("Zastosuj presety Dark Fantasy")]
-    private void ApplyRecommendedPresets()
+    public void ApplyRecommendedPresets()
     {
         morningConfig = RecommendedMorning();
         duskConfig = RecommendedDusk();
@@ -203,9 +280,47 @@ public class DayNightCycle : MonoBehaviour
 
     // Wsteczna kompatybilność ze starą nazwą menu kontekstowego.
     [ContextMenu("Zastosuj zalecane ustawienia faz")]
-    private void ApplyRecommendedPresetsLegacy()
+    public void ApplyRecommendedPresetsLegacy()
     {
         ApplyRecommendedPresets();
+    }
+
+    [ContextMenu("Przywróć presety Dark Fantasy V1")]
+    public void RestoreV1Presets()
+    {
+        morningConfig = RecommendedMorning();
+        duskConfig = PreviousDuskV1();
+        nightConfig = PreviousNightV1();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        if (Application.isPlaying)
+        {
+            if (TimePhaseManager.Instance != null)
+                ApplyPhaseImmediate(TimePhaseManager.Instance.CurrentTimePhase);
+            else
+                ApplyConfigImmediate(morningConfig);
+        }
+    }
+
+    [ContextMenu("Przywróć oryginalne presety sceny (Ultra Ciemne)")]
+    public void RestoreLegacyScenePresets()
+    {
+        morningConfig = RecommendedMorning();
+        duskConfig = LegacyDuskScene();
+        nightConfig = LegacyNightScene();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        if (Application.isPlaying)
+        {
+            if (TimePhaseManager.Instance != null)
+                ApplyPhaseImmediate(TimePhaseManager.Instance.CurrentTimePhase);
+            else
+                ApplyConfigImmediate(morningConfig);
+        }
     }
 
     private void HandleMorningStarted() => TransitionToConfig(morningConfig, transitionDuration);

@@ -34,9 +34,21 @@ public class CameraController : MonoBehaviour
     [Tooltip("Odwrócenie kierunku scrolla (domyślnie: w przód = przybliżenie/w dół, w tył = oddalenie/w górę)")]
     public bool invertScroll = false;
 
+    [Header("Obrót kamery (PPM)")]
+    [Tooltip("Włącza obracanie kamery prawym przyciskiem myszy (PPM)")]
+    public bool enableRMBRotation = true;
+    [Tooltip("Czułość obrotu kamery myszą")]
+    public float rotationSpeed = 3f;
+    [Tooltip("Minimalne nachylenie kamery (pitch w stopniach)")]
+    public float minPitch = 20f;
+    [Tooltip("Maksymalne nachylenie kamery (pitch w stopniach)")]
+    public float maxPitch = 80f;
+    [Tooltip("Odwrócenie osi pionowej przy obrocie nachylenia")]
+    public bool invertPitch = false;
+    [Tooltip("Szybkość płynnego powrotu rotacji po kliknięciu scrolla (0 = natychmiast)")]
+    public float resetRotationSmoothing = 12f;
+
     [Header("Przesuwanie myszą")]
-    [Tooltip("Włącza przeciąganie mapy prawym przyciskiem myszy (PPM)")]
-    public bool enableRMBDrag = true;
     [Tooltip("Włącza przesuwanie kamery po najechaniu kursorem na krawędzie ekranu")]
     public bool enableEdgePan = true;
     [Tooltip("Szerokość strefy aktywacji przy krawędzi ekranu w pikselach")]
@@ -47,7 +59,7 @@ public class CameraController : MonoBehaviour
     [Header("Granice (Ograniczenia)")]
     [Tooltip("Domyślna wysokość początkowa kamery przy starcie gry")]
     public float defaultHeight = 25f;
-    public float minHeight = 15f;
+    public float minHeight = 8f;
     public float maxHeight = 50f;
     public Vector2 mapLimit = new Vector2(50f, 50f);
 
@@ -59,14 +71,28 @@ public class CameraController : MonoBehaviour
     private Vector3 focusTarget;
     private bool isFocusing = false;
 
-    // Zmienne do przeciągania PPM
-    private bool isDraggingRMB = false;
-    private Vector3 lastGroundPos;
+    // Zmienne obrotu kamery
+    private Quaternion initialRotation;
+    private float initialPitch;
+    private float initialYaw;
+    private float currentPitch;
+    private float currentYaw;
+    private Vector3 currentPivot;
+    private Vector3 resetPivot;
+    private bool isRotatingRMB = false;
+    private bool isResettingRotation = false;
     private Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
 
     void Start()
     {
         if (_cam == null) _cam = Camera.main;
+
+        initialRotation = transform.rotation;
+        initialPitch = transform.eulerAngles.x;
+        if (initialPitch > 180f) initialPitch -= 360f;
+        initialYaw = transform.eulerAngles.y;
+        currentPitch = initialPitch;
+        currentYaw = initialYaw;
 
         // Ustalenie prawidłowej pozycji startowej (zapobiega startowi na ziemi / poniżej minHeight)
         float startY = (defaultHeight > 0f) ? defaultHeight : transform.position.y;
@@ -85,68 +111,130 @@ public class CameraController : MonoBehaviour
     {
         if (!isInputLocked)
         {
-            HandleMouseDrag();
+            HandleRotationInput();
             HandleMovementInput();
         }
         else
         {
-            isDraggingRMB = false;
+            isRotatingRMB = false;
+            isResettingRotation = false;
         }
 
         HandleHeightSmoothing();
         HandleFocusMovement();
     }
 
-    void HandleMouseDrag()
+    void HandleRotationInput()
     {
-        if (!enableRMBDrag || _cam == null) return;
+        // 1. Reset rotacji kółkiem myszy (MMB / Scroll Click)
+        if (Input.GetMouseButtonDown(2))
+        {
+            if (!(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
+            {
+                Ray ray = new Ray(transform.position, transform.forward);
+                if (groundPlane.Raycast(ray, out float enter))
+                {
+                    resetPivot = ray.GetPoint(enter);
+                    resetPivot.y = 0f;
+                }
+                else
+                {
+                    resetPivot = new Vector3(transform.position.x, 0f, transform.position.z);
+                }
 
-        // Rozpoczęcie przeciągania
+                if (resetRotationSmoothing <= 0f)
+                {
+                    currentPitch = initialPitch;
+                    currentYaw = initialYaw;
+                    ApplyOrbit(resetPivot, currentPitch, currentYaw);
+                    isResettingRotation = false;
+                }
+                else
+                {
+                    isResettingRotation = true;
+                    isRotatingRMB = false;
+                }
+            }
+        }
+
+        // Płynny powrót rotacji do stanu początkowego wokół obserwowanego punktu
+        if (isResettingRotation)
+        {
+            currentYaw = Mathf.LerpAngle(currentYaw, initialYaw, resetRotationSmoothing * Time.unscaledDeltaTime);
+            currentPitch = Mathf.Lerp(currentPitch, initialPitch, resetRotationSmoothing * Time.unscaledDeltaTime);
+
+            ApplyOrbit(resetPivot, currentPitch, currentYaw);
+
+            if (Mathf.Abs(Mathf.DeltaAngle(currentYaw, initialYaw)) < 0.2f && Mathf.Abs(currentPitch - initialPitch) < 0.2f)
+            {
+                currentYaw = initialYaw;
+                currentPitch = initialPitch;
+                ApplyOrbit(resetPivot, currentPitch, currentYaw);
+                isResettingRotation = false;
+            }
+        }
+
+        if (!enableRMBRotation || _cam == null) return;
+
+        // 2. Rozpoczęcie obrotu PPM
         if (Input.GetMouseButtonDown(1))
         {
             if (!(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
             {
-                Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
+                Ray ray = new Ray(transform.position, transform.forward);
                 if (groundPlane.Raycast(ray, out float enter))
                 {
-                    isDraggingRMB = true;
-                    lastGroundPos = ray.GetPoint(enter);
+                    currentPivot = ray.GetPoint(enter);
+                    currentPivot.y = 0f;
+                    isRotatingRMB = true;
+                    isResettingRotation = false;
+                    currentPitch = transform.eulerAngles.x;
+                    if (currentPitch > 180f) currentPitch -= 360f;
+                    currentYaw = transform.eulerAngles.y;
                 }
             }
         }
 
-        // Trzymanie i przeciąganie PPM
-        if (Input.GetMouseButton(1) && isDraggingRMB)
+        // 3. Trzymanie i obracanie PPM (tylko gdy mysz faktycznie się poruszy)
+        if (Input.GetMouseButton(1) && isRotatingRMB)
         {
-            Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
-            if (groundPlane.Raycast(ray, out float enter))
+            float mouseX = Input.GetAxis("Mouse X");
+            float mouseY = Input.GetAxis("Mouse Y");
+
+            if (Mathf.Abs(mouseX) > 0.0001f || Mathf.Abs(mouseY) > 0.0001f)
             {
-                Vector3 currentGroundPos = ray.GetPoint(enter);
-                Vector3 delta = lastGroundPos - currentGroundPos;
-                delta.y = 0;
+                isFocusing = false;
+                isResettingRotation = false;
 
-                if (delta.sqrMagnitude > 0.00001f)
-                {
-                    isFocusing = false;
-                    Vector3 newPos = transform.position + delta;
-                    newPos.x = Mathf.Clamp(newPos.x, -mapLimit.x, mapLimit.x);
-                    newPos.z = Mathf.Clamp(newPos.z, -mapLimit.y, mapLimit.y);
-                    transform.position = newPos;
+                currentYaw += mouseX * rotationSpeed;
+                float pitchDelta = invertPitch ? -mouseY : mouseY;
+                currentPitch += pitchDelta * rotationSpeed;
+                currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
 
-                    // Po przesunięciu kamery aktualizujemy punkt referencyjny na bieżącej pozycji kursora
-                    Ray newRay = _cam.ScreenPointToRay(Input.mousePosition);
-                    if (groundPlane.Raycast(newRay, out float newEnter))
-                    {
-                        lastGroundPos = newRay.GetPoint(newEnter);
-                    }
-                }
+                ApplyOrbit(currentPivot, currentPitch, currentYaw);
             }
         }
 
-        // Zakończenie przeciągania - natychmiastowe zatrzymanie
+        // 4. Zakończenie obrotu PPM
         if (Input.GetMouseButtonUp(1))
         {
-            isDraggingRMB = false;
+            isRotatingRMB = false;
+        }
+    }
+
+    private void ApplyOrbit(Vector3 pivot, float pitch, float yaw)
+    {
+        Quaternion newRot = Quaternion.Euler(pitch, yaw, 0f);
+        Vector3 backDir = newRot * Vector3.back;
+        if (backDir.y > 0.01f)
+        {
+            float currentY = (Mathf.Abs(transform.position.y - targetHeight) > 0.01f) ? transform.position.y : targetHeight;
+            float dist = currentY / backDir.y;
+            Vector3 newCamPos = pivot + backDir * dist;
+            newCamPos.x = Mathf.Clamp(newCamPos.x, -mapLimit.x, mapLimit.x);
+            newCamPos.z = Mathf.Clamp(newCamPos.z, -mapLimit.y, mapLimit.y);
+            transform.position = newCamPos;
+            transform.rotation = newRot;
         }
     }
 
@@ -155,8 +243,8 @@ public class CameraController : MonoBehaviour
         float xInput = Input.GetAxisRaw("Horizontal"); // A / D
         float zInput = Input.GetAxisRaw("Vertical");   // W / S
 
-        // Obsługa najechania na krawędzie ekranu (Edge Pan) - wyłączone podczas aktywnego dragowania PPM
-        if (enableEdgePan && !isDraggingRMB)
+        // Obsługa najechania na krawędzie ekranu (Edge Pan) - wyłączone podczas aktywnego obracania PPM
+        if (enableEdgePan && !isRotatingRMB)
         {
             Vector3 mousePos = Input.mousePosition;
             // Sprawdzamy czy kursor znajduje się wewnątrz okna gry
@@ -185,6 +273,7 @@ public class CameraController : MonoBehaviour
         if (direction.sqrMagnitude > 0.001f)
         {
             isFocusing = false; // Przerwij ewentualny ruch kamery do punktu skupienia
+            isResettingRotation = false; // Przerwij ewentualny reset rotacji
             float currentMoveSpeed = (edgePanSpeed > 0f && Mathf.Approximately(Input.GetAxisRaw("Horizontal"), 0f) && Mathf.Approximately(Input.GetAxisRaw("Vertical"), 0f))
                 ? edgePanSpeed
                 : moveSpeed;
@@ -203,6 +292,7 @@ public class CameraController : MonoBehaviour
 
         if (Mathf.Abs(heightInput) > 0.01f)
         {
+            isResettingRotation = false;
             float currentY = transform.position.y + heightInput * zoomSpeed * Time.unscaledDeltaTime;
             currentY = Mathf.Clamp(currentY, minHeight, maxHeight);
             transform.position = new Vector3(transform.position.x, currentY, transform.position.z);
@@ -216,6 +306,7 @@ public class CameraController : MonoBehaviour
             float scrollInput = Input.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(scrollInput) > 0.0001f)
             {
+                isResettingRotation = false;
                 float dir = invertScroll ? 1f : -1f;
                 targetHeight += scrollInput * scrollSpeed * dir;
                 targetHeight = Mathf.Clamp(targetHeight, minHeight, maxHeight);
@@ -257,16 +348,23 @@ public class CameraController : MonoBehaviour
     {
         focusTarget = new Vector3(worldPoint.x, transform.position.y, worldPoint.z);
 
-        float currentAngleX = transform.eulerAngles.x;
-        if (currentAngleX > 5f && currentAngleX < 89f)
+        Vector3 fwdFlat = transform.forward;
+        fwdFlat.y = 0f;
+        if (fwdFlat.sqrMagnitude > 0.001f)
         {
-            float zOffset = focusTarget.y / Mathf.Tan(currentAngleX * Mathf.Deg2Rad);
-            focusTarget.z -= zOffset;
+            fwdFlat.Normalize();
+            float currentAngleX = transform.eulerAngles.x;
+            if (currentAngleX > 5f && currentAngleX < 89f)
+            {
+                float dist = focusTarget.y / Mathf.Tan(currentAngleX * Mathf.Deg2Rad);
+                focusTarget -= fwdFlat * dist;
+            }
         }
 
         focusTarget.x = Mathf.Clamp(focusTarget.x, -mapLimit.x, mapLimit.x);
         focusTarget.z = Mathf.Clamp(focusTarget.z, -mapLimit.y, mapLimit.y);
 
         isFocusing = true;
+        isResettingRotation = false;
     }
 }

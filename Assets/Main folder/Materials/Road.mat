@@ -26,17 +26,34 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BumpStrength: 0.85
-    - _CreviceAO: 0.45
-    - _DirtScale: 1.5
-    - _GravelScale: 16
-    - _PebbleCoverage: 0.65
-    - _PebbleScale: 6
-    - _Softness: 0.35
+    - _AmbientBoost: 0.255
+    - _DebugEdgeMask: 0
+    - _DebugShoulders: 0
+    - _DetailScale: 2.2
+    - _DetailStrength: 0.5
+    - _HexBorderNoiseStrength: 0.35
+    - _HexBorderStrength: 0.35
+    - _HexBorderWidth: 0.07
+    - _HexRadius: 1
+    - _MacroContrast: 0.9
+    - _MacroScale: 0.1
+    - _PebbleClusterScale: 0.5
+    - _PebbleContrast: 0.425
+    - _PebbleDensity: 0.4
+    - _PebbleScale: 16
+    - _QuantizeSteps: 3.82
+    - _RoadBodyBrightness: 1.2
+    - _ShoulderNoiseStrength: 0.2
+    - _ShoulderStrength: 1
+    - _ShoulderWidth: 0.1
+    - _Smoothness: 0.4
+    - _TexelDensity: 8
     m_Colors:
-    - _DirtColorDark: {r: 0.38, g: 0.25, b: 0.16, a: 1}
-    - _DirtColorLight: {r: 0.58, g: 0.42, b: 0.28, a: 1}
-    - _PebbleColorDark: {r: 0.42, g: 0.36, b: 0.31, a: 1}
-    - _PebbleColorLight: {r: 0.72, g: 0.64, b: 0.53, a: 1}
+    - _PebbleColorDark: {r: 0.24, g: 0.22, b: 0.2, a: 1}
+    - _PebbleColorLight: {r: 0.38, g: 0.34, b: 0.3, a: 1}
+    - _RoadBaseColor: {r: 0.4039216, g: 0.3137255, b: 0.25882354, a: 1}
+    - _RoadDarkColor: {r: 0.26666668, g: 0.20000002, b: 0.15294118, a: 1}
+    - _RoadDustColor: {r: 0.5176471, g: 0.40784317, b: 0.32156864, a: 1}
+    - _ShoulderColor: {r: 0.58, g: 0.45899993, b: 0.36499998, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

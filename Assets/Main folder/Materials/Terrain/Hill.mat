@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Hill
+  m_Shader: {fileID: 4800000, guid: 062d3e36c9204c7d94e3d77f53a23642, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _AmbientBoost: 0.5
+    - _ColorSteps: 4
+    - _CrackScale: 1.8
+    - _CrackWidth: 0.045
+    - _DebugHillMode: 0
+    - _DetailStrength: 0.35
+    - _DrySoilCoverage: 0.22
+    - _HexBorderNoise: 0.35
+    - _HexBorderStrength: 0.32
+    - _HexBorderWidth: 0.07
+    - _HexRadius: 1
+    - _HillLevel: 3
+    - _LevelGrassReduction: 1.1
+    - _LevelRockBoost: 1.15
+    - _PatchContrast: 1
+    - _PatchScale: 0.5
+    - _RockChunkScale: 0.45
+    - _RockIrregularity: 0.35
+    - _Smoothness: 0.04
+    - _TexelDensity: 16
+    m_Colors:
+    - _CrackColor: {r: 0.169, g: 0.153, b: 0.137, a: 1}
+    - _DrySoilColor: {r: 0.412, g: 0.357, b: 0.278, a: 1}
+    - _GrassBaseColor: {r: 0.275, g: 0.329, b: 0.22, a: 1}
+    - _GrassDarkColor: {r: 0.184, g: 0.227, b: 0.149, a: 1}
+    - _GrassLightColor: {r: 0.408, g: 0.482, b: 0.325, a: 1}
+    - _HexBorderColor: {r: 0.541, g: 0.518, b: 0.455, a: 1}
+    - _RockDarkColor: {r: 0.325, g: 0.31, b: 0.275, a: 1}
+    - _RockLightColor: {r: 0.482, g: 0.459, b: 0.404, a: 1}
+    - _TransitionColor: {r: 0.322, g: 0.278, b: 0.22, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -42,10 +42,12 @@ public class ShaderPrewarmer : MonoBehaviour
     // Kluczowe shadery używane w projekcie Dwarfen Tower Defence
     private static readonly string[] ProjectShaderNames = new string[]
     {
+        "Custom/Grassland",
         "Custom/CastleStone",
         "Custom/FertileSoil",
         "Custom/Hill",
         "Custom/Mountain",
+        "Custom/Terrain/Mountain",
         "Custom/Road",
         "Custom/Sinkhole",
         "Custom/EnemyHealthBar",

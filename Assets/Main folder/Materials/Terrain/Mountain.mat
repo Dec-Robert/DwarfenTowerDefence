@@ -26,16 +26,23 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BumpStrength: 2.4
-    - _OreMetallic: 0.85
-    - _OreScale: 2.8
-    - _OreSmoothness: 0.60
-    - _OreThreshold: 0.74
-    - _RockScale: 1.4
-    - _RockSmoothness: 0.12
+    - _AmbientBoost: 0.5
+    - _DetailScale: 1.8
+    - _DetailStrength: 0.45
+    - _HexBorderNoise: 0.35
+    - _HexBorderStrength: 0.28
+    - _HexBorderWidth: 0.06
+    - _HexRadius: 1
+    - _MacroContrast: 1.1
+    - _MacroScale: 0.55
+    - _QuantizeSteps: 4
+    - _Smoothness: 0.05
+    - _TexelDensity: 16
     m_Colors:
-    - _OreColor: {r: 0.84, g: 0.50, b: 0.22, a: 1}
-    - _RockColorDark: {r: 0.18, g: 0.19, b: 0.21, a: 1}
-    - _RockColorLight: {r: 0.35, g: 0.36, b: 0.38, a: 1}
+    - _HexBorderColor: {r: 0.4392157, g: 0.4, b: 0.3647059, a: 1}
+    - _RockAccentColor: {r: 0.38431373, g: 0.34901962, b: 0.3019608, a: 1}
+    - _RockBaseColor: {r: 0.31764707, g: 0.28235295, b: 0.25490198, a: 1}
+    - _RockDarkColor: {r: 0.2, g: 0.18039216, b: 0.17254902, a: 1}
+    - _RockLightColor: {r: 0.4392157, g: 0.4, b: 0.3647059, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

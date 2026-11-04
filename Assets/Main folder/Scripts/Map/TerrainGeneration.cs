@@ -368,7 +368,7 @@ public class TerrainGenerator
             cell.featureLevel = GetDefaultLevelForFeature(g.feature, ctx.Rng);
             if (g.feature == HexFeatureType.Hill) cell.elevation = Mathf.Max(1, cell.featureLevel);
             else if (g.feature == HexFeatureType.Sinkhole) cell.elevation = cell.featureLevel < 0 ? cell.featureLevel : -1;
-            else if (g.feature == HexFeatureType.Mountain) cell.elevation = 3;
+            else if (g.feature == HexFeatureType.Mountain) cell.elevation = 4;
             placed++;
         }
     }
@@ -444,7 +444,7 @@ public class TerrainGenerator
         cells[seed].featureLevel = GetDefaultLevelForFeature(feat, ctx.Rng);
         if (feat == HexFeatureType.Hill) cells[seed].elevation = Mathf.Max(1, cells[seed].featureLevel);
         else if (feat == HexFeatureType.Sinkhole) cells[seed].elevation = cells[seed].featureLevel < 0 ? cells[seed].featureLevel : -1;
-        else if (feat == HexFeatureType.Mountain) cells[seed].elevation = 3;
+        else if (feat == HexFeatureType.Mountain) cells[seed].elevation = 4;
         available.Remove(seed);
         int placed = 1;
 
@@ -460,7 +460,7 @@ public class TerrainGenerator
                 cells[n].featureLevel = GetDefaultLevelForFeature(feat, ctx.Rng);
                 if (feat == HexFeatureType.Hill) cells[n].elevation = Mathf.Max(1, cells[n].featureLevel);
                 else if (feat == HexFeatureType.Sinkhole) cells[n].elevation = cells[n].featureLevel < 0 ? cells[n].featureLevel : -1;
-                else if (feat == HexFeatureType.Mountain) cells[n].elevation = 3;
+                else if (feat == HexFeatureType.Mountain) cells[n].elevation = 4;
                 available.Remove(n);
                 placed++;
             }
@@ -473,7 +473,7 @@ public class TerrainGenerator
             cells[next].featureLevel = GetDefaultLevelForFeature(feat, ctx.Rng);
             if (feat == HexFeatureType.Hill) cells[next].elevation = Mathf.Max(1, cells[next].featureLevel);
             else if (feat == HexFeatureType.Sinkhole) cells[next].elevation = cells[next].featureLevel < 0 ? cells[next].featureLevel : -1;
-            else if (feat == HexFeatureType.Mountain) cells[next].elevation = 3;
+            else if (feat == HexFeatureType.Mountain) cells[next].elevation = 4;
             available.RemoveAt(0);
             placed++;
         }
@@ -691,7 +691,7 @@ public class TerrainGenerator
 
         chunkCells[center].feature = HexFeatureType.Mountain;
         chunkCells[center].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
-        chunkCells[center].elevation = 3;
+        chunkCells[center].elevation = 4;
 
         var clusterHexes = new List<Vector2Int> { center };
 
@@ -718,7 +718,7 @@ public class TerrainGenerator
 
             chunkCells[nextHex].feature = HexFeatureType.Mountain;
             chunkCells[nextHex].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
-            chunkCells[nextHex].elevation = 3;
+            chunkCells[nextHex].elevation = 4;
 
             clusterHexes.Add(nextHex);
         }
@@ -755,7 +755,7 @@ public class TerrainGenerator
                 {
                     chunkCells[hex].feature = HexFeatureType.Mountain;
                     chunkCells[hex].featureLevel = ctx.Rng != null ? ctx.Rng.Range(1, 4) : 1;
-                    chunkCells[hex].elevation = 3;
+                    chunkCells[hex].elevation = 4;
                     continue;
                 }
             }
@@ -770,7 +770,7 @@ public class TerrainGenerator
                     // Organiczny szczyt górski (poza limitami klastrów chunka)
                     chunkCells[hex].feature = HexFeatureType.Mountain;
                     chunkCells[hex].featureLevel = 3;
-                    chunkCells[hex].elevation = 3;
+                    chunkCells[hex].elevation = 4;
                 }
                 else
                 {
@@ -878,6 +878,7 @@ public class TerrainGenerator
             {
                 if (hexDef.feature == HexFeatureType.Hill) cell.elevation = Mathf.Max(1, hexDef.featureLevel);
                 else if (hexDef.feature == HexFeatureType.Sinkhole) cell.elevation = hexDef.featureLevel < 0 ? hexDef.featureLevel : -1;
+                else if (hexDef.feature == HexFeatureType.Mountain) cell.elevation = 4;
             }
 
             if (hexDef.building != null)

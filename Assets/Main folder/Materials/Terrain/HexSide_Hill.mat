@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Hill
-  m_Shader: {fileID: 4800000, guid: 062d3e36c9204c7d94e3d77f53a23642, type: 3}
+  m_Name: HexSide_Hill
+  m_Shader: {fileID: 4800000, guid: 5a4b7f8e3c2d1e0a9b8c7d6e5f4a3b21, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -26,17 +26,15 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BumpStrength: 2.0
-    - _CliffStrataScale: 4.5
-    - _GrassScale: 1.1
-    - _GrassSmoothness: 0.05
-    - _RockCoverage: 0.38
-    - _RockOutcropScale: 1.8
-    - _RockSmoothness: 0.18
+    - _BottomDarkening: 0.5
+    - _NoiseScale: 3
+    - _NoiseStrength: 0.45
+    - _Smoothness: 0.12
+    - _StrataContrast: 2.2
+    - _StrataScale: 7
     m_Colors:
-    - _HighlandGrassDark: {r: 0.24, g: 0.38, b: 0.16, a: 1}
-    - _HighlandGrassLight: {r: 0.42, g: 0.58, b: 0.22, a: 1}
-    - _RockColorDark: {r: 0.38, g: 0.38, b: 0.36, a: 1}
-    - _RockColorLight: {r: 0.60, g: 0.60, b: 0.56, a: 1}
+    - _AccentColor: {r: 0.38, g: 0.36, b: 0.32, a: 1}
+    - _BaseColor: {r: 0.26, g: 0.24, b: 0.22, a: 1}
+    - _DarkColor: {r: 0.15, g: 0.14, b: 0.13, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

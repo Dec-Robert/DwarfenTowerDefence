@@ -1,21 +1,36 @@
-Shader "Custom/Sinkhole"
+Shader "Custom/Terrain/Sinkhole"
 {
     Properties
     {
-        [Header(Ciemny Mul i Bloto (Mud and Silt))]
-        _MudColorDark("Ciemny mul (Dark Mud)", Color) = (0.12, 0.10, 0.08, 1)
-        _MudColorLight("Wilgotna ziemia (Damp Earth)", Color) = (0.24, 0.20, 0.16, 1)
-        _MudScale("Skala mulu (Mud Scale)", Float) = 1.3
-        _MudSmoothness("Wilgotnosc mulu (Mud Smoothness)", Range(0.0, 1.0)) = 0.40
+        [Header(Collapsed Earth Palette)]
+        _SinkholeBaseColor("Ciemna martwa gleba - Dead Earth", Color) = (0.188, 0.137, 0.145, 1.0)
+        _SinkholeDamagedColor("Uszkodzona bordowa ziemia - Damaged Earth", Color) = (0.318, 0.173, 0.188, 1.0)
+        _CrackColor("Szczeliny i pekniecia - Crack Crevices", Color) = (0.098, 0.090, 0.110, 1.0)
+        _ErosionColor("Wysuszona erozja szczelin - Crack Erosion", Color) = (0.475, 0.259, 0.278, 1.0)
 
-        [Header(Stojaca Woda i Kaludze (Water Puddles))]
-        _WaterColor("Ciemna metna woda (Water Color)", Color) = (0.08, 0.12, 0.12, 1)
-        _WaterLevel("Ilosc wody / kaluz (Water Level)", Range(0.0, 0.8)) = 0.34
-        _WaterSmoothness("Lustro wody (Water Smoothness)", Range(0.5, 1.0)) = 0.92
+        [Header(Fissure and Crack Network)]
+        _MacroScale("Skala struktury zapadliska - Macro Scale", Float) = 0.50
+        _CrackScale("Skala sieci pekniec - Crack Scale", Float) = 2.4
+        _CrackWidth("Szerokosc szczelin - Crack Width", Range(0.01, 0.20)) = 0.06
+        _CrackErosionWidth("Szerokosc erozji przy szczelinie - Erosion Width", Range(0.02, 0.35)) = 0.14
 
-        [Header(Spekana Skala i Relief (Cracked Rock and Bump))]
-        _RockColor("Ciemna skala (Dark Rock)", Color) = (0.17, 0.16, 0.16, 1)
-        _BumpStrength("Sila wypuklosci (Bump Strength)", Range(0.0, 5.0)) = 2.2
+        [Header(Retro Stylized Detail)]
+        _TexelDensity("Gestosc pikseli retro - Texel Density", Float) = 16.0
+        _DetailScale("Skala faktury retro - Detail Scale", Float) = 2.2
+        _DetailStrength("Sila faktury retro - Detail Strength", Range(0.0, 1.0)) = 0.40
+        _QuantizeSteps("Kwantyzacja odcieni - Color Steps", Range(2.0, 8.0)) = 4.0
+
+        [Header(Hex Grid Readability)]
+        _HexBorderWidth("Szerokosc granicy heksa - Border Width", Range(0.01, 0.20)) = 0.07
+        _HexBorderStrength("Widocznosc granicy - Border Strength", Range(0.0, 1.0)) = 0.35
+        _HexBorderNoiseStrength("Nieregularnosc granicy - Border Noise", Range(0.0, 1.0)) = 0.35
+        _HexRadius("Promien heksa - Hex Radius", Float) = 1.0
+
+        [Header(Low Light Readability)]
+        _AmbientBoost("Jasnosc w polmroku i nocy - Ambient Boost", Range(0.0, 1.0)) = 0.50
+
+        [Header(Surface Properties)]
+        _Smoothness("Gladkosc martwego gruntu - Smoothness", Range(0.0, 1.0)) = 0.04
     }
 
     SubShader
@@ -51,21 +66,27 @@ Shader "Custom/Sinkhole"
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fog
 
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "TerrainGroundCommon.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _MudColorDark;
-                float4 _MudColorLight;
-                float _MudScale;
-                float _MudSmoothness;
-
-                float4 _WaterColor;
-                float _WaterLevel;
-                float _WaterSmoothness;
-
-                float4 _RockColor;
-                float _BumpStrength;
+                float4 _SinkholeBaseColor;
+                float4 _SinkholeDamagedColor;
+                float4 _CrackColor;
+                float4 _ErosionColor;
+                float  _MacroScale;
+                float  _CrackScale;
+                float  _CrackWidth;
+                float  _CrackErosionWidth;
+                float  _TexelDensity;
+                float  _DetailScale;
+                float  _DetailStrength;
+                float  _QuantizeSteps;
+                float  _HexBorderWidth;
+                float  _HexBorderStrength;
+                float  _HexBorderNoiseStrength;
+                float  _HexRadius;
+                float  _AmbientBoost;
+                float  _Smoothness;
             CBUFFER_END
 
             struct Attributes
@@ -79,57 +100,14 @@ Shader "Custom/Sinkhole"
 
             struct Varyings
             {
-                float4 positionCS   : SV_POSITION;
-                float3 positionWS   : TEXCOORD0;
-                float3 normalWS     : TEXCOORD1;
-                float  fogFactor    : TEXCOORD2;
+                float4 positionCS    : SV_POSITION;
+                float3 positionWS    : TEXCOORD0;
+                float3 normalWS      : TEXCOORD1;
+                float  fogFactor     : TEXCOORD2;
+                float2 positionOS_XZ : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
-
-            float2 hash2(float2 p)
-            {
-                p = float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3)));
-                return frac(sin(p) * 43758.5453123);
-            }
-
-            float gradientNoise(float2 p)
-            {
-                float2 i = floor(p);
-                float2 f = frac(p);
-                float2 u = f * f * (3.0 - 2.0 * f);
-
-                float2 g00 = hash2(i + float2(0.0, 0.0)) * 2.0 - 1.0;
-                float2 g10 = hash2(i + float2(1.0, 0.0)) * 2.0 - 1.0;
-                float2 g01 = hash2(i + float2(0.0, 1.0)) * 2.0 - 1.0;
-                float2 g11 = hash2(i + float2(1.0, 1.0)) * 2.0 - 1.0;
-
-                float n00 = dot(g00, f - float2(0.0, 0.0));
-                float n10 = dot(g10, f - float2(1.0, 0.0));
-                float n01 = dot(g01, f - float2(0.0, 1.0));
-                float n11 = dot(g11, f - float2(1.0, 1.0));
-
-                return 0.5 + 0.5 * lerp(lerp(n00, n10, u.x), lerp(n01, n11, u.x), u.y);
-            }
-
-            float fbm(float2 p, int octaves)
-            {
-                float val = 0.0;
-                float amp = 0.5;
-                float freq = 1.0;
-                for (int i = 0; i < octaves; i++)
-                {
-                    val += amp * gradientNoise(p * freq);
-                    freq *= 2.0;
-                    amp *= 0.5;
-                }
-                return val;
-            }
-
-            float EvaluateRawHeight(float2 wpos)
-            {
-                return fbm(wpos * _MudScale, 3);
-            }
 
             Varyings LitPassVertex(Attributes input)
             {
@@ -145,6 +123,7 @@ Shader "Custom/Sinkhole"
                 output.positionWS = vertexInput.positionWS;
                 output.normalWS = normalInput.normalWS;
                 output.fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+                output.positionOS_XZ = input.positionOS.xz;
 
                 return output;
             }
@@ -154,62 +133,57 @@ Shader "Custom/Sinkhole"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
-                float2 wpos = input.positionWS.xz;
-                float topMask = smoothstep(0.2, 0.6, input.normalWS.y);
+                float3 normWS = normalize(input.normalWS);
+                float2 worldXZ = input.positionWS.xz;
 
-                // --- 1. Wysokość i Maska Kałuż Wody ---
-                float rawHeight = EvaluateRawHeight(wpos);
-                float waterMask = smoothstep(_WaterLevel + 0.04, _WaterLevel - 0.04, rawHeight) * topMask;
+                // --- 1. Filtrowanie i wirtualna siatka retro texeli (PSX style) ---
+                float detailFade;
+                float2 retroUV;
+                EvaluateRetroTexel(worldXZ, _TexelDensity, detailFade, retroUV);
 
-                // --- 2. Kolory Błota i Spękanej Skały ---
-                float mudNoise = fbm(wpos * (_MudScale * 1.8), 2);
-                float3 mudCol = lerp(_MudColorDark.rgb, _MudColorLight.rgb, mudNoise);
+                // --- 2. Warstwa A: Martwa, bordowo-brunatna gleba (Dead Soil Base) ---
+                float macroNoise = ValueNoise2D(worldXZ * _MacroScale + float2(61.8, 27.4));
+                float3 baseSoil = lerp(_SinkholeBaseColor.rgb, _SinkholeDamagedColor.rgb, macroNoise);
 
-                float rockFactor = smoothstep(0.65, 0.85, rawHeight);
-                float3 groundCol = lerp(mudCol, _RockColor.rgb, rockFactor);
+                // Ziarnistosc retro
+                float dirtGrain = ValueNoise2D(retroUV * _DetailScale + float2(19.3, 83.1));
+                float steppedGrain = floor(dirtGrain * _QuantizeSteps + 0.5) / _QuantizeSteps;
+                float grainMod = (steppedGrain - 0.5) * _DetailStrength * detailFade;
+                baseSoil = saturate(baseSoil + grainMod * 0.07);
 
-                // Na ściankach bocznych ciemny podziemny przekrój
-                groundCol *= lerp(0.7, 1.0, topMask);
+                // --- 3. Warstwa B & C: Szczeliny zapadliska i ich erozja (Cracks & Erosion) ---
+                float2 warp = (float2(ValueNoise2D(worldXZ * 1.5 + float2(5.2, 8.9)), ValueNoise2D(worldXZ * 1.5 + float2(19.4, 71.2))) - 0.5) * 0.35;
+                VoronoiResult crackV = FastVoronoi2D((retroUV + warp) * _CrackScale);
 
-                // --- 3. Kompozycja Albedo i Smoothness ---
-                float3 finalAlbedo = lerp(groundCol, _WaterColor.rgb, waterMask);
-                float finalSmoothness = lerp(_MudSmoothness, _WaterSmoothness, waterMask);
+                // Maska szczeliny
+                float crackNoiseMod = (ValueNoise2D(worldXZ * 3.5 + float2(33.1, 14.8)) - 0.5) * 0.40;
+                float effectiveCrackWidth = max(_CrackWidth * (1.0 + crackNoiseMod), 0.01);
+                float crackMask = smoothstep(effectiveCrackWidth, effectiveCrackWidth * 0.30, crackV.crack);
 
-                // --- 4. Relief 3D (Woda jest idealnie gładka, woda tłumi bump) ---
-                float delta = 0.04;
-                float hL = EvaluateRawHeight(wpos - float2(delta, 0.0));
-                float hR = EvaluateRawHeight(wpos + float2(delta, 0.0));
-                float hD = EvaluateRawHeight(wpos - float2(0.0, delta));
-                float hU = EvaluateRawHeight(wpos + float2(0.0, delta));
+                // Maska suchej erozji wokol krawedzi szczelin
+                float effectiveErosionWidth = effectiveCrackWidth + _CrackErosionWidth;
+                float erosionMask = smoothstep(effectiveErosionWidth, effectiveCrackWidth, crackV.crack) * (1.0 - crackMask);
 
-                float3 bumpOffset = float3((hL - hR) * _BumpStrength, 0.0, (hD - hU) * _BumpStrength);
-                // Woda wypłaszcza wektor normalny do idealnej tafli
-                bumpOffset *= (1.0 - waterMask) * topMask;
-                float3 normalWS = normalize(input.normalWS + bumpOffset);
+                float3 surfaceWithErosion = lerp(baseSoil, _ErosionColor.rgb, erosionMask * 0.85);
+                float3 surfaceWithCracks = lerp(surfaceWithErosion, _CrackColor.rgb, crackMask);
 
-                // --- 5. URP PBR Lighting ---
-                InputData inputData = (InputData)0;
-                inputData.positionWS = input.positionWS;
-                inputData.normalWS = normalWS;
-                inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
-                inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
-                inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
-                inputData.bakedGI = SampleSH(normalWS);
-                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                // --- 4. Warstwa D: Subtelne cieniowanie zaglebienia (Depth Shading) ---
+                float rCenter = length(input.positionOS_XZ) / _HexRadius;
+                float depthShading = lerp(0.88, 1.05, smoothstep(0.0, 0.75, rCenter));
+                surfaceWithCracks *= depthShading;
 
-                SurfaceData surfaceData = (SurfaceData)0;
-                surfaceData.albedo = finalAlbedo;
-                surfaceData.metallic = 0.0;
-                surfaceData.specular = half3(0.04, 0.04, 0.04);
-                surfaceData.smoothness = finalSmoothness;
-                surfaceData.normalTS = half3(0, 0, 1);
-                surfaceData.emission = half3(0, 0, 0);
-                surfaceData.occlusion = 1.0;
-                surfaceData.alpha = 1.0;
+                // --- 5. Subtelne granice heksa ---
+                float borderMask = EvaluateHexBorder(input.positionOS_XZ, worldXZ, _HexRadius, _HexBorderWidth, _HexBorderStrength, _HexBorderNoiseStrength);
+                float3 borderTone = lerp(_SinkholeBaseColor.rgb * 0.80, _CrackColor.rgb * 0.90, 0.35);
+                float3 finalTopColor = lerp(surfaceWithCracks, borderTone, borderMask);
 
-                half4 finalColor = UniversalFragmentPBR(inputData, surfaceData);
-                finalColor.rgb = MixFog(finalColor.rgb, inputData.fogCoord);
-                return finalColor;
+                // --- 6. Scianki boczne heksa ---
+                float topMask = saturate((normWS.y - 0.25) / 0.45);
+                float3 sideColor = EvaluateSideStrataSoil(input.positionWS, normWS, _SinkholeBaseColor.rgb, _SinkholeDamagedColor.rgb);
+                float3 finalAlbedo = lerp(sideColor, finalTopColor, topMask);
+
+                // --- 7. Oświetlenie URP PBR ---
+                return CalculateTerrainLitPBR(input.positionWS, normWS, input.positionCS, input.fogFactor, finalAlbedo, _Smoothness, _AmbientBoost);
             }
             ENDHLSL
         }
@@ -301,7 +275,7 @@ Shader "Custom/Sinkhole"
             {
                 Varyings output = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
-                UNITY_TRANSFER_INPUT_INSTANCE_ID(input, output);
+                UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);

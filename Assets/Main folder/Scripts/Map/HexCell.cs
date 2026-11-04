@@ -23,6 +23,7 @@ public class HexCell : MonoBehaviour
             if (Data.elevation != 0) return Data.elevation;
             if (Data.feature == HexFeatureType.Hill) return Mathf.Max(1, Data.featureLevel);
             if (Data.feature == HexFeatureType.Sinkhole) return Data.featureLevel < 0 ? Data.featureLevel : -1;
+            if (Data.feature == HexFeatureType.Mountain) return 4;
             return 0;
         }
     }
@@ -56,9 +57,19 @@ public class HexCell : MonoBehaviour
         }
     }
 
+    public GameObject FeatureProp => featurePropInstance;
+
     public void RegisterFeatureProp(GameObject prop)
     {
+        if (featurePropInstance != null && featurePropInstance != prop)
+        {
+            Destroy(featurePropInstance);
+        }
         featurePropInstance = prop;
+        if (HasBuilding())
+        {
+            SetDecorationsVisible(false);
+        }
     }
 
     public void SetBuilding(BuildingEntity building)
@@ -123,18 +134,31 @@ public class HexCell : MonoBehaviour
                 originalMaterial = myRenderer.sharedMaterial;
                 isHighlighted = true;
             }
-            myRenderer.sharedMaterial = highlightMat;
+            SetTopMaterial(highlightMat);
             targetHeight = baseHeight + liftOffset;
         }
         else
         {
             if (isHighlighted)
             {
-                myRenderer.sharedMaterial = originalMaterial;
+                SetTopMaterial(originalMaterial);
                 isHighlighted = false;
             }
             targetHeight = baseHeight;
         }
+    }
+
+    // Podmienia tylko slot 0 (górna powierzchnia). Slot 1 (boczne ściany, HexSideTerrain) pozostaje bez zmian.
+    private void SetTopMaterial(Material mat)
+    {
+        Material[] mats = myRenderer.sharedMaterials;
+        if (mats.Length <= 1)
+        {
+            myRenderer.sharedMaterial = mat;
+            return;
+        }
+        mats[0] = mat;
+        myRenderer.sharedMaterials = mats;
     }
 
     // Metoda dla wstecznej kompatybilności

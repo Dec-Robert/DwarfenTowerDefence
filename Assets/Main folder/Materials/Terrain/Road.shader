@@ -2,22 +2,46 @@ Shader "Custom/Road"
 {
     Properties
     {
-        [Header(Trakt Ziemny (Dirt))]
-        _DirtColorDark("Ciemna gleba (Dark Dirt)", Color) = (0.38, 0.25, 0.16, 1)
-        _DirtColorLight("Jasny ubity piasek (Light Dirt)", Color) = (0.58, 0.42, 0.28, 1)
-        _DirtScale("Skala ziemi (Dirt Scale)", Float) = 1.5
+        [Header(Road Dirt Base)]
+        _RoadBaseColor("Ubita ziemia bazowa - Base Dirt", Color) = (0.451, 0.353, 0.282, 1.0)
+        _RoadDarkColor("Ciemna ubita gleba - Dark Dirt", Color) = (0.286, 0.216, 0.157, 1.0)
+        _RoadDustColor("Suchy pyl i przetarcia - Dust & Wear", Color) = (0.565, 0.443, 0.353, 1.0)
+        _RoadBodyBrightness("Jasnosc korpusu drogi - Road Brightness", Range(0.7, 1.5)) = 1.0
 
-        [Header(Kamyki i Zwir (Pebbles and Gravel))]
-        _PebbleColorLight("Jasne kamyczki (Light Pebbles)", Color) = (0.72, 0.64, 0.53, 1)
-        _PebbleColorDark("Ciemne kamyczki (Dark Pebbles)", Color) = (0.42, 0.36, 0.31, 1)
-        _GravelScale("Skala drobnego zwiru (Fine Gravel Scale)", Float) = 16.0
-        _PebbleScale("Skala kamyczkow (Pebble Scale)", Float) = 6.0
-        _PebbleCoverage("Pokrycie kamykami (Pebble Coverage)", Range(0.0, 1.0)) = 0.65
-        _CreviceAO("Cienie w szczelinach (Crevice AO)", Range(0.0, 1.0)) = 0.45
+        [Header(Macro Variation)]
+        _MacroScale("Skala przetarc i sciezki - Macro Scale", Float) = 0.40
+        _MacroContrast("Kontrast przetarc - Macro Contrast", Range(0.2, 2.0)) = 0.90
 
-        [Header(Zmiekczenie i Relief 3D (Softness and Bump))]
-        _Softness("Sila rozmycia / zmiekczenia (Softness)", Range(0.0, 1.0)) = 0.35
-        _BumpStrength("Sila wypuklosci (Bump Strength)", Range(0.0, 3.0)) = 0.85
+        [Header(Retro Stylized Detail)]
+        _TexelDensity("Gestosc pikseli retro - Texel Density", Float) = 16.0
+        _DetailScale("Skala faktury ziemi - Dirt Texture Scale", Float) = 2.2
+        _DetailStrength("Sila faktury retro - Dirt Texture Strength", Range(0.0, 1.0)) = 0.50
+        _QuantizeSteps("Kwantyzacja odcieni - Color Steps", Range(2.0, 8.0)) = 4.0
+
+        [Header(Gravel and Pebbles)]
+        _PebbleColorLight("Jasny kamyk - Light Pebble", Color) = (0.471, 0.420, 0.369, 1.0)
+        _PebbleColorDark("Ciemny lupek - Dark Pebble", Color) = (0.271, 0.243, 0.220, 1.0)
+        _PebbleClusterScale("Skala skupisk zwiru - Cluster Scale", Float) = 0.70
+        _PebbleDensity("Ilosc skupisk zwiru - Gravel Density", Range(0.0, 0.50)) = 0.18
+        _PebbleScale("Rozmiar kamykow - Pebble Frequency", Float) = 8.0
+        _PebbleContrast("Kontrast kamykow - Pebble Contrast", Range(0.0, 1.0)) = 0.55
+
+        [Header(Dynamic Shoulders)]
+        _ShoulderColor("Kolor pobocza - Shoulder Color", Color) = (0.580, 0.459, 0.365, 1.0)
+        _ShoulderWidth("Szerokosc pobocza - Shoulder Width", Range(0.01, 0.20)) = 0.06
+        _ShoulderStrength("Sila pobocza - Shoulder Strength", Range(0.0, 1.0)) = 0.25
+        _ShoulderNoiseStrength("Nieregularnosc pobocza - Shoulder Noise", Range(0.0, 1.0)) = 0.25
+        _HexRadius("Promien heksa - Hex Radius", Float) = 1.0
+
+        [Header(Debugging)]
+        _DebugShoulders("Tryb debugowania poboczy (1 = wlacz)", Float) = 0.0
+        _DebugEdgeMask("Debug Edge Mask (0 = z mesha, 63 = wszystkie)", Float) = 0.0
+
+        [Header(Low Light Readability)]
+        _AmbientBoost("Jasnosc w polmroku i nocy - Ambient Boost", Range(0.0, 1.0)) = 0.50
+
+        [Header(Surface Properties)]
+        _Smoothness("Gladkosc - Smoothness", Range(0.0, 1.0)) = 0.05
     }
 
     SubShader
@@ -57,17 +81,31 @@ Shader "Custom/Road"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _DirtColorDark;
-                float4 _DirtColorLight;
+                float4 _RoadBaseColor;
+                float4 _RoadDarkColor;
+                float4 _RoadDustColor;
                 float4 _PebbleColorLight;
                 float4 _PebbleColorDark;
-                float _DirtScale;
-                float _GravelScale;
-                float _PebbleScale;
-                float _PebbleCoverage;
-                float _CreviceAO;
-                float _Softness;
-                float _BumpStrength;
+                float4 _ShoulderColor;
+                float  _RoadBodyBrightness;
+                float  _MacroScale;
+                float  _MacroContrast;
+                float  _TexelDensity;
+                float  _DetailScale;
+                float  _DetailStrength;
+                float  _QuantizeSteps;
+                float  _PebbleClusterScale;
+                float  _PebbleDensity;
+                float  _PebbleScale;
+                float  _PebbleContrast;
+                float  _ShoulderWidth;
+                float  _ShoulderStrength;
+                float  _ShoulderNoiseStrength;
+                float  _HexRadius;
+                float  _DebugShoulders;
+                float  _DebugEdgeMask;
+                float  _AmbientBoost;
+                float  _Smoothness;
             CBUFFER_END
 
             struct Attributes
@@ -76,197 +114,111 @@ Shader "Custom/Road"
                 float3 normalOS     : NORMAL;
                 float4 tangentOS    : TANGENT;
                 float2 uv           : TEXCOORD0;
+                float2 uv1          : TEXCOORD1; // UV1.x = 6-bitowa maska krawedzi pobocza
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
-                float4 positionCS   : SV_POSITION;
-                float3 positionWS   : TEXCOORD0;
-                float3 normalWS     : TEXCOORD1;
-                float  fogFactor    : TEXCOORD2;
+                float4 positionCS    : SV_POSITION;
+                float3 positionWS    : TEXCOORD0;
+                float3 normalWS      : TEXCOORD1;
+                float  fogFactor     : TEXCOORD2;
+                float2 positionOS_XZ : TEXCOORD3;
+                float  roadEdgeMask  : TEXCOORD4;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
-            float2 hash2(float2 p)
+            // Szybki 2D Hash zwracajacy skalar [0, 1]
+            float Hash21(float2 p)
             {
-                p = float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3)));
-                return frac(sin(p) * 43758.5453123);
+                p = frac(p * float2(123.34, 456.21));
+                p += dot(p, p + 45.32);
+                return frac(p.x * p.y);
             }
 
-            float hash1(float2 p)
-            {
-                return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453123);
-            }
-
-            float gradientNoise(float2 p)
+            // Wydajny 2D Value Noise (0 zewnetrznych tekstur, plynna interpolacja Hermite'a)
+            float ValueNoise2D(float2 p)
             {
                 float2 i = floor(p);
                 float2 f = frac(p);
                 float2 u = f * f * (3.0 - 2.0 * f);
 
-                float2 g00 = hash2(i + float2(0.0, 0.0)) * 2.0 - 1.0;
-                float2 g10 = hash2(i + float2(1.0, 0.0)) * 2.0 - 1.0;
-                float2 g01 = hash2(i + float2(0.0, 1.0)) * 2.0 - 1.0;
-                float2 g11 = hash2(i + float2(1.0, 1.0)) * 2.0 - 1.0;
+                float a = Hash21(i);
+                float b = Hash21(i + float2(1.0, 0.0));
+                float c = Hash21(i + float2(0.0, 1.0));
+                float d = Hash21(i + float2(1.0, 1.0));
 
-                float n00 = dot(g00, f - float2(0.0, 0.0));
-                float n10 = dot(g10, f - float2(1.0, 0.0));
-                float n01 = dot(g01, f - float2(0.0, 1.0));
-                float n11 = dot(g11, f - float2(1.0, 1.0));
-
-                return 0.5 + 0.5 * lerp(lerp(n00, n10, u.x), lerp(n01, n11, u.x), u.y);
+                return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
             }
 
-            float fbm(float2 p, int octaves)
-            {
-                float val = 0.0;
-                float amp = 0.5;
-                float freq = 1.0;
-                for (int i = 0; i < octaves; i++)
-                {
-                    val += amp * gradientNoise(p * freq);
-                    freq *= 2.0;
-                    amp *= 0.5;
-                }
-                return val;
-            }
-
-            struct PebbleData
-            {
-                float dist;         // Normalized distance from center (faceted/chipped shape)
-                float cellHash;     // Random identifier for coverage & type
-                float cellHash2;    // Random identifier for size & tone
+            // Wektory normalne zewnetrzne 6 krawedzi heksa pointy-top (k = 0..5, katy 0, 60, 120, 180, 240, 300 deg)
+            static const float2 HEX_EDGE_NORMALS[6] = {
+                float2( 1.0000000,  0.0000000), // k = 0 ( 0 deg, +X)
+                float2( 0.5000000,  0.8660254), // k = 1 ( 60 deg)
+                float2(-0.5000000,  0.8660254), // k = 2 (120 deg)
+                float2(-1.0000000,  0.0000000), // k = 3 (180 deg, -X)
+                float2(-0.5000000, -0.8660254), // k = 4 (240 deg)
+                float2( 0.5000000, -0.8660254)  // k = 5 (300 deg)
             };
 
-            PebbleData voronoiPebbles(float2 p)
+            // Oblicza kontekstowa maske poboczy [0, 1] wylacznie na krawedziach wskazanych przez 6-bitowa edgeMask
+            float EvaluateRoadShoulderMask(float2 localPosXZ, float2 worldXZ, float hexRadius, float rawMask, float shoulderWidth, float noiseStrength)
             {
-                float2 i = floor(p);
-                float2 f = frac(p);
+                int mask = (int)round(rawMask);
+                if (mask <= 0) return 0.0;
 
-                float minNormDist = 999.0;
-                float bestHash1 = 0.0;
-                float bestHash2 = 0.0;
+                float rIn = hexRadius * 0.8660254; // Apotema heksa: R * cos(30 deg)
+                float2 p = localPosXZ;
 
-                for (int y = -1; y <= 1; y++)
+                // Odleglosci prostopadle od kazdej z 6 krawedzi do wnetrza heksa
+                float dist[6];
+                dist[0] = rIn - dot(p, HEX_EDGE_NORMALS[0]);
+                dist[1] = rIn - dot(p, HEX_EDGE_NORMALS[1]);
+                dist[2] = rIn - dot(p, HEX_EDGE_NORMALS[2]);
+                dist[3] = rIn - dot(p, HEX_EDGE_NORMALS[3]);
+                dist[4] = rIn - dot(p, HEX_EDGE_NORMALS[4]);
+                dist[5] = rIn - dot(p, HEX_EDGE_NORMALS[5]);
+
+                // Szum zaburzajacy szerokosc pobocza w przestrzeni swiata (stabilny przy ruchu kamery)
+                float shoulderNoise = ValueNoise2D(worldXZ * 3.5 + float2(17.4, 43.8)) - 0.5;
+
+                float shoulderMask = 0.0;
+
+                [unroll]
+                for (int k = 0; k < 6; k++)
                 {
-                    for (int x = -1; x <= 1; x++)
+                    int active_k = (mask >> k) & 1;
+                    if (active_k == 0) continue;
+
+                    // Sasiednie krawedzie k-1 i k+1
+                    int prevIdx = (k + 5) % 6;
+                    int nextIdx = (k + 1) % 6;
+                    int active_prev = (mask >> prevIdx) & 1;
+                    int active_next = (mask >> nextIdx) & 1;
+
+                    // Plynne wygaszanie pobocza przy naroznikach prowadzacych do polaczenia drog (Road-Road)
+                    float cornerFade = 1.0;
+                    if (active_prev == 0)
                     {
-                        float2 neighbor = float2(float(x), float(y));
-                        float2 cellCoord = i + neighbor;
-                        float2 h = hash2(cellCoord);
-                        float2 center = neighbor + 0.15 + 0.70 * h;
-                        float2 delta = f - center;
-
-                        float h1 = hash1(cellCoord);
-                        float h2 = hash1(cellCoord + float2(19.37, 7.81));
-
-                        // Random orientation angle for each pebble
-                        float angle = h1 * 6.283185;
-                        float s = sin(angle);
-                        float c = cos(angle);
-                        float2 rotDelta = float2(delta.x * c - delta.y * s, delta.x * s + delta.y * c);
-
-                        // Subtle oblong stretch (natural crushed stone aspect ratio)
-                        float aspect = lerp(1.10, 1.35, h2);
-                        rotDelta.y *= aspect;
-
-                        // Chipped facets: blend radial distance with diamond/box facets
-                        float rRadial = length(rotDelta);
-                        float rFacet = (abs(rotDelta.x) + abs(rotDelta.y)) * 0.72;
-                        float shapedR = lerp(rRadial, max(rRadial, rFacet), 0.45);
-
-                        // Stone radius
-                        float radius = lerp(0.22, 0.42, h2);
-                        float normDist = shapedR / radius;
-
-                        if (normDist < minNormDist)
-                        {
-                            minNormDist = normDist;
-                            bestHash1 = h1;
-                            bestHash2 = h2;
-                        }
+                        cornerFade *= saturate(dist[prevIdx] / max(dist[k], 0.001));
                     }
+                    if (active_next == 0)
+                    {
+                        cornerFade *= saturate(dist[nextIdx] / max(dist[k], 0.001));
+                    }
+
+                    float edgePixelSpan = length(fwidth(dist[k]));
+                    float effectiveWidth = max(shoulderWidth * (1.0 + shoulderNoise * noiseStrength), edgePixelSpan * 1.2);
+
+                    float edgeFactor = smoothstep(effectiveWidth, 0.0, max(0.0, dist[k])) * cornerFade;
+                    shoulderMask = max(shoulderMask, edgeFactor);
                 }
 
-                PebbleData o;
-                o.dist = minNormDist;
-                o.cellHash = bestHash1;
-                o.cellHash2 = bestHash2;
-                return o;
-            }
-
-            struct RoadSurface
-            {
-                float3 albedo;
-                float height;
-            };
-
-            RoadSurface SampleRoadSurface(float2 wpos)
-            {
-                RoadSurface o;
-
-                // 1. Podloze gliniasto-ziemne (Compacted Earth)
-                float dirtFbm = fbm(wpos * _DirtScale, 3);
-                float3 dirtColor = lerp(_DirtColorDark.rgb, _DirtColorLight.rgb, dirtFbm);
-
-                // 2. Drobny zwirek i piasek (Micro Gravel & Sand)
-                float mg1 = gradientNoise(wpos * _GravelScale);
-                float mg2 = gradientNoise(wpos * (_GravelScale * 2.1));
-                float microGravel = mg1 * 0.6 + mg2 * 0.4;
-                dirtColor = lerp(dirtColor * 0.88, dirtColor * 1.12, microGravel);
-
-                // Drobne jasne okruszki zwiru w ziemi
-                float speckle = smoothstep(0.68, 0.78, mg2);
-                dirtColor = lerp(dirtColor, _PebbleColorLight.rgb * 0.85, speckle * 0.45);
-
-                // 3. Kamyczki (Pebbles & Stones)
-                PebbleData pebble = voronoiPebbles(wpos * _PebbleScale);
-                float isPebble = step(1.0 - _PebbleCoverage, pebble.cellHash);
-
-                // Edge chip perturbation on pebble perimeter
-                float chipNoise = (gradientNoise(wpos * (_PebbleScale * 2.4)) - 0.5) * 0.08;
-                float pDist = pebble.dist + chipNoise;
-
-                // Pebble mask (smooth anti-aliased edge)
-                float pebbleMask = smoothstep(1.0, 0.80, pDist) * isPebble;
-
-                // Barwa kamyczka
-                float3 pColor = lerp(_PebbleColorDark.rgb, _PebbleColorLight.rgb, pebble.cellHash2);
-                float specialType = hash1(float2(pebble.cellHash, pebble.cellHash2) * 13.37);
-
-                // Limestone / pale sandstone variation (matches reference)
-                float isLightStone = smoothstep(0.80, 0.86, specialType);
-                pColor = lerp(pColor, float3(0.84, 0.80, 0.74), isLightStone * 0.65);
-
-                // Dark slate / flint variation (matches reference)
-                float isDarkStone = smoothstep(0.20, 0.14, specialType);
-                pColor = lerp(pColor, pColor * 0.55, isDarkStone);
-
-                // Internal stone grain and subtle edge shading
-                float sGrain = gradientNoise(wpos * (_GravelScale * 1.4));
-                pColor *= lerp(0.92, 1.08, sGrain);
-                pColor *= lerp(0.85, 1.05, saturate(1.0 - pDist * 0.7));
-
-                // Contact shadow on the pebble rim
-                pColor *= lerp(0.80, 1.0, smoothstep(1.0, 0.65, pDist));
-
-                // 4. Okluzja w szczelinach (Crevice AO)
-                // Applied strictly around existing pebbles, preventing Voronoi artifacts on bare dirt!
-                float pebbleEdgeAO = smoothstep(1.35, 0.95, pDist) * smoothstep(0.60, 0.95, pDist) * isPebble;
-                float ao = 1.0 - (_CreviceAO * 0.70 * pebbleEdgeAO);
-                dirtColor *= ao;
-
-                // 5. Profil wysokosci (Smooth plateaued stone profile with zero-slope boundary)
-                float x = saturate(1.0 - pDist);
-                float stoneProfile = x * x * (3.0 - 2.0 * x); // Hermite smoothstep
-                float pebbleH = stoneProfile * 0.22 * isPebble;
-                float baseH = dirtFbm * 0.03 + microGravel * 0.015;
-
-                o.albedo = lerp(dirtColor, pColor, pebbleMask);
-                o.height = baseH + pebbleH;
-                return o;
+                // Organiczne przetarcie pylastego pobocza w przestrzeni swiata
+                float dustBreak = saturate(0.70 + 0.50 * ValueNoise2D(worldXZ * 1.6 + float2(52.1, 11.7)));
+                return shoulderMask * dustBreak;
             }
 
             Varyings LitPassVertex(Attributes input)
@@ -283,6 +235,10 @@ Shader "Custom/Road"
                 output.positionWS = vertexInput.positionWS;
                 output.normalWS = normalInput.normalWS;
                 output.fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+                output.positionOS_XZ = input.positionOS.xz;
+
+                // Maska krawedzi: priorytet ma parametr debugowania, a domyslnie UV1.x z mesha
+                output.roadEdgeMask = _DebugEdgeMask > 0.5 ? _DebugEdgeMask : input.uv1.x;
 
                 return output;
             }
@@ -292,80 +248,147 @@ Shader "Custom/Road"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
-                float2 wpos = input.positionWS.xz;
-                float topMask = smoothstep(0.2, 0.6, input.normalWS.y);
+                float3 normWS = normalize(input.normalWS);
+                float2 worldXZ = input.positionWS.xz;
 
-                // --- 1. Filtr Zmiekczajacy (Softening / Anti-Harshness Multi-Sample) ---
-                float2 dpos_dx = ddx(wpos);
-                float2 dpos_dy = ddy(wpos);
-                float pixelFootprint = length(dpos_dx) + length(dpos_dy);
-                float blurRadius = max((_Softness * 0.035) + (pixelFootprint * _Softness * 0.6), 0.015);
+                // --- 1. Filtrowanie i ochrona antyaliasingowa (fwidth) ---
+                float texelPixelSpan = length(fwidth(worldXZ * _TexelDensity));
+                float detailFade = saturate(1.0 - (texelPixelSpan - 0.6) * 1.6);
 
-                RoadSurface centerSample = SampleRoadSurface(wpos);
-                float3 finalAlbedo = centerSample.albedo;
-                float3 normalWS = input.normalWS;
+                // Drobne znieksztalcenie siatki texeli, zapobiegajace nienaturalnym kwadratom
+                float2 warpOffset = (float2(Hash21(floor(worldXZ * 2.5)), Hash21(floor(worldXZ * 2.5) + 31.7)) - 0.5) * 0.04;
+                float2 warpedWorld = worldXZ + warpOffset;
 
-                if (_Softness > 0.01)
+                // Kwantyzacja wspolrzednych do siatki wirtualnych texeli retro PSX
+                float2 quantizedUV = floor(warpedWorld * _TexelDensity + 0.5) / _TexelDensity;
+                float2 retroUV = lerp(quantizedUV, worldXZ, saturate(texelPixelSpan * 0.8));
+
+                // --- 2. Warstwa A: Duze organiczne przetarcia traktu (Macro Variation) ---
+                float2 macroUV = worldXZ * _MacroScale;
+                float macroWarp = (ValueNoise2D(macroUV * 0.6 + float2(3.7, 8.1)) - 0.5) * 0.40;
+                float macroVal = ValueNoise2D(macroUV + macroWarp);
+                float macroTone = saturate(0.5 + (macroVal - 0.5) * _MacroContrast);
+
+                // Przejscia pomiedzy zaglebionym ubitym bruzdem, baza ziemi a suchym pylem
+                float3 dirtColor = lerp(_RoadDarkColor.rgb, _RoadBaseColor.rgb, saturate(macroTone * 1.8));
+                dirtColor = lerp(dirtColor, _RoadDustColor.rgb, saturate((macroTone - 0.55) * 2.0));
+
+                // --- 3. Warstwa B: Faktura ubitej ziemi (Retro Hand-Painted / PSX Detail) ---
+                float dirtGrain = ValueNoise2D(retroUV * _DetailScale + float2(17.1, 29.4));
+                float steppedGrain = floor(dirtGrain * _QuantizeSteps + 0.5) / _QuantizeSteps;
+                float grainMod = (steppedGrain - 0.5) * _DetailStrength * detailFade;
+
+                if (grainMod > 0.0)
                 {
-                    // 4-point symmetric isotropic sampling pattern
-                    float2 u1 = float2( 0.866025,  0.500000);
-                    float2 u2 = float2(-0.500000,  0.866025);
-
-                    float2 o1 =  u1 * blurRadius;
-                    float2 o2 =  u2 * blurRadius;
-                    float2 o3 = -u1 * blurRadius;
-                    float2 o4 = -u2 * blurRadius;
-
-                    RoadSurface s1 = SampleRoadSurface(wpos + o1);
-                    RoadSurface s2 = SampleRoadSurface(wpos + o2);
-                    RoadSurface s3 = SampleRoadSurface(wpos + o3);
-                    RoadSurface s4 = SampleRoadSurface(wpos + o4);
-
-                    // Softened albedo blend
-                    finalAlbedo = centerSample.albedo * 0.36 + (s1.albedo + s2.albedo + s3.albedo + s4.albedo) * 0.16;
-
-                    // Unified softened bump: isotropic gradient from the 4 symmetric samples
-                    float g1 = (s1.height - s3.height) / (2.0 * blurRadius);
-                    float g2 = (s2.height - s4.height) / (2.0 * blurRadius);
-
-                    float dh_dx = g1 * u1.x + g2 * u2.x;
-                    float dh_dz = g1 * u1.y + g2 * u2.y;
-
-                    float3 bumpOffset = float3(-dh_dx, 0.0, -dh_dz) * (_BumpStrength * 0.04);
-                    normalWS = normalize(input.normalWS + bumpOffset * topMask);
+                    dirtColor = lerp(dirtColor, _RoadDustColor.rgb, saturate(grainMod * 1.6));
                 }
                 else
                 {
-                    // Fast path when softness is 0: central difference with small delta
-                    float delta = 0.02;
-                    RoadSurface sR = SampleRoadSurface(wpos + float2(delta, 0.0));
-                    RoadSurface sU = SampleRoadSurface(wpos + float2(0.0, delta));
-
-                    float dh_dx = (sR.height - centerSample.height) / delta;
-                    float dh_dz = (sU.height - centerSample.height) / delta;
-
-                    float3 bumpOffset = float3(-dh_dx, 0.0, -dh_dz) * (_BumpStrength * 0.04);
-                    normalWS = normalize(input.normalWS + bumpOffset * topMask);
+                    dirtColor = lerp(dirtColor, _RoadDarkColor.rgb, saturate(-grainMod * 1.4) * 0.75);
                 }
 
-                // Przyciemnienie pionowych scianek kafelkow
-                finalAlbedo *= lerp(0.75, 1.0, topMask);
+                // Drobny mikrodithering o niskiej amplitudzie
+                float microDither = (Hash21(floor(warpedWorld * _TexelDensity)) - 0.5) * 0.035 * _DetailStrength * detailFade;
+                dirtColor = saturate(dirtColor + microDither);
 
-                // --- 2. URP Soft Stylized Lit (Matte PBR Lighting) ---
+                // Zabezpieczenie minimalnego albedo: sciezka nigdy nie zapada sie w czern
+                dirtColor = max(dirtColor, _RoadDarkColor.rgb * 0.85);
+
+                // --- 4. Warstwa C: Nieregularny zwir i kamyczki w skupiskach (Clustered Pebbles) ---
+                // Skupiska zwiru: wystepuja tylko w nieregularnych plamach (~15-20% drogi)
+                float clusterNoise = ValueNoise2D(worldXZ * _PebbleClusterScale + float2(29.4, 61.2));
+                float clusterThreshold = 1.0 - saturate(_PebbleDensity * 2.2);
+                float clusterMask = smoothstep(clusterThreshold, clusterThreshold + 0.12, clusterNoise);
+
+                // Drobny zwirek mikroskopowy wewnatrz skupisk
+                float gritVal = ValueNoise2D(retroUV * 3.8 + float2(7.3, 14.5));
+                float gritStepped = floor(gritVal * 3.0 + 0.5) / 3.0;
+                float gritMod = (gritStepped - 0.5) * 0.12 * clusterMask * detailFade;
+                dirtColor = saturate(dirtColor + gritMod);
+
+                // Kanciaste kamyczki generowane na siatce z losowym przesunieciem (Zero petli!)
+                float2 pGrid = retroUV * _PebbleScale;
+                float2 pCell = floor(pGrid);
+                float2 pFrac = frac(pGrid) - 0.5;
+
+                float cellH1 = Hash21(pCell);
+                float cellH2 = Hash21(pCell + float2(19.3, 37.1));
+                float cellH3 = Hash21(pCell + float2(53.7, 81.9));
+
+                // Tylko wybrane komorki w skupisku zawieraja kamyk (~45%)
+                float hasPebble = step(0.55, cellH1) * clusterMask;
+
+                // Losowe przesuniecie srodka w obrebie komorki
+                float2 pCenter = (float2(cellH2, cellH3) - 0.5) * 0.52;
+                float2 pDelta = pFrac - pCenter;
+
+                // Kanciasty, stylizowany ksztalt kamyczka (low-poly chipped stone)
+                float dBox = max(abs(pDelta.x), abs(pDelta.y));
+                float dDiag = (abs(pDelta.x) + abs(pDelta.y)) * 0.707;
+                float dFacet = max(dBox, dDiag);
+                float pShapeDist = lerp(length(pDelta), dFacet, 0.65);
+
+                // Zroznicowany promien kamyczka
+                float pRadius = lerp(0.14, 0.34, cellH3);
+                float pebbleMask = smoothstep(pRadius, pRadius - 0.07, pShapeDist) * hasPebble;
+
+                // Cien kontaktowy wokol kamyka (wtopienie w ziemie)
+                float creviceAO = smoothstep(pRadius + 0.10, pRadius, pShapeDist) * hasPebble * 0.35;
+                dirtColor *= (1.0 - creviceAO);
+
+                // Naturalna, przygaszona barwa kamyka (ciemny lupek lub szarobezowy otoczak)
+                float3 pColor = lerp(_PebbleColorDark.rgb, _PebbleColorLight.rgb, cellH2);
+                float facetLighting = lerp(0.88, 1.12, saturate(0.5 + (pDelta.y - pDelta.x) * 1.5));
+                pColor *= facetLighting;
+
+                // Wtopienie kamyczka w podloze z lagodnym kontrastem
+                float3 withPebbles = lerp(dirtColor, pColor, pebbleMask * _PebbleContrast);
+
+                // --- 5. Dynamiczne pobocza i jasnosc korpusu drogi (Road V1.2) ---
+                float shoulderMask = EvaluateRoadShoulderMask(input.positionOS_XZ, worldXZ, _HexRadius, input.roadEdgeMask, _ShoulderWidth, _ShoulderNoiseStrength);
+
+                // Jasniejsza powierzchnia glowna calej drogi
+                float3 roadBodyColor = withPebbles * _RoadBodyBrightness;
+
+                // Wtopienie pylastego pobocza wylacznie na krawedziach z innym terenem
+                float3 finalTopColor = lerp(roadBodyColor, _ShoulderColor.rgb, shoulderMask * _ShoulderStrength);
+
+                // Opcjonalny tryb diagnostyczny poboczy
+                if (_DebugShoulders > 0.5)
+                {
+                    float3 debugCol = lerp(float3(0.12, 0.65, 0.18), float3(0.92, 0.15, 0.10), shoulderMask);
+                    finalTopColor = debugCol;
+                }
+
+                // --- 6. Sciany boczne heksa (Fallback dla starszych / uniwersalnych meshy) ---
+                float topMask = saturate((normWS.y - 0.25) / 0.45);
+                float horizontalTangent = dot(input.positionWS.xz, float2(normWS.z, -normWS.x));
+                float2 wallCoord = float2(horizontalTangent, input.positionWS.y);
+                float sideStrata = sin(input.positionWS.y * 6.0 + ValueNoise2D(wallCoord * 2.0) * 2.0) * 0.15;
+                float3 sideSoilColor = lerp(_RoadDarkColor.rgb * 0.85, _RoadBaseColor.rgb * 0.80, saturate(0.5 + sideStrata));
+                float3 finalAlbedo = lerp(sideSoilColor, finalTopColor, topMask);
+
+                // --- 7. URP PBR Lighting z ochrona czytelnosci w polmroku i nocy ---
                 InputData inputData = (InputData)0;
                 inputData.positionWS = input.positionWS;
-                inputData.normalWS = normalWS;
+                inputData.normalWS = normWS;
                 inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
                 inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
-                inputData.bakedGI = SampleSH(normalWS);
+
+                // Podloga ambientowa (Ambient Floor) z regulacja _AmbientBoost:
+                // Gwarantuje odbior cieplego zmierzchu i chlodnego granatu nocy bez zapadania sie w czern
+                half3 ambientGI = SampleSH(normWS);
+                half3 ambientFloor = half3(0.040, 0.045, 0.042) * (1.0 + _AmbientBoost * 0.85);
+                inputData.bakedGI = max(ambientGI, ambientFloor);
+
                 inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 
                 SurfaceData surfaceData = (SurfaceData)0;
                 surfaceData.albedo = finalAlbedo;
                 surfaceData.metallic = 0.0;
-                surfaceData.specular = half3(0.0, 0.0, 0.0);
-                surfaceData.smoothness = 0.0;
+                surfaceData.specular = half3(0.04, 0.04, 0.04);
+                surfaceData.smoothness = _Smoothness;
                 surfaceData.normalTS = half3(0, 0, 1);
                 surfaceData.emission = half3(0, 0, 0);
                 surfaceData.occlusion = 1.0;
@@ -395,20 +418,6 @@ Shader "Custom/Road"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
-
-            CBUFFER_START(UnityPerMaterial)
-                float4 _DirtColorDark;
-                float4 _DirtColorLight;
-                float4 _PebbleColorLight;
-                float4 _PebbleColorDark;
-                float _DirtScale;
-                float _GravelScale;
-                float _PebbleScale;
-                float _PebbleCoverage;
-                float _CreviceAO;
-                float _Softness;
-                float _BumpStrength;
-            CBUFFER_END
 
             struct Attributes
             {
@@ -461,20 +470,6 @@ Shader "Custom/Road"
             #pragma fragment DepthOnlyFragment
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-            CBUFFER_START(UnityPerMaterial)
-                float4 _DirtColorDark;
-                float4 _DirtColorLight;
-                float4 _PebbleColorLight;
-                float4 _PebbleColorDark;
-                float _DirtScale;
-                float _GravelScale;
-                float _PebbleScale;
-                float _PebbleCoverage;
-                float _CreviceAO;
-                float _Softness;
-                float _BumpStrength;
-            CBUFFER_END
 
             struct Attributes
             {

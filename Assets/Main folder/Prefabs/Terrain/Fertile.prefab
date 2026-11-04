@@ -92,6 +92,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: "co rz\u0105di polsk\u0105 i zaczyna si\u0119 na \u017C (3)"
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 016f436d6a6192b4e8514775e26f8990, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3951844223759220997, guid: 016f436d6a6192b4e8514775e26f8990, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
