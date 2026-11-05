@@ -391,10 +391,12 @@ public class WaveManagerEditorWindow : EditorWindow
                 float unitHp = baseHp * mult;
                 totalRawHp += unitHp * e.count;
 
-                // EHP factoring avg mitigation (physical and magical)
-                float avgMitigation = Mathf.Clamp01((armor + mr) / 200f);
-                float ehpMultiplier = avgMitigation >= 0.95f ? 20f : 1f / (1f - avgMitigation);
-                totalEhp += unitHp * ehpMultiplier * e.count;
+                // EHP factoring actual armor, magic resist and dodge
+                float pEhp = tierStats != null ? tierStats.CalculatePhysicalEHP() * mult : unitHp;
+                float mEhp = tierStats != null ? tierStats.CalculateMagicEHP() * mult : unitHp;
+                float pEhpCapped = float.IsInfinity(pEhp) ? unitHp * 50f : pEhp;
+                float mEhpCapped = float.IsInfinity(mEhp) ? unitHp * 50f : mEhp;
+                totalEhp += ((pEhpCapped + mEhpCapped) * 0.5f) * e.count;
 
                 string enemyName = !string.IsNullOrEmpty(e.enemy.enemyName) ? e.enemy.enemyName : e.enemy.name;
                 if (!countByType.ContainsKey(enemyName)) countByType[enemyName] = 0;
@@ -648,7 +650,9 @@ public class WaveManagerEditorWindow : EditorWindow
                 float baseHp = tStats != null ? tStats.baseHp : entry.enemy.baseHp;
                 float armor = tStats != null ? tStats.armor : entry.enemy.armor;
                 float unitHp = baseHp * (entry.forceElite ? entry.enemy.eliteHpMultiplier : 1f);
-                EditorGUILayout.LabelField($"HP: {unitHp:0.#} (Σ {unitHp * entry.count:0.#}) | Arm: {armor:0}%", EditorStyles.miniLabel);
+                float pEhp = tStats != null ? tStats.CalculatePhysicalEHP() * (entry.forceElite ? entry.enemy.eliteHpMultiplier : 1f) : unitHp;
+                float mEhp = tStats != null ? tStats.CalculateMagicEHP() * (entry.forceElite ? entry.enemy.eliteHpMultiplier : 1f) : unitHp;
+                EditorGUILayout.LabelField($"HP: {unitHp:0.#} (Σ {unitHp * entry.count:0.#}) | EHP: ⚔{FormatEhp(pEhp)} 🔮{FormatEhp(mEhp)}", EditorStyles.miniLabel);
             }
 
             GUILayout.FlexibleSpace();
@@ -1013,6 +1017,21 @@ public class WaveManagerEditorWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
+        // Row 0b: EHP Summary at Header
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Effective HP (EHP)", EditorStyles.miniBoldLabel, GUILayout.Width(labelColWidth));
+        for (int t = 0; t < 4; t++)
+        {
+            var tierStats = enemy.tiers[t];
+            float pEhp = tierStats.CalculatePhysicalEHP();
+            float mEhp = tierStats.CalculateMagicEHP();
+            string pStr = FormatEhp(pEhp);
+            string mStr = FormatEhp(mEhp);
+            GUIContent ehpHeader = new GUIContent($"⚔ {pStr}  |  🔮 {mStr}", $"Tier {t + 1} EHP:\nFizyczne: {pStr} (Pancerz: {tierStats.armor}%, Unik: {tierStats.dodgeChance}%)\nMagiczne: {mStr} (MR: {tierStats.magicResist}%, Unik: {tierStats.dodgeChance}%)");
+            EditorGUILayout.LabelField(ehpHeader, EditorStyles.miniBoldLabel, GUILayout.Width(tierColWidth));
+        }
+        EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.Space(3);
 
         // Row 1: Sprite Preview
@@ -1097,6 +1116,50 @@ public class WaveManagerEditorWindow : EditorWindow
         for (int t = 0; t < 4; t++)
         {
             enemy.tiers[t].dodgeChance = EditorGUILayout.Slider(enemy.tiers[t].dodgeChance, 0f, 100f, GUILayout.Width(tierColWidth));
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.Space(6);
+
+        // Row 9: Effective HP - Physical
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(new GUIContent("Effective HP (Phys)", "Efektywne zdrowie przeciw atakom fizycznym: BaseHP / ((1 - Armor%) * (1 - Unik%))"), EditorStyles.boldLabel, GUILayout.Width(labelColWidth));
+        for (int t = 0; t < 4; t++)
+        {
+            var tierStats = enemy.tiers[t];
+            float pEhp = tierStats.CalculatePhysicalEHP();
+            string pStr = FormatEhp(pEhp);
+            float ratio = tierStats.baseHp > 0f ? pEhp / tierStats.baseHp : 1f;
+            string ratioStr = float.IsInfinity(pEhp) ? "∞" : $"×{ratio:0.##}";
+            string tooltip = $"Fizyczne EHP: {pStr} ({ratioStr} bazowego HP)\nBazowe HP: {tierStats.baseHp}\nPancerz: {tierStats.armor}%\nUnik: {tierStats.dodgeChance}%\nFormuła: HP / ((1 - {tierStats.armor:0.#}%) * (1 - {tierStats.dodgeChance:0.#}%))";
+            if (enemy.canBeElite)
+            {
+                tooltip += $"\nWariant Elitarny: ~{FormatEhp(pEhp * enemy.eliteHpMultiplier)} EHP";
+            }
+            GUI.color = new Color(1f, 0.9f, 0.75f);
+            EditorGUILayout.LabelField(new GUIContent($"⚔ {pStr} ({ratioStr})", tooltip), EditorStyles.boldLabel, GUILayout.Width(tierColWidth));
+            GUI.color = Color.white;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        // Row 10: Effective HP - Magic
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(new GUIContent("Effective HP (Magic)", "Efektywne zdrowie przeciw atakom magicznym: BaseHP / ((1 - MR%) * (1 - Unik%))"), EditorStyles.boldLabel, GUILayout.Width(labelColWidth));
+        for (int t = 0; t < 4; t++)
+        {
+            var tierStats = enemy.tiers[t];
+            float mEhp = tierStats.CalculateMagicEHP();
+            string mStr = FormatEhp(mEhp);
+            float ratio = tierStats.baseHp > 0f ? mEhp / tierStats.baseHp : 1f;
+            string ratioStr = float.IsInfinity(mEhp) ? "∞" : $"×{ratio:0.##}";
+            string tooltip = $"Magiczne EHP: {mStr} ({ratioStr} bazowego HP)\nBazowe HP: {tierStats.baseHp}\nOdporność na Magię: {tierStats.magicResist}%\nUnik: {tierStats.dodgeChance}%\nFormuła: HP / ((1 - {tierStats.magicResist:0.#}%) * (1 - {tierStats.dodgeChance:0.#}%))";
+            if (enemy.canBeElite)
+            {
+                tooltip += $"\nWariant Elitarny: ~{FormatEhp(mEhp * enemy.eliteHpMultiplier)} EHP";
+            }
+            GUI.color = new Color(0.75f, 0.92f, 1f);
+            EditorGUILayout.LabelField(new GUIContent($"🔮 {mStr} ({ratioStr})", tooltip), EditorStyles.boldLabel, GUILayout.Width(tierColWidth));
+            GUI.color = Color.white;
         }
         EditorGUILayout.EndHorizontal();
 
@@ -1222,6 +1285,13 @@ public class WaveManagerEditorWindow : EditorWindow
         }
     }
 
+    private static string FormatEhp(float ehp)
+    {
+        if (float.IsInfinity(ehp) || ehp > 999999f) return "∞";
+        if (ehp >= 10000f) return ehp.ToString("N0");
+        return $"{ehp:0.#}";
+    }
+
     // =========================================================================
     // TAB 3: KRZYWA TRUDNOŚCI (DIFFICULTY OVERVIEW)
     // =========================================================================
@@ -1276,9 +1346,11 @@ public class WaveManagerEditorWindow : EditorWindow
                     float unitHp = baseHp * mult;
                     totalRawHp += unitHp * e.count;
 
-                    float avgMitigation = Mathf.Clamp01((armor + mr) / 200f);
-                    float ehpMultiplier = avgMitigation >= 0.95f ? 20f : 1f / (1f - avgMitigation);
-                    totalEhp += unitHp * ehpMultiplier * e.count;
+                    float pEhp = tStats != null ? tStats.CalculatePhysicalEHP() * mult : unitHp;
+                    float mEhp = tStats != null ? tStats.CalculateMagicEHP() * mult : unitHp;
+                    float pEhpCapped = float.IsInfinity(pEhp) ? unitHp * 50f : pEhp;
+                    float mEhpCapped = float.IsInfinity(mEhp) ? unitHp * 50f : mEhp;
+                    totalEhp += ((pEhpCapped + mEhpCapped) * 0.5f) * e.count;
 
                     string label = $"{(!string.IsNullOrEmpty(e.enemy.enemyName) ? e.enemy.enemyName : e.enemy.name)} T{e.Tier}";
                     if (!unitsSummary.ContainsKey(label)) unitsSummary[label] = 0;

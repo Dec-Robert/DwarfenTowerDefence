@@ -44,5 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8aa7f91be680a747b7ad6276c138194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  charges: 8
+  charges: 25
   shieldVFX: {fileID: 0}

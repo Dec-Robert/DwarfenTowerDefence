@@ -1465,6 +1465,11 @@ MonoBehaviour:
   scrollSmoothing: 15
   invertScroll: 0
   enableRMBRotation: 1
+  rotationSpeed: 3
+  minPitch: 20
+  maxPitch: 80
+  invertPitch: 0
+  resetRotationSmoothing: 12
   enableEdgePan: 1
   edgePanBorderThickness: 15
   edgePanSpeed: 0
@@ -4488,7 +4493,10 @@ MonoBehaviour:
   matBeacon: {fileID: 2100000, guid: 26da7d67a911ba04ea40392c2719aad7, type: 2}
   matDefaultGrass: {fileID: 2100000, guid: b594f1b85ad5d0846afec409306b2049, type: 2}
   elevationHeightStep: 0.25
+  generateSideWalls: 1
   matSide: {fileID: 2100000, guid: 397ebaba128a4cd8b00c50ac5fe29833, type: 2}
+  mapEdgeBottomY: -1.4
+  liftSkirtDepth: 0.25
 --- !u!114 &1837610585
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33942,7 +33950,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 959.76, y: -116}
+  m_AnchoredPosition: {x: 864.00006, y: -116}
   m_SizeDelta: {x: 252, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &1789562790987711619

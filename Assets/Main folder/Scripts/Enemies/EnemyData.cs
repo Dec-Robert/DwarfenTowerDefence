@@ -17,6 +17,32 @@ public class EnemyTierStats
     [Range(0, 100)] public float armor = 0f;
     [Range(0, 100)] public float magicResist = 0f;
     [Range(0, 100)] public float dodgeChance = 0f;
+
+    /// <summary>
+    /// Oblicza efektywne zdrowie (Physical Effective HP) z uwzględnieniem pancerza fizycznego i szansy na unik.
+    /// Wzór: baseHp / ((1 - Armor) * (1 - Unik))
+    /// </summary>
+    public float CalculatePhysicalEHP()
+    {
+        float a = Mathf.Clamp01(armor <= 1f ? armor : armor / 100f);
+        float d = Mathf.Clamp01(dodgeChance <= 1f ? dodgeChance : dodgeChance / 100f);
+        float factor = (1f - a) * (1f - d);
+        if (factor <= 0.0001f) return float.PositiveInfinity;
+        return baseHp / factor;
+    }
+
+    /// <summary>
+    /// Oblicza efektywne zdrowie (Magic Effective HP) z uwzględnieniem odporności na magię i szansy na unik.
+    /// Wzór: baseHp / ((1 - MagicResist) * (1 - Unik))
+    /// </summary>
+    public float CalculateMagicEHP()
+    {
+        float m = Mathf.Clamp01(magicResist <= 1f ? magicResist : magicResist / 100f);
+        float d = Mathf.Clamp01(dodgeChance <= 1f ? dodgeChance : dodgeChance / 100f);
+        float factor = (1f - m) * (1f - d);
+        if (factor <= 0.0001f) return float.PositiveInfinity;
+        return baseHp / factor;
+    }
 }
 
 [CreateAssetMenu(fileName = "NewEnemy", menuName = "Tower Defense/Enemy Data")]
@@ -78,6 +104,18 @@ public class EnemyData : ScriptableObject
     {
         var t = GetTier(tierNumber);
         return (t != null && t.sprite != null) ? t.sprite : sprite;
+    }
+
+    public float CalculatePhysicalEHP(int tierNumber = 1)
+    {
+        var t = GetTier(tierNumber);
+        return t != null ? t.CalculatePhysicalEHP() : baseHp;
+    }
+
+    public float CalculateMagicEHP(int tierNumber = 1)
+    {
+        var t = GetTier(tierNumber);
+        return t != null ? t.CalculateMagicEHP() : baseHp;
     }
 
     public void EnsureTiers()

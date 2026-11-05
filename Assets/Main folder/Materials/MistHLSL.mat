@@ -26,11 +26,11 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BlockedBrightness: 1
-    - _BlockedEmission: 1
-    - _DiscoverableBrightness: 1
-    - _DiscoverableEmission: 1
-    - _MistAnimationSpeed: 2.14
+    - _BlockedBrightness: 0.8
+    - _BlockedEmission: 0.6
+    - _DiscoverableBrightness: 0.25
+    - _DiscoverableEmission: 0.4
+    - _MistAnimationSpeed: 1.2
     - _MistDetailScale: 3
     - _MistDetailStrength: 0.3
     - _MistLegacyLook: 0

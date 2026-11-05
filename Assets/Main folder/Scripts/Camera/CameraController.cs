@@ -65,6 +65,8 @@ public class CameraController : MonoBehaviour
 
     // Flaga blokady (np. gdy otwarte jest menu budowania)
     [HideInInspector] public bool isInputLocked = false;
+    public bool IsRotatingRMB => isRotatingRMB;
+    public bool IsRmbHeld => isRotatingRMB || Input.GetMouseButton(1);
 
     private Camera _cam;
     private float targetHeight;
@@ -181,6 +183,7 @@ public class CameraController : MonoBehaviour
         {
             if (!(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
             {
+                isFocusing = false; // Przerwij ewentualny ruch kamery do punktu skupienia
                 Ray ray = new Ray(transform.position, transform.forward);
                 if (groundPlane.Raycast(ray, out float enter))
                 {
@@ -240,21 +243,34 @@ public class CameraController : MonoBehaviour
 
     void HandleMovementInput()
     {
-        float xInput = Input.GetAxisRaw("Horizontal"); // A / D
-        float zInput = Input.GetAxisRaw("Vertical");   // W / S
+        bool isRmbHeld = isRotatingRMB || Input.GetMouseButton(1);
 
-        // Obsługa najechania na krawędzie ekranu (Edge Pan) - wyłączone podczas aktywnego obracania PPM
-        if (enableEdgePan && !isRotatingRMB)
+        float xInput = 0f;
+        float zInput = 0f;
+        float keyboardX = 0f;
+        float keyboardZ = 0f;
+
+        // Gdy PPM jest kliknięty/trzymany (zmiana kąta/obrót), całkowicie blokujemy klawiaturę oraz przesuwanie przy krawędziach
+        if (!isRmbHeld)
         {
-            Vector3 mousePos = Input.mousePosition;
-            // Sprawdzamy czy kursor znajduje się wewnątrz okna gry
-            if (mousePos.x >= 0 && mousePos.x <= Screen.width &&
-                mousePos.y >= 0 && mousePos.y <= Screen.height)
+            keyboardX = Input.GetAxisRaw("Horizontal"); // A / D
+            keyboardZ = Input.GetAxisRaw("Vertical");   // W / S
+            xInput = keyboardX;
+            zInput = keyboardZ;
+
+            // Obsługa najechania na krawędzie ekranu (Edge Pan)
+            if (enableEdgePan)
             {
-                if (mousePos.x <= edgePanBorderThickness) xInput -= 1f;
-                if (mousePos.x >= Screen.width - edgePanBorderThickness) xInput += 1f;
-                if (mousePos.y <= edgePanBorderThickness) zInput -= 1f;
-                if (mousePos.y >= Screen.height - edgePanBorderThickness) zInput += 1f;
+                Vector3 mousePos = Input.mousePosition;
+                // Sprawdzamy czy kursor znajduje się wewnątrz okna gry
+                if (mousePos.x >= 0 && mousePos.x <= Screen.width &&
+                    mousePos.y >= 0 && mousePos.y <= Screen.height)
+                {
+                    if (mousePos.x <= edgePanBorderThickness) xInput -= 1f;
+                    if (mousePos.x >= Screen.width - edgePanBorderThickness) xInput += 1f;
+                    if (mousePos.y <= edgePanBorderThickness) zInput -= 1f;
+                    if (mousePos.y >= Screen.height - edgePanBorderThickness) zInput += 1f;
+                }
             }
         }
 
@@ -274,7 +290,7 @@ public class CameraController : MonoBehaviour
         {
             isFocusing = false; // Przerwij ewentualny ruch kamery do punktu skupienia
             isResettingRotation = false; // Przerwij ewentualny reset rotacji
-            float currentMoveSpeed = (edgePanSpeed > 0f && Mathf.Approximately(Input.GetAxisRaw("Horizontal"), 0f) && Mathf.Approximately(Input.GetAxisRaw("Vertical"), 0f))
+            float currentMoveSpeed = (edgePanSpeed > 0f && Mathf.Approximately(keyboardX, 0f) && Mathf.Approximately(keyboardZ, 0f))
                 ? edgePanSpeed
                 : moveSpeed;
 
@@ -285,10 +301,13 @@ public class CameraController : MonoBehaviour
             transform.position = pos;
         }
 
-        // Obsługa wysokości (Zoom) klawiaturą (Q / E) - natychmiastowe zatrzymanie bez pływania
+        // Obsługa wysokości (Zoom) klawiaturą (Q / E) - wyłączona gdy PPM jest wciśnięty
         float heightInput = 0f;
-        if (Input.GetKey(KeyCode.Q)) heightInput = -1f;
-        if (Input.GetKey(KeyCode.E)) heightInput = 1f;
+        if (!isRmbHeld)
+        {
+            if (Input.GetKey(KeyCode.Q)) heightInput = -1f;
+            if (Input.GetKey(KeyCode.E)) heightInput = 1f;
+        }
 
         if (Mathf.Abs(heightInput) > 0.01f)
         {

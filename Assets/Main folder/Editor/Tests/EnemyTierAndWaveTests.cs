@@ -173,4 +173,82 @@ public class EnemyTierAndWaveTests
         Assert.GreaterOrEqual(enemiesMigrated, 6, "At least 6 EnemyData assets should be migrated");
         Assert.GreaterOrEqual(wavesMigrated, 20, "At least 20 WaveDefinition assets should be migrated");
     }
+
+    [Test]
+    public void Test07_EnemyTierStats_CalculateEffectiveHP()
+    {
+        var tier = new EnemyTierStats
+        {
+            baseHp = 100f,
+            armor = 0f,
+            magicResist = 0f,
+            dodgeChance = 0f
+        };
+
+        // 1. Bez redukcji
+        Assert.AreEqual(100f, tier.CalculatePhysicalEHP(), 0.01f);
+        Assert.AreEqual(100f, tier.CalculateMagicEHP(), 0.01f);
+
+        // 2. Sam pancerz (50% armor)
+        tier.armor = 50f;
+        Assert.AreEqual(200f, tier.CalculatePhysicalEHP(), 0.01f);
+        Assert.AreEqual(100f, tier.CalculateMagicEHP(), 0.01f);
+
+        // 3. Sama odporność na magię (20% MR)
+        tier.armor = 0f;
+        tier.magicResist = 20f;
+        Assert.AreEqual(100f, tier.CalculatePhysicalEHP(), 0.01f);
+        Assert.AreEqual(125f, tier.CalculateMagicEHP(), 0.01f);
+
+        // 4. Sam unik (20% dodge)
+        tier.magicResist = 0f;
+        tier.dodgeChance = 20f;
+        Assert.AreEqual(125f, tier.CalculatePhysicalEHP(), 0.01f);
+        Assert.AreEqual(125f, tier.CalculateMagicEHP(), 0.01f);
+
+        // 5. Kombinacja: Armor 50%, MR 25%, Dodge 20%
+        tier.armor = 50f;
+        tier.magicResist = 25f;
+        tier.dodgeChance = 20f;
+        // Phys: 100 / ((1 - 0.5) * (1 - 0.2)) = 100 / 0.4 = 250
+        Assert.AreEqual(250f, tier.CalculatePhysicalEHP(), 0.01f);
+        // Magic: 100 / ((1 - 0.25) * (1 - 0.2)) = 100 / 0.6 = 166.67
+        Assert.AreEqual(166.67f, tier.CalculateMagicEHP(), 0.05f);
+
+        // 6. Skrajność: 100% Armor lub 100% Dodge
+        tier.armor = 100f;
+        Assert.IsTrue(float.IsPositiveInfinity(tier.CalculatePhysicalEHP()));
+
+        tier.armor = 0f;
+        tier.dodgeChance = 100f;
+        Assert.IsTrue(float.IsPositiveInfinity(tier.CalculatePhysicalEHP()));
+        Assert.IsTrue(float.IsPositiveInfinity(tier.CalculateMagicEHP()));
+    }
+
+    [Test]
+    public void Test08_EnemyData_CalculateEffectiveHP_MultiTier()
+    {
+        EnemyData enemy = ScriptableObject.CreateInstance<EnemyData>();
+        enemy.EnsureTiers();
+
+        // T1: 100 HP, 0% Armor, 0% MR, 0% Dodge
+        enemy.GetTier(1).baseHp = 100f;
+        enemy.GetTier(1).armor = 0f;
+        enemy.GetTier(1).magicResist = 0f;
+        enemy.GetTier(1).dodgeChance = 0f;
+
+        // T2: 200 HP, 20% Armor, 10% MR, 10% Dodge
+        enemy.GetTier(2).baseHp = 200f;
+        enemy.GetTier(2).armor = 20f;
+        enemy.GetTier(2).magicResist = 10f;
+        enemy.GetTier(2).dodgeChance = 10f;
+
+        Assert.AreEqual(100f, enemy.CalculatePhysicalEHP(1), 0.01f);
+        Assert.AreEqual(100f, enemy.CalculateMagicEHP(1), 0.01f);
+
+        // T2 Phys: 200 / ((1 - 0.2) * (1 - 0.1)) = 200 / (0.8 * 0.9) = 200 / 0.72 = 277.78
+        Assert.AreEqual(277.78f, enemy.CalculatePhysicalEHP(2), 0.05f);
+        // T2 Magic: 200 / ((1 - 0.1) * (1 - 0.1)) = 200 / (0.9 * 0.9) = 200 / 0.81 = 246.91
+        Assert.AreEqual(246.91f, enemy.CalculateMagicEHP(2), 0.05f);
+    }
 }
