@@ -53,7 +53,7 @@ public struct ElevationRequirement
     }
 }
 
-[CreateAssetMenu(fileName = "NewBuilding", menuName = "City Builder/Building Data")]
+[CreateAssetMenu(fileName = "NewBuilding", menuName = "Game/Buildings/Building Data")]
 public class BuildingData : ScriptableObject
 {
     private static readonly float[] DefaultTowerEfficiency = { 0.2f, 1.0f, 1.1f, 1.2f, 1.3f, 1.35f, 1.4f };

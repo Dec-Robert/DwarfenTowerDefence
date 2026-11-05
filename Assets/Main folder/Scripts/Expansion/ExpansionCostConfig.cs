@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "ExpansionCostConfig", menuName = "Tower Defense/Expansion Cost Config")]
+[CreateAssetMenu(fileName = "ExpansionCostConfig", menuName = "Game/Economy/Expansion Cost Config")]
 public class ExpansionCostConfig : ScriptableObject
 {
     [Header("Czas Misji")]

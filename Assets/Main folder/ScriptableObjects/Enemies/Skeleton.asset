@@ -26,23 +26,23 @@ MonoBehaviour:
     dodgeChance: 0
   - prefab: {fileID: 6987379787904698027, guid: 0ed6f20242337c64b8df5c77925df8ad, type: 3}
     sprite: {fileID: 0}
-    baseHp: 150
+    baseHp: 100
     moveSpeed: 3.1
     armor: 10
     magicResist: 10
     dodgeChance: 0
   - prefab: {fileID: 6987379787904698027, guid: 0ed6f20242337c64b8df5c77925df8ad, type: 3}
     sprite: {fileID: 0}
-    baseHp: 500
+    baseHp: 200
     moveSpeed: 3.2
     armor: 20
     magicResist: 20
     dodgeChance: 5
   - prefab: {fileID: 6987379787904698027, guid: 0ed6f20242337c64b8df5c77925df8ad, type: 3}
     sprite: {fileID: 0}
-    baseHp: 1000
+    baseHp: 300
     moveSpeed: 3.3
-    armor: 20
+    armor: 40
     magicResist: 40
     dodgeChance: 10
   baseHp: 50

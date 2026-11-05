@@ -168,7 +168,7 @@ public class ResourceGuarantee
 /// Konfiguracja proceduralnej generacji terenu bez biomów.
 /// Zawiera reguły wagowe per pierścień oraz twarde gwarancje zasobów.
 /// </summary>
-[CreateAssetMenu(fileName = "TerrainGenerationConfig", menuName = "City Builder/Terrain Generation Config")]
+[CreateAssetMenu(fileName = "TerrainGenerationConfig", menuName = "Game/Map/Terrain Generation Config")]
 public class TerrainGenerationConfig : ScriptableObject
 {
     [Header("Reguły Pierścieni (Ring Rules)")]

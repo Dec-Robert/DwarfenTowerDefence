@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "CityBaseConfig", menuName = "Tower Defense/City Base Config")]
+[CreateAssetMenu(fileName = "CityBaseConfig", menuName = "Game/Meta Progression/City Base Config")]
 public class CityBaseConfigSO : ScriptableObject
 {
     [Header("── Surowce Startowe Bazy ──")]

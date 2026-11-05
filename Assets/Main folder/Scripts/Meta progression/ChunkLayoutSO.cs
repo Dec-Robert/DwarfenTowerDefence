@@ -21,7 +21,7 @@ public struct HexOverride
     public int EffectiveElevation => elevation != 0 ? elevation : featureLevel;
 }
 
-[CreateAssetMenu(fileName = "NewChunkLayout", menuName = "Map/Predefined Chunk Layout")]
+[CreateAssetMenu(fileName = "NewChunkLayout", menuName = "Game/Map/Predefined Chunk Layout")]
 public class ChunkLayoutSO : ScriptableObject
 {
     public PredefinedChunkType type;

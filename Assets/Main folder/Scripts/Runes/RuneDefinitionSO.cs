@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "NewRuneDef", menuName = "Tower Defense/Rune Definition")]
+[CreateAssetMenu(fileName = "NewRuneDef", menuName = "Game/Runes/Rune Definition")]
 public class RuneDefinitionSO : ScriptableObject
 {
     [Header("Główne Informacje")]

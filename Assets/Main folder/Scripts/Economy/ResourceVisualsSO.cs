@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ResourceVisualDatabase", menuName = "Tower Defense/Resource Visuals")]
+[CreateAssetMenu(fileName = "ResourceVisualDatabase", menuName = "Game/Economy/Resource Visuals")]
 
 public class ResourceVisualsSO : ScriptableObject
 {

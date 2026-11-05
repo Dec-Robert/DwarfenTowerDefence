@@ -97,7 +97,7 @@ public class PredefinedChunkData
 /// ScriptableObject przechowujący w pełni predefiniowany layout planszy (np. dla pierwszej gry / misji tutorialowej).
 /// Zawiera wszystkie zdefiniowane chunki, cechy terenu, kafelki dróg, punkty baz/spawnerów oraz stan mgły wojny.
 /// </summary>
-[CreateAssetMenu(fileName = "NewPredefinedMapLayout", menuName = "Map/Predefined Map Layout")]
+[CreateAssetMenu(fileName = "NewPredefinedMapLayout", menuName = "Game/Map/Predefined Map Layout")]
 public class PredefinedMapLayoutSO : ScriptableObject
 {
     [Header("Informacje o Mapie")]

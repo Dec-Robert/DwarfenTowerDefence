@@ -19,28 +19,28 @@ MonoBehaviour:
   tiers:
   - prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
     sprite: {fileID: 0}
-    baseHp: 50
+    baseHp: 30
     moveSpeed: 2.5
     armor: 0
     magicResist: 10
     dodgeChance: 10
   - prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
     sprite: {fileID: 0}
-    baseHp: 150
+    baseHp: 100
     moveSpeed: 2.6
     armor: 5
     magicResist: 25
     dodgeChance: 15
   - prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
     sprite: {fileID: 0}
-    baseHp: 300
+    baseHp: 200
     moveSpeed: 2.7
     armor: 10
     magicResist: 40
     dodgeChance: 20
   - prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
     sprite: {fileID: 0}
-    baseHp: 600
+    baseHp: 400
     moveSpeed: 2.8
     armor: 15
     magicResist: 55

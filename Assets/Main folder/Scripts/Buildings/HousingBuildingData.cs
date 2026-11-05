@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewHouse", menuName = "City Builder/Housing Data")]
+[CreateAssetMenu(fileName = "NewHouse", menuName = "Game/Buildings/Housing Building Data")]
 public class HousingBuildingData : BuildingData
 {
     [Header("Konfiguracja Rasy")] public Race housingRace;

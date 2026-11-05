@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public enum MilestoneType
@@ -15,7 +15,7 @@ public enum MilestoneType
     RuneCraftingDone // Fuzje i Transmutacje łącznie
 }
 
-[CreateAssetMenu(fileName = "HopeMilestones", menuName = "Tower Defense/Hope Milestones Config")]
+[CreateAssetMenu(fileName = "HopeMilestones", menuName = "Game/Meta Progression/Hope Milestones Config")]
 public class HopeMilestoneConfigSO : ScriptableObject
 {
     [System.Serializable]

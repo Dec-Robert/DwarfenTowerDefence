@@ -25,7 +25,7 @@ using System.Collections.Generic;
 ///   Dlatego kolejność w allUpgrades ma znaczenie dla "tiered" upgradów
 ///   (np. Magazyn Drewna I → II → III).
 /// </summary>
-[CreateAssetMenu(fileName = "NewMetaUpgrade", menuName = "Game/Meta Upgrade")]
+[CreateAssetMenu(fileName = "NewMetaUpgrade", menuName = "Game/Meta Progression/Meta Upgrade")]
 public class MetaUpgradeSO : ScriptableObject
 {
     [Header("── Identyfikacja ────────────────────────")]

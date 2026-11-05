@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewUpgrade", menuName = "City Builder/Building Upgrade")]
+[CreateAssetMenu(fileName = "NewUpgrade", menuName = "Game/Buildings/Building Upgrade")]
 public class BuildingUpgradeSO : ScriptableObject
 {
     [Header("Informacje")] public string upgradeName;

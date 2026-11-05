@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "Wave_Day_X", menuName = "Tower Defense/Predefined Wave")]
+[CreateAssetMenu(fileName = "Wave_Day_X", menuName = "Game/Enemies & Waves/Predefined Wave")]
 public class WaveDefinition : ScriptableObject
 {
     [Header("Konfiguracja Dnia i Komunikatu")]

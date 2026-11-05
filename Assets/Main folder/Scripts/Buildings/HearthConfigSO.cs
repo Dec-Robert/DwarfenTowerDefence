@@ -61,7 +61,7 @@ public class HearthLevelData
     public float nextDayProductionBonus = 0f;
 }
 
-[CreateAssetMenu(fileName = "HearthConfig", menuName = "RTS/Buildings/Hearth Config")]
+[CreateAssetMenu(fileName = "HearthConfig", menuName = "Game/Buildings/Hearth Config")]
 public class HearthConfigSO : ScriptableObject
 {
     [Header("Skalowanie Nocnego Ognia")]

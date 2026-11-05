@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "MetaMapConfig", menuName = "Map/Meta Map Config")]
+[CreateAssetMenu(fileName = "MetaMapConfig", menuName = "Game/Meta Progression/Meta Map Config")]
 public class MetaMapConfig : ScriptableObject
 {
     [Header("Baza (0,0)")]

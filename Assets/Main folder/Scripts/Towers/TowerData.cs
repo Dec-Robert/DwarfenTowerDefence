@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewTower", menuName = "Game/Tower Data")]
+[CreateAssetMenu(fileName = "NewTower", menuName = "Game/Towers/Tower Data")]
 public class TowerData : BuildingData
 {
     public const float HexToWorldRangeMultiplier = 2.0f;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Tower Effects/Slow")]
+[CreateAssetMenu(fileName = "NewSlowEffect", menuName = "Game/Towers/Effects/Slow Effect")]
 public class SlowEffect : TowerEffectSO
 {
     public float slowAmount = 0.5f; // 50% pr�dko�ci

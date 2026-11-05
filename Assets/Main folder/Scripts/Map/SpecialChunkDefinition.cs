@@ -18,7 +18,7 @@ public enum ChunkType
 ///
 /// UŻYCIE: Dodaj do listy specialChunkTypes w HexMapGenerator.
 /// </summary>
-[CreateAssetMenu(fileName = "NewSpecialChunk", menuName = "City Builder/Special Chunk Definition")]
+[CreateAssetMenu(fileName = "NewSpecialChunk", menuName = "Game/Map/Special Chunk Definition")]
 public class SpecialChunkDefinition : ScriptableObject
 {
     [Header("Identyfikacja")]

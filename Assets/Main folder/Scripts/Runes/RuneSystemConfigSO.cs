@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "RuneSystemConfig", menuName = "Tower Defense/Rune System Config")]
+[CreateAssetMenu(fileName = "RuneSystemConfig", menuName = "Game/Runes/Rune System Config")]
 public class RuneSystemConfigSO : ScriptableObject
 {
     [Header("── Szanse na Drop z Wrogów (w %) ──")]

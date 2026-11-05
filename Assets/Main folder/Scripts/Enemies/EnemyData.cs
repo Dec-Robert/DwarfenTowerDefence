@@ -45,7 +45,7 @@ public class EnemyTierStats
     }
 }
 
-[CreateAssetMenu(fileName = "NewEnemy", menuName = "Tower Defense/Enemy Data")]
+[CreateAssetMenu(fileName = "NewEnemy", menuName = "Game/Enemies & Waves/Enemy Data")]
 public class EnemyData : ScriptableObject
 {
     [Header("Wygląd (Domyślny / Fallback)")]

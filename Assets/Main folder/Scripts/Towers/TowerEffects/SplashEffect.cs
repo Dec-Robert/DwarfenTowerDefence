@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Tower Effects/Splash Damage")]
+[CreateAssetMenu(fileName = "NewSplashEffect", menuName = "Game/Towers/Effects/Splash Damage Effect")]
 public class SplashEffect : TowerEffectSO
 {
     public float explosionRadius = 3f;

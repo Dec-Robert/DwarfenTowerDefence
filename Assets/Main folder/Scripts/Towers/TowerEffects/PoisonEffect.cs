@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Tower Effects/Poison")]
+[CreateAssetMenu(fileName = "NewPoisonEffect", menuName = "Game/Towers/Effects/Poison Effect")]
 public class PoisonEffect : TowerEffectSO
 {
     public float damagePerTick = 2f;
