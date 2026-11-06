@@ -13,32 +13,87 @@ MonoBehaviour:
   m_Name: Wave day 11
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 11
-  waveMessage: "Nowy tydzie\u0144 zmaga\u0144 - mg\u0142a staje si\u0119 jeszcze
-    g\u0119stsza i ch\u0142odniejsza."
+  waveMessage: 
   etherPool: 36
-  customSpawnInterval: 0
-  hpMultiplier: 3.1
-  speedMultiplier: 1.05
-  shuffleEnemies: 1
+  customSpawnInterval: 0.9
+  hpMultiplier: 1
+  speedMultiplier: 1
+  shuffleEnemies: 0
   allowRandomElites: 0
+  maxElitesCount: 0
   enemies:
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
     tier: 1
-    count: 16
-    forceElite: 0
-  - enemy: {fileID: 11400000, guid: b8d0e2cd314d4a10a9b6f90e40e2dd27, type: 2}
-    tier: 1
-    count: 6
-    forceElite: 0
-  - enemy: {fileID: 11400000, guid: 21cb1c940f1e8e64b997c6c1c46db01b, type: 2}
-    tier: 1
     count: 4
     forceElite: 0
-  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
     tier: 1
     count: 4
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
     tier: 1
+    count: 6
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
+    count: 3
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 1
     count: 2
     forceElite: 0
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 2
+    count: 1
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
+    count: 3
+    forceElite: 0
+  spawnGroups:
+  - groupName: "1. Stra\u017C Przednia (Vanguard)"
+    delayBefore: 0
+    spawnInterval: 0.9
+    intervalJitter: 0.25
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 4
+      forceElite: 0
+  - groupName: "2. Si\u0142y G\u0142\xF3wne (Main Body)"
+    delayBefore: 1.5
+    spawnInterval: 0.9
+    intervalJitter: 0.25
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 4
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+      tier: 1
+      count: 6
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+      tier: 1
+      count: 3
+      forceElite: 0
+  - groupName: "3. Szar\u017Ca Odwod\xF3w (Flank & Rear)"
+    delayBefore: 1.5
+    spawnInterval: 0.9
+    intervalJitter: 0.2
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 2
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 2
+      count: 1
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+      tier: 1
+      count: 3
+      forceElite: 0

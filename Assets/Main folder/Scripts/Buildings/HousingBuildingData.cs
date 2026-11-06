@@ -10,11 +10,19 @@ public class HousingBuildingData : BuildingData
     public int maxResidents = 5;
     public int initialResidents = 2;
 
-    [Header("Formu�a Wzrostu")] public float growthDifficultyMultiplier = 2.0f;
+    [Header("Cykle Wzrostu Populacji")]
+    [Tooltip("Liczba cykli/dni potrzebnych na pojawienie się kolejnego mieszkańca w zależności od obecnej populacji (indeks 0 = dla 0 mieszkańców, indeks 1 = dla 1 itd.).")]
+    public int[] growthCycles = new int[] { 2, 3, 4, 5, 5 };
 
-    public int baseGrowthTicks = 1;
+    public int GetGrowthCyclesRequired(int currentResidents)
+    {
+        if (growthCycles == null || growthCycles.Length == 0) return 1;
+        if (currentResidents < 0) return Mathf.Max(1, growthCycles[0]);
+        if (currentResidents >= growthCycles.Length) return Mathf.Max(1, growthCycles[growthCycles.Length - 1]);
+        return Mathf.Max(1, growthCycles[currentResidents]);
+    }
 
-    [Header("Produkcja Pasywna (Na mieszka�ca)")]
+    [Header("Produkcja Pasywna (Na mieszkańca)")]
     public List<ResourceCost> productionPerResident;
 
     [Header("Koszty Utrzymania (Baza + Per Pop)")]

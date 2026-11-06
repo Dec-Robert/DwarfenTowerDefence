@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1547,23 +1547,55 @@ public class BuildingBalanceEditorWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
-        float newDiff = EditorGUILayout.FloatField("Mnożnik Trudności Wzrostu:", hd.growthDifficultyMultiplier);
-        if (Mathf.Abs(newDiff - hd.growthDifficultyMultiplier) > 0.001f)
+        EditorGUILayout.Space(6);
+        EditorGUILayout.LabelField("📈 Tury do Wzrostu Populacji (growthCycles):", EditorStyles.boldLabel);
+
+        if (hd.growthCycles == null) hd.growthCycles = new int[0];
+
+        int newSize = EditorGUILayout.IntField("Liczba poziomów w tablicy:", hd.growthCycles.Length);
+        if (newSize != hd.growthCycles.Length && newSize >= 0)
         {
-            Undo.RecordObject(hd, "Zmień growthDifficultyMultiplier");
-            hd.growthDifficultyMultiplier = Mathf.Max(0.1f, newDiff);
+            Undo.RecordObject(hd, "Zmień rozmiar growthCycles");
+            Array.Resize(ref hd.growthCycles, newSize);
+            for (int i = 0; i < hd.growthCycles.Length; i++)
+            {
+                if (hd.growthCycles[i] <= 0) hd.growthCycles[i] = 1;
+            }
             EditorUtility.SetDirty(hd);
         }
 
-        int newTicks = EditorGUILayout.IntField("Bazowe Ticki Wzrostu:", hd.baseGrowthTicks);
-        if (newTicks != hd.baseGrowthTicks)
+        for (int i = 0; i < hd.growthCycles.Length; i++)
         {
-            Undo.RecordObject(hd, "Zmień baseGrowthTicks");
-            hd.baseGrowthTicks = Mathf.Max(1, newTicks);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"Pop {i} → {i + 1}:", GUILayout.Width(90));
+            int newVal = EditorGUILayout.IntField(hd.growthCycles[i]);
+            if (newVal != hd.growthCycles[i])
+            {
+                Undo.RecordObject(hd, $"Zmień growthCycles[{i}]");
+                hd.growthCycles[i] = Mathf.Max(1, newVal);
+                EditorUtility.SetDirty(hd);
+            }
+            if (GUILayout.Button("✕", EditorStyles.miniButton, GUILayout.Width(22)))
+            {
+                Undo.RecordObject(hd, $"Usuń element {i} z growthCycles");
+                var list = new List<int>(hd.growthCycles);
+                list.RemoveAt(i);
+                hd.growthCycles = list.ToArray();
+                EditorUtility.SetDirty(hd);
+                GUIUtility.ExitGUI();
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        if (GUILayout.Button("+ Dodaj poziom wzrostu", EditorStyles.miniButton))
+        {
+            Undo.RecordObject(hd, "Dodaj poziom wzrostu");
+            var list = new List<int>(hd.growthCycles);
+            int lastVal = list.Count > 0 ? list[list.Count - 1] : 2;
+            list.Add(lastVal);
+            hd.growthCycles = list.ToArray();
             EditorUtility.SetDirty(hd);
         }
-        EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
     }

@@ -1,0 +1,1561 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="200" result="Failed(Child)" total="200" passed="175" failed="24" inconclusive="1" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:21Z" duration="11,8389902">
+  <test-suite type="TestSuite" id="1000" name="Hearthfall" fullname="Hearthfall" runstate="Runnable" testcasecount="200" result="Failed" site="Child" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:21Z" duration="11.838990" total="200" passed="175" failed="24" inconclusive="1" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1215" name="Assembly-CSharp-Editor.dll" fullname="D:/Projekty Unity/DwarfenTowerDefence/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll" runstate="Runnable" testcasecount="200" result="Failed" site="Child" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:21Z" duration="11.832524" total="200" passed="175" failed="24" inconclusive="1" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="35152" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1001" name="BuildingWorkerOverlayTests" fullname="BuildingWorkerOverlayTests" classname="BuildingWorkerOverlayTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.053310" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1002" name="Test01_IsEligibleBuilding_NullOrHousing_ReturnsFalse" fullname="BuildingWorkerOverlayTests.Test01_IsEligibleBuilding_NullOrHousing_ReturnsFalse" methodname="Test01_IsEligibleBuilding_NullOrHousing_ReturnsFalse" classname="BuildingWorkerOverlayTests" runstate="Runnable" seed="413862569" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.009733" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1003" name="Test02_IsEligibleBuilding_ProductionWithWorkers_ReturnsTrue" fullname="BuildingWorkerOverlayTests.Test02_IsEligibleBuilding_ProductionWithWorkers_ReturnsTrue" methodname="Test02_IsEligibleBuilding_ProductionWithWorkers_ReturnsTrue" classname="BuildingWorkerOverlayTests" runstate="Runnable" seed="1604799695" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.003019" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1004" name="Test03_ToggleVisibility_FiresEventAndUpdatesState" fullname="BuildingWorkerOverlayTests.Test03_ToggleVisibility_FiresEventAndUpdatesState" methodname="Test03_ToggleVisibility_FiresEventAndUpdatesState" classname="BuildingWorkerOverlayTests" runstate="Runnable" seed="895252450" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000869" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1005" name="Test04_RaceColors_MatchDesignGuidelines" fullname="BuildingWorkerOverlayTests.Test04_RaceColors_MatchDesignGuidelines" methodname="Test04_RaceColors_MatchDesignGuidelines" classname="BuildingWorkerOverlayTests" runstate="Runnable" seed="1863747240" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000222" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1006" name="Test05_ProceduralSprites_CreatedWith9SliceBorders" fullname="BuildingWorkerOverlayTests.Test05_ProceduralSprites_CreatedWith9SliceBorders" methodname="Test05_ProceduralSprites_CreatedWith9SliceBorders" classname="BuildingWorkerOverlayTests" runstate="Runnable" seed="63185222" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.003710" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1007" name="Test06_ActiveBuilding_ZeroWorkers_ShowsWarningCapsuleOnly" fullname="BuildingWorkerOverlayTests.Test06_ActiveBuilding_ZeroWorkers_ShowsWarningCapsuleOnly" methodname="Test06_ActiveBuilding_ZeroWorkers_ShowsWarningCapsuleOnly" classname="BuildingWorkerOverlayTests" runstate="Runnable" seed="2056679443" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.016699" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1008" name="Test07_ActiveBuilding_WithWorkers_ShowsOnlyAllocatedRaces" fullname="BuildingWorkerOverlayTests.Test07_ActiveBuilding_WithWorkers_ShowsOnlyAllocatedRaces" methodname="Test07_ActiveBuilding_WithWorkers_ShowsOnlyAllocatedRaces" classname="BuildingWorkerOverlayTests" runstate="Runnable" seed="1499586267" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.003887" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1009" name="Test08_PausedBuilding_ShowsWarningCapsule" fullname="BuildingWorkerOverlayTests.Test08_PausedBuilding_ShowsWarningCapsule" methodname="Test08_PausedBuilding_ShowsWarningCapsule" classname="BuildingWorkerOverlayTests" runstate="Runnable" seed="1786644869" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.003411" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1010" name="CombatOptimizationTests" fullname="CombatOptimizationTests" classname="CombatOptimizationTests" runstate="Runnable" testcasecount="54" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.034107" total="54" passed="54" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1011" name="Test01_EnemyRegistry_Register_SingleEnemy_TrackedInActiveEnemies" fullname="CombatOptimizationTests.Test01_EnemyRegistry_Register_SingleEnemy_TrackedInActiveEnemies" methodname="Test01_EnemyRegistry_Register_SingleEnemy_TrackedInActiveEnemies" classname="CombatOptimizationTests" runstate="Runnable" seed="1450583545" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000499" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1012" name="Test02_EnemyRegistry_Register_DuplicateEnemy_Prevented" fullname="CombatOptimizationTests.Test02_EnemyRegistry_Register_DuplicateEnemy_Prevented" methodname="Test02_EnemyRegistry_Register_DuplicateEnemy_Prevented" classname="CombatOptimizationTests" runstate="Runnable" seed="1529657889" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000359" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1013" name="Test03_EnemyRegistry_Register_NullEnemy_IgnoredSafely" fullname="CombatOptimizationTests.Test03_EnemyRegistry_Register_NullEnemy_IgnoredSafely" methodname="Test03_EnemyRegistry_Register_NullEnemy_IgnoredSafely" classname="CombatOptimizationTests" runstate="Runnable" seed="509312218" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000171" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1014" name="Test04_EnemyRegistry_Unregister_RemovesEnemy" fullname="CombatOptimizationTests.Test04_EnemyRegistry_Unregister_RemovesEnemy" methodname="Test04_EnemyRegistry_Unregister_RemovesEnemy" classname="CombatOptimizationTests" runstate="Runnable" seed="1650543154" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000376" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1015" name="Test05_EnemyRegistry_Unregister_NullEnemy_IgnoredSafely" fullname="CombatOptimizationTests.Test05_EnemyRegistry_Unregister_NullEnemy_IgnoredSafely" methodname="Test05_EnemyRegistry_Unregister_NullEnemy_IgnoredSafely" classname="CombatOptimizationTests" runstate="Runnable" seed="761878449" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000154" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1016" name="Test06_EnemyRegistry_Clear_RemovesAllEnemies" fullname="CombatOptimizationTests.Test06_EnemyRegistry_Clear_RemovesAllEnemies" methodname="Test06_EnemyRegistry_Clear_RemovesAllEnemies" classname="CombatOptimizationTests" runstate="Runnable" seed="311966892" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000535" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1017" name="Test07_EnemyRegistry_MultipleRegistrations_LifecycleIntegrity" fullname="CombatOptimizationTests.Test07_EnemyRegistry_MultipleRegistrations_LifecycleIntegrity" methodname="Test07_EnemyRegistry_MultipleRegistrations_LifecycleIntegrity" classname="CombatOptimizationTests" runstate="Runnable" seed="357626974" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.002892" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1018" name="Test08_EnemyStats_OnEnableAndOnDisable_AutoUpdatesRegistry" fullname="CombatOptimizationTests.Test08_EnemyStats_OnEnableAndOnDisable_AutoUpdatesRegistry" methodname="Test08_EnemyStats_OnEnableAndOnDisable_AutoUpdatesRegistry" classname="CombatOptimizationTests" runstate="Runnable" seed="941288865" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000317" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1019" name="Test09_TargetingMode_Closest_SelectsNearest" fullname="CombatOptimizationTests.Test09_TargetingMode_Closest_SelectsNearest" methodname="Test09_TargetingMode_Closest_SelectsNearest" classname="CombatOptimizationTests" runstate="Runnable" seed="690838462" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000489" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1020" name="Test10_TargetingMode_Furthest_SelectsFurthest" fullname="CombatOptimizationTests.Test10_TargetingMode_Furthest_SelectsFurthest" methodname="Test10_TargetingMode_Furthest_SelectsFurthest" classname="CombatOptimizationTests" runstate="Runnable" seed="752053436" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000461" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1021" name="Test11_TargetingMode_ClosestOnTrack_SelectsHighestTrackProgress" fullname="CombatOptimizationTests.Test11_TargetingMode_ClosestOnTrack_SelectsHighestTrackProgress" methodname="Test11_TargetingMode_ClosestOnTrack_SelectsHighestTrackProgress" classname="CombatOptimizationTests" runstate="Runnable" seed="1728366480" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000456" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1022" name="Test12_TargetingMode_FurthestOnTrack_SelectsLowestTrackProgress" fullname="CombatOptimizationTests.Test12_TargetingMode_FurthestOnTrack_SelectsLowestTrackProgress" methodname="Test12_TargetingMode_FurthestOnTrack_SelectsLowestTrackProgress" classname="CombatOptimizationTests" runstate="Runnable" seed="1688194546" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000459" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1023" name="Test13_TargetingMode_MostHP_SelectsHighestHealth" fullname="CombatOptimizationTests.Test13_TargetingMode_MostHP_SelectsHighestHealth" methodname="Test13_TargetingMode_MostHP_SelectsHighestHealth" classname="CombatOptimizationTests" runstate="Runnable" seed="1367060803" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000473" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1024" name="Test14_TargetingMode_LeastHP_SelectsLowestHealth" fullname="CombatOptimizationTests.Test14_TargetingMode_LeastHP_SelectsLowestHealth" methodname="Test14_TargetingMode_LeastHP_SelectsLowestHealth" classname="CombatOptimizationTests" runstate="Runnable" seed="481778705" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000455" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1025" name="Test15_TargetingMode_HighestThreat_SelectsBossOverEliteAndNormal" fullname="CombatOptimizationTests.Test15_TargetingMode_HighestThreat_SelectsBossOverEliteAndNormal" methodname="Test15_TargetingMode_HighestThreat_SelectsBossOverEliteAndNormal" classname="CombatOptimizationTests" runstate="Runnable" seed="1808374116" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000484" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1026" name="Test16_TargetingMode_HighestThreat_SelectsEliteOverNormal" fullname="CombatOptimizationTests.Test16_TargetingMode_HighestThreat_SelectsEliteOverNormal" methodname="Test16_TargetingMode_HighestThreat_SelectsEliteOverNormal" classname="CombatOptimizationTests" runstate="Runnable" seed="1842214428" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000403" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1027" name="Test17_TargetingMode_Random_SelectsCandidateFromInput" fullname="CombatOptimizationTests.Test17_TargetingMode_Random_SelectsCandidateFromInput" methodname="Test17_TargetingMode_Random_SelectsCandidateFromInput" classname="CombatOptimizationTests" runstate="Runnable" seed="839712622" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000412" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1028" name="Test18_Targeting_TieBreaking_ClosestEpsilonTie_ResolvedByTrackProgress" fullname="CombatOptimizationTests.Test18_Targeting_TieBreaking_ClosestEpsilonTie_ResolvedByTrackProgress" methodname="Test18_Targeting_TieBreaking_ClosestEpsilonTie_ResolvedByTrackProgress" classname="CombatOptimizationTests" runstate="Runnable" seed="1527684519" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000399" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1029" name="Test19_Targeting_TieBreaking_FurthestEpsilonTie_ResolvedByTrackProgress" fullname="CombatOptimizationTests.Test19_Targeting_TieBreaking_FurthestEpsilonTie_ResolvedByTrackProgress" methodname="Test19_Targeting_TieBreaking_FurthestEpsilonTie_ResolvedByTrackProgress" classname="CombatOptimizationTests" runstate="Runnable" seed="1508229761" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000399" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1030" name="Test20_Targeting_TieBreaking_MostHPEpsilonTie_ResolvedByTrackProgress" fullname="CombatOptimizationTests.Test20_Targeting_TieBreaking_MostHPEpsilonTie_ResolvedByTrackProgress" methodname="Test20_Targeting_TieBreaking_MostHPEpsilonTie_ResolvedByTrackProgress" classname="CombatOptimizationTests" runstate="Runnable" seed="1545948867" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000402" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1031" name="Test21_Targeting_TieBreaking_LeastHPEpsilonTie_ResolvedByTrackProgress" fullname="CombatOptimizationTests.Test21_Targeting_TieBreaking_LeastHPEpsilonTie_ResolvedByTrackProgress" methodname="Test21_Targeting_TieBreaking_LeastHPEpsilonTie_ResolvedByTrackProgress" classname="CombatOptimizationTests" runstate="Runnable" seed="640722940" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000400" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1032" name="Test22_Targeting_MultiRuleCascade_FiltersSequentially" fullname="CombatOptimizationTests.Test22_Targeting_MultiRuleCascade_FiltersSequentially" methodname="Test22_Targeting_MultiRuleCascade_FiltersSequentially" classname="CombatOptimizationTests" runstate="Runnable" seed="952513707" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000460" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1033" name="Test23_Targeting_MultiRuleCascade_ThreatThenClosest" fullname="CombatOptimizationTests.Test23_Targeting_MultiRuleCascade_ThreatThenClosest" methodname="Test23_Targeting_MultiRuleCascade_ThreatThenClosest" classname="CombatOptimizationTests" runstate="Runnable" seed="916571797" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000454" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1034" name="Test24_Targeting_ForcedTarget_TauntOverridesRegularRules" fullname="CombatOptimizationTests.Test24_Targeting_ForcedTarget_TauntOverridesRegularRules" methodname="Test24_Targeting_ForcedTarget_TauntOverridesRegularRules" classname="CombatOptimizationTests" runstate="Runnable" seed="1239231661" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000400" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1035" name="Test25_Targeting_ForcedTarget_OutOfRange_ClearsForcedTarget" fullname="CombatOptimizationTests.Test25_Targeting_ForcedTarget_OutOfRange_ClearsForcedTarget" methodname="Test25_Targeting_ForcedTarget_OutOfRange_ClearsForcedTarget" classname="CombatOptimizationTests" runstate="Runnable" seed="1575720432" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000399" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1036" name="Test26_Targeting_ForcedTarget_ClearOverride_RevertsToRules" fullname="CombatOptimizationTests.Test26_Targeting_ForcedTarget_ClearOverride_RevertsToRules" methodname="Test26_Targeting_ForcedTarget_ClearOverride_RevertsToRules" classname="CombatOptimizationTests" runstate="Runnable" seed="1609906787" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000410" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1037" name="Test27_Targeting_OutOfRange_EnemyIgnored" fullname="CombatOptimizationTests.Test27_Targeting_OutOfRange_EnemyIgnored" methodname="Test27_Targeting_OutOfRange_EnemyIgnored" classname="CombatOptimizationTests" runstate="Runnable" seed="422142504" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000337" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1038" name="Test28_Targeting_ZeroCandidateRetention_BuffersCleared" fullname="CombatOptimizationTests.Test28_Targeting_ZeroCandidateRetention_BuffersCleared" methodname="Test28_Targeting_ZeroCandidateRetention_BuffersCleared" classname="CombatOptimizationTests" runstate="Runnable" seed="1265593688" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000609" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1039" name="Test29_EnemyStats_ZeroMaterialCloning_SharedMaterialRemainsClean" fullname="CombatOptimizationTests.Test29_EnemyStats_ZeroMaterialCloning_SharedMaterialRemainsClean" methodname="Test29_EnemyStats_ZeroMaterialCloning_SharedMaterialRemainsClean" classname="CombatOptimizationTests" runstate="Runnable" seed="1064530398" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000309" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1040" name="Test30_EnemyStats_TakeDamage_HitFlash_AppliesPropertyBlock" fullname="CombatOptimizationTests.Test30_EnemyStats_TakeDamage_HitFlash_AppliesPropertyBlock" methodname="Test30_EnemyStats_TakeDamage_HitFlash_AppliesPropertyBlock" classname="CombatOptimizationTests" runstate="Runnable" seed="352905756" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000308" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1041" name="Test31_EnemyStats_TakeDamage_DodgeFlash_AppliesPropertyBlock" fullname="CombatOptimizationTests.Test31_EnemyStats_TakeDamage_DodgeFlash_AppliesPropertyBlock" methodname="Test31_EnemyStats_TakeDamage_DodgeFlash_AppliesPropertyBlock" classname="CombatOptimizationTests" runstate="Runnable" seed="233791971" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000303" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1042" name="Test32_EnemyStats_ResetColor_NormalEnemy_RestoresSharedMaterialAndClearsMPB" fullname="CombatOptimizationTests.Test32_EnemyStats_ResetColor_NormalEnemy_RestoresSharedMaterialAndClearsMPB" methodname="Test32_EnemyStats_ResetColor_NormalEnemy_RestoresSharedMaterialAndClearsMPB" classname="CombatOptimizationTests" runstate="Runnable" seed="220335003" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000303" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1043" name="Test33_EnemyStats_ResetColor_EliteEnemy_MaintainsRedPropertyBlock" fullname="CombatOptimizationTests.Test33_EnemyStats_ResetColor_EliteEnemy_MaintainsRedPropertyBlock" methodname="Test33_EnemyStats_ResetColor_EliteEnemy_MaintainsRedPropertyBlock" classname="CombatOptimizationTests" runstate="Runnable" seed="1380501463" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000295" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1044" name="Test34_EnemyStats_OnDisable_ClearsPropertyBlockOverrides" fullname="CombatOptimizationTests.Test34_EnemyStats_OnDisable_ClearsPropertyBlockOverrides" methodname="Test34_EnemyStats_OnDisable_ClearsPropertyBlockOverrides" classname="CombatOptimizationTests" runstate="Runnable" seed="1975437359" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000305" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1045" name="Test35_EnemyStats_MultipleChildRenderers_AllReceivePropertyBlock" fullname="CombatOptimizationTests.Test35_EnemyStats_MultipleChildRenderers_AllReceivePropertyBlock" methodname="Test35_EnemyStats_MultipleChildRenderers_AllReceivePropertyBlock" classname="CombatOptimizationTests" runstate="Runnable" seed="1773522484" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000399" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1046" name="Test36_MaddeningGazeSkill_ScanInterval_ThrottledAt02Seconds" fullname="CombatOptimizationTests.Test36_MaddeningGazeSkill_ScanInterval_ThrottledAt02Seconds" methodname="Test36_MaddeningGazeSkill_ScanInterval_ThrottledAt02Seconds" classname="CombatOptimizationTests" runstate="Runnable" seed="22336815" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000162" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1047" name="Test37_MaddeningGazeSkill_HitBuffer_IsStaticNonAlloc64" fullname="CombatOptimizationTests.Test37_MaddeningGazeSkill_HitBuffer_IsStaticNonAlloc64" methodname="Test37_MaddeningGazeSkill_HitBuffer_IsStaticNonAlloc64" classname="CombatOptimizationTests" runstate="Runnable" seed="949610362" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000144" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1048" name="Test38_MaddeningGazeSkill_FearDebuff_ReducesFireRateByHalf_PreservesDamage" fullname="CombatOptimizationTests.Test38_MaddeningGazeSkill_FearDebuff_ReducesFireRateByHalf_PreservesDamage" methodname="Test38_MaddeningGazeSkill_FearDebuff_ReducesFireRateByHalf_PreservesDamage" classname="CombatOptimizationTests" runstate="Runnable" seed="1389433895" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000217" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1049" name="Test39_MaddeningGazeSkill_OnDisable_CleansUpFearedTowersAndRestoresStats" fullname="CombatOptimizationTests.Test39_MaddeningGazeSkill_OnDisable_CleansUpFearedTowersAndRestoresStats" methodname="Test39_MaddeningGazeSkill_OnDisable_CleansUpFearedTowersAndRestoresStats" classname="CombatOptimizationTests" runstate="Runnable" seed="1140849456" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000249" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1050" name="Test40_ShadeMinionSkill_ScanInterval_ThrottledAt01Seconds" fullname="CombatOptimizationTests.Test40_ShadeMinionSkill_ScanInterval_ThrottledAt01Seconds" methodname="Test40_ShadeMinionSkill_ScanInterval_ThrottledAt01Seconds" classname="CombatOptimizationTests" runstate="Runnable" seed="673203760" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000149" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1051" name="Test41_ShadeMinionSkill_TauntOverride_And_OnDisableCleanup" fullname="CombatOptimizationTests.Test41_ShadeMinionSkill_TauntOverride_And_OnDisableCleanup" methodname="Test41_ShadeMinionSkill_TauntOverride_And_OnDisableCleanup" classname="CombatOptimizationTests" runstate="Runnable" seed="1488276777" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000248" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1052" name="Test42_PointDefenseSkill_CooldownAndNonAllocBuffer" fullname="CombatOptimizationTests.Test42_PointDefenseSkill_CooldownAndNonAllocBuffer" methodname="Test42_PointDefenseSkill_CooldownAndNonAllocBuffer" classname="CombatOptimizationTests" runstate="Runnable" seed="1940730922" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000203" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1053" name="Test43_Stress_HighFrequencyTargetingLoop_50Enemies100Ticks" fullname="CombatOptimizationTests.Test43_Stress_HighFrequencyTargetingLoop_50Enemies100Ticks" methodname="Test43_Stress_HighFrequencyTargetingLoop_50Enemies100Ticks" classname="CombatOptimizationTests" runstate="Runnable" seed="2130204410" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.004867" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1054" name="Test44_Stress_RapidRegistryChurn_500Operations" fullname="CombatOptimizationTests.Test44_Stress_RapidRegistryChurn_500Operations" methodname="Test44_Stress_RapidRegistryChurn_500Operations" classname="CombatOptimizationTests" runstate="Runnable" seed="1872787433" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.003006" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1055" name="Test45_Stress_RapidTakeDamageFlashes_NoInvokeStall" fullname="CombatOptimizationTests.Test45_Stress_RapidTakeDamageFlashes_NoInvokeStall" methodname="Test45_Stress_RapidTakeDamageFlashes_NoInvokeStall" classname="CombatOptimizationTests" runstate="Runnable" seed="366467044" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000335" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1056" name="Test46_GroundTargeting_SetGroundTarget_SetsMaxPriority_AndSavesPreviousPriorities" fullname="CombatOptimizationTests.Test46_GroundTargeting_SetGroundTarget_SetsMaxPriority_AndSavesPreviousPriorities" methodname="Test46_GroundTargeting_SetGroundTarget_SetsMaxPriority_AndSavesPreviousPriorities" classname="CombatOptimizationTests" runstate="Runnable" seed="414303400" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000247" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1057" name="Test47_GroundTargeting_ClearGroundTarget_RestoresSavedPriorities" fullname="CombatOptimizationTests.Test47_GroundTargeting_ClearGroundTarget_RestoresSavedPriorities" methodname="Test47_GroundTargeting_ClearGroundTarget_RestoresSavedPriorities" classname="CombatOptimizationTests" runstate="Runnable" seed="387999162" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000225" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1058" name="Test48_GroundTargeting_FirstShotDelayedByRandom05To1Sec" fullname="CombatOptimizationTests.Test48_GroundTargeting_FirstShotDelayedByRandom05To1Sec" methodname="Test48_GroundTargeting_FirstShotDelayedByRandom05To1Sec" classname="CombatOptimizationTests" runstate="Runnable" seed="1660040896" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000227" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1059" name="Test49_GroundTargeting_RangeReduction_DoesNotBlockShootingOrAiming" fullname="CombatOptimizationTests.Test49_GroundTargeting_RangeReduction_DoesNotBlockShootingOrAiming" methodname="Test49_GroundTargeting_RangeReduction_DoesNotBlockShootingOrAiming" classname="CombatOptimizationTests" runstate="Runnable" seed="1846321920" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000229" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1060" name="Test50_Expedition_MinElvesIsOne" fullname="CombatOptimizationTests.Test50_Expedition_MinElvesIsOne" methodname="Test50_Expedition_MinElvesIsOne" classname="CombatOptimizationTests" runstate="Runnable" seed="1113640447" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000185" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1061" name="Test51_Expedition_DurationScalesWithDiscoveredChunks_Every4Chunks" fullname="CombatOptimizationTests.Test51_Expedition_DurationScalesWithDiscoveredChunks_Every4Chunks" methodname="Test51_Expedition_DurationScalesWithDiscoveredChunks_Every4Chunks" classname="CombatOptimizationTests" runstate="Runnable" seed="679041832" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000176" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1062" name="Test52_StarterHousing_RuinedDwarfHouse_DoesNotConsumeStone" fullname="CombatOptimizationTests.Test52_StarterHousing_RuinedDwarfHouse_DoesNotConsumeStone" methodname="Test52_StarterHousing_RuinedDwarfHouse_DoesNotConsumeStone" classname="CombatOptimizationTests" runstate="Runnable" seed="1700143397" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.001310" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1063" name="Test53_TacticalRecon_Costs50FoodAnd20Wood_ZeroEther" fullname="CombatOptimizationTests.Test53_TacticalRecon_Costs50FoodAnd20Wood_ZeroEther" methodname="Test53_TacticalRecon_Costs50FoodAnd20Wood_ZeroEther" classname="CombatOptimizationTests" runstate="Runnable" seed="463309842" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000185" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1064" name="Test54_SurveyCosts_First4TiersAndTier5Plus_ScalesCorrectly" fullname="CombatOptimizationTests.Test54_SurveyCosts_First4TiersAndTier5Plus_ScalesCorrectly" methodname="Test54_SurveyCosts_First4TiersAndTier5Plus_ScalesCorrectly" classname="CombatOptimizationTests" runstate="Runnable" seed="1384034354" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000242" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1065" name="DailyResourceBalanceTests" fullname="DailyResourceBalanceTests" classname="DailyResourceBalanceTests" runstate="Runnable" testcasecount="5" result="Failed" site="Child" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.010934" total="5" passed="0" failed="5" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1066" name="Test01_EconomicBuildings_AggregatedByDisplayName" fullname="DailyResourceBalanceTests.Test01_EconomicBuildings_AggregatedByDisplayName" methodname="Test01_EconomicBuildings_AggregatedByDisplayName" classname="DailyResourceBalanceTests" runstate="Runnable" seed="1504145758" result="Failed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.006782" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 30
+  But was:  0
+]]></message>
+            <stack-trace><![CDATA[at DailyResourceBalanceTests.Test01_EconomicBuildings_AggregatedByDisplayName () [0x00028] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\DailyResourceBalanceTests.cs:80
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1067" name="Test02_EconomicUpkeep_AggregatedByDisplayName" fullname="DailyResourceBalanceTests.Test02_EconomicUpkeep_AggregatedByDisplayName" methodname="Test02_EconomicUpkeep_AggregatedByDisplayName" classname="DailyResourceBalanceTests" runstate="Runnable" seed="1290462638" result="Failed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000551" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 6
+  But was:  0
+]]></message>
+            <stack-trace><![CDATA[at DailyResourceBalanceTests.Test02_EconomicUpkeep_AggregatedByDisplayName () [0x0003d] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\DailyResourceBalanceTests.cs:102
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1068" name="Test03_HousingSurvivalAndGrowth_SeparatedInConsumption" fullname="DailyResourceBalanceTests.Test03_HousingSurvivalAndGrowth_SeparatedInConsumption" methodname="Test03_HousingSurvivalAndGrowth_SeparatedInConsumption" classname="DailyResourceBalanceTests" runstate="Runnable" seed="1140757236" result="Failed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000965" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 12
+  But was:  0
+]]></message>
+            <stack-trace><![CDATA[at DailyResourceBalanceTests.Test03_HousingSurvivalAndGrowth_SeparatedInConsumption () [0x000e4] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\DailyResourceBalanceTests.cs:146
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1069" name="Test04_TowerDefenseUpkeep_OnlyWhenHasWorkers" fullname="DailyResourceBalanceTests.Test04_TowerDefenseUpkeep_OnlyWhenHasWorkers" methodname="Test04_TowerDefenseUpkeep_OnlyWhenHasWorkers" classname="DailyResourceBalanceTests" runstate="Runnable" seed="849006450" result="Failed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000775" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 3
+  But was:  0
+]]></message>
+            <stack-trace><![CDATA[at DailyResourceBalanceTests.Test04_TowerDefenseUpkeep_OnlyWhenHasWorkers () [0x000e6] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\DailyResourceBalanceTests.cs:189
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1070" name="Test05_NetDailyBalance_CalculationCorrectness" fullname="DailyResourceBalanceTests.Test05_NetDailyBalance_CalculationCorrectness" methodname="Test05_NetDailyBalance_CalculationCorrectness" classname="DailyResourceBalanceTests" runstate="Runnable" seed="2091654590" result="Failed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000631" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 25
+  But was:  0
+]]></message>
+            <stack-trace><![CDATA[at DailyResourceBalanceTests.Test05_NetDailyBalance_CalculationCorrectness () [0x000cc] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\DailyResourceBalanceTests.cs:224
+]]></stack-trace>
+          </failure>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1071" name="EnemyHealthBarTests" fullname="EnemyHealthBarTests" classname="EnemyHealthBarTests" runstate="Runnable" testcasecount="13" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.005128" total="13" passed="13" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1072" name="Test01_TierRed_Below100Hp_FractionalSegment_NoDividers" fullname="EnemyHealthBarTests.Test01_TierRed_Below100Hp_FractionalSegment_NoDividers" methodname="Test01_TierRed_Below100Hp_FractionalSegment_NoDividers" classname="EnemyHealthBarTests" runstate="Runnable" seed="1798417503" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000288" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1073" name="Test02_TierRed_IntermediateHp_380Hp_Has3SegmentsAndFraction" fullname="EnemyHealthBarTests.Test02_TierRed_IntermediateHp_380Hp_Has3SegmentsAndFraction" methodname="Test02_TierRed_IntermediateHp_380Hp_Has3SegmentsAndFraction" classname="EnemyHealthBarTests" runstate="Runnable" seed="1212880350" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000097" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1074" name="Test03_TierRed_Boundary1000Hp_Exactly10Segments" fullname="EnemyHealthBarTests.Test03_TierRed_Boundary1000Hp_Exactly10Segments" methodname="Test03_TierRed_Boundary1000Hp_Exactly10Segments" classname="EnemyHealthBarTests" runstate="Runnable" seed="1454983306" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000087" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1075" name="Test04_TierBlue_Herald1500Hp_BlueColorAnd1Point5Segments" fullname="EnemyHealthBarTests.Test04_TierBlue_Herald1500Hp_BlueColorAnd1Point5Segments" methodname="Test04_TierBlue_Herald1500Hp_BlueColorAnd1Point5Segments" classname="EnemyHealthBarTests" runstate="Runnable" seed="168547790" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000086" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1076" name="Test05_TierBlue_Boundary10000Hp_Exactly10Segments" fullname="EnemyHealthBarTests.Test05_TierBlue_Boundary10000Hp_Exactly10Segments" methodname="Test05_TierBlue_Boundary10000Hp_Exactly10Segments" classname="EnemyHealthBarTests" runstate="Runnable" seed="1982033690" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000092" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1077" name="Test06_TierGreen_45000Hp_GreenColorAnd4Point5Segments" fullname="EnemyHealthBarTests.Test06_TierGreen_45000Hp_GreenColorAnd4Point5Segments" methodname="Test06_TierGreen_45000Hp_GreenColorAnd4Point5Segments" classname="EnemyHealthBarTests" runstate="Runnable" seed="488133659" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000086" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1078" name="Test07_TierGreen_Boundary100000Hp_Exactly10Segments" fullname="EnemyHealthBarTests.Test07_TierGreen_Boundary100000Hp_Exactly10Segments" methodname="Test07_TierGreen_Boundary100000Hp_Exactly10Segments" classname="EnemyHealthBarTests" runstate="Runnable" seed="1349461191" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000083" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1079" name="Test08_TierPurple_250000Hp_PurpleColorAnd2Point5Segments" fullname="EnemyHealthBarTests.Test08_TierPurple_250000Hp_PurpleColorAnd2Point5Segments" methodname="Test08_TierPurple_250000Hp_PurpleColorAnd2Point5Segments" classname="EnemyHealthBarTests" runstate="Runnable" seed="1847825022" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000090" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1080" name="Test09_TierPurple_ReadabilityCap_5MillionHp_CappedAt20Segments" fullname="EnemyHealthBarTests.Test09_TierPurple_ReadabilityCap_5MillionHp_CappedAt20Segments" methodname="Test09_TierPurple_ReadabilityCap_5MillionHp_CappedAt20Segments" classname="EnemyHealthBarTests" runstate="Runnable" seed="131243369" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000082" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1081" name="Test10_VisibilityFlag_DefaultIsTrue_ToggleDisablesHealthBar" fullname="EnemyHealthBarTests.Test10_VisibilityFlag_DefaultIsTrue_ToggleDisablesHealthBar" methodname="Test10_VisibilityFlag_DefaultIsTrue_ToggleDisablesHealthBar" classname="EnemyHealthBarTests" runstate="Runnable" seed="273395735" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000316" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1082" name="Test11_ScaleCompensation_DifferentParentScales_ProduceSameWorldSize" fullname="EnemyHealthBarTests.Test11_ScaleCompensation_DifferentParentScales_ProduceSameWorldSize" methodname="Test11_ScaleCompensation_DifferentParentScales_ProduceSameWorldSize" classname="EnemyHealthBarTests" runstate="Runnable" seed="1242796645" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000606" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1083" name="Test12_MaterialPropertyBlock_DamageAndResetColor_DoesNotWipeHealthBar" fullname="EnemyHealthBarTests.Test12_MaterialPropertyBlock_DamageAndResetColor_DoesNotWipeHealthBar" methodname="Test12_MaterialPropertyBlock_DamageAndResetColor_DoesNotWipeHealthBar" classname="EnemyHealthBarTests" runstate="Runnable" seed="930733912" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.001551" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[EnemyGlow] Materiał 'EnemyHealthBar_SharedMat' (shader 'Custom/EnemyHealthBar') nie obsługuje emisji URP/Lit - wróg z tym materiałem nie będzie świecił.
+]]></output>
+        </test-case>
+        <test-case id="1084" name="Test13_SharedMaterial_UsesCustomShaderAndPrefersManagerReference" fullname="EnemyHealthBarTests.Test13_SharedMaterial_UsesCustomShaderAndPrefersManagerReference" methodname="Test13_SharedMaterial_UsesCustomShaderAndPrefersManagerReference" classname="EnemyHealthBarTests" runstate="Runnable" seed="1597952592" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000197" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1085" name="EnemyTierAndWaveTests" fullname="EnemyTierAndWaveTests" classname="EnemyTierAndWaveTests" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.032132" total="13" passed="11" failed="2" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1086" name="Test01_EnemyData_TiersInitializationAndGetTier" fullname="EnemyTierAndWaveTests.Test01_EnemyData_TiersInitializationAndGetTier" methodname="Test01_EnemyData_TiersInitializationAndGetTier" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="616332673" result="Failed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000771" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 250.0f
+  But was:  100.0f
+]]></message>
+            <stack-trace><![CDATA[at EnemyTierAndWaveTests.Test01_EnemyData_TiersInitializationAndGetTier () [0x000d7] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\EnemyTierAndWaveTests.cs:32
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1087" name="Test02_EnemyData_TierSpecificPrefabAndSprite" fullname="EnemyTierAndWaveTests.Test02_EnemyData_TierSpecificPrefabAndSprite" methodname="Test02_EnemyData_TierSpecificPrefabAndSprite" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="1169071731" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000338" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1088" name="Test03_WaveEntry_TierClamping" fullname="EnemyTierAndWaveTests.Test03_WaveEntry_TierClamping" methodname="Test03_WaveEntry_TierClamping" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="1569794511" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000206" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1089" name="Test04_Spawner_FindWaveForDay_EndlessScalingFormula" fullname="EnemyTierAndWaveTests.Test04_Spawner_FindWaveForDay_EndlessScalingFormula" methodname="Test04_Spawner_FindWaveForDay_EndlessScalingFormula" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="179675792" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.002930" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Spawner] Brak dedykowanego assetu fali dla Dnia 5 – użyto fallbacku z Dnia 2 ().
+]]></output>
+        </test-case>
+        <test-case id="1090" name="Test05_EnemyStats_InitializeWithTiers" fullname="EnemyTierAndWaveTests.Test05_EnemyStats_InitializeWithTiers" methodname="Test05_EnemyStats_InitializeWithTiers" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="1463361980" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.001217" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1091" name="Test06_PerformMigrationOnProjectAssets_Successful" fullname="EnemyTierAndWaveTests.Test06_PerformMigrationOnProjectAssets_Successful" methodname="Test06_PerformMigrationOnProjectAssets_Successful" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="870592452" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.014429" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1092" name="Test07_EnemyTierStats_CalculateEffectiveHP" fullname="EnemyTierAndWaveTests.Test07_EnemyTierStats_CalculateEffectiveHP" methodname="Test07_EnemyTierStats_CalculateEffectiveHP" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="285724130" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000447" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1093" name="Test08_EnemyData_CalculateEffectiveHP_MultiTier" fullname="EnemyTierAndWaveTests.Test08_EnemyData_CalculateEffectiveHP_MultiTier" methodname="Test08_EnemyData_CalculateEffectiveHP_MultiTier" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="493440278" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000263" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1094" name="Test09_50Waves_IntegrityAndSequence" fullname="EnemyTierAndWaveTests.Test09_50Waves_IntegrityAndSequence" methodname="Test09_50Waves_IntegrityAndSequence" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="742354410" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.005863" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1095" name="Test10_50Waves_BossAppearsOn15_30_50" fullname="EnemyTierAndWaveTests.Test10_50Waves_BossAppearsOn15_30_50" methodname="Test10_50Waves_BossAppearsOn15_30_50" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="1035756657" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.001158" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1096" name="Test11_50Waves_EtherPoolAnchorPointsAndMonotonicity" fullname="EnemyTierAndWaveTests.Test11_50Waves_EtherPoolAnchorPointsAndMonotonicity" methodname="Test11_50Waves_EtherPoolAnchorPointsAndMonotonicity" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="386434463" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000605" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1097" name="Test12_50Waves_EliteRulesAndNoPredefinedElites" fullname="EnemyTierAndWaveTests.Test12_50Waves_EliteRulesAndNoPredefinedElites" methodname="Test12_50Waves_EliteRulesAndNoPredefinedElites" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="691672339" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000982" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1098" name="Test13_50Waves_ThreatBudgetAndSpawnGroups" fullname="EnemyTierAndWaveTests.Test13_50Waves_ThreatBudgetAndSpawnGroups" methodname="Test13_50Waves_ThreatBudgetAndSpawnGroups" classname="EnemyTierAndWaveTests" runstate="Runnable" seed="29969632" result="Failed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.001524" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Day 16 breather wave must have lower threat than Day 15 Boss
+  Expected: less than 70.7999954f
+  But was:  77.6000061f
+]]></message>
+            <stack-trace><![CDATA[at EnemyTierAndWaveTests.Test13_50Waves_ThreatBudgetAndSpawnGroups () [0x000d6] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\EnemyTierAndWaveTests.cs:403
+]]></stack-trace>
+          </failure>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1099" name="HexArchitectureTests" fullname="HexArchitectureTests" classname="HexArchitectureTests" runstate="Runnable" testcasecount="13" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.007013" total="13" passed="13" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1100" name="Test01_HexCell_InitializesWithCorrectData" fullname="HexArchitectureTests.Test01_HexCell_InitializesWithCorrectData" methodname="Test01_HexCell_InitializesWithCorrectData" classname="HexArchitectureTests" runstate="Runnable" seed="622847125" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000897" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1101" name="Test02_HexCell_SetBuilding_AssignsOccupancyAndData" fullname="HexArchitectureTests.Test02_HexCell_SetBuilding_AssignsOccupancyAndData" methodname="Test02_HexCell_SetBuilding_AssignsOccupancyAndData" classname="HexArchitectureTests" runstate="Runnable" seed="194459645" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000405" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1102" name="Test03_HexCell_ClearBuilding_FreesOccupancyAndData" fullname="HexArchitectureTests.Test03_HexCell_ClearBuilding_FreesOccupancyAndData" methodname="Test03_HexCell_ClearBuilding_FreesOccupancyAndData" classname="HexArchitectureTests" runstate="Runnable" seed="898724479" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000296" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1103" name="Test04_ElevationProperties_FlatHillCavity" fullname="HexArchitectureTests.Test04_ElevationProperties_FlatHillCavity" methodname="Test04_ElevationProperties_FlatHillCavity" classname="HexArchitectureTests" runstate="Runnable" seed="1575644828" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000363" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1104" name="Test05_ElevationRequirement_Any" fullname="HexArchitectureTests.Test05_ElevationRequirement_Any" methodname="Test05_ElevationRequirement_Any" classname="HexArchitectureTests" runstate="Runnable" seed="504488461" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000152" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1105" name="Test06_ElevationRequirement_OnlyFlat" fullname="HexArchitectureTests.Test06_ElevationRequirement_OnlyFlat" methodname="Test06_ElevationRequirement_OnlyFlat" classname="HexArchitectureTests" runstate="Runnable" seed="315887182" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000135" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1106" name="Test07_ElevationRequirement_OnlyHills" fullname="HexArchitectureTests.Test07_ElevationRequirement_OnlyHills" methodname="Test07_ElevationRequirement_OnlyHills" classname="HexArchitectureTests" runstate="Runnable" seed="638429672" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000141" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1107" name="Test08_ElevationRequirement_OnlyCavities" fullname="HexArchitectureTests.Test08_ElevationRequirement_OnlyCavities" methodname="Test08_ElevationRequirement_OnlyCavities" classname="HexArchitectureTests" runstate="Runnable" seed="706232860" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000138" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1108" name="Test09_ElevationRequirement_CustomRange" fullname="HexArchitectureTests.Test09_ElevationRequirement_CustomRange" methodname="Test09_ElevationRequirement_CustomRange" classname="HexArchitectureTests" runstate="Runnable" seed="381183866" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000146" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1109" name="Test10_ElevationRequirement_SpecificValues" fullname="HexArchitectureTests.Test10_ElevationRequirement_SpecificValues" methodname="Test10_ElevationRequirement_SpecificValues" classname="HexArchitectureTests" runstate="Runnable" seed="652097702" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000527" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1110" name="Test11_DecorationProp_HidesOnBuild_RestoresOnClear" fullname="HexArchitectureTests.Test11_DecorationProp_HidesOnBuild_RestoresOnClear" methodname="Test11_DecorationProp_HidesOnBuild_RestoresOnClear" classname="HexArchitectureTests" runstate="Runnable" seed="36031653" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000453" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1111" name="Test12_RoadValidation_BlocksStandardBuilding" fullname="HexArchitectureTests.Test12_RoadValidation_BlocksStandardBuilding" methodname="Test12_RoadValidation_BlocksStandardBuilding" classname="HexArchitectureTests" runstate="Runnable" seed="590419244" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000227" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1112" name="Test13_SinkholeFeature_ReturnsNegativeElevation" fullname="HexArchitectureTests.Test13_SinkholeFeature_ReturnsNegativeElevation" methodname="Test13_SinkholeFeature_ReturnsNegativeElevation" classname="HexArchitectureTests" runstate="Runnable" seed="1241295852" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000310" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1113" name="HexTerrainMeshTests" fullname="HexTerrainMeshTests" classname="HexTerrainMeshTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.036775" total="10" passed="9" failed="0" inconclusive="1" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1120" name="Corners_AreSharedExactlyWithAxialNeighbors" fullname="HexTerrainMeshTests.Corners_AreSharedExactlyWithAxialNeighbors" methodname="Corners_AreSharedExactlyWithAxialNeighbors" classname="HexTerrainMeshTests" runstate="Runnable" seed="1898527380" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.001371" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1114" name="EqualHeights_NoVisibleWalls" fullname="HexTerrainMeshTests.EqualHeights_NoVisibleWalls" methodname="EqualHeights_NoVisibleWalls" classname="HexTerrainMeshTests" runstate="Runnable" seed="407267622" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.004069" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1123" name="HillHeight_EncodedInUV1_GeneratesDistinctCacheKeys" fullname="HexTerrainMeshTests.HillHeight_EncodedInUV1_GeneratesDistinctCacheKeys" methodname="HillHeight_EncodedInUV1_GeneratesDistinctCacheKeys" classname="HexTerrainMeshTests" runstate="Runnable" seed="540414362" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.001881" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1115" name="HillNextToFlat_HillOwnsWallDownToNeighborSurface" fullname="HexTerrainMeshTests.HillNextToFlat_HillOwnsWallDownToNeighborSurface" methodname="HillNextToFlat_HillOwnsWallDownToNeighborSurface" classname="HexTerrainMeshTests" runstate="Runnable" seed="724377382" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.002694" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1118" name="MapEdge_WallReachesMapBottom" fullname="HexTerrainMeshTests.MapEdge_WallReachesMapBottom" methodname="MapEdge_WallReachesMapBottom" classname="HexTerrainMeshTests" runstate="Runnable" seed="982283360" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000566" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1117" name="MultipleHeights_WallsAreSplitAtEveryLevel" fullname="HexTerrainMeshTests.MultipleHeights_WallsAreSplitAtEveryLevel" methodname="MultipleHeights_WallsAreSplitAtEveryLevel" classname="HexTerrainMeshTests" runstate="Runnable" seed="1863527684" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000754" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1119" name="RandomGrid_EveryHeightStepIsClosedExactlyOnce" fullname="HexTerrainMeshTests.RandomGrid_EveryHeightStepIsClosedExactlyOnce" methodname="RandomGrid_EveryHeightStepIsClosedExactlyOnce" classname="HexTerrainMeshTests" runstate="Runnable" seed="216600627" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.021216" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1122" name="RoadEdgeMask_StoredInUV1_AndDistinguishedInCache" fullname="HexTerrainMeshTests.RoadEdgeMask_StoredInUV1_AndDistinguishedInCache" methodname="RoadEdgeMask_StoredInUV1_AndDistinguishedInCache" classname="HexTerrainMeshTests" runstate="Runnable" seed="1035279884" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000641" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1116" name="Sinkhole_SurroundingHexesCloseTheCavity" fullname="HexTerrainMeshTests.Sinkhole_SurroundingHexesCloseTheCavity" methodname="Sinkhole_SurroundingHexesCloseTheCavity" classname="HexTerrainMeshTests" runstate="Runnable" seed="246453512" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.000620" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1121" name="TopSurface_MatchesOriginalHexMesh" fullname="HexTerrainMeshTests.TopSurface_MatchesOriginalHexMesh" methodname="TopSurface_MatchesOriginalHexMesh" classname="HexTerrainMeshTests" runstate="Runnable" seed="1392957747" result="Inconclusive" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.001542" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <reason>
+            <message><![CDATA[Untitled.obj nie jest Read/Write - pomijam porownanie UV]]></message>
+          </reason>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1124" name="MapGenerationTests" fullname="MapGenerationTests" classname="MapGenerationTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:20Z" duration="11.326981" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1125" name="Test01_SameSeed_ProducesIdenticalMapData" fullname="MapGenerationTests.Test01_SameSeed_ProducesIdenticalMapData" methodname="Test01_SameSeed_ProducesIdenticalMapData" classname="MapGenerationTests" runstate="Runnable" seed="1470119878" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:09Z" duration="0.097398" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1126" name="Test02_ProtectedStartZone_FirstTwoChunksHaveMin6RoadHexesAndNoCrossroads" fullname="MapGenerationTests.Test02_ProtectedStartZone_FirstTwoChunksHaveMin6RoadHexesAndNoCrossroads" methodname="Test02_ProtectedStartZone_FirstTwoChunksHaveMin6RoadHexesAndNoCrossroads" classname="MapGenerationTests" runstate="Runnable" seed="964260009" result="Passed" start-time="2026-11-05 03:02:09Z" end-time="2026-11-05 03:02:11Z" duration="1.322178" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1127" name="Test03_MainPathAndLoops_ValidTopologyAndFlowWeightsSumToOne" fullname="MapGenerationTests.Test03_MainPathAndLoops_ValidTopologyAndFlowWeightsSumToOne" methodname="Test03_MainPathAndLoops_ValidTopologyAndFlowWeightsSumToOne" classname="MapGenerationTests" runstate="Runnable" seed="68854148" result="Passed" start-time="2026-11-05 03:02:11Z" end-time="2026-11-05 03:02:12Z" duration="1.352479" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1128" name="Test04_ActiveSpawnerAndLoopInFog_CorrectFrontierAndMergeBehavior" fullname="MapGenerationTests.Test04_ActiveSpawnerAndLoopInFog_CorrectFrontierAndMergeBehavior" methodname="Test04_ActiveSpawnerAndLoopInFog_CorrectFrontierAndMergeBehavior" classname="MapGenerationTests" runstate="Runnable" seed="654755403" result="Passed" start-time="2026-11-05 03:02:12Z" end-time="2026-11-05 03:02:12Z" duration="0.019310" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1129" name="Test05_ResourceGuarantees_100Seeds_Rings1To2AndRings3To4" fullname="MapGenerationTests.Test05_ResourceGuarantees_100Seeds_Rings1To2AndRings3To4" methodname="Test05_ResourceGuarantees_100Seeds_Rings1To2AndRings3To4" classname="MapGenerationTests" runstate="Runnable" seed="2113947242" result="Passed" start-time="2026-11-05 03:02:12Z" end-time="2026-11-05 03:02:13Z" duration="1.409811" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1130" name="Test06_SpecialChunks_NonCollisionWithPathsAndLoops" fullname="MapGenerationTests.Test06_SpecialChunks_NonCollisionWithPathsAndLoops" methodname="Test06_SpecialChunks_NonCollisionWithPathsAndLoops" classname="MapGenerationTests" runstate="Runnable" seed="1077204777" result="Passed" start-time="2026-11-05 03:02:13Z" end-time="2026-11-05 03:02:14Z" duration="0.401801" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (6, -7) (dystans od bazy: 7)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (7, -3) (dystans od bazy: 7)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (2, -4) (dystans od bazy: 4)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (7, 0) (dystans od bazy: 7)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (4, -6) (dystans od bazy: 6)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (6, -4) (dystans od bazy: 6)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (3, -6) (dystans od bazy: 6)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (6, -8) (dystans od bazy: 8)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (0, 5) (dystans od bazy: 5)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (3, -6) (dystans od bazy: 6)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (8, 0) (dystans od bazy: 8)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (5, -4) (dystans od bazy: 5)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (2, -5) (dystans od bazy: 5)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (5, -1) (dystans od bazy: 5)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (2, 5) (dystans od bazy: 7)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (5, -6) (dystans od bazy: 6)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (6, 1) (dystans od bazy: 7)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (1, -3) (dystans od bazy: 3)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (3, -1) (dystans od bazy: 3)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (2, 4) (dystans od bazy: 6)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (3, 4) (dystans od bazy: 7)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (8, -7) (dystans od bazy: 8)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (3, -7) (dystans od bazy: 7)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (4, 1) (dystans od bazy: 5)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (2, 1) (dystans od bazy: 3)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (6, 0) (dystans od bazy: 6)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (3, 4) (dystans od bazy: 7)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (6, -2) (dystans od bazy: 6)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (4, 1) (dystans od bazy: 5)
+[SpecialChunkPlacer] Chunk specjalny 'TestRuins' umieszczony na (3, -4) (dystans od bazy: 4)
+]]></output>
+        </test-case>
+        <test-case id="1131" name="Test07_SimulatorBatch500Seeds_100PercentSuccessAndGuarantees" fullname="MapGenerationTests.Test07_SimulatorBatch500Seeds_100PercentSuccessAndGuarantees" methodname="Test07_SimulatorBatch500Seeds_100PercentSuccessAndGuarantees" classname="MapGenerationTests" runstate="Runnable" seed="1387202817" result="Passed" start-time="2026-11-05 03:02:14Z" end-time="2026-11-05 03:02:20Z" duration="6.722535" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1132" name="MetaGameplayLogicR2Tests" fullname="MetaGameplayLogicR2Tests" classname="MetaGameplayLogicR2Tests" runstate="Runnable" testcasecount="9" result="Failed" site="Child" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.016135" total="9" passed="6" failed="3" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1136" name="BuildingData_GetBaseEfficiencyForWorkers_BeyondTable_ExtrapolatesLinearly" fullname="MetaGameplayLogicR2Tests.BuildingData_GetBaseEfficiencyForWorkers_BeyondTable_ExtrapolatesLinearly" methodname="BuildingData_GetBaseEfficiencyForWorkers_BeyondTable_ExtrapolatesLinearly" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="188670441" result="Passed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.002200" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1137" name="BuildingData_GetBaseEfficiencyForWorkers_NeverZerosOut_WhenScalingFactorZero" fullname="MetaGameplayLogicR2Tests.BuildingData_GetBaseEfficiencyForWorkers_NeverZerosOut_WhenScalingFactorZero" methodname="BuildingData_GetBaseEfficiencyForWorkers_NeverZerosOut_WhenScalingFactorZero" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="246579102" result="Passed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.000407" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1135" name="BuildingData_GetBaseEfficiencyForWorkers_WithinTable_ReturnsTableValue" fullname="MetaGameplayLogicR2Tests.BuildingData_GetBaseEfficiencyForWorkers_WithinTable_ReturnsTableValue" methodname="BuildingData_GetBaseEfficiencyForWorkers_WithinTable_ReturnsTableValue" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="1403108028" result="Passed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.000436" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1134" name="BuildingEntity_And_TowerEntity_QueryRespectiveDecoupledWorkerBonuses" fullname="MetaGameplayLogicR2Tests.BuildingEntity_And_TowerEntity_QueryRespectiveDecoupledWorkerBonuses" methodname="BuildingEntity_And_TowerEntity_QueryRespectiveDecoupledWorkerBonuses" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="20788725" result="Failed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.000615" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  BuildingEntity must query globalBonusProductionWorkers
+  Expected: 4
+  But was:  0
+]]></message>
+            <stack-trace><![CDATA[at MetaGameplayLogicR2Tests.BuildingEntity_And_TowerEntity_QueryRespectiveDecoupledWorkerBonuses () [0x00054] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\MetaGameplayLogicR2Tests.cs:69
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1133" name="CityStatsManager_DecoupledWorkerSlots_AreIndependent" fullname="MetaGameplayLogicR2Tests.CityStatsManager_DecoupledWorkerSlots_AreIndependent" methodname="CityStatsManager_DecoupledWorkerSlots_AreIndependent" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="1732034930" result="Passed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.000288" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1138" name="MetaUpgradeManager_Applies_DecoupledWorkerUpgrades" fullname="MetaGameplayLogicR2Tests.MetaUpgradeManager_Applies_DecoupledWorkerUpgrades" methodname="MetaUpgradeManager_Applies_DecoupledWorkerUpgrades" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="1430576" result="Failed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.003843" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 2
+  But was:  0
+]]></message>
+            <stack-trace><![CDATA[at MetaGameplayLogicR2Tests.MetaUpgradeManager_Applies_DecoupledWorkerUpgrades () [0x00097] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\MetaGameplayLogicR2Tests.cs:147
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[MetaUpgradeManager] Rozpoczynam CollectValues()...
+[MetaUpgradeManager] Dodano efekt: BonusProductionWorkers o wartości 2. Suma: 2
+[MetaUpgradeManager] Dodano efekt: BonusTowerCrewSlots o wartości 3. Suma: 3
+[MetaUpgradeManager] Zebrano zsumowane efekty. Globalne: 2, Specyficzne dla budynków: 0.
+]]></output>
+        </test-case>
+        <test-case id="1139" name="RuneManager_RarityUnlocks_GateHigherRarities" fullname="MetaGameplayLogicR2Tests.RuneManager_RarityUnlocks_GateHigherRarities" methodname="RuneManager_RarityUnlocks_GateHigherRarities" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="1433424502" result="Failed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.001850" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Only Common should roll when higher tiers are locked
+  Expected: Common
+  But was:  Legendary
+]]></message>
+            <stack-trace><![CDATA[at MetaGameplayLogicR2Tests.RuneManager_RarityUnlocks_GateHigherRarities () [0x000b8] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\MetaGameplayLogicR2Tests.cs:180
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[MetaUpgradeManager] Rozpoczynam CollectValues()...
+[MetaUpgradeManager] Zebrano zsumowane efekty. Globalne: 0, Specyficzne dla budynków: 0.
+]]></output>
+        </test-case>
+        <test-case id="1140" name="RuneManager_TryTransmute_GatesCursedCrafting" fullname="MetaGameplayLogicR2Tests.RuneManager_TryTransmute_GatesCursedCrafting" methodname="RuneManager_TryTransmute_GatesCursedCrafting" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="1068971160" result="Passed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.004376" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MetaUpgradeManager] Rozpoczynam CollectValues()...
+[MetaUpgradeManager] Zebrano zsumowane efekty. Globalne: 0, Specyficzne dla budynków: 0.
+[RuneManager] Pula run dla rzadkości Cursed jest PUSTA w konfiguracji!
+[MetaUpgradeManager] Rozpoczynam CollectValues()...
+[MetaUpgradeManager] Dodano efekt: UnlockCursedCrafting o wartości 1. Suma: 1
+[MetaUpgradeManager] Zebrano zsumowane efekty. Globalne: 1, Specyficzne dla budynków: 0.
+[MetaUpgradeManager] Nieobsługiwany efekt: UnlockCursedCrafting
+[RuneManager] Transmutacja udana! Otrzymano:  (Cursed)
+]]></output>
+        </test-case>
+        <test-case id="1141" name="SaveData_PersistsUnlockedUpgradeIDs_WithoutRespec" fullname="MetaGameplayLogicR2Tests.SaveData_PersistsUnlockedUpgradeIDs_WithoutRespec" methodname="SaveData_PersistsUnlockedUpgradeIDs_WithoutRespec" classname="MetaGameplayLogicR2Tests" runstate="Runnable" seed="396934112" result="Passed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:20Z" duration="0.000419" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1142" name="MetaGraphUITests" fullname="MetaGraphUITests" classname="MetaGraphUITests" runstate="Runnable" testcasecount="20" result="Failed" site="Child" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:21Z" duration="0.065790" total="20" passed="19" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1144" name="Test1_FogOfWar_AvailableLevelIPlus1_WhenLockedAndPrereqsMet" fullname="MetaGraphUITests.Test1_FogOfWar_AvailableLevelIPlus1_WhenLockedAndPrereqsMet" methodname="Test1_FogOfWar_AvailableLevelIPlus1_WhenLockedAndPrereqsMet" classname="MetaGraphUITests" runstate="Runnable" seed="1754522127" result="Passed" start-time="2026-11-05 03:02:20Z" end-time="2026-11-05 03:02:21Z" duration="0.001808" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1146" name="Test1_FogOfWar_DeepFogLevelIPlus3_CompletelyHidden" fullname="MetaGraphUITests.Test1_FogOfWar_DeepFogLevelIPlus3_CompletelyHidden" methodname="Test1_FogOfWar_DeepFogLevelIPlus3_CompletelyHidden" classname="MetaGraphUITests" runstate="Runnable" seed="2081241967" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000529" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1147" name="Test1_FogOfWar_DynamicTransitionOnPurchase" fullname="MetaGraphUITests.Test1_FogOfWar_DynamicTransitionOnPurchase" methodname="Test1_FogOfWar_DynamicTransitionOnPurchase" classname="MetaGraphUITests" runstate="Runnable" seed="569321293" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000555" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1145" name="Test1_FogOfWar_MysteryLevelIPlus2_WhenChildOfAvailableOrPurchased" fullname="MetaGraphUITests.Test1_FogOfWar_MysteryLevelIPlus2_WhenChildOfAvailableOrPurchased" methodname="Test1_FogOfWar_MysteryLevelIPlus2_WhenChildOfAvailableOrPurchased" classname="MetaGraphUITests" runstate="Runnable" seed="977008400" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000486" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1143" name="Test1_FogOfWar_PurchasedLevelI_WhenUnlocked" fullname="MetaGraphUITests.Test1_FogOfWar_PurchasedLevelI_WhenUnlocked" methodname="Test1_FogOfWar_PurchasedLevelI_WhenUnlocked" classname="MetaGraphUITests" runstate="Runnable" seed="1863937429" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000380" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1149" name="Test2_MultipleNodePositions_MatchDistinctCoordinates" fullname="MetaGraphUITests.Test2_MultipleNodePositions_MatchDistinctCoordinates" methodname="Test2_MultipleNodePositions_MatchDistinctCoordinates" classname="MetaGraphUITests" runstate="Runnable" seed="665269287" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.009217" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1148" name="Test2_NodePositioning_MatchesUpgradeNodePosition" fullname="MetaGraphUITests.Test2_NodePositioning_MatchesUpgradeNodePosition" methodname="Test2_NodePositioning_MatchesUpgradeNodePosition" classname="MetaGraphUITests" runstate="Runnable" seed="1687308138" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001113" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1151" name="Test3_PurchaseFlow_CannotPurchaseIfNotEnoughHope" fullname="MetaGraphUITests.Test3_PurchaseFlow_CannotPurchaseIfNotEnoughHope" methodname="Test3_PurchaseFlow_CannotPurchaseIfNotEnoughHope" classname="MetaGraphUITests" runstate="Runnable" seed="978377127" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.009975" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[MetaNodeDetailsPanelUI] Brak wystarczającej ilości Nadziei (0 / 100)!
+]]></output>
+        </test-case>
+        <test-case id="1150" name="Test3_PurchaseFlow_DeductsHope_SetsUnlocked_PersistsSave" fullname="MetaGraphUITests.Test3_PurchaseFlow_DeductsHope_SetsUnlocked_PersistsSave" methodname="Test3_PurchaseFlow_DeductsHope_SetsUnlocked_PersistsSave" classname="MetaGraphUITests" runstate="Runnable" seed="1767869706" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.003436" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Przycisk zakupu musi być aktywny gdy gracz ma wystarczająco Nadziei.
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at MetaGraphUITests.Test3_PurchaseFlow_DeductsHope_SetsUnlocked_PersistsSave () [0x00085] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\MetaGraphUITests.cs:216
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1152" name="Test4_GeminiUI_FontSizes_StrictCompliance" fullname="MetaGraphUITests.Test4_GeminiUI_FontSizes_StrictCompliance" methodname="Test4_GeminiUI_FontSizes_StrictCompliance" classname="MetaGraphUITests" runstate="Runnable" seed="1275628086" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.003254" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1153" name="Test4_GeminiUI_IconSizes_StrictCompliance" fullname="MetaGraphUITests.Test4_GeminiUI_IconSizes_StrictCompliance" methodname="Test4_GeminiUI_IconSizes_StrictCompliance" classname="MetaGraphUITests" runstate="Runnable" seed="378354874" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.003292" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1158" name="Test5_PanZoom_BoundsClamping_RestrictsExcessivePanning" fullname="MetaGraphUITests.Test5_PanZoom_BoundsClamping_RestrictsExcessivePanning" methodname="Test5_PanZoom_BoundsClamping_RestrictsExcessivePanning" classname="MetaGraphUITests" runstate="Runnable" seed="1192655651" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001616" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1155" name="Test5_PanZoom_FocusOnPosition_CentersStartNodeExactlyAtViewportCenter" fullname="MetaGraphUITests.Test5_PanZoom_FocusOnPosition_CentersStartNodeExactlyAtViewportCenter" methodname="Test5_PanZoom_FocusOnPosition_CentersStartNodeExactlyAtViewportCenter" classname="MetaGraphUITests" runstate="Runnable" seed="1238553700" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000855" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1154" name="Test5_PanZoom_InitializeAndTargetDecoupling" fullname="MetaGraphUITests.Test5_PanZoom_InitializeAndTargetDecoupling" methodname="Test5_PanZoom_InitializeAndTargetDecoupling" classname="MetaGraphUITests" runstate="Runnable" seed="1988542402" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000666" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1157" name="Test5_PanZoom_Pan_CompensatesCanvasScaleFactor" fullname="MetaGraphUITests.Test5_PanZoom_Pan_CompensatesCanvasScaleFactor" methodname="Test5_PanZoom_Pan_CompensatesCanvasScaleFactor" classname="MetaGraphUITests" runstate="Runnable" seed="169124799" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001226" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1156" name="Test5_PanZoom_Zoom_CursorStabilityInvariant" fullname="MetaGraphUITests.Test5_PanZoom_Zoom_CursorStabilityInvariant" methodname="Test5_PanZoom_Zoom_CursorStabilityInvariant" classname="MetaGraphUITests" runstate="Runnable" seed="297926147" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001834" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1159" name="Test6_MetaGraphHierarchy_LinesRendererHasCanvasRenderer" fullname="MetaGraphUITests.Test6_MetaGraphHierarchy_LinesRendererHasCanvasRenderer" methodname="Test6_MetaGraphHierarchy_LinesRendererHasCanvasRenderer" classname="MetaGraphUITests" runstate="Runnable" seed="1697630968" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.010445" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1160" name="Test7_MetaGraphHierarchy_NodeItemsHaveCanvasRenderer" fullname="MetaGraphUITests.Test7_MetaGraphHierarchy_NodeItemsHaveCanvasRenderer" methodname="Test7_MetaGraphHierarchy_NodeItemsHaveCanvasRenderer" classname="MetaGraphUITests" runstate="Runnable" seed="22610294" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.007602" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1161" name="Test8_TowerDraftModal_ProceduralElementsHaveCanvasRenderer" fullname="MetaGraphUITests.Test8_TowerDraftModal_ProceduralElementsHaveCanvasRenderer" methodname="Test8_TowerDraftModal_ProceduralElementsHaveCanvasRenderer" classname="MetaGraphUITests" runstate="Runnable" seed="847622105" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.004161" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1162" name="Test9_VariantUpgrades_PurchaseAndFreeSwitching" fullname="MetaGraphUITests.Test9_VariantUpgrades_PurchaseAndFreeSwitching" methodname="Test9_VariantUpgrades_PurchaseAndFreeSwitching" classname="MetaGraphUITests" runstate="Runnable" seed="1157303471" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000840" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1163" name="MetaProgressionTests" fullname="MetaProgressionTests" classname="MetaProgressionTests" runstate="Runnable" testcasecount="21" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.199179" total="21" passed="21" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1164" name="Tier1_01_All88Nodes_IntegrityAndCoordinates" fullname="MetaProgressionTests.Tier1_01_All88Nodes_IntegrityAndCoordinates" methodname="Tier1_01_All88Nodes_IntegrityAndCoordinates" classname="MetaProgressionTests" runstate="Runnable" seed="717297703" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.071862" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1165" name="Tier1_02_WorkerSlots_Decoupling" fullname="MetaProgressionTests.Tier1_02_WorkerSlots_Decoupling" methodname="Tier1_02_WorkerSlots_Decoupling" classname="MetaProgressionTests" runstate="Runnable" seed="1966453487" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000599" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1166" name="Tier1_03_DynamicEfficiencyExtrapolation_WithinAndBeyondTable" fullname="MetaProgressionTests.Tier1_03_DynamicEfficiencyExtrapolation_WithinAndBeyondTable" methodname="Tier1_03_DynamicEfficiencyExtrapolation_WithinAndBeyondTable" classname="MetaProgressionTests" runstate="Runnable" seed="1839503010" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000548" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1167" name="Tier1_04_RuneRarityGating_AndForgeUnlocks" fullname="MetaProgressionTests.Tier1_04_RuneRarityGating_AndForgeUnlocks" methodname="Tier1_04_RuneRarityGating_AndForgeUnlocks" classname="MetaProgressionTests" runstate="Runnable" seed="11933408" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000713" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1168" name="Tier1_05_RacialSynergies_TowerEntity" fullname="MetaProgressionTests.Tier1_05_RacialSynergies_TowerEntity" methodname="Tier1_05_RacialSynergies_TowerEntity" classname="MetaProgressionTests" runstate="Runnable" seed="1687768093" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.002236" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1169" name="Tier1_06_SaveSerialization_UnlockedTowerIDsAndStarterTowers" fullname="MetaProgressionTests.Tier1_06_SaveSerialization_UnlockedTowerIDsAndStarterTowers" methodname="Tier1_06_SaveSerialization_UnlockedTowerIDsAndStarterTowers" classname="MetaProgressionTests" runstate="Runnable" seed="1367212509" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.025470" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_1bbc5038adca4955b829142a639cf1ca.json</color>
+[SaveManager] Wczytano post�p gracza.
+]]></output>
+        </test-case>
+        <test-case id="1170" name="Tier1_07_FourTierFogOfWar_StateCategorization" fullname="MetaProgressionTests.Tier1_07_FourTierFogOfWar_StateCategorization" methodname="Tier1_07_FourTierFogOfWar_StateCategorization" classname="MetaProgressionTests" runstate="Runnable" seed="1519848768" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000685" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1171" name="Tier1_08_UIStandards_TypographyAndIconBudgets" fullname="MetaProgressionTests.Tier1_08_UIStandards_TypographyAndIconBudgets" methodname="Tier1_08_UIStandards_TypographyAndIconBudgets" classname="MetaProgressionTests" runstate="Runnable" seed="1147073341" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000490" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1172" name="Tier2_01_WorkerCount_BoundaryExtrapolation_ZeroExactHigh" fullname="MetaProgressionTests.Tier2_01_WorkerCount_BoundaryExtrapolation_ZeroExactHigh" methodname="Tier2_01_WorkerCount_BoundaryExtrapolation_ZeroExactHigh" classname="MetaProgressionTests" runstate="Runnable" seed="1601233462" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000665" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1173" name="Tier2_02_HopeCostMonotonicity_AlongDAGEval" fullname="MetaProgressionTests.Tier2_02_HopeCostMonotonicity_AlongDAGEval" methodname="Tier2_02_HopeCostMonotonicity_AlongDAGEval" classname="MetaProgressionTests" runstate="Runnable" seed="306528543" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.023235" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1174" name="Tier2_03_EmptySaveFile_StarterTowersSeeding" fullname="MetaProgressionTests.Tier2_03_EmptySaveFile_StarterTowersSeeding" methodname="Tier2_03_EmptySaveFile_StarterTowersSeeding" classname="MetaProgressionTests" runstate="Runnable" seed="1613387243" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.009319" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[SaveManager] Brak pliku zapisu. Tworzenie nowej gry.
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_e79999cec33743dfafd1834fbe491a2f.json</color>
+]]></output>
+        </test-case>
+        <test-case id="1175" name="Tier2_04_DraftModal_CandidateReduction_AndEmptyPoolSafety" fullname="MetaProgressionTests.Tier2_04_DraftModal_CandidateReduction_AndEmptyPoolSafety" methodname="Tier2_04_DraftModal_CandidateReduction_AndEmptyPoolSafety" classname="MetaProgressionTests" runstate="Runnable" seed="1191930294" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001407" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1176" name="Tier2_05_PanZoom_BoundsClamping_AndCursorInvariance" fullname="MetaProgressionTests.Tier2_05_PanZoom_BoundsClamping_AndCursorInvariance" methodname="Tier2_05_PanZoom_BoundsClamping_AndCursorInvariance" classname="MetaProgressionTests" runstate="Runnable" seed="1707608952" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000726" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1177" name="Tier3_01_TowerDraft_PurchaseFlow_E2E" fullname="MetaProgressionTests.Tier3_01_TowerDraft_PurchaseFlow_E2E" methodname="Tier3_01_TowerDraft_PurchaseFlow_E2E" classname="MetaProgressionTests" runstate="Runnable" seed="326918640" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.006703" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_cb6578eb33a646f69936bc792d7ed596.json</color>
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_cb6578eb33a646f69936bc792d7ed596.json</color>
+]]></output>
+        </test-case>
+        <test-case id="1178" name="Tier3_02_TriRacialCrew_ConcurrenceInTower" fullname="MetaProgressionTests.Tier3_02_TriRacialCrew_ConcurrenceInTower" methodname="Tier3_02_TriRacialCrew_ConcurrenceInTower" classname="MetaProgressionTests" runstate="Runnable" seed="1562947005" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000608" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1179" name="Tier3_03_RuneForgeTransmute_GatedRarity_AndSaveRoundtrip" fullname="MetaProgressionTests.Tier3_03_RuneForgeTransmute_GatedRarity_AndSaveRoundtrip" methodname="Tier3_03_RuneForgeTransmute_GatedRarity_AndSaveRoundtrip" classname="MetaProgressionTests" runstate="Runnable" seed="363144848" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.014454" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[RuneManager] Wytwarzanie run Cursed podczas transmutacji jest zablokowane w meta-progresji!
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_19131a7f7e3441dc92cc0515949f52f2.json</color>
+[RuneManager] Transmutacja udana! Otrzymano: Cursed Doom (Cursed)
+[SaveManager] Wczytano post�p gracza.
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_19131a7f7e3441dc92cc0515949f52f2.json</color>
+]]></output>
+        </test-case>
+        <test-case id="1180" name="Tier4_01_FullTreeTraversal_AndHopeEconomy" fullname="MetaProgressionTests.Tier4_01_FullTreeTraversal_AndHopeEconomy" methodname="Tier4_01_FullTreeTraversal_AndHopeEconomy" classname="MetaProgressionTests" runstate="Runnable" seed="1973376262" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001204" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1181" name="Tier4_02_MaxCrew_FactoryProductionSurge" fullname="MetaProgressionTests.Tier4_02_MaxCrew_FactoryProductionSurge" methodname="Tier4_02_MaxCrew_FactoryProductionSurge" classname="MetaProgressionTests" runstate="Runnable" seed="1314289046" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000550" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1182" name="Tier4_03_TowerDraft_ProgressionFromScratch_All5Nodes" fullname="MetaProgressionTests.Tier4_03_TowerDraft_ProgressionFromScratch_All5Nodes" methodname="Tier4_03_TowerDraft_ProgressionFromScratch_All5Nodes" classname="MetaProgressionTests" runstate="Runnable" seed="1533571355" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.032773" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_1b911e9cc137410db8d1457f2362561e.json</color>
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_1b911e9cc137410db8d1457f2362561e.json</color>
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_1b911e9cc137410db8d1457f2362561e.json</color>
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_1b911e9cc137410db8d1457f2362561e.json</color>
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_1b911e9cc137410db8d1457f2362561e.json</color>
+<color=green>[SaveManager] Gra zapisana w: C:\Users\Robert\AppData\Local\Temp\meta_tests_save_1b911e9cc137410db8d1457f2362561e.json</color>
+[SaveManager] Wczytano post�p gracza.
+]]></output>
+        </test-case>
+        <test-case id="1183" name="Tier4_04_DeepFogOfWar_FrontierExploration" fullname="MetaProgressionTests.Tier4_04_DeepFogOfWar_FrontierExploration" methodname="Tier4_04_DeepFogOfWar_FrontierExploration" classname="MetaProgressionTests" runstate="Runnable" seed="391099525" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001000" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1184" name="Tier4_05_TriRacialDefense_SimulatedNightCombat" fullname="MetaProgressionTests.Tier4_05_TriRacialDefense_SimulatedNightCombat" methodname="Tier4_05_TriRacialDefense_SimulatedNightCombat" classname="MetaProgressionTests" runstate="Runnable" seed="1779521263" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000898" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1185" name="MetaSaveAndDraftTests" fullname="MetaSaveAndDraftTests" classname="MetaSaveAndDraftTests" runstate="Runnable" testcasecount="7" result="Failed" site="Child" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.024180" total="7" passed="4" failed="3" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1186" name="Test1_SaveData_NewInstance_HasInitializedUnlockedTowerIDs" fullname="MetaSaveAndDraftTests.Test1_SaveData_NewInstance_HasInitializedUnlockedTowerIDs" methodname="Test1_SaveData_NewInstance_HasInitializedUnlockedTowerIDs" classname="MetaSaveAndDraftTests" runstate="Runnable" seed="1954231604" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001452" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1187" name="Test2_SaveManager_LoadGame_DefaultsTo2StarterTowers" fullname="MetaSaveAndDraftTests.Test2_SaveManager_LoadGame_DefaultsTo2StarterTowers" methodname="Test2_SaveManager_LoadGame_DefaultsTo2StarterTowers" classname="MetaSaveAndDraftTests" runstate="Runnable" seed="2039346247" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.009043" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[SaveManager] Brak pliku zapisu. Tworzenie nowej gry.
+<color=green>[SaveManager] Gra zapisana w: C:/Users/Robert/AppData/Local/Temp/RD Interactive/Hearthfall\test_save_4f824d65d7e84d5283fded0e61d80ac9.json</color>
+]]></output>
+        </test-case>
+        <test-case id="1188" name="Test3_SyncTowersWithSave_SetsStarterTowersTrue_AndDraftTowersFalse" fullname="MetaSaveAndDraftTests.Test3_SyncTowersWithSave_SetsStarterTowersTrue_AndDraftTowersFalse" methodname="Test3_SyncTowersWithSave_SetsStarterTowersTrue_AndDraftTowersFalse" classname="MetaSaveAndDraftTests" runstate="Runnable" seed="1939529500" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000992" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Thunderbuss (wieża zablokowana) musi mieć isUnlocked == false.
+  Expected: False
+  But was:  True
+]]></message>
+            <stack-trace><![CDATA[at MetaSaveAndDraftTests.Test3_SyncTowersWithSave_SetsStarterTowersTrue_AndDraftTowersFalse () [0x000b6] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\MetaSaveAndDraftTests.cs:139
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1189" name="Test4_UnlockTower_AddsIDToList_AndSerializesToJSON" fullname="MetaSaveAndDraftTests.Test4_UnlockTower_AddsIDToList_AndSerializesToJSON" methodname="Test4_UnlockTower_AddsIDToList_AndSerializesToJSON" classname="MetaSaveAndDraftTests" runstate="Runnable" seed="115305297" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.008373" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Przed odblokowaniem Thunderbuss powinien być zablokowany.
+  Expected: False
+  But was:  True
+]]></message>
+            <stack-trace><![CDATA[at MetaSaveAndDraftTests.Test4_UnlockTower_AddsIDToList_AndSerializesToJSON () [0x00032] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\MetaSaveAndDraftTests.cs:160
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[SaveManager] Brak pliku zapisu. Tworzenie nowej gry.
+<color=green>[SaveManager] Gra zapisana w: C:/Users/Robert/AppData/Local/Temp/RD Interactive/Hearthfall\test_save_7618c31b1e0b40c9acc9c4b98be60b82.json</color>
+]]></output>
+        </test-case>
+        <test-case id="1190" name="Test5_DraftCandidateFilter_LeavesRemainingLockedTowersSequentially" fullname="MetaSaveAndDraftTests.Test5_DraftCandidateFilter_LeavesRemainingLockedTowersSequentially" methodname="Test5_DraftCandidateFilter_LeavesRemainingLockedTowersSequentially" classname="MetaSaveAndDraftTests" runstate="Runnable" seed="177406520" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001194" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1191" name="Test6_GEMINI_Typography_And_IconSizes_Compliance" fullname="MetaSaveAndDraftTests.Test6_GEMINI_Typography_And_IconSizes_Compliance" methodname="Test6_GEMINI_Typography_And_IconSizes_Compliance" classname="MetaSaveAndDraftTests" runstate="Runnable" seed="1967645452" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000455" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1192" name="Test7_MetaUpgradeManager_OnNodePurchased_TriggersHook_AndDetectsDraft" fullname="MetaSaveAndDraftTests.Test7_MetaUpgradeManager_OnNodePurchased_TriggersHook_AndDetectsDraft" methodname="Test7_MetaUpgradeManager_OnNodePurchased_TriggersHook_AndDetectsDraft" classname="MetaSaveAndDraftTests" runstate="Runnable" seed="184749710" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.001017" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  SaveData musi zawierać ID nowo zakupionego węzła.
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at MetaSaveAndDraftTests.Test7_MetaUpgradeManager_OnNodePurchased_TriggersHook_AndDetectsDraft () [0x000f9] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\MetaSaveAndDraftTests.cs:269
+]]></stack-trace>
+          </failure>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1193" name="ResourceGatheringAndTooltipTests" fullname="ResourceGatheringAndTooltipTests" classname="ResourceGatheringAndTooltipTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.002954" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1194" name="Test01_EconomicBuildings_BlockedOnMountain_ExceptMines" fullname="ResourceGatheringAndTooltipTests.Test01_EconomicBuildings_BlockedOnMountain_ExceptMines" methodname="Test01_EconomicBuildings_BlockedOnMountain_ExceptMines" classname="ResourceGatheringAndTooltipTests" runstate="Runnable" seed="690913356" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000254" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1195" name="Test02_EconomicBuildings_AllowedOnAnyTerrainExceptMountain" fullname="ResourceGatheringAndTooltipTests.Test02_EconomicBuildings_AllowedOnAnyTerrainExceptMountain" methodname="Test02_EconomicBuildings_AllowedOnAnyTerrainExceptMountain" classname="ResourceGatheringAndTooltipTests" runstate="Runnable" seed="4018526" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000255" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1196" name="Test02B_Tower_CanBeBuiltOnElevation_Zero_Positive_AndNegative" fullname="ResourceGatheringAndTooltipTests.Test02B_Tower_CanBeBuiltOnElevation_Zero_Positive_AndNegative" methodname="Test02B_Tower_CanBeBuiltOnElevation_Zero_Positive_AndNegative" classname="ResourceGatheringAndTooltipTests" runstate="Runnable" seed="558088380" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000262" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1197" name="Test03_Quarry_ElevationBonus_CalculatesCorrectly" fullname="ResourceGatheringAndTooltipTests.Test03_Quarry_ElevationBonus_CalculatesCorrectly" methodname="Test03_Quarry_ElevationBonus_CalculatesCorrectly" classname="ResourceGatheringAndTooltipTests" runstate="Runnable" seed="1003180848" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000279" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1198" name="Test04_Quarry_ElevationContention_PenalizesMultipleQuarries" fullname="ResourceGatheringAndTooltipTests.Test04_Quarry_ElevationContention_PenalizesMultipleQuarries" methodname="Test04_Quarry_ElevationContention_PenalizesMultipleQuarries" classname="ResourceGatheringAndTooltipTests" runstate="Runnable" seed="1886628489" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000189" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1199" name="Test05_TooltipFormatting_ShowsRequired3Lines_ForProductionBuildings" fullname="ResourceGatheringAndTooltipTests.Test05_TooltipFormatting_ShowsRequired3Lines_ForProductionBuildings" methodname="Test05_TooltipFormatting_ShowsRequired3Lines_ForProductionBuildings" classname="ResourceGatheringAndTooltipTests" runstate="Runnable" seed="325056019" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000617" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1200" name="StageOneImplementationVerificationTests" fullname="StageOneImplementationVerificationTests" classname="StageOneImplementationVerificationTests" runstate="Runnable" testcasecount="14" result="Failed" site="Child" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.015307" total="14" passed="4" failed="10" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1201" name="Test01_SentinelArbalest_RangeReducedBy20Percent_AndUnlocked" fullname="StageOneImplementationVerificationTests.Test01_SentinelArbalest_RangeReducedBy20Percent_AndUnlocked" methodname="Test01_SentinelArbalest_RangeReducedBy20Percent_AndUnlocked" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="187036546" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000992" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Sentinel Arbalest baseRange should be 12 (reduced by 20% from 15)
+  Expected: 12.0d +/- 0.0099999997764825821d
+  But was:  3.0d
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test01_SentinelArbalest_RangeReducedBy20Percent_AndUnlocked () [0x00030] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:43
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1202" name="Test02_RoyalBombard_RangeReducedBy20Percent_AndUnlocked" fullname="StageOneImplementationVerificationTests.Test02_RoyalBombard_RangeReducedBy20Percent_AndUnlocked" methodname="Test02_RoyalBombard_RangeReducedBy20Percent_AndUnlocked" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1858858977" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000287" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Royal Bombard baseRange should be 8 (reduced by 20% from 10)
+  Expected: 8.0d +/- 0.0099999997764825821d
+  But was:  4.0d
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test02_RoyalBombard_RangeReducedBy20Percent_AndUnlocked () [0x00030] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:52
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1203" name="Test03_SteamRepeater_BalancingAndCosts_Accurate" fullname="StageOneImplementationVerificationTests.Test03_SteamRepeater_BalancingAndCosts_Accurate" methodname="Test03_SteamRepeater_BalancingAndCosts_Accurate" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="780446321" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000617" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Steam Repeater baseRange should be 10.4 (-20% from 13)
+  Expected: 10.399999618530273d +/- 0.0099999997764825821d
+  But was:  2.0d
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test03_SteamRepeater_BalancingAndCosts_Accurate () [0x00030] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:61
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1204" name="Test04_ShadowSpire_BalancingAndCosts_Accurate" fullname="StageOneImplementationVerificationTests.Test04_ShadowSpire_BalancingAndCosts_Accurate" methodname="Test04_ShadowSpire_BalancingAndCosts_Accurate" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1814097640" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000608" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Shadow Spire baseRange should be 19.2 (-20% from 24)
+  Expected: 19.200000762939453d +/- 0.0099999997764825821d
+  But was:  8.0d
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test04_ShadowSpire_BalancingAndCosts_Accurate () [0x00030] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:88
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1205" name="Test05_OtherTowers_RemainLocked" fullname="StageOneImplementationVerificationTests.Test05_OtherTowers_RemainLocked" methodname="Test05_OtherTowers_RemainLocked" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1174779852" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000437" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  4. Crucible of Cinders.asset should exist
+  Expected: not null
+  But was:  null
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test05_OtherTowers_RemainLocked () [0x00030] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:119
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1206" name="Test06_Abberracja_StatsAndHyperArmorSkill_Correct" fullname="StageOneImplementationVerificationTests.Test06_Abberracja_StatsAndHyperArmorSkill_Correct" methodname="Test06_Abberracja_StatsAndHyperArmorSkill_Correct" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="353472606" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000369" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 380.0d +/- 0.0099999997764825821d
+  But was:  150.0d
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test06_Abberracja_StatsAndHyperArmorSkill_Correct () [0x0002b] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:137
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1207" name="Test07_MistStalker_StatsAndNoSkills_Correct" fullname="StageOneImplementationVerificationTests.Test07_MistStalker_StatsAndNoSkills_Correct" methodname="Test07_MistStalker_StatsAndNoSkills_Correct" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1307116180" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000334" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 140.0d +/- 0.0099999997764825821d
+  But was:  80.0d
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test07_MistStalker_StatsAndNoSkills_Correct () [0x0002b] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:157
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1208" name="Test08_HeraldOfTheMist_BossRankAndMaddeningGazeOnly_Correct" fullname="StageOneImplementationVerificationTests.Test08_HeraldOfTheMist_BossRankAndMaddeningGazeOnly_Correct" methodname="Test08_HeraldOfTheMist_BossRankAndMaddeningGazeOnly_Correct" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1187520052" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000388" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 1500.0d +/- 0.0099999997764825821d
+  But was:  1000.0d
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test08_HeraldOfTheMist_BossRankAndMaddeningGazeOnly_Correct () [0x0002b] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:173
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1209" name="Test09_HyperArmorSkill_BlocksExact8Hits_ThenAllowsDamage" fullname="StageOneImplementationVerificationTests.Test09_HyperArmorSkill_BlocksExact8Hits_ThenAllowsDamage" methodname="Test09_HyperArmorSkill_BlocksExact8Hits_ThenAllowsDamage" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1841165258" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.003207" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[TestEnemy_HyperArmor zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: 7
+TestEnemy_HyperArmor zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: 6
+TestEnemy_HyperArmor zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: 5
+TestEnemy_HyperArmor zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: 4
+TestEnemy_HyperArmor zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: 3
+TestEnemy_HyperArmor zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: 2
+TestEnemy_HyperArmor zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: 1
+TestEnemy_HyperArmor zablokowal obrazenia Hiperpancerzem! Pozostalo ladunkow: 0
+]]></output>
+        </test-case>
+        <test-case id="1210" name="Test10_MaddeningGazeSkill_FearsTowersInRadius_AndClearsOnOutOfRange" fullname="StageOneImplementationVerificationTests.Test10_MaddeningGazeSkill_FearsTowersInRadius_AndClearsOnOutOfRange" methodname="Test10_MaddeningGazeSkill_FearsTowersInRadius_AndClearsOnOutOfRange" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1961473789" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.002712" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1211" name="Test11_Waves7To10_ContainNewEnemiesAndWave10Boss" fullname="StageOneImplementationVerificationTests.Test11_Waves7To10_ContainNewEnemiesAndWave10Boss" methodname="Test11_Waves7To10_ContainNewEnemiesAndWave10Boss" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="2058888643" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000578" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Wave day 7 should contain newly added enemies
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test11_Waves7To10_ContainNewEnemiesAndWave10Boss () [0x000a9] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:276
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1212" name="Test12_Waves11To20_ExistAndWave20HasFinalBoss" fullname="StageOneImplementationVerificationTests.Test12_Waves11To20_ExistAndWave20HasFinalBoss" methodname="Test12_Waves11To20_ExistAndWave20HasFinalBoss" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1512809733" result="Failed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000640" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Wave day 20 must feature boss encounter
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at StageOneImplementationVerificationTests.Test12_Waves11To20_ExistAndWave20HasFinalBoss () [0x00118] in D:\Projekty Unity\DwarfenTowerDefence\Assets\Main folder\Editor\Tests\StageOneImplementationVerificationTests.cs:313
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1213" name="Test13_MainMenuDemoUI_Has4GuideCardsWithExpectedHeaders" fullname="StageOneImplementationVerificationTests.Test13_MainMenuDemoUI_Has4GuideCardsWithExpectedHeaders" methodname="Test13_MainMenuDemoUI_Has4GuideCardsWithExpectedHeaders" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="1497245702" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.002011" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1214" name="Test14_CanvasMainMenuUI_PauseAndResumeStateToggle" fullname="StageOneImplementationVerificationTests.Test14_CanvasMainMenuUI_PauseAndResumeStateToggle" methodname="Test14_CanvasMainMenuUI_PauseAndResumeStateToggle" classname="StageOneImplementationVerificationTests" runstate="Runnable" seed="830902034" result="Passed" start-time="2026-11-05 03:02:21Z" end-time="2026-11-05 03:02:21Z" duration="0.000653" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Saving results to: C:/Users/Robert/AppData/LocalLow/RD Interactive/Hearthfall\TestResults.xml
+]]></output>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

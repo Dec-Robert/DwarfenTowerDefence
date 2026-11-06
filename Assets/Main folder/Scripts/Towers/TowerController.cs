@@ -447,6 +447,8 @@ public class TowerController : MonoBehaviour
     {
         if (towerData == null || towerData.bulletPrefab == null) return;
 
+        towerEntity?.MarkAsUsed();
+
         Vector3 spawnPos = firePoint != null ? firePoint.position : transform.position;
         Quaternion spawnRot = firePoint != null ? firePoint.rotation : (partToRotate != null ? partToRotate.rotation : transform.rotation);
 

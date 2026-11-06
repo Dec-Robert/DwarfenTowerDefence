@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class BuildingProductionComponent
 {
+    private readonly BuildingEntity owner;
     private readonly Transform buildingTransform;
     private readonly BuildingData data;
     private readonly Dictionary<ResourceType, float> productionBuffer = new Dictionary<ResourceType, float>();
@@ -14,12 +15,14 @@ public class BuildingProductionComponent
     private bool isReadyToProduce;
 
     public BuildingProductionComponent(
+        BuildingEntity owner,
         BuildingData data,
         BuildingUpgradeComponent upgradeComponent,
         BuildingTerrainComponent terrainComponent,
         BuildingWorkerComponent workerComponent,
         Transform buildingTransform)
     {
+        this.owner = owner != null ? owner : (buildingTransform != null ? buildingTransform.GetComponent<BuildingEntity>() : null);
         this.data = data;
         this.upgradeComponent = upgradeComponent;
         this.terrainComponent = terrainComponent;
@@ -66,6 +69,7 @@ public class BuildingProductionComponent
             if (wholeProduced > 0 && ResourceManager.Instance != null)
             {
                 ResourceManager.Instance.AddResource(kvp.Key, wholeProduced);
+                owner?.MarkAsUsed();
 
                 if (FloatingTextManager.Instance != null)
                 {
@@ -132,7 +136,7 @@ public class BuildingProductionComponent
             || bName.IndexOf("Farma", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
-    public Dictionary<ResourceType, float> GetBaseProductionWithFlats()
+    public Dictionary<ResourceType, float> GetBaseProductionWithFlats(Dictionary<ResourceType, float> customTerrainBonuses = null)
     {
         var total = new Dictionary<ResourceType, float>();
         if (data == null) return total;
@@ -154,9 +158,12 @@ public class BuildingProductionComponent
             }
         }
 
-        if (terrainComponent != null)
+        var terrainBonuses = customTerrainBonuses != null
+            ? customTerrainBonuses
+            : (terrainComponent != null ? terrainComponent.CalculateTerrainBonuses() : null);
+
+        if (terrainBonuses != null)
         {
-            var terrainBonuses = terrainComponent.CalculateTerrainBonuses();
             foreach (var kvp in terrainBonuses)
             {
                 if (kvp.Value > 0f)
@@ -167,6 +174,23 @@ public class BuildingProductionComponent
         }
 
         return total;
+    }
+
+    public Dictionary<ResourceType, float> SimulateProductionWithTerrain(Dictionary<ResourceType, float> simulatedTerrainBonuses)
+    {
+        float crewEfficiency = GetCrewEfficiency();
+        if (crewEfficiency <= 0f) crewEfficiency = 1.0f; // Dla celow symulacji przy pelnej wydajnosci
+
+        float finalMultiplier = GetGlobalMultiplier();
+        var baseAmounts = GetBaseProductionWithFlats(simulatedTerrainBonuses);
+        var result = new Dictionary<ResourceType, float>();
+
+        foreach (var kvp in baseAmounts)
+        {
+            result[kvp.Key] = kvp.Value * finalMultiplier * crewEfficiency;
+        }
+
+        return result;
     }
 
     public Dictionary<ResourceType, float> GetCurrentProduction()

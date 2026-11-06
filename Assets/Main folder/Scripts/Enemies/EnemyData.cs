@@ -150,6 +150,14 @@ public class EnemyData : ScriptableObject
             }
             else
             {
+                if (i == 0 && baseHp > 0f && tiers[0].baseHp == 100f && baseHp != 100f)
+                {
+                    tiers[0].baseHp = baseHp;
+                    tiers[0].moveSpeed = moveSpeed;
+                    tiers[0].armor = armor;
+                    tiers[0].magicResist = magicResist;
+                    tiers[0].dodgeChance = dodgeChance;
+                }
                 if (tiers[i].prefab == null && prefab != null) tiers[i].prefab = prefab;
                 if (tiers[i].sprite == null && sprite != null) tiers[i].sprite = sprite;
             }

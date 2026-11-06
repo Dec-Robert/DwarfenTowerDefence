@@ -25,6 +25,8 @@ ShaderVariantCollection:
         passType: 13
       - keywords: _EMISSION _ENVIRONMENTREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
         passType: 13
+      - keywords: _NORMALMAP
+        passType: 13
   - first: {fileID: -6465566751694194690, guid: e870469b612de5f438cf2a7f2dc8b3db, type: 3}
     second:
       variants:
@@ -33,6 +35,13 @@ ShaderVariantCollection:
       - keywords: 
         passType: 13
   - first: {fileID: -6465566751694194690, guid: efcfe4eff4a744a41bd35dbd086b97b0, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: 8f76d3820ae66994da7d0d2e0a0a9915, type: 3}
     second:
       variants:
       - keywords: 
@@ -82,6 +91,20 @@ ShaderVariantCollection:
       - keywords: 
         passType: 13
   - first: {fileID: 4800000, guid: c7e8565282b1eb84b8946a73f8c0adad, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: 9c8afe04d5ea9ce40be87e68e5f82fba, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 0
+      - keywords: 
+        passType: 13
+  - first: {fileID: -6465566751694194690, guid: e2767fe3a19ad6248aa59182a1ea2177, type: 3}
     second:
       variants:
       - keywords: 

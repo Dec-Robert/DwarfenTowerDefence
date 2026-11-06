@@ -40,14 +40,12 @@ MonoBehaviour:
   requiredCitizenRace: 1
   isOutpost: 0
   constructionCost:
-  - type: 0
-    amount: 4
   - type: 2
     amount: 10
-  - type: 3
-    amount: 6
   - type: 5
     amount: 8
+  - type: 3
+    amount: 6
   productionPerCycle: []
   upkeepPerCycle:
   - type: 2

@@ -47,7 +47,9 @@ MonoBehaviour:
   productionPerCycle:
   - type: 4
     amount: 10
-  upkeepPerCycle: []
+  upkeepPerCycle:
+  - type: 1
+    amount: 4
   tier1Upgrades:
   - {fileID: 11400000, guid: 8fab46d0e2fc17848bb55e8ea964cd2e, type: 2}
   - {fileID: 11400000, guid: e3a2d0267fa4fcd43858be9e402dafa6, type: 2}

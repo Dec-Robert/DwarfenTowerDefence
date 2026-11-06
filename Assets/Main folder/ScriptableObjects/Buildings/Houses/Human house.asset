@@ -32,15 +32,13 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 1
-    amount: 15
-  - type: 4
-    amount: 20
+    amount: 5
   - type: 2
-    amount: 15
+    amount: 5
+  - type: 4
+    amount: 10
   productionPerCycle: []
-  upkeepPerCycle:
-  - type: 1
-    amount: 1
+  upkeepPerCycle: []
   tier1Upgrades: []
   prefab: {fileID: 805186248796621080, guid: b33da802702c20b4f91f7a220e374f3e, type: 3}
   bonusRules: []
@@ -55,9 +53,8 @@ MonoBehaviour:
   isUnlocked: 1
   housingRace: 0
   maxResidents: 5
-  initialResidents: 2
-  growthDifficultyMultiplier: 1
-  baseGrowthTicks: 2
+  initialResidents: 0
+  growthCycles: 0200000003000000040000000500000005000000
   productionPerResident: []
   baseDailyUpkeep: []
   upkeepPerResident:

@@ -67,7 +67,7 @@ public class InteractionManager : MonoBehaviour
 
         ghost = new BuildingGhostController(ghostValidMat, ghostInvalidMat, rangeVisualizerPrefab, resourceVisualsSO);
         placer = new BuildingPlacer(mapGenerator);
-        highlighter = new HexHighlighter(mapGenerator, resourceHighlightMat);
+        highlighter = new HexHighlighter(mapGenerator, ghostValidMat != null ? ghostValidMat : resourceHighlightMat);
     }
 
     private void Update()
@@ -137,7 +137,8 @@ public class InteractionManager : MonoBehaviour
 
         var isValid = placer.IsPlacementValid(cell, SelectedBuilding);
         ghost.MoveTo(cell.transform.position, isValid, cell, SelectedBuilding);
-        highlighter.HighlightFor(SelectedBuilding, cell.chunkCoord, cell.localCoord);
+        var currentHighlightMat = (isValid ? ghostValidMat : ghostInvalidMat) ?? resourceHighlightMat;
+        highlighter.HighlightFor(SelectedBuilding, cell.chunkCoord, cell.localCoord, null, currentHighlightMat);
     }
 
     // =========================================================================

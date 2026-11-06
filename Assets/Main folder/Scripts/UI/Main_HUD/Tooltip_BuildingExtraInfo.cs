@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -31,6 +32,7 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
     [Header("Production Section")]
     [SerializeField] private GameObject pnlProduction;
+    [SerializeField] private GameObject pnlBonuses;
     [SerializeField] private Transform productionContainer;
     [SerializeField] private TextMeshProUGUI txtBonusForPlacing;
     [SerializeField] private TextMeshProUGUI txtBonusForSurround;
@@ -125,6 +127,10 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
             Transform bonuses = pnlProduction.transform.Find("Pnl_Bonuses");
             if (bonuses != null)
             {
+                if (pnlBonuses == null) pnlBonuses = bonuses.gameObject;
+                Transform oldBonusHeader = bonuses.Find("Txt_bonuses");
+                if (oldBonusHeader != null) oldBonusHeader.gameObject.SetActive(false);
+
                 if (txtBonusForPlacing == null) txtBonusForPlacing = bonuses.Find("Txt_BonusForPlacing")?.GetComponent<TextMeshProUGUI>();
                 if (txtBonusForSurround == null) txtBonusForSurround = bonuses.Find("Txt_BonusForSurround")?.GetComponent<TextMeshProUGUI>();
             }
@@ -250,8 +256,9 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         // Building Cost
         SetupResourcePool(costSlots, data.constructionCost);
 
-        // Upkeep
-        bool hasUpkeep = data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0;
+        // Upkeep (wyłączone dla budynków mieszkalnych)
+        bool isHousing = data is HousingBuildingData || data.type == BuildingType.Housing;
+        bool hasUpkeep = !isHousing && data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0;
         if (pnlUpkeep != null) pnlUpkeep.SetActive(hasUpkeep);
         if (hasUpkeep)
         {
@@ -277,10 +284,7 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         }
 
         // Refresh Layout and Position
-        if (tooltipRect != null)
-        {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
-        }
+        RefreshLayoutImmediately();
         UpdateTooltipPosition();
     }
 
@@ -292,13 +296,20 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
     private void SetupResourcePool(List<SingleResourceUI> slots, List<ResourceCost> costs)
     {
-        int count = costs != null ? costs.Count : 0;
+        if (costs == null)
+        {
+            for (int i = 0; i < slots.Count; i++) slots[i].gameObject.SetActive(false);
+            return;
+        }
+
+        var sortedCosts = costs.OrderBy(c => ResourceCost.GetPriority(c.type)).ToList();
+        int count = sortedCosts.Count;
         for (int i = 0; i < slots.Count; i++)
         {
             if (i < count)
             {
                 slots[i].gameObject.SetActive(true);
-                slots[i].Setup(costs[i].type, costs[i].amount, resourceVisualsDB);
+                slots[i].Setup(sortedCosts[i].type, sortedCosts[i].amount, resourceVisualsDB);
             }
             else
             {
@@ -409,13 +420,16 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
         if (!hasRules && !hasElevation)
         {
+            if (pnlBonuses != null) pnlBonuses.SetActive(false);
             if (txtBonusForPlacing != null)
             {
-                txtBonusForPlacing.text = "Brak bonusów terenowych";
+                txtBonusForPlacing.text = "";
+                txtBonusForPlacing.gameObject.SetActive(false);
             }
             if (txtBonusForSurround != null)
             {
                 txtBonusForSurround.text = "";
+                txtBonusForSurround.gameObject.SetActive(false);
             }
             return;
         }
@@ -483,31 +497,62 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
             adjacentDescriptions.Add($"+{data.elevationBonus.adjacentBonusPerLevel.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(data.elevationBonus.resourceType)} / poziom wokół");
         }
 
+        bool hasAnyBonuses = terrainNames.Count > 0 || onTopDescriptions.Count > 0 || adjacentDescriptions.Count > 0;
+        if (!hasAnyBonuses)
+        {
+            if (pnlBonuses != null) pnlBonuses.SetActive(false);
+            if (txtBonusForPlacing != null)
+            {
+                txtBonusForPlacing.text = "";
+                txtBonusForPlacing.gameObject.SetActive(false);
+            }
+            if (txtBonusForSurround != null)
+            {
+                txtBonusForSurround.text = "";
+                txtBonusForSurround.gameObject.SetActive(false);
+            }
+            return;
+        }
+
+        if (pnlBonuses != null) pnlBonuses.SetActive(true);
+
         // Formatowanie pól tekstowych
         if (txtBonusForPlacing != null)
         {
-            var placingLines = new List<string>
+            var placingLines = new List<string>();
+            if (terrainNames.Count > 0)
             {
-                $"Bonus do postawienia na terenie: {terrainText}"
-            };
+                placingLines.Add($"Bonus do postawienia na terenie: {terrainText}");
+            }
 
             if (onTopDescriptions.Count > 0)
             {
                 placingLines.Add($"Bonus za postawienie na danym surowcu: {string.Join(", ", onTopDescriptions)}");
             }
 
-            txtBonusForPlacing.text = string.Join("\n", placingLines);
+            if (placingLines.Count > 0)
+            {
+                txtBonusForPlacing.gameObject.SetActive(true);
+                txtBonusForPlacing.text = string.Join("\n", placingLines);
+            }
+            else
+            {
+                txtBonusForPlacing.text = "";
+                txtBonusForPlacing.gameObject.SetActive(false);
+            }
         }
 
         if (txtBonusForSurround != null)
         {
             if (adjacentDescriptions.Count > 0)
             {
+                txtBonusForSurround.gameObject.SetActive(true);
                 txtBonusForSurround.text = $"Bonus za każdy surowiec wokół: {string.Join(", ", adjacentDescriptions)}";
             }
             else
             {
                 txtBonusForSurround.text = "";
+                txtBonusForSurround.gameObject.SetActive(false);
             }
         }
     }
@@ -519,7 +564,15 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         if (housing != null)
         {
             if (txtPop != null) txtPop.text = $"Populacja: {housing.initialResidents}/{housing.maxResidents}";
-            if (txtGrowthCycles != null) txtGrowthCycles.text = $"Wzrost: co {housing.baseGrowthTicks} cykli";
+            if (txtGrowthCycles != null)
+            {
+                if (housing.growthCycles == null || housing.growthCycles.Length == 0)
+                    txtGrowthCycles.text = "Wzrost: -";
+                else if (housing.growthCycles.Length == 1 || housing.growthCycles[0] == housing.growthCycles[housing.growthCycles.Length - 1])
+                    txtGrowthCycles.text = $"Wzrost: co {housing.growthCycles[0]} cykli";
+                else
+                    txtGrowthCycles.text = $"Wzrost: {housing.growthCycles[0]}-{housing.growthCycles[housing.growthCycles.Length - 1]} cykli";
+            }
 
             if (txtToSurvive != null)
             {
@@ -561,8 +614,32 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
     {
         if (pnlTowers != null) pnlTowers.SetActive(towers);
         if (pnlProduction != null) pnlProduction.SetActive(production);
+        if (!production && pnlBonuses != null) pnlBonuses.SetActive(false);
         if (pnlHousing != null) pnlHousing.SetActive(housing);
         if (pnlSpecial != null) pnlSpecial.SetActive(special);
+    }
+
+    private void RefreshLayoutImmediately()
+    {
+        if (tooltipRect == null) return;
+
+        // 1. Zaktualizuj geometrię wszystkich tekstów wewnątrz tooltipa
+        var texts = tooltipRect.GetComponentsInChildren<TextMeshProUGUI>(false);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            texts[i].ForceMeshUpdate(true);
+        }
+
+        // 2. Przelicz wszystkie LayoutGroup od najgłębszych do korzenia
+        var layouts = tooltipRect.GetComponentsInChildren<LayoutGroup>(false);
+        for (int i = layouts.Length - 1; i >= 0; i--)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(layouts[i].GetComponent<RectTransform>());
+        }
+
+        // 3. Przelicz główny korzeń dwukrotnie dla pewnego spięcia rozmiarów ContentSizeFitter
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
     }
 
     private void UpdateTooltipPosition()

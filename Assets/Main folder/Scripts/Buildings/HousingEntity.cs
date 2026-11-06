@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -68,21 +68,15 @@ public class HousingEntity : BuildingEntity
         // Domy mieszkalne rozliczają się wyłącznie o Świcie przez BuildingRegistry
     }
 
+    protected override void HandleDayReset()
+    {
+        base.HandleDayReset();
+        MarkAsUsed();
+    }
+
     public void ProcessMorningProduction()
     {
         if (!isBuildingActive || housingData == null) return;
-
-        if (!hasBeenUsed)
-        {
-            foreach (var citizen in residents)
-            {
-                if (citizen.workState != WorkState.Idle)
-                {
-                    hasBeenUsed = true;
-                    break;
-                }
-            }
-        }
 
         ProducePerResident();
     }
@@ -218,7 +212,8 @@ public class HousingEntity : BuildingEntity
 
     public int CalculateRequiredGrowthTicks()
     {
-        return Mathf.FloorToInt(housingData.baseGrowthTicks + residents.Count * housingData.growthDifficultyMultiplier);
+        if (housingData == null) return 1;
+        return housingData.GetGrowthCyclesRequired(residents.Count);
     }
 
     public List<ResourceCost> CalculateSurvivalCost()

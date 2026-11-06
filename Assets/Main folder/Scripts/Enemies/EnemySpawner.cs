@@ -28,6 +28,10 @@ public class EnemySpawner : MonoBehaviour
     [Tooltip("Baza potęgowania mnożnika HP (np. 1.1 = +10% HP za każdy dzień ponad ostatnią falę: 1.1^a)")]
     public float lateScalingBase = 1.1f;
 
+    [Header("Seed / Determinizm")]
+    [Tooltip("Seed losowania spawnu (0 = automatyczny deterministyczny seed zależny od numeru fali)")]
+    public int fixedWaveSeed = 0;
+
     [Header("Route Weights")]
     public float baseFormulaConst = 3f;
     public float perSpawnerMultiplier = 2.5f;
@@ -42,6 +46,8 @@ public class EnemySpawner : MonoBehaviour
         public EnemyRank rank;
         public float hpMultiplier;
         public float speedMultiplier;
+        public float delayBefore;
+        public float spawnInterval;
     }
 
     private readonly Queue<SpawnInstruction> enemiesToSpawnQueue = new Queue<SpawnInstruction>();
@@ -175,10 +181,101 @@ public class EnemySpawner : MonoBehaviour
         }
         float speedMult = 1f;
 
+        // Deterministyczny generator losowy dla tej fali (nie modyfikuje UnityEngine.Random.state)
+        int seed = fixedWaveSeed != 0 ? fixedWaveSeed : (waveNumber * 10007 + 42);
+        var rng = new System.Random(seed);
+        int elitesGenerated = 0;
+
         List<SpawnInstruction> instructions = new List<SpawnInstruction>();
 
-        if (waveDef.enemies != null)
+        // 1. Obsługa grup / segmentów spawnu (jeśli zdefiniowane w WaveDefinition)
+        if (waveDef.spawnGroups != null && waveDef.spawnGroups.Count > 0)
         {
+            foreach (var group in waveDef.spawnGroups)
+            {
+                if (group == null || group.enemies == null || group.enemies.Count == 0) continue;
+
+                List<SpawnInstruction> groupInstructions = new List<SpawnInstruction>();
+                float baseInterval = group.spawnInterval > 0f 
+                    ? group.spawnInterval 
+                    : (waveDef.customSpawnInterval > 0f ? waveDef.customSpawnInterval : nightSpawnInterval);
+                float jitter = Mathf.Clamp01(group.intervalJitter);
+
+                for (int entryIdx = 0; entryIdx < group.enemies.Count; entryIdx++)
+                {
+                    var entry = group.enemies[entryIdx];
+                    if (entry.enemy == null || entry.count <= 0) continue;
+
+                    int entryTier = entry.Tier;
+
+                    for (int i = 0; i < entry.count; i++)
+                    {
+                        EnemyRank rank = EnemyRank.Normal;
+                        if (entry.enemy != null && (entry.enemy.rank == EnemyRank.Boss || entry.enemy.isBoss))
+                        {
+                            rank = EnemyRank.Boss;
+                        }
+                        else if (entry.forceElite)
+                        {
+                            rank = EnemyRank.Elite;
+                        }
+                        else if (waveDef.allowRandomElites && entry.enemy.canBeElite)
+                        {
+                            if (waveDef.maxElitesCount <= 0 || elitesGenerated < waveDef.maxElitesCount)
+                            {
+                                float chance = entry.enemy.eliteSpawnChance > 1f
+                                    ? entry.enemy.eliteSpawnChance / 100f
+                                    : entry.enemy.eliteSpawnChance;
+                                if (rng.NextDouble() < chance)
+                                {
+                                    rank = EnemyRank.Elite;
+                                    elitesGenerated++;
+                                }
+                            }
+                        }
+
+                        float jitterOffset = jitter > 0f ? (float)(rng.NextDouble() * 2.0 - 1.0) * (baseInterval * jitter) : 0f;
+                        float unitInterval = Mathf.Max(0.05f, baseInterval + jitterOffset);
+
+                        groupInstructions.Add(new SpawnInstruction
+                        {
+                            data = entry.enemy,
+                            tier = entryTier,
+                            rank = rank,
+                            hpMultiplier = hpMult,
+                            speedMultiplier = speedMult,
+                            delayBefore = 0f,
+                            spawnInterval = unitInterval
+                        });
+                    }
+                }
+
+                // Przemieszanie wewnątrz grupy (bez naruszania kolejności całych grup)
+                if (group.shuffleInside && groupInstructions.Count > 1)
+                {
+                    for (int i = 0; i < groupInstructions.Count; i++)
+                    {
+                        int j = rng.Next(i, groupInstructions.Count);
+                        var tmp = groupInstructions[i];
+                        groupInstructions[i] = groupInstructions[j];
+                        groupInstructions[j] = tmp;
+                    }
+                }
+
+                // Opóźnienie przed grupą przypisujemy do jej pierwszej jednostki
+                if (groupInstructions.Count > 0 && group.delayBefore > 0f)
+                {
+                    var first = groupInstructions[0];
+                    first.delayBefore = group.delayBefore;
+                    groupInstructions[0] = first;
+                }
+
+                instructions.AddRange(groupInstructions);
+            }
+        }
+        else if (waveDef.enemies != null)
+        {
+            // 2. Tryb kompatybilności wstecznej (pojedyncza płaska lista enemies)
             foreach (var group in waveDef.enemies)
             {
                 if (group.enemy == null || group.count <= 0) continue;
@@ -198,12 +295,16 @@ public class EnemySpawner : MonoBehaviour
                     }
                     else if (waveDef.allowRandomElites && group.enemy.canBeElite)
                     {
-                        float chance = group.enemy.eliteSpawnChance > 1f
-                            ? group.enemy.eliteSpawnChance / 100f
-                            : group.enemy.eliteSpawnChance;
-                        if (Random.value < chance)
+                        if (waveDef.maxElitesCount <= 0 || elitesGenerated < waveDef.maxElitesCount)
                         {
-                            rank = EnemyRank.Elite;
+                            float chance = group.enemy.eliteSpawnChance > 1f
+                                ? group.enemy.eliteSpawnChance / 100f
+                                : group.enemy.eliteSpawnChance;
+                            if (rng.NextDouble() < chance)
+                            {
+                                rank = EnemyRank.Elite;
+                                elitesGenerated++;
+                            }
                         }
                     }
 
@@ -213,20 +314,22 @@ public class EnemySpawner : MonoBehaviour
                         tier = groupTier,
                         rank = rank,
                         hpMultiplier = hpMult,
-                        speedMultiplier = speedMult
+                        speedMultiplier = speedMult,
+                        delayBefore = 0f,
+                        spawnInterval = currentWaveSpawnInterval
                     });
                 }
             }
-        }
 
-        if (waveDef.shuffleEnemies && instructions.Count > 1)
-        {
-            for (int i = 0; i < instructions.Count; i++)
+            if (waveDef.shuffleEnemies && instructions.Count > 1)
             {
-                int j = Random.Range(i, instructions.Count);
-                var tmp = instructions[i];
-                instructions[i] = instructions[j];
-                instructions[j] = tmp;
+                for (int i = 0; i < instructions.Count; i++)
+                {
+                    int j = rng.Next(i, instructions.Count);
+                    var tmp = instructions[i];
+                    instructions[i] = instructions[j];
+                    instructions[j] = tmp;
+                }
             }
         }
 
@@ -248,19 +351,39 @@ public class EnemySpawner : MonoBehaviour
 
     private IEnumerator SpawnWaveRoutine()
     {
-        float interval = Mathf.Max(0.05f, currentWaveSpawnInterval);
         while (enemiesToSpawnQueue.Count > 0)
         {
             if (activeRoutes.Count > 0)
             {
-                spawnTimer += Time.deltaTime;
-                if (spawnTimer >= interval)
+                var instr = enemiesToSpawnQueue.Peek();
+                if (instr.delayBefore > 0f)
                 {
-                    SpawnEnemy(enemiesToSpawnQueue.Dequeue());
+                    while (spawnTimer < instr.delayBefore)
+                    {
+                        spawnTimer += Time.deltaTime;
+                        yield return null;
+                    }
                     spawnTimer = 0f;
                 }
+
+                float waitInterval = instr.spawnInterval > 0f 
+                    ? instr.spawnInterval 
+                    : Mathf.Max(0.05f, currentWaveSpawnInterval);
+
+                SpawnEnemy(enemiesToSpawnQueue.Dequeue());
+                spawnTimer = 0f;
+
+                while (spawnTimer < waitInterval && enemiesToSpawnQueue.Count > 0)
+                {
+                    spawnTimer += Time.deltaTime;
+                    yield return null;
+                }
+                spawnTimer = 0f;
             }
-            yield return null;
+            else
+            {
+                yield return null;
+            }
         }
 
         StartCoroutine(WaitForWaveClearRoutine());
@@ -336,7 +459,9 @@ public class EnemySpawner : MonoBehaviour
                 tier = 1,
                 rank = asElite ? EnemyRank.Elite : EnemyRank.Normal,
                 hpMultiplier = 1f,
-                speedMultiplier = 1f
+                speedMultiplier = 1f,
+                delayBefore = 0f,
+                spawnInterval = nightSpawnInterval
             });
         }
 

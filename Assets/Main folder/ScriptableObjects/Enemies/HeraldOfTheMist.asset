@@ -45,7 +45,7 @@ MonoBehaviour:
     armor: 50
     magicResist: 50
     dodgeChance: 50
-  baseHp: 5000
+  baseHp: 1000
   moveSpeed: 0.65
   armor: 30
   magicResist: 30

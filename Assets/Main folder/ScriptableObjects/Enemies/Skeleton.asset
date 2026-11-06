@@ -57,4 +57,5 @@ MonoBehaviour:
   eliteSpeedMultiplier: 1.3
   etherDropElite: 1
   etherDropBoss: 5
-  skillPrefabs: []
+  skillPrefabs:
+  - {fileID: 0}

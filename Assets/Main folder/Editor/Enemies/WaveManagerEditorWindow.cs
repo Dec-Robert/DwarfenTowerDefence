@@ -173,6 +173,14 @@ public class WaveManagerEditorWindow : EditorWindow
             RefreshAssets();
         }
 
+        GUI.backgroundColor = new Color(0.4f, 0.75f, 1f);
+        if (GUILayout.Button("⚡ Generuj 50 Fal", EditorStyles.toolbarButton, GUILayout.Width(130)))
+        {
+            WaveGenerator50.GenerateAll50WavesMenuItem();
+            RefreshAssets();
+        }
+        GUI.backgroundColor = Color.white;
+
         GUILayout.FlexibleSpace();
 
         GUI.backgroundColor = new Color(0.35f, 0.85f, 0.45f);
@@ -245,14 +253,16 @@ public class WaveManagerEditorWindow : EditorWindow
         {
             if (wave == null) continue;
 
-            int totalCount = wave.enemies != null ? wave.enemies.Sum(e => Mathf.Max(0, e.count)) : 0;
+            var entries = wave.GetAllEntries();
+            int totalCount = entries != null ? entries.Sum(e => Mathf.Max(0, e.count)) : 0;
             float totalHp = CalculateWaveTotalHp(wave);
+            float threat = wave.CalculateThreatBudget();
             bool isSelected = selectedWave == wave;
 
             GUI.backgroundColor = isSelected ? new Color(0.25f, 0.55f, 0.9f) : Color.white;
             EditorGUILayout.BeginHorizontal("button");
 
-            string btnText = $"Dzień {wave.dayNumber}  ({totalCount} wrogów • {totalHp:0.#} HP)";
+            string btnText = $"Dzień {wave.dayNumber}  ({totalCount} wrogów • Threat: {threat:0.#})";
             if (GUILayout.Button(btnText, EditorStyles.label, GUILayout.ExpandWidth(true)))
             {
                 selectedWave = wave;
@@ -374,9 +384,10 @@ public class WaveManagerEditorWindow : EditorWindow
         float totalEhp = 0f;
         Dictionary<string, int> countByType = new Dictionary<string, int>();
 
-        if (wave.enemies != null)
+        var allEntries = wave.GetAllEntries();
+        if (allEntries != null)
         {
-            foreach (var e in wave.enemies)
+            foreach (var e in allEntries)
             {
                 if (e.enemy == null || e.count <= 0) continue;
                 totalEnemies += e.count;
@@ -404,8 +415,10 @@ public class WaveManagerEditorWindow : EditorWindow
             }
         }
 
-        float interval = wave.customSpawnInterval > 0f ? wave.customSpawnInterval : 1.0f;
-        float spawnDuration = totalEnemies * interval;
+        float threatBudget = wave.CalculateThreatBudget();
+        float avgTier = wave.GetAverageTier();
+        float spawnDuration = wave.GetEstimatedSpawnDuration();
+        int groupsCount = wave.spawnGroups != null ? wave.spawnGroups.Count : 0;
 
         int eth80 = Mathf.RoundToInt(wave.etherPool * 0.8f);
         int eth60 = Mathf.RoundToInt(wave.etherPool * 0.6f);
@@ -419,12 +432,16 @@ public class WaveManagerEditorWindow : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField($"Łącznie wrogów: {totalEnemies} (Elit: {totalElites})", GUILayout.Width(220));
-        EditorGUILayout.LabelField($"Surowe HP: {totalRawHp:0.#}", GUILayout.Width(180));
-        EditorGUILayout.LabelField($"Efektywne EHP: ~{totalEhp:0.#}", GUILayout.Width(200));
-        EditorGUILayout.LabelField($"Czas spawnu: ~{spawnDuration:0.#}s ({interval:0.##}s/wroga)");
+        EditorGUILayout.LabelField($"Threat Budget: {threatBudget:0.#}", GUILayout.Width(180));
+        EditorGUILayout.LabelField($"Średni Tier: {avgTier:0.##}", GUILayout.Width(160));
+        EditorGUILayout.LabelField($"Czas spawnu: ~{spawnDuration:0.#}s (Grupy: {groupsCount})");
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.LabelField($"Pula Etheru: {wave.etherPool} szt.  |  Gwarant wg Ognia: L1: {eth80} (80%)  •  L2: {eth60} (60%)  •  L3: {eth40} (40%)  •  L4: {eth20} (20%)  •  L5: 0");
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField($"Surowe HP: {totalRawHp:0.#}", GUILayout.Width(220));
+        EditorGUILayout.LabelField($"Efektywne EHP: ~{totalEhp:0.#}", GUILayout.Width(180));
+        EditorGUILayout.LabelField($"Pula Etheru: {wave.etherPool} szt.  (L1: {eth80} • L2: {eth60} • L3: {eth40} • L4: {eth20})");
+        EditorGUILayout.EndHorizontal();
 
         // Enemy type proportions
         if (totalEnemies > 0)
@@ -1299,24 +1316,30 @@ public class WaveManagerEditorWindow : EditorWindow
     {
         EditorGUILayout.BeginVertical("box", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
         EditorGUILayout.LabelField("📈 Przegląd Krzywej Trudności Fal (Dzień po Dniu)", EditorStyles.boldLabel);
-        EditorGUILayout.HelpBox("Tabela sumaryczna wszystkich zdefiniowanych fal w projekcie. Pozwala ocenić tempo przyrostu HP oraz wykryć ewentualne dysproporcje trudności.", MessageType.Info);
+        EditorGUILayout.HelpBox("Tabela sumaryczna wszystkich zdefiniowanych fal. Zawiera metryki Threat Budget, średniego Tieru, przyrostu trudności oraz szacowanego czasu trwania.", MessageType.Info);
         EditorGUILayout.Space(6);
+
+        DrawOverviewCurveGraphs();
+        EditorGUILayout.Space(8);
 
         overviewScrollPos = EditorGUILayout.BeginScrollView(overviewScrollPos);
 
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        EditorGUILayout.LabelField("Dzień", EditorStyles.boldLabel, GUILayout.Width(60));
-        EditorGUILayout.LabelField("Liczba Wrogów", EditorStyles.boldLabel, GUILayout.Width(110));
-        EditorGUILayout.LabelField("Elity", EditorStyles.boldLabel, GUILayout.Width(60));
-        EditorGUILayout.LabelField("Łączne HP", EditorStyles.boldLabel, GUILayout.Width(120));
-        EditorGUILayout.LabelField("Szacowane EHP", EditorStyles.boldLabel, GUILayout.Width(120));
-        EditorGUILayout.LabelField("Pula Etheru", EditorStyles.boldLabel, GUILayout.Width(90));
-        EditorGUILayout.LabelField("Przyrost HP vs Poprz.", EditorStyles.boldLabel, GUILayout.Width(140));
+        EditorGUILayout.LabelField("Dzień", EditorStyles.boldLabel, GUILayout.Width(55));
+        EditorGUILayout.LabelField("Wrogowie", EditorStyles.boldLabel, GUILayout.Width(75));
+        EditorGUILayout.LabelField("Threat", EditorStyles.boldLabel, GUILayout.Width(75));
+        EditorGUILayout.LabelField("Δ Threat", EditorStyles.boldLabel, GUILayout.Width(75));
+        EditorGUILayout.LabelField("Śr. Tier", EditorStyles.boldLabel, GUILayout.Width(65));
+        EditorGUILayout.LabelField("Łączne HP", EditorStyles.boldLabel, GUILayout.Width(95));
+        EditorGUILayout.LabelField("Szac. EHP", EditorStyles.boldLabel, GUILayout.Width(95));
+        EditorGUILayout.LabelField("Ether", EditorStyles.boldLabel, GUILayout.Width(65));
+        EditorGUILayout.LabelField("Czas", EditorStyles.boldLabel, GUILayout.Width(60));
+        EditorGUILayout.LabelField("Grupy", EditorStyles.boldLabel, GUILayout.Width(50));
         EditorGUILayout.LabelField("Skład Jednostek", EditorStyles.boldLabel, GUILayout.ExpandWidth(true));
-        EditorGUILayout.LabelField("Akcja", EditorStyles.boldLabel, GUILayout.Width(70));
+        EditorGUILayout.LabelField("Akcja", EditorStyles.boldLabel, GUILayout.Width(60));
         EditorGUILayout.EndHorizontal();
 
-        float prevHp = 0f;
+        float prevThreat = 0f;
 
         for (int i = 0; i < allWaves.Count; i++)
         {
@@ -1329,9 +1352,10 @@ public class WaveManagerEditorWindow : EditorWindow
             float totalEhp = 0f;
             Dictionary<string, int> unitsSummary = new Dictionary<string, int>();
 
-            if (wave.enemies != null)
+            var entries = wave.GetAllEntries();
+            if (entries != null)
             {
-                foreach (var e in wave.enemies)
+                foreach (var e in entries)
                 {
                     if (e.enemy == null || e.count <= 0) continue;
                     totalCount += e.count;
@@ -1358,36 +1382,50 @@ public class WaveManagerEditorWindow : EditorWindow
                 }
             }
 
-            // Delta HP
-            string deltaHpStr = "-";
-            Color deltaColor = Color.white;
-            if (prevHp > 0f)
-            {
-                float diffPct = ((totalRawHp - prevHp) / prevHp) * 100f;
-                deltaHpStr = $"{(diffPct >= 0 ? "+" : "")}{diffPct:0.#}%";
-                if (diffPct > 50f) deltaColor = new Color(1f, 0.45f, 0.45f);
-                else if (diffPct < 0f) deltaColor = new Color(1f, 0.85f, 0.3f);
-            }
-            prevHp = totalRawHp;
+            float currentThreat = wave.CalculateThreatBudget();
+            float avgTier = wave.GetAverageTier();
+            float spawnDur = wave.GetEstimatedSpawnDuration();
+            int grpCount = wave.spawnGroups != null ? wave.spawnGroups.Count : 0;
 
-            GUI.backgroundColor = (i % 2 == 0) ? new Color(0.92f, 0.92f, 0.92f) : Color.white;
+            // Delta Threat
+            string deltaThreatStr = "-";
+            Color deltaColor = Color.white;
+            if (prevThreat > 0f)
+            {
+                float diffPct = ((currentThreat - prevThreat) / prevThreat) * 100f;
+                deltaThreatStr = $"{(diffPct >= 0 ? "+" : "")}{diffPct:0.#}%";
+                if (diffPct > 60f) deltaColor = new Color(1f, 0.4f, 0.4f); // Duży skok
+                else if (diffPct < -10f) deltaColor = new Color(0.4f, 0.9f, 0.5f); // Oddech
+                else if (diffPct > 30f) deltaColor = new Color(1f, 0.75f, 0.3f);
+            }
+            prevThreat = currentThreat;
+
+            bool isBossWave = (wave.dayNumber == 15 || wave.dayNumber == 30 || wave.dayNumber == 50);
+            if (isBossWave) GUI.backgroundColor = new Color(1f, 0.85f, 0.7f);
+            else GUI.backgroundColor = (i % 2 == 0) ? new Color(0.92f, 0.92f, 0.92f) : Color.white;
+
             EditorGUILayout.BeginHorizontal("box");
 
-            EditorGUILayout.LabelField($"Dzień {wave.dayNumber}", EditorStyles.boldLabel, GUILayout.Width(60));
-            EditorGUILayout.LabelField($"{totalCount}", GUILayout.Width(110));
-            EditorGUILayout.LabelField($"{totalElites}", GUILayout.Width(60));
-            EditorGUILayout.LabelField($"{totalRawHp:0.#}", GUILayout.Width(120));
-            EditorGUILayout.LabelField($"~{totalEhp:0.#}", GUILayout.Width(120));
-            EditorGUILayout.LabelField($"{wave.etherPool} eth", GUILayout.Width(90));
+            string dayLabel = isBossWave ? $"👑 D{wave.dayNumber}" : $"D{wave.dayNumber}";
+            EditorGUILayout.LabelField(dayLabel, EditorStyles.boldLabel, GUILayout.Width(55));
+            EditorGUILayout.LabelField($"{totalCount}", GUILayout.Width(75));
+            EditorGUILayout.LabelField($"{currentThreat:0.#}", GUILayout.Width(75));
 
             GUI.contentColor = deltaColor;
-            EditorGUILayout.LabelField(deltaHpStr, GUILayout.Width(140));
+            EditorGUILayout.LabelField(deltaThreatStr, GUILayout.Width(75));
             GUI.contentColor = Color.white;
+
+            EditorGUILayout.LabelField($"{avgTier:0.##}", GUILayout.Width(65));
+            EditorGUILayout.LabelField($"{totalRawHp:0.#}", GUILayout.Width(95));
+            EditorGUILayout.LabelField($"~{totalEhp:0.#}", GUILayout.Width(95));
+            EditorGUILayout.LabelField($"{wave.etherPool} eth", GUILayout.Width(65));
+            EditorGUILayout.LabelField($"{spawnDur:0}s", GUILayout.Width(60));
+            EditorGUILayout.LabelField($"{grpCount}", GUILayout.Width(50));
 
             string unitsText = string.Join(", ", unitsSummary.Select(u => $"{u.Value}x {u.Key}"));
             EditorGUILayout.LabelField(unitsText, EditorStyles.miniLabel, GUILayout.ExpandWidth(true));
 
-            if (GUILayout.Button("Edytuj", GUILayout.Width(65)))
+            if (GUILayout.Button("Edytuj", GUILayout.Width(55)))
             {
                 selectedWave = wave;
                 currentTab = WindowTab.WaveManager;
@@ -1399,6 +1437,47 @@ public class WaveManagerEditorWindow : EditorWindow
 
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndVertical();
+    }
+
+    private void DrawOverviewCurveGraphs()
+    {
+        if (allWaves == null || allWaves.Count == 0) return;
+        EditorGUILayout.BeginVertical("helpbox");
+        EditorGUILayout.LabelField("📊 Wykresy Progresji Kampanii (Dni 1 - 50)", EditorStyles.boldLabel);
+
+        float maxCount = Mathf.Max(1f, allWaves.Max(w => w.GetAllEntries().Sum(e => e.count)));
+        float maxThreat = Mathf.Max(1f, allWaves.Max(w => w.CalculateThreatBudget()));
+        float maxDuration = Mathf.Max(1f, allWaves.Max(w => w.GetEstimatedSpawnDuration()));
+
+        EditorGUILayout.LabelField($"• Liczebność wrogów (Max: {maxCount:0}):", EditorStyles.miniBoldLabel);
+        DrawMiniBarGraph(allWaves.Select(w => (float)w.GetAllEntries().Sum(e => e.count)).ToArray(), maxCount, new Color(0.3f, 0.7f, 1f));
+
+        EditorGUILayout.LabelField($"• Threat Budget (Max: {maxThreat:0}):", EditorStyles.miniBoldLabel);
+        DrawMiniBarGraph(allWaves.Select(w => w.CalculateThreatBudget()).ToArray(), maxThreat, new Color(1f, 0.45f, 0.3f));
+
+        EditorGUILayout.LabelField($"• Średni Tier (1.0 - 4.0):", EditorStyles.miniBoldLabel);
+        DrawMiniBarGraph(allWaves.Select(w => w.GetAverageTier()).ToArray(), 4.0f, new Color(0.85f, 0.4f, 0.9f));
+
+        EditorGUILayout.LabelField($"• Czas Spawnowania Fali (Max: {maxDuration:0}s):", EditorStyles.miniBoldLabel);
+        DrawMiniBarGraph(allWaves.Select(w => w.GetEstimatedSpawnDuration()).ToArray(), maxDuration, new Color(0.4f, 0.9f, 0.5f));
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DrawMiniBarGraph(float[] values, float maxVal, Color barColor)
+    {
+        if (values == null || values.Length == 0 || maxVal <= 0f) return;
+        Rect r = GUILayoutUtility.GetRect(100, 32, GUILayout.ExpandWidth(true));
+        EditorGUI.DrawRect(r, new Color(0.12f, 0.12f, 0.12f));
+
+        float barWidth = r.width / values.Length;
+        for (int i = 0; i < values.Length; i++)
+        {
+            float norm = Mathf.Clamp01(values[i] / maxVal);
+            float h = r.height * norm;
+            Rect barRect = new Rect(r.x + i * barWidth, r.y + (r.height - h), Mathf.Max(1f, barWidth - 1f), h);
+            EditorGUI.DrawRect(barRect, barColor);
+        }
     }
 
     // =========================================================================
@@ -1554,9 +1633,11 @@ public class WaveManagerEditorWindow : EditorWindow
 
     private float CalculateWaveTotalHp(WaveDefinition wave)
     {
-        if (wave == null || wave.enemies == null) return 0f;
+        if (wave == null) return 0f;
+        var entries = wave.GetAllEntries();
+        if (entries == null) return 0f;
         float total = 0f;
-        foreach (var e in wave.enemies)
+        foreach (var e in entries)
         {
             if (e.enemy == null || e.count <= 0) continue;
             var tStats = e.enemy.GetTier(e.Tier);

@@ -16,6 +16,9 @@ public class BuildingTerrainComponent
     private int daysSinceLastDestroy;
     private int daysSinceLastPlant;
     private int mountainChainSize;
+    public IReadOnlyDictionary<HexCell, HexFeatureType> AdjacentResourceHexes => adjacentResourceHexes;
+    public HashSet<HexCell> AdjacentElevationHexes => adjacentElevationHexes;
+    public HexCell RegisteredOwnCell => registeredOwnCell;
 
     public BuildingTerrainComponent(BuildingData data, Transform buildingTransform, BuildingUpgradeComponent upgrades)
     {
@@ -263,6 +266,135 @@ public class BuildingTerrainComponent
         }
 
         return Mathf.Max(0.1f, 1f + myPercentBonus + metaTerrainBonus);
+    }
+
+    /// <summary>
+    /// Symuluje bonusy terenowe, zakladajac ze simulatedOccupiedCell zostaje zajety przez nowy budynek
+    /// (czyli odpada jako wolne zrodlo surowca), a simulatedExtraClaimedCells zyskuja dodatkowego uzytkownika (+1 usersCount).
+    /// </summary>
+    public Dictionary<ResourceType, float> SimulateTerrainBonuses(HexCell simulatedOccupiedCell, HashSet<HexCell> simulatedExtraClaimedCells)
+    {
+        var result = new Dictionary<ResourceType, float>();
+        if (data == null) return result;
+
+        float multiplier = GetTerrainMultiplier();
+        var adjacentBonuses = SimulateAdjacentBonuses(simulatedOccupiedCell, simulatedExtraClaimedCells);
+
+        var onTopDict = new Dictionary<ResourceType, float>(cachedOnTopBonuses);
+
+        if (data.elevationBonus.enabled && registeredOwnCell != null && registeredOwnCell.Elevation > 0)
+        {
+            int usersCount = BuildingProductionRegistry.GetUsageCount(registeredOwnCell);
+            if (simulatedExtraClaimedCells != null && simulatedExtraClaimedCells.Contains(registeredOwnCell))
+            {
+                usersCount += 1;
+            }
+            float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
+            float effectiveLevel = Mathf.Max(0f, registeredOwnCell.Elevation - penalty * (usersCount - 1));
+            float onTopYield = effectiveLevel * data.elevationBonus.onTopBonusPerLevel;
+
+            if (onTopYield > 0f)
+            {
+                onTopDict[data.elevationBonus.resourceType] =
+                    (onTopDict.TryGetValue(data.elevationBonus.resourceType, out float cur) ? cur : 0f) + onTopYield;
+            }
+        }
+
+        var allResources = new HashSet<ResourceType>(onTopDict.Keys);
+        foreach (var res in adjacentBonuses.Keys) allResources.Add(res);
+
+        foreach (var res in allResources)
+        {
+            float onTop = onTopDict.TryGetValue(res, out float ot) ? ot : 0f;
+            float adj = adjacentBonuses.TryGetValue(res, out float ab) ? ab : 0f;
+            float total = (onTop + adj) * multiplier;
+            if (total > 0f)
+            {
+                result[res] = total;
+            }
+        }
+
+        return result;
+    }
+
+    private Dictionary<ResourceType, float> SimulateAdjacentBonuses(HexCell simulatedOccupiedCell, HashSet<HexCell> simulatedExtraClaimedCells)
+    {
+        var result = new Dictionary<ResourceType, float>();
+        var rules = data != null ? data.GetEffectiveBonusRules() : null;
+
+        if (upgrades != null && upgrades.HasSpecialEffect("MINE_MOUNTAIN_CHAIN") && rules != null)
+        {
+            return GetAdjacentBonuses();
+        }
+        else if (rules != null && rules.Count > 0)
+        {
+            float myFlatBonus = upgrades != null ? upgrades.GetTotalTerrainFlatBonus() : 0f;
+            bool ignoreOccupied = upgrades != null && upgrades.HasSpecialEffect("IGNORE_OCCUPIED_PENALTY");
+
+            foreach (var kvp in adjacentResourceHexes)
+            {
+                var cell = kvp.Key;
+                var feature = kvp.Value;
+                if (cell == null) continue;
+
+                // Jesli ten heks zostal zajety przez nowy budynek i nie ignorujemy kary za zajecie
+                if (cell == simulatedOccupiedCell && !ignoreOccupied)
+                {
+                    continue;
+                }
+
+                int usersCount = BuildingProductionRegistry.GetUsageCount(cell);
+                if (ignoreOccupied)
+                {
+                    usersCount = 1;
+                }
+                else if (simulatedExtraClaimedCells != null && simulatedExtraClaimedCells.Contains(cell))
+                {
+                    usersCount += 1;
+                }
+
+                foreach (var rule in rules)
+                {
+                    if (rule.requiredFeature != feature || rule.resourceYields == null) continue;
+
+                    foreach (var yield in rule.resourceYields)
+                    {
+                        float baseHexYield = yield.baseBonusPerHex - yield.penaltyPerUser * (usersCount - 1);
+                        baseHexYield = Mathf.Max(yield.minBonus, baseHexYield) + myFlatBonus;
+
+                        if (baseHexYield > 0f)
+                        {
+                            result[yield.resourceType] =
+                                (result.TryGetValue(yield.resourceType, out float cur) ? cur : 0f) + baseHexYield;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (data != null && data.elevationBonus.enabled && adjacentElevationHexes.Count > 0)
+        {
+            foreach (var cell in adjacentElevationHexes)
+            {
+                if (cell == null) continue;
+                int usersCount = BuildingProductionRegistry.GetUsageCount(cell);
+                if (simulatedExtraClaimedCells != null && simulatedExtraClaimedCells.Contains(cell))
+                {
+                    usersCount += 1;
+                }
+                float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
+                float effectiveLevel = Mathf.Max(0f, cell.Elevation - penalty * (usersCount - 1));
+                float hexYield = effectiveLevel * data.elevationBonus.adjacentBonusPerLevel;
+
+                if (hexYield > 0f)
+                {
+                    result[data.elevationBonus.resourceType] =
+                        (result.TryGetValue(data.elevationBonus.resourceType, out float cur) ? cur : 0f) + hexYield;
+                }
+            }
+        }
+
+        return result;
     }
 
     public Dictionary<ResourceType, float> CalculateTerrainBonuses()

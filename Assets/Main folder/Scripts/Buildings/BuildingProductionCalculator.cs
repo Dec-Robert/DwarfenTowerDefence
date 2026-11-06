@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,6 +15,15 @@ using UnityEngine;
 /// </summary>
 public static class BuildingProductionCalculator
 {
+    public struct NeighborBuildingImpact
+    {
+        public BuildingEntity building;
+        public ResourceType resourceType;
+        public float currentProduction;
+        public float projectedProduction;
+        public float difference => projectedProduction - currentProduction;
+    }
+
     public struct ResourceProductionEstimate
     {
         public ResourceType resourceType;
@@ -297,6 +307,202 @@ public static class BuildingProductionCalculator
                 results.Add(new Vector2Int(center.x + q, center.y + r));
             }
         }
+        return results;
+    }
+
+    /// <summary>
+    /// Pobiera heksy surowcow, z ktorych czerpalby budynek candidateData postawiony na candidateCell.
+    /// </summary>
+    public static HashSet<HexCell> GetClaimedResourceHexes(
+        HexCell cell,
+        BuildingData data,
+        HexMapGenerator mapGen = null,
+        HexMapVisualizer visualizer = null)
+    {
+        var claimedHexes = new HashSet<HexCell>();
+        if (cell == null || data == null) return claimedHexes;
+
+        if (mapGen == null) mapGen = HexMapGenerator.Instance;
+        if (visualizer == null) visualizer = HexMapVisualizer.Instance;
+        if (mapGen == null || mapGen.worldData == null || !mapGen.worldData.ContainsKey(cell.chunkCoord)) return claimedHexes;
+
+        var chunkData = mapGen.worldData[cell.chunkCoord];
+        var rules = data.GetEffectiveBonusRules();
+
+        if (rules != null && rules.Count > 0)
+        {
+            foreach (var rule in rules)
+            {
+                if (rule.requiredFeature == HexFeatureType.None || rule.resourceYields == null) continue;
+
+                int radius = rule.searchRadius <= 0 ? 1 : rule.searchRadius;
+                var hexesToScan = GetHexesInRadius(cell.localCoord, radius);
+
+                foreach (var coord in hexesToScan)
+                {
+                    if (coord == cell.localCoord) continue;
+                    if (!chunkData.TryGetValue(coord, out var neighborData)) continue;
+                    if (neighborData.feature != rule.requiredFeature) continue;
+
+                    var neighborCell = visualizer != null ? visualizer.GetHexCell(cell.chunkCoord, coord) : null;
+                    if (neighborCell == null) continue;
+
+                    if (!neighborCell.HasBuilding())
+                    {
+                        claimedHexes.Add(neighborCell);
+                    }
+                }
+            }
+        }
+
+        if (data.elevationBonus.enabled)
+        {
+            int radius = data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius;
+            var hexesToScan = GetHexesInRadius(cell.localCoord, radius);
+
+            foreach (var coord in hexesToScan)
+            {
+                if (coord == cell.localCoord) continue;
+                if (!chunkData.TryGetValue(coord, out var neighborData)) continue;
+
+                var neighborCell = visualizer != null ? visualizer.GetHexCell(cell.chunkCoord, coord) : null;
+                if (neighborCell == null) continue;
+
+                if (neighborCell.Elevation > 0)
+                {
+                    claimedHexes.Add(neighborCell);
+                }
+            }
+        }
+
+        return claimedHexes;
+    }
+
+    /// <summary>
+    /// Oblicza wplyw potencjalnego postawienia budynku na candidateCell na wszystkie istniejace budynki na mapie.
+    /// Zwraca slownik istniejacych budynkow, ktorych produkcja ulegnie zmianie, wraz ze szczegolami zmian.
+    /// </summary>
+    public static Dictionary<BuildingEntity, List<NeighborBuildingImpact>> CalculateImpactsOnExistingBuildings(
+        HexCell candidateCell,
+        BuildingData candidateData,
+        HexMapGenerator mapGen = null,
+        HexMapVisualizer visualizer = null)
+    {
+        var results = new Dictionary<BuildingEntity, List<NeighborBuildingImpact>>();
+        if (candidateCell == null || candidateData == null || !HasProduction(candidateData))
+        {
+            return results;
+        }
+
+        var candidateClaimedHexes = GetClaimedResourceHexes(candidateCell, candidateData, mapGen, visualizer);
+
+        IReadOnlyList<BuildingEntity> allBuildings = null;
+        if (BuildingRegistry.Instance != null)
+        {
+            allBuildings = BuildingRegistry.Instance.AllBuildings;
+        }
+        else
+        {
+            allBuildings = Object.FindObjectsByType<BuildingEntity>(FindObjectsSortMode.None);
+        }
+
+        if (allBuildings == null || allBuildings.Count == 0) return results;
+
+        Vector3 candidatePos = candidateCell.transform.position;
+
+        foreach (var building in allBuildings)
+        {
+            if (building == null || !building.isBuildingActive || building.data == null ||
+                building.Terrain == null || building.Production == null)
+            {
+                continue;
+            }
+
+            // Szybki filtr odleglosci - budynek dalej niz 20f nie moze wejsc w interakcje
+            if (Vector3.Distance(building.transform.position, candidatePos) > 20f)
+            {
+                continue;
+            }
+
+            bool isInteracting = false;
+            var adjRes = building.Terrain.AdjacentResourceHexes;
+            var adjElev = building.Terrain.AdjacentElevationHexes;
+            var ownCell = building.Terrain.RegisteredOwnCell;
+
+            // 1. Czy candidateCell zabiera heks istniejacemu budynkowi?
+            if (adjRes != null && adjRes.ContainsKey(candidateCell))
+            {
+                isInteracting = true;
+            }
+            else if (adjElev != null && adjElev.Contains(candidateCell))
+            {
+                isInteracting = true;
+            }
+
+            // 2. Czy candidateClaimedHexes nakladaja sie na heksy uzywane przez ten budynek?
+            if (!isInteracting && candidateClaimedHexes.Count > 0)
+            {
+                if (ownCell != null && candidateClaimedHexes.Contains(ownCell))
+                {
+                    isInteracting = true;
+                }
+                else if (adjRes != null)
+                {
+                    foreach (var h in adjRes.Keys)
+                    {
+                        if (h != null && candidateClaimedHexes.Contains(h))
+                        {
+                            isInteracting = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!isInteracting && adjElev != null)
+                {
+                    foreach (var h in adjElev)
+                    {
+                        if (h != null && candidateClaimedHexes.Contains(h))
+                        {
+                            isInteracting = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!isInteracting) continue;
+
+            var curProd = building.GetEffectiveCurrentProduction();
+            var projProd = building.SimulateProjectedProduction(candidateCell, candidateClaimedHexes);
+
+            var impacts = new List<NeighborBuildingImpact>();
+            var allTypes = new HashSet<ResourceType>(curProd.Keys);
+            foreach (var t in projProd.Keys) allTypes.Add(t);
+
+            foreach (var rType in allTypes)
+            {
+                float curVal = curProd.TryGetValue(rType, out float cv) ? cv : 0f;
+                float projVal = projProd.TryGetValue(rType, out float pv) ? pv : 0f;
+
+                if (Mathf.Abs(projVal - curVal) > 0.05f)
+                {
+                    impacts.Add(new NeighborBuildingImpact
+                    {
+                        building = building,
+                        resourceType = rType,
+                        currentProduction = curVal,
+                        projectedProduction = projVal
+                    });
+                }
+            }
+
+            if (impacts.Count > 0)
+            {
+                results[building] = impacts;
+            }
+        }
+
         return results;
     }
 

@@ -13,36 +13,118 @@ MonoBehaviour:
   m_Name: Wave day 15
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 15
-  waveMessage: "MINI-BOSS: Zwiastun Mg\u0142y powraca na czele pot\u0119\u017Cnej
-    armii cieni!"
+  waveMessage: "BOSS: Zwiastun Mg\u0142y przyby\u0142! Zg\u0142ad\u017A besti\u0119
+    zanim skruszy bram\u0119!"
   etherPool: 50
-  customSpawnInterval: 0
-  hpMultiplier: 4.87
-  speedMultiplier: 1.05
+  customSpawnInterval: 0.9
+  hpMultiplier: 1
+  speedMultiplier: 1
   shuffleEnemies: 0
   allowRandomElites: 0
+  maxElitesCount: 0
   enemies:
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
     tier: 1
-    count: 20
+    count: 1
     forceElite: 0
-  - enemy: {fileID: 11400000, guid: b8d0e2cd314d4a10a9b6f90e40e2dd27, type: 2}
-    tier: 1
-    count: 10
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 2
+    count: 5
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
     tier: 1
-    count: 5
+    count: 4
     forceElite: 0
   - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
     tier: 1
-    count: 2
-    forceElite: 1
-  - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
-    tier: 1
-    count: 2
-    forceElite: 1
+    count: 4
+    forceElite: 0
   - enemy: {fileID: 11400000, guid: 775e7e3e868d498d8e3fffa05a5e25c8, type: 2}
     tier: 1
     count: 1
     forceElite: 0
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 1
+    count: 1
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 2
+    count: 3
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 1
+    count: 2
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 2
+    count: 6
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
+    count: 3
+    forceElite: 0
+  spawnGroups:
+  - groupName: "1. Przednia Stra\u017C Zwiadu"
+    delayBefore: 0
+    spawnInterval: 0.8
+    intervalJitter: 0.15
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 1
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 2
+      count: 5
+      forceElite: 0
+  - groupName: "2. Natarcie Prze\u0142amania"
+    delayBefore: 2.5
+    spawnInterval: 0.9
+    intervalJitter: 0.15
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 9db55ce0f48342a69c311c4025f831c4, type: 2}
+      tier: 1
+      count: 4
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+      tier: 1
+      count: 4
+      forceElite: 0
+  - groupName: "3. BOSS: Zwiastun Mg\u0142y (T1) i Gwardia"
+    delayBefore: 3
+    spawnInterval: 1.1
+    intervalJitter: 0.1
+    shuffleInside: 0
+    enemies:
+    - enemy: {fileID: 11400000, guid: 775e7e3e868d498d8e3fffa05a5e25c8, type: 2}
+      tier: 1
+      count: 1
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 1
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 2
+      count: 3
+      forceElite: 0
+  - groupName: 4. Ostatnia Fala Wsparcia Bossa
+    delayBefore: 2.5
+    spawnInterval: 0.8
+    intervalJitter: 0.2
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 2
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 2
+      count: 6
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+      tier: 1
+      count: 3
+      forceElite: 0

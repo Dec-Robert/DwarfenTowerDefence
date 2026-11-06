@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -16,6 +17,7 @@ public class BuildingGhostController
     private GameObject currentRangePreview;
     private GameObject currentProductionPreview;
     private BuildingProductionPreviewUI previewUI;
+    private readonly List<BuildingProductionPreviewUI> impactPreviewPool = new List<BuildingProductionPreviewUI>();
 
     public BuildingGhostController(
         Material ghostValidMat,
@@ -80,12 +82,15 @@ public class BuildingGhostController
         {
             previewUI.UpdatePreview(cell, data, isValid);
         }
+
+        UpdateNeighborImpacts(cell, data, isValid);
     }
 
     public void Hide()
     {
         if (currentGhost != null) currentGhost.SetActive(false);
         if (currentProductionPreview != null) currentProductionPreview.SetActive(false);
+        HideNeighborImpacts();
     }
 
     public void Clear()
@@ -97,11 +102,74 @@ public class BuildingGhostController
         currentRangePreview = null;
         currentProductionPreview = null;
         previewUI = null;
+
+        foreach (var p in impactPreviewPool)
+        {
+            if (p != null) Object.Destroy(p.gameObject);
+        }
+        impactPreviewPool.Clear();
     }
 
     // =========================================================================
     // Prywatne
     // =========================================================================
+
+    private void UpdateNeighborImpacts(HexCell cell, BuildingData data, bool isValid)
+    {
+        if (!isValid || cell == null || data == null || !BuildingProductionCalculator.HasProduction(data))
+        {
+            HideNeighborImpacts();
+            return;
+        }
+
+        var impacts = BuildingProductionCalculator.CalculateImpactsOnExistingBuildings(cell, data);
+        if (impacts == null || impacts.Count == 0)
+        {
+            HideNeighborImpacts();
+            return;
+        }
+
+        int index = 0;
+        foreach (var kvp in impacts)
+        {
+            var building = kvp.Key;
+            var impactList = kvp.Value;
+            if (building == null || impactList == null || impactList.Count == 0) continue;
+
+            while (impactPreviewPool.Count <= index)
+            {
+                var go = BuildingProductionPreviewUI.CreatePreview(null, resourceVisualsSO);
+                var ui = go.GetComponent<BuildingProductionPreviewUI>();
+                impactPreviewPool.Add(ui);
+            }
+
+            var preview = impactPreviewPool[index];
+            preview.transform.position = building.transform.position + new Vector3(0f, 2.2f, 0f);
+            preview.UpdateImpact(impactList);
+            if (!preview.gameObject.activeSelf) preview.gameObject.SetActive(true);
+
+            index++;
+        }
+
+        for (int i = index; i < impactPreviewPool.Count; i++)
+        {
+            if (impactPreviewPool[i] != null && impactPreviewPool[i].gameObject.activeSelf)
+            {
+                impactPreviewPool[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void HideNeighborImpacts()
+    {
+        for (int i = 0; i < impactPreviewPool.Count; i++)
+        {
+            if (impactPreviewPool[i] != null && impactPreviewPool[i].gameObject.activeSelf)
+            {
+                impactPreviewPool[i].gameObject.SetActive(false);
+            }
+        }
+    }
 
     private void ApplyMaterial(bool isValid)
     {

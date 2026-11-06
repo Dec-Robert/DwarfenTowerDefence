@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -68,8 +68,7 @@ public class HousingBuildingDataEditor : Editor
             if (property.name == "housingRace" ||
                 property.name == "maxResidents" ||
                 property.name == "initialResidents" ||
-                property.name == "growthDifficultyMultiplier" ||
-                property.name == "baseGrowthTicks" ||
+                property.name == "growthCycles" ||
                 property.name == "productionPerResident" ||
                 property.name == "baseDailyUpkeep" ||
                 property.name == "upkeepPerResident" ||

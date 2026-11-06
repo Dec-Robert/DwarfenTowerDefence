@@ -96,6 +96,7 @@ public class BuildingEntity : MonoBehaviour
         Terrain = new BuildingTerrainComponent(data, transform, Upgrades);
 
         Production = new BuildingProductionComponent(
+            this,
             data,
             Upgrades,
             Terrain,
@@ -149,7 +150,6 @@ public class BuildingEntity : MonoBehaviour
         var success = Workers.TryAddWorker(race);
         if (success)
         {
-            hasBeenUsed = true;
             RefreshInspectorUI();
             NotifyEconomyChanged();
         }
@@ -192,10 +192,42 @@ public class BuildingEntity : MonoBehaviour
         return Production.GetCurrentProduction();
     }
 
+    /// <summary>
+    /// Zwraca efektywna biezaca produkcje - jesli budynek nie ma jeszcze przypisanych pracownikow,
+    /// symuluje produkcje przy 100% wydajnosci (dzieki czemu gracz widzi podglad wplywu zanim jeszcze przypisze zaloge).
+    /// </summary>
+    public Dictionary<ResourceType, float> GetEffectiveCurrentProduction()
+    {
+        if (Production == null) return new Dictionary<ResourceType, float>();
+        float crew = Production.GetCrewEfficiency();
+        if (crew <= 0f)
+        {
+            return Production.SimulateProductionWithTerrain(Terrain?.CalculateTerrainBonuses());
+        }
+        return Production.GetCurrentProduction();
+    }
+
+    /// <summary>
+    /// Symuluje produkcje budynku przy zalozeniu, ze na candidateCell staje nowy budynek
+    /// oraz tenze nowy budynek czerpie surowce z candidateClaimedHexes.
+    /// </summary>
+    public Dictionary<ResourceType, float> SimulateProjectedProduction(HexCell candidateCell, HashSet<HexCell> candidateClaimedHexes)
+    {
+        if (Terrain == null || Production == null) return GetEffectiveCurrentProduction();
+        var simulatedTerrain = Terrain.SimulateTerrainBonuses(candidateCell, candidateClaimedHexes);
+        return Production.SimulateProductionWithTerrain(simulatedTerrain);
+    }
+
     public void ForceRescan()
     {
         Terrain?.FindAdjacentResources();
         if (this is TowerEntity tower) tower.RecalculateStats();
+    }
+
+    public virtual void MarkAsUsed()
+    {
+        if (hasBeenUsed) return;
+        hasBeenUsed = true;
     }
 
     public virtual bool CanDemolish() => true;

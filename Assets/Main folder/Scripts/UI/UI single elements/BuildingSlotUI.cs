@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using TMPro;
@@ -290,7 +291,8 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         if (buildingData.constructionCost != null && resourceSlotPrefab != null)
         {
-            foreach (var cost in buildingData.constructionCost)
+            var sortedCosts = buildingData.constructionCost.OrderBy(c => ResourceCost.GetPriority(c.type));
+            foreach (var cost in sortedCosts)
             {
                 GameObject slot = Instantiate(resourceSlotPrefab, costContainer);
                 slot.SetActive(true);
@@ -383,7 +385,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
             if (cyclesToGrowth != null)
             {
-                cyclesToGrowth.text = $"Prędkość rozwoju: {housingData.baseGrowthTicks}";
+                cyclesToGrowth.text = $"Prędkość rozwoju: {housingData.GetGrowthCyclesRequired(housingData.initialResidents)}";
             }
         }
         else

@@ -13,24 +13,71 @@ MonoBehaviour:
   m_Name: Wave day 7
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 7
-  waveMessage: "G\u0119stniej\u0105ce opary przynosz\u0105 szybkich \u0142owc\xF3w
-    i opancerzone anomalie!"
-  etherPool: 20
-  customSpawnInterval: 0
-  hpMultiplier: 1.97
+  waveMessage: 
+  etherPool: 22
+  customSpawnInterval: 0.9
+  hpMultiplier: 1
   speedMultiplier: 1
-  shuffleEnemies: 1
+  shuffleEnemies: 0
   allowRandomElites: 0
+  maxElitesCount: 0
   enemies:
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
-    tier: 2
+    tier: 1
+    count: 4
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 1
+    count: 4
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
     count: 3
     forceElite: 0
   - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
     tier: 1
-    count: 10
+    count: 3
     forceElite: 0
   - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
     tier: 1
-    count: 4
+    count: 3
     forceElite: 0
+  spawnGroups:
+  - groupName: "1. Stra\u017C Przednia (Vanguard)"
+    delayBefore: 0
+    spawnInterval: 0.9
+    intervalJitter: 0.25
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 4
+      forceElite: 0
+  - groupName: "2. Si\u0142y G\u0142\xF3wne (Main Body)"
+    delayBefore: 1.5
+    spawnInterval: 0.9
+    intervalJitter: 0.25
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 4
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+      tier: 1
+      count: 3
+      forceElite: 0
+  - groupName: "3. Szar\u017Ca Odwod\xF3w (Flank & Rear)"
+    delayBefore: 1.5
+    spawnInterval: 0.9
+    intervalJitter: 0.2
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 3
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+      tier: 1
+      count: 3
+      forceElite: 0

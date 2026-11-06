@@ -27,27 +27,41 @@ Material:
     m_Ints: []
     m_Floats:
     - _AmbientBoost: 0.5
+    - _CrackScale: 1.7
+    - _CrackWidth: 0.035
     - _DetailScale: 1.8
     - _DetailStrength: 0.6
     - _DryAmount: 0.08
-    - _DryIntensity: 0.85
+    - _DryIntensity: 0.403
     - _DryScale: 0.65
+    - _DrynessSpeed: 1.25
+    - _DrynessStrength: 0.6
+    - _FringeWidth: 0.18
     - _HexBorderNoiseStrength: 0.35
-    - _HexBorderStrength: 0.45
+    - _HexBorderStrength: 0.8
     - _HexBorderWidth: 0.07
     - _HexRadius: 1
+    - _HillLevel: 0
     - _MacroContrast: 0.85
     - _MacroScale: 0.35
-    - _QuantizeSteps: 4
+    - _QuantizeSteps: 8
+    - _RockChunkScale: 0.4
+    - _RockMaxCoverage: 0.75
+    - _RockWarpStrength: 0.35
     - _Smoothness: 0.04
     - _SoilAmount: 0.035
-    - _SoilScale: 0.75
+    - _SoilScale: 0.25
     - _TexelDensity: 16
     m_Colors:
     - _BaseGrassColor: {r: 0.245, g: 0.335, b: 0.2, a: 1}
+    - _CrackColor: {r: 0.16899997, g: 0.15299997, b: 0.13699996, a: 1}
     - _DarkVegColor: {r: 0.18, g: 0.252, b: 0.155, a: 1}
     - _DryGrassColor: {r: 0.47, g: 0.445, b: 0.295, a: 1}
+    - _DrySoilColor: {r: 0.34899998, g: 0.30599996, b: 0.23099995, a: 1}
+    - _DrySoilTint: {r: 0.43899998, g: 0.41999996, b: 0.32199997, a: 1}
     - _LightGrassColor: {r: 0.365, g: 0.445, b: 0.265, a: 1}
+    - _RockDarkColor: {r: 0.32499996, g: 0.30999997, b: 0.27499998, a: 1}
+    - _RockLightColor: {r: 0.482, g: 0.45899993, b: 0.40399998, a: 1}
     - _SoilColor: {r: 0.34, g: 0.28, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

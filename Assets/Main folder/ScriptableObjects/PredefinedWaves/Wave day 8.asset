@@ -13,20 +13,16 @@ MonoBehaviour:
   m_Name: Wave day 8
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 8
-  waveMessage: "D\u017Awi\u0119k krok\xF3w w g\u0119stwinie mg\u0142y zwiastuje natarcie
-    spaczenia!"
-  etherPool: 24
-  customSpawnInterval: 0
-  hpMultiplier: 2.21
+  waveMessage: 
+  etherPool: 25
+  customSpawnInterval: 0.9
+  hpMultiplier: 1
   speedMultiplier: 1
-  shuffleEnemies: 1
+  shuffleEnemies: 0
   allowRandomElites: 0
+  maxElitesCount: 0
   enemies:
-  - enemy: {fileID: 11400000, guid: b8d0e2cd314d4a10a9b6f90e40e2dd27, type: 2}
-    tier: 1
-    count: 15
-    forceElite: 0
-  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
     tier: 1
     count: 5
     forceElite: 0
@@ -34,3 +30,54 @@ MonoBehaviour:
     tier: 1
     count: 4
     forceElite: 0
+  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
+    count: 4
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+    tier: 1
+    count: 3
+    forceElite: 0
+  - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+    tier: 1
+    count: 3
+    forceElite: 0
+  spawnGroups:
+  - groupName: "1. Stra\u017C Przednia (Vanguard)"
+    delayBefore: 0
+    spawnInterval: 0.9
+    intervalJitter: 0.25
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 5
+      forceElite: 0
+  - groupName: "2. Si\u0142y G\u0142\xF3wne (Main Body)"
+    delayBefore: 1.5
+    spawnInterval: 0.9
+    intervalJitter: 0.25
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 4
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+      tier: 1
+      count: 4
+      forceElite: 0
+  - groupName: "3. Szar\u017Ca Odwod\xF3w (Flank & Rear)"
+    delayBefore: 1.5
+    spawnInterval: 0.9
+    intervalJitter: 0.2
+    shuffleInside: 1
+    enemies:
+    - enemy: {fileID: 11400000, guid: 229e11fd3534ff749af603184d043da1, type: 2}
+      tier: 1
+      count: 3
+      forceElite: 0
+    - enemy: {fileID: 11400000, guid: df676d3fab2dedb458930a6a5d5a4dfd, type: 2}
+      tier: 1
+      count: 3
+      forceElite: 0

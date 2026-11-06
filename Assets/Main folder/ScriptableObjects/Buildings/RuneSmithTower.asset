@@ -33,11 +33,11 @@ MonoBehaviour:
   requiredCitizenRace: 1
   isOutpost: 0
   constructionCost:
+  - type: 0
+    amount: 10
   - type: 2
     amount: 15
   - type: 5
-    amount: 10
-  - type: 0
     amount: 10
   productionPerCycle: []
   upkeepPerCycle:

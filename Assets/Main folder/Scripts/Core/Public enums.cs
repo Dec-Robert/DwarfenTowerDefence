@@ -26,6 +26,20 @@ public struct ResourceCost
 {
     public ResourceType type;
     public int amount;
+
+    public static int GetPriority(ResourceType t)
+    {
+        return t switch
+        {
+            ResourceType.Ether => 0,
+            ResourceType.Wood => 1,
+            ResourceType.Stone => 2,
+            ResourceType.Iron => 3,
+            ResourceType.Coal => 4,
+            ResourceType.Food => 5,
+            _ => 100 + (int)t
+        };
+    }
 }
 
 public enum TimePhases

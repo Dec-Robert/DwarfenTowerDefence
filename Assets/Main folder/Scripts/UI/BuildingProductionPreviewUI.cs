@@ -104,6 +104,99 @@ public class BuildingProductionPreviewUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Aktualizuje tresc plakietki w trybie podgladu wplywu na sasiedni istniejacy budynek.
+    /// Prezentuje przekreslona biezaca produkcje oraz nowa (na czerwono jesli maleje).
+    /// </summary>
+    public void UpdateImpact(List<BuildingProductionCalculator.NeighborBuildingImpact> impacts)
+    {
+        if (impacts == null || impacts.Count == 0)
+        {
+            if (gameObject.activeSelf) gameObject.SetActive(false);
+            return;
+        }
+
+        if (!gameObject.activeSelf) gameObject.SetActive(true);
+
+        while (pooledSlots.Count < impacts.Count)
+        {
+            pooledSlots.Add(CreateSlot(itemsContainer));
+        }
+
+        for (int i = 0; i < pooledSlots.Count; i++)
+        {
+            if (i < impacts.Count)
+            {
+                pooledSlots[i].root.SetActive(true);
+                PopulateImpactSlot(pooledSlots[i], impacts[i]);
+            }
+            else
+            {
+                pooledSlots[i].root.SetActive(false);
+            }
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(itemsContainer);
+        if (transform is RectTransform rt)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+        }
+    }
+
+    private void PopulateImpactSlot(ResourceSlotView slot, BuildingProductionCalculator.NeighborBuildingImpact impact)
+    {
+        // 1. Ikona surowca (24 px per GEMINI.md)
+        if (slot.icon != null)
+        {
+            Sprite s = resourceVisualsSO != null ? resourceVisualsSO.GetIcon(impact.resourceType) : null;
+            if (s != null)
+            {
+                slot.icon.sprite = s;
+                slot.icon.enabled = true;
+            }
+            else
+            {
+                slot.icon.enabled = false;
+            }
+        }
+
+        // 2. Wartosc produkcji: przekreslona biezaca + nowa (na czerwono jesli maleje)
+        if (slot.txtAmount != null)
+        {
+            string curStr = FormatAmount(impact.currentProduction);
+            string projStr = FormatAmount(impact.projectedProduction);
+
+            string colorTag = impact.difference < 0 ? "<color=#F87171>" : "<color=#4ADE80>";
+            slot.txtAmount.text = $"<s>{curStr}</s>  {colorTag}{projStr}</color>";
+        }
+
+        // 3. Wskaznik zmiany / roznicy (10 pt per GEMINI.md)
+        if (slot.txtPenalty != null)
+        {
+            float diff = impact.difference;
+            if (Mathf.Abs(diff) > 0.05f)
+            {
+                slot.txtPenalty.gameObject.SetActive(true);
+                string diffStr = (Mathf.Abs(diff % 1f) < 0.01f)
+                    ? $"({(diff > 0 ? "+" : "")}{(int)Mathf.Round(diff)})"
+                    : $"({(diff > 0 ? "+" : "")}{diff:0.#})";
+                slot.txtPenalty.color = diff < 0 ? new Color32(248, 113, 113, 255) : new Color32(74, 222, 128, 255);
+                slot.txtPenalty.text = diffStr;
+            }
+            else
+            {
+                slot.txtPenalty.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private static string FormatAmount(float val)
+    {
+        return (Mathf.Abs(val % 1f) < 0.01f)
+            ? $"+{(int)Mathf.Round(val)}"
+            : $"+{val:0.#}";
+    }
+
     private void PopulateSlot(ResourceSlotView slot, BuildingProductionCalculator.ResourceProductionEstimate est)
     {
         // 1. Ikona surowca (24 px)
@@ -156,8 +249,15 @@ public class BuildingProductionPreviewUI : MonoBehaviour
     public static GameObject CreatePreview(Transform parent, ResourceVisualsSO visualsDB)
     {
         var root = new GameObject("Pnl_ProductionPreview", typeof(RectTransform));
-        root.transform.SetParent(parent, false);
-        root.transform.localPosition = new Vector3(0f, 2.2f, 0f);
+        if (parent != null)
+        {
+            root.transform.SetParent(parent, false);
+            root.transform.localPosition = new Vector3(0f, 2.2f, 0f);
+        }
+        else
+        {
+            root.transform.position = Vector3.zero;
+        }
         root.transform.localRotation = Quaternion.identity;
         root.transform.localScale = Vector3.one * 0.012f;
 

@@ -171,7 +171,7 @@ public class EnemyTierAndWaveTests
         int wavesMigrated = EnemyTierMigrationTool.MigrateWaves();
 
         Assert.GreaterOrEqual(enemiesMigrated, 6, "At least 6 EnemyData assets should be migrated");
-        Assert.GreaterOrEqual(wavesMigrated, 20, "At least 20 WaveDefinition assets should be migrated");
+        Assert.GreaterOrEqual(wavesMigrated, 50, "At least 50 WaveDefinition assets should be migrated");
     }
 
     [Test]
@@ -250,5 +250,180 @@ public class EnemyTierAndWaveTests
         Assert.AreEqual(277.78f, enemy.CalculatePhysicalEHP(2), 0.05f);
         // T2 Magic: 200 / ((1 - 0.1) * (1 - 0.1)) = 200 / (0.9 * 0.9) = 200 / 0.81 = 246.91
         Assert.AreEqual(246.91f, enemy.CalculateMagicEHP(2), 0.05f);
+    }
+
+    [Test]
+    public void Test09_50Waves_IntegrityAndSequence()
+    {
+        string[] waveGuids = AssetDatabase.FindAssets("t:WaveDefinition", new[] { "Assets/Main folder/ScriptableObjects/PredefinedWaves" });
+        Assert.AreEqual(50, waveGuids.Length, "Must have exactly 50 wave assets");
+
+        var loadedDays = new HashSet<int>();
+        for (int day = 1; day <= 50; day++)
+        {
+            string path = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day {day}.asset";
+            var wave = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
+            Assert.IsNotNull(wave, $"Wave day {day} asset should exist at path: {path}");
+            Assert.AreEqual(day, wave.dayNumber, $"Wave day {day} should have dayNumber == {day}");
+            loadedDays.Add(wave.dayNumber);
+
+            var entries = wave.GetAllEntries();
+            Assert.IsNotNull(entries, $"Entries should not be null for day {day}");
+            Assert.Greater(entries.Count, 0, $"Wave day {day} must have at least one enemy entry");
+
+            // Verify no null enemy references and valid tiers
+            foreach (var e in entries)
+            {
+                Assert.IsNotNull(e.enemy, $"Enemy reference in day {day} must not be null");
+                Assert.GreaterOrEqual(e.Tier, 1, $"Tier must be >= 1 in day {day}");
+                Assert.LessOrEqual(e.Tier, 4, $"Tier must be <= 4 in day {day}");
+                Assert.Greater(e.count, 0, $"Count must be > 0 in day {day}");
+            }
+        }
+
+        Assert.AreEqual(50, loadedDays.Count, "All 50 days from 1 to 50 must be unique and present");
+    }
+
+    [Test]
+    public void Test10_50Waves_BossAppearsOn15_30_50()
+    {
+        for (int day = 1; day <= 50; day++)
+        {
+            string path = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day {day}.asset";
+            var wave = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
+            var entries = wave.GetAllEntries();
+
+            bool hasBoss = entries.Exists(e => e.enemy != null && (e.enemy.rank == EnemyRank.Boss || e.enemy.isBoss));
+
+            if (day == 15)
+            {
+                Assert.IsTrue(hasBoss, "Day 15 must contain Boss Herald of the Mist");
+                var bossEntry = entries.Find(e => e.enemy != null && (e.enemy.rank == EnemyRank.Boss || e.enemy.isBoss));
+                Assert.AreEqual(1, bossEntry.Tier, "Day 15 Boss must be Tier 1");
+            }
+            else if (day == 30)
+            {
+                Assert.IsTrue(hasBoss, "Day 30 must contain Boss Herald of the Mist");
+                var bossEntry = entries.Find(e => e.enemy != null && (e.enemy.rank == EnemyRank.Boss || e.enemy.isBoss));
+                Assert.AreEqual(2, bossEntry.Tier, "Day 30 Boss must be Tier 2");
+            }
+            else if (day == 50)
+            {
+                Assert.IsTrue(hasBoss, "Day 50 must contain Boss Herald of the Mist");
+                var bossEntry = entries.Find(e => e.enemy != null && (e.enemy.rank == EnemyRank.Boss || e.enemy.isBoss));
+                Assert.AreEqual(3, bossEntry.Tier, "Day 50 Boss must be Tier 3");
+            }
+            else
+            {
+                Assert.IsFalse(hasBoss, $"Day {day} must NOT contain a Boss");
+            }
+        }
+    }
+
+    [Test]
+    public void Test11_50Waves_EtherPoolAnchorPointsAndMonotonicity()
+    {
+        int prevPool = 0;
+        for (int day = 1; day <= 50; day++)
+        {
+            string path = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day {day}.asset";
+            var wave = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
+
+            Assert.GreaterOrEqual(wave.etherPool, 5, "etherPool must be >= 5");
+            Assert.LessOrEqual(wave.etherPool, 150, "etherPool must be <= 150");
+            Assert.GreaterOrEqual(wave.etherPool, prevPool, $"etherPool must be monotonic at day {day}");
+
+            // Anchor points check: (1, 5), (5, 15), (10, 32), (20, 67), (30, 99), (40, 126), (49, 150), (50, 150)
+            if (day == 1) Assert.AreEqual(5, wave.etherPool);
+            if (day == 5) Assert.AreEqual(15, wave.etherPool);
+            if (day == 10) Assert.AreEqual(32, wave.etherPool);
+            if (day == 20) Assert.AreEqual(67, wave.etherPool);
+            if (day == 30) Assert.AreEqual(99, wave.etherPool);
+            if (day == 40) Assert.AreEqual(126, wave.etherPool);
+            if (day == 49) Assert.AreEqual(150, wave.etherPool);
+            if (day == 50) Assert.AreEqual(150, wave.etherPool);
+
+            prevPool = wave.etherPool;
+        }
+    }
+
+    [Test]
+    public void Test12_50Waves_EliteRulesAndNoPredefinedElites()
+    {
+        for (int day = 1; day <= 50; day++)
+        {
+            string path = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day {day}.asset";
+            var wave = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
+            var entries = wave.GetAllEntries();
+
+            // No predefined elites anywhere
+            foreach (var e in entries)
+            {
+                Assert.IsFalse(e.forceElite, $"Day {day} has forceElite=true which is forbidden (elites must spawn naturally)");
+            }
+
+            // Days 1..19: allowRandomElites = false
+            if (day < 20)
+            {
+                Assert.IsFalse(wave.allowRandomElites, $"Day {day} must not allow random elites");
+                Assert.AreEqual(0, wave.maxElitesCount, $"Day {day} maxElitesCount should be 0");
+            }
+            else
+            {
+                // Days 20..50: allowRandomElites = true
+                Assert.IsTrue(wave.allowRandomElites, $"Day {day} must allow random elites");
+                Assert.Greater(wave.maxElitesCount, 0, $"Day {day} maxElitesCount must be > 0");
+            }
+        }
+    }
+
+    [Test]
+    public void Test13_50Waves_ThreatBudgetAndSpawnGroups()
+    {
+        float prevThreat = 0f;
+        for (int day = 1; day <= 50; day++)
+        {
+            string path = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day {day}.asset";
+            var wave = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
+
+            Assert.IsNotNull(wave.spawnGroups, $"Wave day {day} should have spawnGroups");
+            Assert.Greater(wave.spawnGroups.Count, 0, $"Wave day {day} should have at least 1 spawnGroup");
+
+            float threat = wave.CalculateThreatBudget();
+            Assert.Greater(threat, 0f, $"Wave day {day} threat budget should be positive");
+
+            float duration = wave.GetEstimatedSpawnDuration();
+            Assert.Greater(duration, 0f, $"Wave day {day} spawn duration should be positive");
+
+            // Breather waves check: days 16 and 31 have lower threat than boss days 15 and 30
+            if (day == 16)
+            {
+                string path15 = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day 15.asset";
+                var wave15 = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path15);
+                Assert.Less(threat, wave15.CalculateThreatBudget(), "Day 16 breather wave must have lower threat than Day 15 Boss");
+            }
+            if (day == 31)
+            {
+                string path30 = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day 30.asset";
+                var wave30 = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path30);
+                Assert.Less(threat, wave30.CalculateThreatBudget(), "Day 31 breather wave must have lower threat than Day 30 Boss");
+            }
+
+            // Milestone difficulty spikes check: Day 24 and Day 38
+            if (day == 24)
+            {
+                string path23 = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day 23.asset";
+                var wave23 = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path23);
+                Assert.Greater(threat, wave23.CalculateThreatBudget(), "Day 24 difficulty spike must be greater than Day 23");
+            }
+            if (day == 38)
+            {
+                string path37 = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day 37.asset";
+                var wave37 = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path37);
+                Assert.Greater(threat, wave37.CalculateThreatBudget(), "Day 38 difficulty spike must be greater than Day 37");
+            }
+
+            prevThreat = threat;
+        }
     }
 }

@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-///     Zarządza podświetlaniem heksów z zasobami podczas trybu budowania i inspekcji.
-///     Odpowiada wyłącznie za wizualne wyróżnienie – nie zna logiki budynków.
+///     Zarządza podświetlaniem heksów z zasobami oraz wzniesień podczas trybu budowania i inspekcji.
+///     Odpowiada wyłącznie za wizualne wyróżnienie i unoszenie terenu – nie zna logiki budynków.
 /// </summary>
 public class HexHighlighter
 {
@@ -22,47 +22,91 @@ public class HexHighlighter
     // =========================================================================
 
     /// <summary>
-    ///     Podświetla heksy sąsiednie i środkowy jeśli mają wymagany feature.
+    ///     Podświetla i unosi heksy sąsiednie oraz środkowy, jeśli mają wymagany feature lub wzniesienie.
     /// </summary>
     public void HighlightFor(BuildingData data, Vector2Int centerChunk, Vector2Int centerLocal,
-        BuildingEntity entity = null)
+        BuildingEntity entity = null, Material overrideMat = null)
     {
         Clear();
 
         if (data == null) return;
-        var rules = data.GetEffectiveBonusRules();
-        if (rules == null || rules.Count == 0) return;
-        if (!mapGenerator.worldData.ContainsKey(centerChunk)) return;
+        if (mapGenerator == null || mapGenerator.worldData == null || !mapGenerator.worldData.ContainsKey(centerChunk)) return;
 
+        var matToUse = overrideMat != null ? overrideMat : highlightMat;
         var chunkData = mapGenerator.worldData[centerChunk];
 
-        foreach (var rule in rules)
+        var rules = data.GetEffectiveBonusRules();
+        bool hasBonusRules = rules != null && rules.Count > 0;
+        bool hasElevationBonus = data.elevationBonus.enabled;
+
+        if (!hasBonusRules && !hasElevationBonus) return;
+
+        // 1. Cechy terenu (np. Las dla Tartaku, Góra dla Kopalni)
+        if (hasBonusRules)
         {
-            if (rule.requiredFeature == HexFeatureType.None) continue;
+            foreach (var rule in rules)
+            {
+                if (rule.requiredFeature == HexFeatureType.None) continue;
 
-            // 1. Ustalenie promienia (Baza z configu)
-            var radius = rule.searchRadius <= 0 ? 1 : rule.searchRadius;
+                var radius = rule.searchRadius <= 0 ? 1 : rule.searchRadius;
 
-            // 2. Modyfikacja promienia na podstawie ulepszeń (jeśli inspektujemy już wybudowany budynek)
+                if (entity != null && entity.Upgrades != null)
+                {
+                    if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_1")) radius += 1;
+                    if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 2;
+                }
+
+                var candidates = GetHexesInRadius(centerLocal, radius);
+
+                foreach (var coord in candidates)
+                {
+                    if (!chunkData.ContainsKey(coord)) continue;
+                    if (chunkData[coord].feature != rule.requiredFeature) continue;
+
+                    var cell = mapGenerator.visualizer != null
+                        ? mapGenerator.visualizer.GetHexCell(centerChunk, coord)
+                        : null;
+                    if (cell == null || highlightedHexes.Contains(cell)) continue;
+
+                    cell.ToggleHighlight(true, matToUse);
+                    highlightedHexes.Add(cell);
+                }
+            }
+        }
+
+        // 2. Bonusy wysokościowe (np. Quarry / Kamieniołom)
+        if (hasElevationBonus)
+        {
+            var radius = data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius;
+
             if (entity != null && entity.Upgrades != null)
             {
                 if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_1")) radius += 1;
                 if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 2;
             }
 
-            // 3. Zbieranie wszystkich kandydatów w promieniu (a nie tylko bezpośrednich sąsiadów)
             var candidates = GetHexesInRadius(centerLocal, radius);
 
             foreach (var coord in candidates)
             {
-                if (!chunkData.ContainsKey(coord)) continue;
-                if (chunkData[coord].feature != rule.requiredFeature) continue;
+                if (!chunkData.TryGetValue(coord, out var hexData)) continue;
 
-                var cell = mapGenerator.visualizer.GetHexCell(centerChunk, coord);
+                var cell = mapGenerator.visualizer != null
+                    ? mapGenerator.visualizer.GetHexCell(centerChunk, coord)
+                    : null;
                 if (cell == null || highlightedHexes.Contains(cell)) continue;
 
-                cell.ToggleHighlight(true, highlightMat);
-                highlightedHexes.Add(cell);
+                int elevation = cell.Elevation;
+                if (elevation <= 0)
+                {
+                    elevation = hexData.elevation;
+                }
+
+                if (elevation > 0)
+                {
+                    cell.ToggleHighlight(true, matToUse);
+                    highlightedHexes.Add(cell);
+                }
             }
         }
     }
