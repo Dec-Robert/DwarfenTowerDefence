@@ -27,13 +27,17 @@ public class ExtendedBuildingUI : MonoBehaviour
     [SerializeField] private Button btnHudHousing;
     [SerializeField] private Button btnHudSpecial;
 
-    [Header("Ustawienia Widoczności")]
+    [Header("Ustawienia Widoczności i Pozycji")]
     [SerializeField] private GameObject panelRoot;
+    [SerializeField] private RectTransform panelRect;
+    [SerializeField] private float hiddenY = -184f;
+    [SerializeField] private float shownY = 0f;
+    [SerializeField] private float slideSpeed = 16f;
     [SerializeField] private bool closeOnStart = true;
     [SerializeField] private BuildingType defaultCategory = BuildingType.Defense;
 
     [Header("Stylizacja Zakładek")]
-    [SerializeField] private Color activeTabColor = Color.white;
+    [SerializeField] private Color activeTabColor = new Color(0.95f, 0.72f, 0.22f, 1.0f); // Złotawy kolor
     [SerializeField] private Color inactiveTabColor = new Color(0.7f, 0.7f, 0.7f, 0.8f);
 
     [Header("Debug")]
@@ -63,6 +67,7 @@ public class ExtendedBuildingUI : MonoBehaviour
     private readonly List<BuildingSlotEntry> slotEntries = new();
     private BuildingType currentCategory = BuildingType.Defense;
     private bool isOpen = false;
+    private float targetY = -184f;
 
     public bool IsOpen => isOpen;
     public BuildingType CurrentCategory => currentCategory;
@@ -71,6 +76,9 @@ public class ExtendedBuildingUI : MonoBehaviour
     {
         Instance = this;
         if (panelRoot == null) panelRoot = gameObject;
+        if (panelRect == null) panelRect = panelRoot.GetComponent<RectTransform>() ?? GetComponent<RectTransform>();
+
+        targetY = hiddenY;
 
         RegisterTabButtons();
         RegisterHudButtons();
@@ -81,14 +89,19 @@ public class ExtendedBuildingUI : MonoBehaviour
         EnsureAllTowersInDatabase();
         GenerateBuildingSlots();
 
-        if (closeOnStart)
+        if (panelRoot != null && !panelRoot.activeSelf)
         {
-            CloseWindow();
+            panelRoot.SetActive(true);
         }
-        else
+
+        if (panelRect != null)
         {
-            OpenCategory(defaultCategory);
+            panelRect.anchoredPosition = new Vector2(panelRect.anchoredPosition.x, hiddenY);
         }
+
+        targetY = hiddenY;
+        isOpen = false;
+        UpdateTabVisuals(null);
     }
 
     public void EnsureAllTowersInDatabase()
@@ -143,6 +156,17 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     private void Update()
     {
+        // Płynna animacja wysuwania / chowania panelu
+        if (panelRect != null && Mathf.Abs(panelRect.anchoredPosition.y - targetY) > 0.05f)
+        {
+            float newY = Mathf.Lerp(panelRect.anchoredPosition.y, targetY, Time.unscaledDeltaTime * slideSpeed);
+            if (Mathf.Abs(newY - targetY) < 0.2f)
+            {
+                newY = targetY;
+            }
+            panelRect.anchoredPosition = new Vector2(panelRect.anchoredPosition.x, newY);
+        }
+
         if (isOpen && Input.GetKeyDown(KeyCode.Escape))
         {
             CloseWindow();
@@ -199,28 +223,37 @@ public class ExtendedBuildingUI : MonoBehaviour
     public void OpenCategory(BuildingType category)
     {
         currentCategory = category;
-        if (panelRoot != null) panelRoot.SetActive(true);
         isOpen = true;
+        targetY = shownY;
+        if (panelRoot != null && !panelRoot.activeSelf) panelRoot.SetActive(true);
 
         FilterSlots(category);
         UpdateTabVisuals(category);
     }
 
-    public void OnHudCategoryClicked(BuildingType category)
+    public void OnCategoryTabClicked(BuildingType category)
     {
-        // Jeśli okno jest otwarte i kliknięto tę samą kategorię -> nic nie rób
+        // Kliknięcie w aktualnie wybraną kategorię chowa menu
         if (isOpen && currentCategory == category)
         {
-            return;
+            CloseWindow();
         }
+        else
+        {
+            OpenCategory(category);
+        }
+    }
 
-        OpenCategory(category);
+    public void OnHudCategoryClicked(BuildingType category)
+    {
+        OnCategoryTabClicked(category);
     }
 
     public void CloseWindow()
     {
-        if (panelRoot != null) panelRoot.SetActive(false);
         isOpen = false;
+        targetY = hiddenY;
+        UpdateTabVisuals(null);
         InteractionManager.Instance?.CancelBuilding();
     }
 
@@ -279,39 +312,54 @@ public class ExtendedBuildingUI : MonoBehaviour
         }
     }
 
-    private void UpdateTabVisuals(BuildingType activeCategory)
+    private void UpdateTabVisuals(BuildingType? activeCategory)
     {
-        SetTabVisual(btnTabTowers, activeCategory == BuildingType.Defense);
-        SetTabVisual(btnTabProduction, activeCategory == BuildingType.Economic);
-        SetTabVisual(btnTabHousing, activeCategory == BuildingType.Housing);
-        SetTabVisual(btnTabSpecial, activeCategory is BuildingType.Unique or BuildingType.Utility);
+        bool hasActive = activeCategory.HasValue && isOpen;
+        BuildingType cat = activeCategory.GetValueOrDefault();
+
+        SetTabVisual(btnTabTowers, hasActive && cat == BuildingType.Defense);
+        SetTabVisual(btnTabProduction, hasActive && cat == BuildingType.Economic);
+        SetTabVisual(btnTabHousing, hasActive && cat == BuildingType.Housing);
+        SetTabVisual(btnTabSpecial, hasActive && (cat is BuildingType.Unique or BuildingType.Utility));
+
+        SetTabVisual(btnHudTower, hasActive && cat == BuildingType.Defense);
+        SetTabVisual(btnHudProduction, hasActive && cat == BuildingType.Economic);
+        SetTabVisual(btnHudHousing, hasActive && cat == BuildingType.Housing);
+        SetTabVisual(btnHudSpecial, hasActive && (cat is BuildingType.Unique or BuildingType.Utility));
     }
 
     private void SetTabVisual(Button btn, bool isActive)
     {
         if (btn == null) return;
-        Image img = btn.GetComponent<Image>();
+        Color targetColor = isActive ? activeTabColor : inactiveTabColor;
+
+        Image img = (btn.targetGraphic as Image) ?? btn.GetComponent<Image>();
         if (img != null)
         {
-            img.color = isActive ? activeTabColor : inactiveTabColor;
+            img.color = targetColor;
         }
+
+        var colors = btn.colors;
+        colors.normalColor = targetColor;
+        colors.selectedColor = targetColor;
+        btn.colors = colors;
     }
 
     private void RegisterTabButtons()
     {
-        if (btnTabTowers != null) btnTabTowers.onClick.AddListener(() => OpenCategory(BuildingType.Defense));
-        if (btnTabProduction != null) btnTabProduction.onClick.AddListener(() => OpenCategory(BuildingType.Economic));
-        if (btnTabHousing != null) btnTabHousing.onClick.AddListener(() => OpenCategory(BuildingType.Housing));
-        if (btnTabSpecial != null) btnTabSpecial.onClick.AddListener(() => OpenCategory(BuildingType.Unique));
+        if (btnTabTowers != null) btnTabTowers.onClick.AddListener(() => OnCategoryTabClicked(BuildingType.Defense));
+        if (btnTabProduction != null) btnTabProduction.onClick.AddListener(() => OnCategoryTabClicked(BuildingType.Economic));
+        if (btnTabHousing != null) btnTabHousing.onClick.AddListener(() => OnCategoryTabClicked(BuildingType.Housing));
+        if (btnTabSpecial != null) btnTabSpecial.onClick.AddListener(() => OnCategoryTabClicked(BuildingType.Unique));
         if (btnClose != null) btnClose.onClick.AddListener(CloseWindow);
     }
 
     private void RegisterHudButtons()
     {
-        if (btnHudTower != null) btnHudTower.onClick.AddListener(() => OnHudCategoryClicked(BuildingType.Defense));
-        if (btnHudProduction != null) btnHudProduction.onClick.AddListener(() => OnHudCategoryClicked(BuildingType.Economic));
-        if (btnHudHousing != null) btnHudHousing.onClick.AddListener(() => OnHudCategoryClicked(BuildingType.Housing));
-        if (btnHudSpecial != null) btnHudSpecial.onClick.AddListener(() => OnHudCategoryClicked(BuildingType.Unique));
+        if (btnHudTower != null) btnHudTower.onClick.AddListener(() => OnCategoryTabClicked(BuildingType.Defense));
+        if (btnHudProduction != null) btnHudProduction.onClick.AddListener(() => OnCategoryTabClicked(BuildingType.Economic));
+        if (btnHudHousing != null) btnHudHousing.onClick.AddListener(() => OnCategoryTabClicked(BuildingType.Housing));
+        if (btnHudSpecial != null) btnHudSpecial.onClick.AddListener(() => OnCategoryTabClicked(BuildingType.Unique));
     }
 
     private void UnregisterButtons()

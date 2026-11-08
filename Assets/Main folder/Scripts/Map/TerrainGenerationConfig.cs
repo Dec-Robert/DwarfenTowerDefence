@@ -205,22 +205,13 @@ public class TerrainGenerationConfig : ScriptableObject
     {
         ringRules = new List<RingFeatureRule>
         {
-            // Pierścień 1: Strefa startowa przetrwania (wysoka gęstość lasu i gleby, 0 GÓR, ~20% trawy)
+            // Pierścienie 1–2: Strefa startowa przetrwania (zbalansowane zasoby, 0 GÓR, ~32% trawy)
             new RingFeatureRule(
-                min: 1, max: 1,
-                forest: 35, fertile: 25, hill: 15, mountain: 0, sinkhole: 5, empty: 20,
-                clusterF: true, clusterFChance: 35, minFClusters: 1, maxFClusters: 2,
+                min: 1, max: 2,
+                forest: 24, fertile: 22, hill: 15, mountain: 0, sinkhole: 7, empty: 32,
+                clusterF: true, clusterFChance: 30, minFClusters: 1, maxFClusters: 3,
                 clusterM: false, clusterMChance: 0, minMClusters: 0, maxMClusters: 0,
-                name: "Ring 1 (Starting Core)"
-            ),
-
-            // Pierścień 2: Rozszerzenie startowe (~35% trawy, brak klastrów gór, zwiastuny gór ze wzgórz max level)
-            new RingFeatureRule(
-                min: 2, max: 2,
-                forest: 25, fertile: 20, hill: 15, mountain: 0, sinkhole: 5, empty: 35,
-                clusterF: true, clusterFChance: 30, minFClusters: 1, maxFClusters: 2,
-                clusterM: false, clusterMChance: 0, minMClusters: 0, maxMClusters: 0,
-                name: "Ring 2 (Settlement Outskirts)"
+                name: "Rings 1-2 (Early Survival)"
             ),
 
             // Pierścień 3: Początek doliny wolnej przestrzeni (~50% trawy, pierwsze klastry gór 2-6)

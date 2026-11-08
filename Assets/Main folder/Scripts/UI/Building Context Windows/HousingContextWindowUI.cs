@@ -666,13 +666,14 @@ public class HousingContextWindowUI : MonoBehaviour
 
     public void HandleDemolishClick()
     {
-        if (currentHousing == null) return;
+        if (currentHousing == null || !currentHousing.CanDemolish()) return;
 
         if (!isDemolishConfirming)
         {
             // Krok 1: Oczekiwanie na potwierdzenie
             isDemolishConfirming = true;
-            if (txtDemolishLabel != null) txtDemolishLabel.text = "NA PEWNO?";
+            int percent = currentHousing.RefundPercentage;
+            if (txtDemolishLabel != null) txtDemolishLabel.text = $"NA PEWNO? ({percent}%)";
             if (imgDemolishBackground != null) imgDemolishBackground.color = demolishConfirmBg;
             if (txtDemolishLabel != null) txtDemolishLabel.color = demolishConfirmTxt;
         }
@@ -689,9 +690,23 @@ public class HousingContextWindowUI : MonoBehaviour
     private void ResetDemolishState()
     {
         isDemolishConfirming = false;
+        bool canDemolish = currentHousing != null && currentHousing.CanDemolish();
+
+        if (btnDemolish != null)
+        {
+            btnDemolish.gameObject.SetActive(canDemolish);
+        }
+
         if (txtDemolishLabel != null)
         {
-            txtDemolishLabel.text = "WYBURZ";
+            if (canDemolish && currentHousing != null)
+            {
+                txtDemolishLabel.text = $"WYBURZ ({currentHousing.RefundPercentage}%)";
+            }
+            else
+            {
+                txtDemolishLabel.text = "WYBURZ";
+            }
             txtDemolishLabel.color = demolishNormalTxt;
         }
         if (imgDemolishBackground != null)

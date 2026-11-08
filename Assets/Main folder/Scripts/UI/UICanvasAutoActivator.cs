@@ -62,6 +62,10 @@ public static class UICanvasAutoActivator
             }
         }
 
+        // Po włączeniu Canvasów upewnij się, że UI surowców i podsumowania dziennego są zainicjalizowane
+        TopBonusInfoUI.TryInitialize();
+        ResourceTooltipUI.EnsureInstance();
+
         return activatedCount;
     }
 

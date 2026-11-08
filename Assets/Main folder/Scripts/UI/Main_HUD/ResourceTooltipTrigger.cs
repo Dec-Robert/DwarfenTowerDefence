@@ -32,6 +32,11 @@ public class ResourceTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPoin
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (ResourceTooltipUI.Instance == null)
+        {
+            ResourceTooltipUI.EnsureInstance();
+        }
+
         if (ResourceTooltipUI.Instance != null)
         {
             if (rectTransform == null) rectTransform = GetComponent<RectTransform>();

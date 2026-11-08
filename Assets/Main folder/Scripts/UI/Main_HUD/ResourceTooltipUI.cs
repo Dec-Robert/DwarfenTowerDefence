@@ -1,3 +1,4 @@
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -54,15 +55,97 @@ public class ResourceTooltipUI : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoEnsureInstance()
     {
-        if (Instance == null)
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        EnsureInstance();
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        EnsureInstance();
+    }
+
+    public static ResourceTooltipUI EnsureInstance()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (!activeScene.isLoaded) return null;
+
+        // 1. Sprawdz czy mamy poprawna instancje w biezacej scenie
+        if (Instance != null && Instance.gameObject != null && Instance.gameObject.scene == activeScene)
         {
-            var existing = FindFirstObjectByType<ResourceTooltipUI>();
-            if (existing == null)
+            Instance.EnsureUI();
+            return Instance;
+        }
+
+        // 2. Jesli instancja nalezy do innej (zniszczonej) sceny, zresetuj
+        if (Instance != null && (Instance.gameObject == null || Instance.gameObject.scene != activeScene))
+        {
+            Instance = null;
+        }
+
+        // 3. Sprawdz czy w aktywnej scenie juz istnieje komponent
+        var allInScene = Object.FindObjectsByType<ResourceTooltipUI>(FindObjectsSortMode.None);
+        foreach (var r in allInScene)
+        {
+            if (r != null && r.gameObject.scene == activeScene)
             {
-                var go = new GameObject("ResourceTooltipUI_AutoManager");
-                go.AddComponent<ResourceTooltipUI>();
+                Instance = r;
+                Instance.EnsureUI();
+                return Instance;
             }
         }
+
+        // 4. Sprawdz czy scena posiada odpowiedni Canvas
+        Canvas targetCanvas = FindTargetCanvas(activeScene);
+        if (targetCanvas == null)
+        {
+            return null;
+        }
+
+        // 5. Utworz ResourceTooltipUI_AutoManager w aktywnej scenie
+        var go = new GameObject("ResourceTooltipUI_AutoManager");
+        var comp = go.AddComponent<ResourceTooltipUI>();
+        comp.parentCanvas = targetCanvas;
+        comp.EnsureUI();
+        return comp;
+    }
+
+    public static Canvas FindTargetCanvas(Scene scene)
+    {
+        if (!scene.IsValid() || !scene.isLoaded) return null;
+
+        var roots = scene.GetRootGameObjects();
+        foreach (var root in roots)
+        {
+            if (root.name == "Canvas_Tooltips")
+            {
+                var c = root.GetComponent<Canvas>();
+                if (c != null) return c;
+            }
+        }
+        foreach (var root in roots)
+        {
+            if (root.name == "Canvas_HUD")
+            {
+                var c = root.GetComponent<Canvas>();
+                if (c != null) return c;
+            }
+        }
+
+        var topBonus = Object.FindFirstObjectByType<TopBonusInfoUI>();
+        if (topBonus != null && topBonus.gameObject.scene == scene)
+        {
+            var c = topBonus.GetComponentInParent<Canvas>();
+            if (c != null) return c;
+        }
+
+        var allCanvases = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        foreach (var c in allCanvases)
+        {
+            if (c != null && c.gameObject.scene == scene) return c;
+        }
+
+        return null;
     }
 
     private void Awake()
@@ -312,22 +395,15 @@ public class ResourceTooltipUI : MonoBehaviour
     /// </summary>
     public void EnsureUI()
     {
-        if (tooltipRoot != null && tooltipRect != null) return;
-
-        if (parentCanvas == null)
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (parentCanvas == null || parentCanvas.gameObject == null || parentCanvas.gameObject.scene != activeScene)
         {
-            var topBonusUI = FindFirstObjectByType<TopBonusInfoUI>();
-            if (topBonusUI != null)
-            {
-                parentCanvas = topBonusUI.GetComponentInParent<Canvas>();
-            }
-
-            if (parentCanvas == null)
-            {
-                parentCanvas = FindFirstObjectByType<Canvas>();
-            }
+            parentCanvas = FindTargetCanvas(activeScene);
+            tooltipRoot = null;
+            tooltipRect = null;
         }
 
+        if (tooltipRoot != null && tooltipRect != null) return;
         if (parentCanvas == null) return;
 
         // Jeśli w scenie jest stary obiekt Pnl_DailyResourceTooltip, usuwamy go, aby zaktualizować strukturę

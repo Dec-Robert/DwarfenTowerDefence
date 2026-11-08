@@ -41,6 +41,8 @@ public class HexHighlighter
 
         if (!hasBonusRules && !hasElevationBonus) return;
 
+        int chunkRadius = mapGenerator.chunkRadius;
+
         // 1. Cechy terenu (np. Las dla Tartaku, Góra dla Kopalni)
         if (hasBonusRules)
         {
@@ -56,15 +58,17 @@ public class HexHighlighter
                     if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 2;
                 }
 
-                var candidates = GetHexesInRadius(centerLocal, radius);
+                var candidates = HexGridMath.GetHexesInRadiusCrossChunk(centerChunk, centerLocal, radius, chunkRadius);
 
-                foreach (var coord in candidates)
+                foreach (var nInfo in candidates)
                 {
-                    if (!chunkData.ContainsKey(coord)) continue;
-                    if (chunkData[coord].feature != rule.requiredFeature) continue;
+                    if (nInfo.chunkCoord != centerChunk && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+                    if (!mapGenerator.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                    if (!targetChunkData.TryGetValue(nInfo.localCoord, out var hexData)) continue;
+                    if (hexData.feature != rule.requiredFeature) continue;
 
                     var cell = mapGenerator.visualizer != null
-                        ? mapGenerator.visualizer.GetHexCell(centerChunk, coord)
+                        ? mapGenerator.visualizer.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
                         : null;
                     if (cell == null || highlightedHexes.Contains(cell)) continue;
 
@@ -85,14 +89,16 @@ public class HexHighlighter
                 if (entity.Upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 2;
             }
 
-            var candidates = GetHexesInRadius(centerLocal, radius);
+            var candidates = HexGridMath.GetHexesInRadiusCrossChunk(centerChunk, centerLocal, radius, chunkRadius);
 
-            foreach (var coord in candidates)
+            foreach (var nInfo in candidates)
             {
-                if (!chunkData.TryGetValue(coord, out var hexData)) continue;
+                if (nInfo.chunkCoord != centerChunk && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+                if (!mapGenerator.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                if (!targetChunkData.TryGetValue(nInfo.localCoord, out var hexData)) continue;
 
                 var cell = mapGenerator.visualizer != null
-                    ? mapGenerator.visualizer.GetHexCell(centerChunk, coord)
+                    ? mapGenerator.visualizer.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
                     : null;
                 if (cell == null || highlightedHexes.Contains(cell)) continue;
 
@@ -101,12 +107,10 @@ public class HexHighlighter
                 {
                     elevation = hexData.elevation;
                 }
+                if (elevation <= 0) continue;
 
-                if (elevation > 0)
-                {
-                    cell.ToggleHighlight(true, matToUse);
-                    highlightedHexes.Add(cell);
-                }
+                cell.ToggleHighlight(true, matToUse);
+                highlightedHexes.Add(cell);
             }
         }
     }

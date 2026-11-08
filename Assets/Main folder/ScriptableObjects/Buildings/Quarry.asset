@@ -56,7 +56,7 @@ MonoBehaviour:
   elevationBonus:
     enabled: 1
     resourceType: 2
-    onTopBonusPerLevel: 1.5
+    onTopBonusPerLevel: 0.75
     adjacentBonusPerLevel: 0.5
     penaltyPerExtraBuilding: 3
     searchRadius: 1

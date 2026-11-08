@@ -72,6 +72,11 @@ public class ResourceGatheringAndTooltipTests
         }
         context.worldData[chunkCoord][localCoord] = data;
 
+        if (mapGenerator != null && mapGenerator.visualizer != null)
+        {
+            mapGenerator.visualizer.RegisterHexCell(chunkCoord, localCoord, cell);
+        }
+
         return cell;
     }
 
@@ -352,6 +357,180 @@ public class ResourceGatheringAndTooltipTests
 
         Assert.AreEqual("Brak bonusów terenowych", txtPlacing.text);
         Assert.AreEqual("", txtSurround.text);
+    }
+
+    // =========================================================================
+    // 4. GRANICE CHUNKOW I ODKRYWANIE MGLY (CROSS-CHUNK RESOURCE GATHERING)
+    // =========================================================================
+
+    [Test]
+    public void Test06_ResourcesAcrossChunkBoundary_NotCounted_WhenNeighborChunkNotRevealed()
+    {
+        // Chunk (0,0) jest Settled, Chunk (1,0) jest Wilderness (nieodkryty)
+        GameObject expGo = new GameObject("TestMapExpansion");
+        createdObjects.Add(expGo);
+        MapExpansionManager expansion = expGo.AddComponent<MapExpansionManager>();
+
+        expansion.activeChunks[Vector2Int.zero] = new ChunkStateData
+        {
+            chunkCoord = Vector2Int.zero,
+            baseState = ChunkState.Settled
+        };
+        expansion.activeChunks[new Vector2Int(1, 0)] = new ChunkStateData
+        {
+            chunkCoord = new Vector2Int(1, 0),
+            baseState = ChunkState.Wilderness
+        };
+
+        // Heks A na granicy chunku (0,0) o localCoord (3, -1)
+        HexCell cellA = CreateCell(Vector2Int.zero, new Vector2Int(3, -1), HexFeatureType.None);
+        // Heks B bezposrednio sasiadujacy na chunku (1,0) o localCoord (-3, 1) z lasem
+        HexCell cellB = CreateCell(new Vector2Int(1, 0), new Vector2Int(-3, 1), HexFeatureType.Forest);
+
+        BuildingData sawmill = CreateEconomicBuilding("Sawmill");
+        sawmill.bonusRules = new List<TerrainBonusRule>
+        {
+            new TerrainBonusRule
+            {
+                requiredFeature = HexFeatureType.Forest,
+                searchRadius = 1,
+                resourceYields = new List<TerrainResourceYield>
+                {
+                    new TerrainResourceYield
+                    {
+                        resourceType = ResourceType.Wood,
+                        baseBonusPerHex = 4f
+                    }
+                }
+            }
+        };
+
+        var estimates = BuildingProductionCalculator.CalculateProjectedProduction(cellA, sawmill, mapGenerator);
+        float woodProduction = 0f;
+        foreach (var est in estimates)
+        {
+            if (est.resourceType == ResourceType.Wood) woodProduction += est.totalProduction;
+        }
+
+        // Chunk (1,0) jest Wilderness -> zasob NIE powinien byc wliczony
+        Assert.AreEqual(0f, woodProduction, 0.001f, "Zasob z nieodkrytego chunku nie powinien byc wliczany!");
+    }
+
+    [Test]
+    public void Test07_ResourcesAcrossChunkBoundary_Counted_WhenNeighborChunkRevealed()
+    {
+        // Chunk (0,0) oraz Chunk (1,0) sa odkryte (Outskirts / Settled)
+        GameObject expGo = new GameObject("TestMapExpansion");
+        createdObjects.Add(expGo);
+        MapExpansionManager expansion = expGo.AddComponent<MapExpansionManager>();
+
+        expansion.activeChunks[Vector2Int.zero] = new ChunkStateData
+        {
+            chunkCoord = Vector2Int.zero,
+            baseState = ChunkState.Settled
+        };
+        expansion.activeChunks[new Vector2Int(1, 0)] = new ChunkStateData
+        {
+            chunkCoord = new Vector2Int(1, 0),
+            baseState = ChunkState.Outskirts
+        };
+
+        HexCell cellA = CreateCell(Vector2Int.zero, new Vector2Int(3, -1), HexFeatureType.None);
+        HexCell cellB = CreateCell(new Vector2Int(1, 0), new Vector2Int(-3, 1), HexFeatureType.Forest);
+
+        BuildingData sawmill = CreateEconomicBuilding("Sawmill");
+        sawmill.bonusRules = new List<TerrainBonusRule>
+        {
+            new TerrainBonusRule
+            {
+                requiredFeature = HexFeatureType.Forest,
+                searchRadius = 1,
+                resourceYields = new List<TerrainResourceYield>
+                {
+                    new TerrainResourceYield
+                    {
+                        resourceType = ResourceType.Wood,
+                        baseBonusPerHex = 4f
+                    }
+                }
+            }
+        };
+
+        var estimates = BuildingProductionCalculator.CalculateProjectedProduction(cellA, sawmill, mapGenerator);
+        float woodProduction = 0f;
+        foreach (var est in estimates)
+        {
+            if (est.resourceType == ResourceType.Wood) woodProduction += est.totalProduction;
+        }
+
+        // Chunk (1,0) jest Outskirts (odkryty) -> zasob POWINIEN byc wliczony
+        Assert.AreEqual(4f, woodProduction, 0.001f, "Zasob z odkrytego chunku powinien byc wliczony!");
+    }
+
+    [Test]
+    public void Test08_BuildingOnChunkBorder_Rescans_WhenNeighborChunkBecomesRevealed()
+    {
+        GameObject regGo = new GameObject("BuildingRegistry");
+        createdObjects.Add(regGo);
+        BuildingRegistry registry = regGo.AddComponent<BuildingRegistry>();
+
+        GameObject visGo = new GameObject("HexMapVisualizer");
+        createdObjects.Add(visGo);
+        HexMapVisualizer visualizer = visGo.AddComponent<HexMapVisualizer>();
+        mapGenerator.visualizer = visualizer;
+
+        GameObject expGo = new GameObject("TestMapExpansion");
+        createdObjects.Add(expGo);
+        MapExpansionManager expansion = expGo.AddComponent<MapExpansionManager>();
+
+        expansion.activeChunks[Vector2Int.zero] = new ChunkStateData
+        {
+            chunkCoord = Vector2Int.zero,
+            baseState = ChunkState.Settled
+        };
+        expansion.activeChunks[new Vector2Int(1, 0)] = new ChunkStateData
+        {
+            chunkCoord = new Vector2Int(1, 0),
+            baseState = ChunkState.Wilderness
+        };
+
+        HexCell cellA = CreateCell(Vector2Int.zero, new Vector2Int(3, -1), HexFeatureType.None);
+        HexCell cellB = CreateCell(new Vector2Int(1, 0), new Vector2Int(-3, 1), HexFeatureType.Forest);
+
+        BuildingData sawmillData = CreateEconomicBuilding("Sawmill");
+        sawmillData.bonusRules = new List<TerrainBonusRule>
+        {
+            new TerrainBonusRule
+            {
+                requiredFeature = HexFeatureType.Forest,
+                searchRadius = 1,
+                resourceYields = new List<TerrainResourceYield>
+                {
+                    new TerrainResourceYield
+                    {
+                        resourceType = ResourceType.Wood,
+                        baseBonusPerHex = 3f
+                    }
+                }
+            }
+        };
+
+        GameObject bGo = new GameObject("SawmillEntity");
+        createdObjects.Add(bGo);
+        bGo.transform.parent = cellA.transform;
+        BuildingEntity sawmill = bGo.AddComponent<BuildingEntity>();
+        cellA.SetBuilding(sawmill);
+        sawmill.Initialize(sawmillData);
+
+        // Przed odkryciem chunka (1,0)
+        Assert.AreEqual(0, sawmill.Terrain.AdjacentResourceHexes.Count, "Przed odkryciem nie ma dostepnych surowcow z sasiedniego chunku");
+
+        // Odkrywamy chunk (1,0)
+        expansion.SetChunkBaseState(new Vector2Int(1, 0), ChunkState.Outskirts);
+
+        // Po odkryciu chunka budynek automatycznie przeskanowal i wykryl heks z lasem
+        Assert.AreEqual(1, sawmill.Terrain.AdjacentResourceHexes.Count, "Po odkryciu chunka zasoby z drugiego chunka powinny sie wliczac!");
+        Assert.IsTrue(sawmill.Terrain.AdjacentResourceHexes.ContainsKey(cellB));
     }
 
     // =========================================================================

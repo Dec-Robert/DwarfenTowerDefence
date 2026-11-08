@@ -744,6 +744,12 @@ public class MapExpansionManager : MonoBehaviour
         return ChunkState.Wilderness;
     }
 
+    public bool IsChunkRevealed(Vector2Int coord)
+    {
+        var state = GetEffectiveState(coord);
+        return state == ChunkState.Outskirts || state == ChunkState.Settled;
+    }
+
     public ChunkStateData GetChunkData(Vector2Int coord)
     {
         activeChunks.TryGetValue(coord, out var data);

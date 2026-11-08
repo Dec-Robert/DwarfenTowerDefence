@@ -60,7 +60,31 @@ public class TopBonusInfoUI : MonoBehaviour
 
     public static void TryInitialize()
     {
-        var panel = GameObject.Find("Pnl_TopBonusInfo");
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (!activeScene.IsValid() || !activeScene.isLoaded) return;
+
+        GameObject panel = null;
+        var roots = activeScene.GetRootGameObjects();
+        foreach (var root in roots)
+        {
+            if (root.name == "Pnl_TopBonusInfo")
+            {
+                panel = root;
+                break;
+            }
+            var found = root.transform.Find("Pnl_TopBonusInfo");
+            if (found != null)
+            {
+                panel = found.gameObject;
+                break;
+            }
+        }
+
+        if (panel == null)
+        {
+            panel = GameObject.Find("Pnl_TopBonusInfo");
+        }
+
         if (panel != null)
         {
             var comp = panel.GetComponent<TopBonusInfoUI>();
@@ -68,10 +92,10 @@ public class TopBonusInfoUI : MonoBehaviour
             {
                 comp = panel.AddComponent<TopBonusInfoUI>();
             }
-            else
-            {
-                comp.RefreshUI();
-            }
+            comp.FindAndConfigureSlots();
+            comp.EnsureTooltipTriggers();
+            ResourceTooltipUI.EnsureInstance();
+            comp.RefreshUI();
         }
     }
 
@@ -96,7 +120,9 @@ public class TopBonusInfoUI : MonoBehaviour
     private void Start()
     {
         SubscribeEvents();
+        FindAndConfigureSlots();
         EnsureTooltipTriggers();
+        ResourceTooltipUI.EnsureInstance();
         RefreshUI();
     }
 

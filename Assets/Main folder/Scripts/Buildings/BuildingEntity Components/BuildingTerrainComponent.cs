@@ -36,9 +36,10 @@ public class BuildingTerrainComponent
         if (myCell == null) return;
 
         var mapGen = Object.FindAnyObjectByType<HexMapGenerator>();
-        if (mapGen == null || !mapGen.worldData.ContainsKey(myCell.chunkCoord)) return;
+        if (mapGen == null || mapGen.worldData == null || !mapGen.worldData.ContainsKey(myCell.chunkCoord)) return;
 
         var chunkData = mapGen.worldData[myCell.chunkCoord];
+        int chunkRadius = mapGen.chunkRadius;
 
         // 1. Reguly cech terenu (np. Las dla Tartaku, Gora dla Kopalni)
         var rules = data != null ? data.GetEffectiveBonusRules() : null;
@@ -81,16 +82,19 @@ public class BuildingTerrainComponent
                         if (upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 1;
                     }
 
-                    var hexesToScan = GetHexesInRadius(myCell.localCoord, radius);
+                    var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(myCell.chunkCoord, myCell.localCoord, radius, chunkRadius);
 
-                    foreach (var coord in hexesToScan)
+                    foreach (var nInfo in hexesToScan)
                     {
-                        if (coord == myCell.localCoord) continue;
-                        if (!chunkData.TryGetValue(coord, out var neighborData)) continue;
+                        if (nInfo.chunkCoord == myCell.chunkCoord && nInfo.localCoord == myCell.localCoord) continue;
+                        if (nInfo.chunkCoord != myCell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+
+                        if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                        if (!targetChunkData.TryGetValue(nInfo.localCoord, out var neighborData)) continue;
                         if (neighborData.feature != rule.requiredFeature) continue;
 
                         var neighborCell = HexMapVisualizer.Instance != null
-                            ? HexMapVisualizer.Instance.GetHexCell(myCell.chunkCoord, coord)
+                            ? HexMapVisualizer.Instance.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
                             : null;
                         if (neighborCell == null) continue;
 
@@ -113,15 +117,18 @@ public class BuildingTerrainComponent
             }
 
             int radius = data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius;
-            var hexesToScan = GetHexesInRadius(myCell.localCoord, radius);
+            var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(myCell.chunkCoord, myCell.localCoord, radius, chunkRadius);
 
-            foreach (var coord in hexesToScan)
+            foreach (var nInfo in hexesToScan)
             {
-                if (coord == myCell.localCoord) continue;
-                if (!chunkData.TryGetValue(coord, out var neighborData)) continue;
+                if (nInfo.chunkCoord == myCell.chunkCoord && nInfo.localCoord == myCell.localCoord) continue;
+                if (nInfo.chunkCoord != myCell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+
+                if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                if (!targetChunkData.TryGetValue(nInfo.localCoord, out var neighborData)) continue;
 
                 var neighborCell = HexMapVisualizer.Instance != null
-                    ? HexMapVisualizer.Instance.GetHexCell(myCell.chunkCoord, coord)
+                    ? HexMapVisualizer.Instance.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
                     : null;
                 if (neighborCell == null) continue;
 
@@ -508,30 +515,34 @@ public class BuildingTerrainComponent
 
     private void CalculateMountainChain(HexCell startCell, HexMapGenerator mapGen)
     {
-        var chunkData = mapGen.worldData[startCell.chunkCoord];
+        int chunkRadius = mapGen != null ? mapGen.chunkRadius : 3;
         var visited = new HashSet<Vector2Int>();
         var queue = new Queue<Vector2Int>();
 
-        queue.Enqueue(startCell.localCoord);
-        visited.Add(startCell.localCoord);
+        Vector2Int startGlobal = HexGridMath.LocalToGlobal(startCell.chunkCoord, startCell.localCoord, chunkRadius);
+        queue.Enqueue(startGlobal);
+        visited.Add(startGlobal);
 
         mountainChainSize = 0;
 
         while (queue.Count > 0)
         {
-            var current = queue.Dequeue();
+            var currentGlobal = queue.Dequeue();
             mountainChainSize++;
 
-            foreach (var neighbor in HexGridMath.GetNeighbors(current))
+            foreach (var neighborGlobal in HexGridMath.GetNeighbors(currentGlobal))
             {
-                if (visited.Contains(neighbor)) continue;
+                if (visited.Contains(neighborGlobal)) continue;
 
-                if (chunkData.TryGetValue(neighbor, out var neighborData))
+                HexGridMath.GlobalToChunkAndLocal(neighborGlobal, chunkRadius, out var cCoord, out var lCoord);
+                if (cCoord != startCell.chunkCoord && !HexGridMath.IsChunkRevealed(cCoord)) continue;
+
+                if (mapGen.worldData.TryGetValue(cCoord, out var cData) && cData.TryGetValue(lCoord, out var neighborData))
                 {
                     if (neighborData.feature == HexFeatureType.Mountain)
                     {
-                        visited.Add(neighbor);
-                        queue.Enqueue(neighbor);
+                        visited.Add(neighborGlobal);
+                        queue.Enqueue(neighborGlobal);
                     }
                 }
             }
@@ -542,10 +553,10 @@ public class BuildingTerrainComponent
     {
         if (upgrades == null) return;
 
-        if (upgrades.HasSpecialEffect("SAWMILL_PLANT_FOREST"))
+        if (upgrades.HasSpecialEffect("FORESTER_PLANT_TREE"))
         {
             daysSinceLastPlant++;
-            if (daysSinceLastPlant >= 2)
+            if (daysSinceLastPlant >= 3)
             {
                 TryConvertRandomHex(HexFeatureType.Forest);
                 daysSinceLastPlant = 0;
@@ -579,8 +590,9 @@ public class BuildingTerrainComponent
         if (myCell == null) return;
 
         var mapGen = Object.FindAnyObjectByType<HexMapGenerator>();
-        if (mapGen == null || !mapGen.worldData.ContainsKey(myCell.chunkCoord)) return;
+        if (mapGen == null || mapGen.worldData == null || !mapGen.worldData.ContainsKey(myCell.chunkCoord)) return;
 
+        int chunkRadius = mapGen.chunkRadius;
         int radius = 1;
         var rules = data.GetEffectiveBonusRules();
         if (rules != null && rules.Count > 0)
@@ -594,31 +606,38 @@ public class BuildingTerrainComponent
             if (upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 1;
         }
 
-        var hexesToScan = GetHexesInRadius(myCell.localCoord, radius);
-        var emptyCandidates = new List<Vector2Int>();
-        var chunkData = mapGen.worldData[myCell.chunkCoord];
+        var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(myCell.chunkCoord, myCell.localCoord, radius, chunkRadius);
+        var emptyCandidates = new List<NeighborHexInfo>();
 
-        foreach (var coord in hexesToScan)
+        foreach (var nInfo in hexesToScan)
         {
-            if (coord == myCell.localCoord) continue;
-            if (!chunkData.TryGetValue(coord, out var cellData)) continue;
+            if (nInfo.chunkCoord == myCell.chunkCoord && nInfo.localCoord == myCell.localCoord) continue;
+            if (nInfo.chunkCoord != myCell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
 
-            var neighborCell = HexMapVisualizer.Instance.GetHexCell(myCell.chunkCoord, coord);
+            if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+            if (!targetChunkData.TryGetValue(nInfo.localCoord, out var cellData)) continue;
+
+            var neighborCell = HexMapVisualizer.Instance != null
+                ? HexMapVisualizer.Instance.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
+                : null;
             if (neighborCell == null || neighborCell.HasBuilding()) continue;
 
             if (cellData.feature == HexFeatureType.None && !cellData.isPath)
             {
-                emptyCandidates.Add(coord);
+                emptyCandidates.Add(nInfo);
             }
         }
 
         if (emptyCandidates.Count > 0)
         {
             var chosenHex = emptyCandidates[Random.Range(0, emptyCandidates.Count)];
-            chunkData[chosenHex].feature = newFeature;
-            artificiallyCreatedFeatures.Add(chosenHex);
+            mapGen.worldData[chosenHex.chunkCoord][chosenHex.localCoord].feature = newFeature;
+            if (chosenHex.chunkCoord == myCell.chunkCoord)
+            {
+                artificiallyCreatedFeatures.Add(chosenHex.localCoord);
+            }
 
-            RefreshVisualsAndRescan(myCell.chunkCoord, chosenHex);
+            RefreshVisualsAndRescan(chosenHex.chunkCoord, chosenHex.localCoord);
         }
     }
 
@@ -640,7 +659,7 @@ public class BuildingTerrainComponent
 
     private void RefreshVisualsAndRescan(Vector2Int chunkCoord, Vector2Int localCoord)
     {
-        var changedCell = HexMapVisualizer.Instance.GetHexCell(chunkCoord, localCoord);
+        var changedCell = HexMapVisualizer.Instance != null ? HexMapVisualizer.Instance.GetHexCell(chunkCoord, localCoord) : null;
         var mapGen = Object.FindAnyObjectByType<HexMapGenerator>();
 
         if (changedCell != null && mapGen != null)
@@ -653,10 +672,13 @@ public class BuildingTerrainComponent
         if (entity != null)
         {
             entity.ForceRescan();
+            int chunkRadius = mapGen != null ? mapGen.chunkRadius : 3;
 
-            foreach (var nCoord in HexGridMath.GetNeighbors(localCoord))
+            foreach (var nInfo in HexGridMath.GetNeighborsCrossChunk(chunkCoord, localCoord, chunkRadius))
             {
-                var neighborHex = HexMapVisualizer.Instance.GetHexCell(chunkCoord, nCoord);
+                var neighborHex = HexMapVisualizer.Instance != null
+                    ? HexMapVisualizer.Instance.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
+                    : null;
                 if (neighborHex != null)
                 {
                     neighborHex.OccupyingBuilding?.ForceRescan();

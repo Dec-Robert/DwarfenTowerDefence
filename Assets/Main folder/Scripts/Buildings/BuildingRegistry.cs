@@ -29,6 +29,14 @@ public class BuildingRegistry : MonoBehaviour
             TimePhaseManager.Instance.OnDuskStarted += ExecuteDuskEconomy;
             TimePhaseManager.Instance.OnNightStarted += ExecuteNightDefenseUpkeep;
         }
+        if (MapExpansionManager.Instance != null)
+        {
+            MapExpansionManager.Instance.OnChunkStateChanged += HandleChunkStateChanged;
+        }
+        if (FogOfWarManager.Instance != null)
+        {
+            FogOfWarManager.Instance.OnChunkRevealed += HandleChunkRevealed;
+        }
     }
 
     private void OnDestroy()
@@ -39,8 +47,41 @@ public class BuildingRegistry : MonoBehaviour
             TimePhaseManager.Instance.OnDuskStarted -= ExecuteDuskEconomy;
             TimePhaseManager.Instance.OnNightStarted -= ExecuteNightDefenseUpkeep;
         }
+        if (MapExpansionManager.Instance != null)
+        {
+            MapExpansionManager.Instance.OnChunkStateChanged -= HandleChunkStateChanged;
+        }
+        if (FogOfWarManager.Instance != null)
+        {
+            FogOfWarManager.Instance.OnChunkRevealed -= HandleChunkRevealed;
+        }
         buildings.Clear();
         Instance = null;
+    }
+
+    private void HandleChunkStateChanged(Vector2Int coord, ChunkState newState)
+    {
+        if (newState == ChunkState.Outskirts || newState == ChunkState.Settled)
+        {
+            RescanAllBuildings();
+        }
+    }
+
+    private void HandleChunkRevealed(Vector2Int coord)
+    {
+        RescanAllBuildings();
+    }
+
+    public void RescanAllBuildings()
+    {
+        for (int i = 0; i < buildings.Count; i++)
+        {
+            if (buildings[i] != null && buildings[i].isBuildingActive)
+            {
+                buildings[i].ForceRescan();
+            }
+        }
+        BuildingEntity.NotifyEconomyChanged();
     }
 
     public void Register(BuildingEntity building)

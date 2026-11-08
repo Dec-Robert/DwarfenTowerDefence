@@ -5,6 +5,17 @@ using UnityEngine.EventSystems;
 
 public class FogOfWarManager : MonoBehaviour
 {
+    public static FogOfWarManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
     [Header("Referencje")]
     public MapExpansionManager expansionManager;
     public HexMapVisualizer mapVisualizer;
@@ -70,6 +81,7 @@ public class FogOfWarManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Instance == this) Instance = null;
         if (expansionManager != null)
         {
             expansionManager.OnMapInitialized -= HandleMapInitialized;

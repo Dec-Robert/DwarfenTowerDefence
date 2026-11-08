@@ -71,10 +71,11 @@ public class BuildingPlacer
             bool hasForgeNeighbor = false;
             if (HexMapVisualizer.Instance != null)
             {
-                var neighbors = HexGridMath.GetNeighbors(cell.localCoord);
-                foreach (var nCoord in neighbors)
+                int chunkRadius = mapGenerator != null ? mapGenerator.chunkRadius : 3;
+                var neighbors = HexGridMath.GetNeighborsCrossChunk(cell.chunkCoord, cell.localCoord, chunkRadius);
+                foreach (var nInfo in neighbors)
                 {
-                    var neighborCell = HexMapVisualizer.Instance.GetHexCell(cell.chunkCoord, nCoord);
+                    var neighborCell = HexMapVisualizer.Instance.GetHexCell(nInfo.chunkCoord, nInfo.localCoord);
                     if (neighborCell != null && neighborCell.GetComponentInChildren<RuneForgeEntity>() != null)
                     {
                         hasForgeNeighbor = true;
@@ -190,10 +191,11 @@ public class BuildingPlacer
     private void NotifyNeighbors(HexCell centerCell)
     {
         if (HexMapVisualizer.Instance == null) return;
+        int chunkRadius = mapGenerator != null ? mapGenerator.chunkRadius : 3;
 
-        foreach (var nCoord in HexGridMath.GetNeighbors(centerCell.localCoord))
+        foreach (var nInfo in HexGridMath.GetNeighborsCrossChunk(centerCell.chunkCoord, centerCell.localCoord, chunkRadius))
         {
-            var neighborHex = HexMapVisualizer.Instance.GetHexCell(centerCell.chunkCoord, nCoord);
+            var neighborHex = HexMapVisualizer.Instance.GetHexCell(nInfo.chunkCoord, nInfo.localCoord);
             if (neighborHex == null) continue;
 
             neighborHex.GetComponentInChildren<BuildingEntity>()?.ForceRescan();

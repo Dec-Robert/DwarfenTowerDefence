@@ -89,10 +89,11 @@ public class RuneForgeEntity : BuildingEntity
         var myCell = GetComponentInParent<HexCell>();
         if (myCell != null && HexMapVisualizer.Instance != null)
         {
-            var neighbors = HexGridMath.GetNeighbors(myCell.localCoord);
+            int chunkRadius = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.chunkRadius : 3;
+            var neighbors = HexGridMath.GetNeighborsCrossChunk(myCell.chunkCoord, myCell.localCoord, chunkRadius);
             foreach (var n in neighbors)
             {
-                var neighborCell = HexMapVisualizer.Instance.GetHexCell(myCell.chunkCoord, n);
+                var neighborCell = HexMapVisualizer.Instance.GetHexCell(n.chunkCoord, n.localCoord);
                 if (neighborCell != null)
                     if (neighborCell.GetComponentInChildren<RuneTowerEntity>() != null)
                         runeTowersCount++;

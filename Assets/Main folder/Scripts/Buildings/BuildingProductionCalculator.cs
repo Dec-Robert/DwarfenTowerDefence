@@ -128,23 +128,27 @@ public static class BuildingProductionCalculator
         }
 
         // 3. Bonusy z sąsiednich heksów (cechy terenu, np. Las dla Tartaku, Góra dla Kopalni)
-        if (rules != null && rules.Count > 0 && chunkData != null)
+        int chunkRadius = mapGen != null ? mapGen.chunkRadius : 3;
+        if (rules != null && rules.Count > 0 && mapGen != null && mapGen.worldData != null)
         {
             foreach (var rule in rules)
             {
                 if (rule.requiredFeature == HexFeatureType.None || rule.resourceYields == null) continue;
 
                 int radius = rule.searchRadius <= 0 ? 1 : rule.searchRadius;
-                var hexesToScan = GetHexesInRadius(cell.localCoord, radius);
+                var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(cell.chunkCoord, cell.localCoord, radius, chunkRadius);
 
-                foreach (var coord in hexesToScan)
+                foreach (var nInfo in hexesToScan)
                 {
-                    if (coord == cell.localCoord) continue;
-                    if (!chunkData.TryGetValue(coord, out var neighborData)) continue;
+                    if (nInfo.chunkCoord == cell.chunkCoord && nInfo.localCoord == cell.localCoord) continue;
+                    if (nInfo.chunkCoord != cell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+
+                    if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                    if (!targetChunkData.TryGetValue(nInfo.localCoord, out var neighborData)) continue;
                     if (neighborData.feature != rule.requiredFeature) continue;
 
                     var neighborCell = !ReferenceEquals(visualizer, null)
-                        ? visualizer.GetHexCell(cell.chunkCoord, coord)
+                        ? visualizer.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
                         : null;
 
                     int existingUsers = 0;
@@ -164,8 +168,12 @@ public static class BuildingProductionCalculator
                             try { isCellOccupied = neighborCell.HasBuilding(); } catch { }
                         }
 
-                        if (isCellOccupied) continue; // Zabudowany heks nie dostarcza surowca
+                        if (isCellOccupied) continue;
                         existingUsers = BuildingProductionRegistry.GetUsageCount(neighborCell);
+                    }
+                    else if (neighborData.occupyingBuilding != null)
+                    {
+                        continue;
                     }
 
                     foreach (var yield in rule.resourceYields)
@@ -190,19 +198,22 @@ public static class BuildingProductionCalculator
         }
 
         // 4. Bonusy z sąsiednich wzgórz (np. Kamieniołom)
-        if (data.elevationBonus.enabled && chunkData != null)
+        if (data.elevationBonus.enabled && mapGen != null && mapGen.worldData != null)
         {
             int radius = data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius;
-            var hexesToScan = GetHexesInRadius(cell.localCoord, radius);
+            var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(cell.chunkCoord, cell.localCoord, radius, chunkRadius);
 
-            foreach (var coord in hexesToScan)
+            foreach (var nInfo in hexesToScan)
             {
-                if (coord == cell.localCoord) continue;
-                if (!chunkData.TryGetValue(coord, out var neighborData)) continue;
+                if (nInfo.chunkCoord == cell.chunkCoord && nInfo.localCoord == cell.localCoord) continue;
+                if (nInfo.chunkCoord != cell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+
+                if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                if (!targetChunkData.TryGetValue(nInfo.localCoord, out var neighborData)) continue;
 
                 int elevation = neighborData.elevation;
                 var neighborCell = !ReferenceEquals(visualizer, null)
-                    ? visualizer.GetHexCell(cell.chunkCoord, coord)
+                    ? visualizer.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
                     : null;
 
                 if (!ReferenceEquals(neighborCell, null))
@@ -324,9 +335,9 @@ public static class BuildingProductionCalculator
 
         if (mapGen == null) mapGen = HexMapGenerator.Instance;
         if (visualizer == null) visualizer = HexMapVisualizer.Instance;
-        if (mapGen == null || mapGen.worldData == null || !mapGen.worldData.ContainsKey(cell.chunkCoord)) return claimedHexes;
+        if (mapGen == null || mapGen.worldData == null) return claimedHexes;
 
-        var chunkData = mapGen.worldData[cell.chunkCoord];
+        int chunkRadius = mapGen != null ? mapGen.chunkRadius : 3;
         var rules = data.GetEffectiveBonusRules();
 
         if (rules != null && rules.Count > 0)
@@ -336,15 +347,18 @@ public static class BuildingProductionCalculator
                 if (rule.requiredFeature == HexFeatureType.None || rule.resourceYields == null) continue;
 
                 int radius = rule.searchRadius <= 0 ? 1 : rule.searchRadius;
-                var hexesToScan = GetHexesInRadius(cell.localCoord, radius);
+                var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(cell.chunkCoord, cell.localCoord, radius, chunkRadius);
 
-                foreach (var coord in hexesToScan)
+                foreach (var nInfo in hexesToScan)
                 {
-                    if (coord == cell.localCoord) continue;
-                    if (!chunkData.TryGetValue(coord, out var neighborData)) continue;
+                    if (nInfo.chunkCoord == cell.chunkCoord && nInfo.localCoord == cell.localCoord) continue;
+                    if (nInfo.chunkCoord != cell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+
+                    if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                    if (!targetChunkData.TryGetValue(nInfo.localCoord, out var neighborData)) continue;
                     if (neighborData.feature != rule.requiredFeature) continue;
 
-                    var neighborCell = visualizer != null ? visualizer.GetHexCell(cell.chunkCoord, coord) : null;
+                    var neighborCell = visualizer != null ? visualizer.GetHexCell(nInfo.chunkCoord, nInfo.localCoord) : null;
                     if (neighborCell == null) continue;
 
                     if (!neighborCell.HasBuilding())
@@ -358,14 +372,17 @@ public static class BuildingProductionCalculator
         if (data.elevationBonus.enabled)
         {
             int radius = data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius;
-            var hexesToScan = GetHexesInRadius(cell.localCoord, radius);
+            var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(cell.chunkCoord, cell.localCoord, radius, chunkRadius);
 
-            foreach (var coord in hexesToScan)
+            foreach (var nInfo in hexesToScan)
             {
-                if (coord == cell.localCoord) continue;
-                if (!chunkData.TryGetValue(coord, out var neighborData)) continue;
+                if (nInfo.chunkCoord == cell.chunkCoord && nInfo.localCoord == cell.localCoord) continue;
+                if (nInfo.chunkCoord != cell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
 
-                var neighborCell = visualizer != null ? visualizer.GetHexCell(cell.chunkCoord, coord) : null;
+                if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                if (!targetChunkData.TryGetValue(nInfo.localCoord, out var neighborData)) continue;
+
+                var neighborCell = visualizer != null ? visualizer.GetHexCell(nInfo.chunkCoord, nInfo.localCoord) : null;
                 if (neighborCell == null) continue;
 
                 if (neighborCell.Elevation > 0)
@@ -378,10 +395,6 @@ public static class BuildingProductionCalculator
         return claimedHexes;
     }
 
-    /// <summary>
-    /// Oblicza wplyw potencjalnego postawienia budynku na candidateCell na wszystkie istniejace budynki na mapie.
-    /// Zwraca slownik istniejacych budynkow, ktorych produkcja ulegnie zmianie, wraz ze szczegolami zmian.
-    /// </summary>
     public static Dictionary<BuildingEntity, List<NeighborBuildingImpact>> CalculateImpactsOnExistingBuildings(
         HexCell candidateCell,
         BuildingData candidateData,

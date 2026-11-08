@@ -56,9 +56,10 @@ public class BuildingEntity : MonoBehaviour
 
         if (myCell != null && HexMapVisualizer.Instance != null)
         {
-            foreach (var nCoord in HexGridMath.GetNeighbors(myCell.localCoord))
+            int chunkRadius = HexMapGenerator.Instance != null ? HexMapGenerator.Instance.chunkRadius : 3;
+            foreach (var nInfo in HexGridMath.GetNeighborsCrossChunk(myCell.chunkCoord, myCell.localCoord, chunkRadius))
             {
-                var neighborHex = HexMapVisualizer.Instance.GetHexCell(myCell.chunkCoord, nCoord);
+                var neighborHex = HexMapVisualizer.Instance.GetHexCell(nInfo.chunkCoord, nInfo.localCoord);
                 neighborHex?.GetComponentInChildren<BuildingEntity>()?.ForceRescan();
             }
         }
@@ -230,6 +231,16 @@ public class BuildingEntity : MonoBehaviour
         hasBeenUsed = true;
     }
 
+    /// <summary>
+    /// Mnożnik zwrotu kosztów budowy przy wyburzeniu (1.0 = 100% dopóki budynek nie zaczął wydobycia/strzału/następnego dnia, 0.5 = 50% po użyciu).
+    /// </summary>
+    public virtual float RefundMultiplier => hasBeenUsed ? 0.5f : 1.0f;
+
+    /// <summary>
+    /// Procentowa wartość zwracanych surowców przy wyburzeniu (100% lub 50%).
+    /// </summary>
+    public virtual int RefundPercentage => Mathf.RoundToInt(RefundMultiplier * 100f);
+
     public virtual bool CanDemolish() => true;
 
     public virtual void Demolish()
@@ -240,7 +251,7 @@ public class BuildingEntity : MonoBehaviour
 
         if (data != null && data.constructionCost != null && ResourceManager.Instance != null)
         {
-            var refundMultiplier = hasBeenUsed ? 0.5f : 1.0f;
+            var refundMultiplier = RefundMultiplier;
 
             foreach (var cost in data.constructionCost)
             {
