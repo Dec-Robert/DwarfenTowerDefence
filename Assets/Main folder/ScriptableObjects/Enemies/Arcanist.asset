@@ -19,6 +19,9 @@ MonoBehaviour:
   tiers:
   - prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
     sprite: {fileID: 0}
+    overrideSkills: 1
+    skillPrefabs:
+    - {fileID: 4320821944930566623, guid: d5de22dae1c187740bed9a0f82493c09, type: 3}
     baseHp: 30
     moveSpeed: 2.5
     armor: 0
@@ -26,6 +29,9 @@ MonoBehaviour:
     dodgeChance: 10
   - prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
     sprite: {fileID: 0}
+    overrideSkills: 1
+    skillPrefabs:
+    - {fileID: 4320821944930566623, guid: d5de22dae1c187740bed9a0f82493c09, type: 3}
     baseHp: 100
     moveSpeed: 2.6
     armor: 5
@@ -33,6 +39,9 @@ MonoBehaviour:
     dodgeChance: 15
   - prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
     sprite: {fileID: 0}
+    overrideSkills: 1
+    skillPrefabs:
+    - {fileID: 4320821944930566623, guid: d5de22dae1c187740bed9a0f82493c09, type: 3}
     baseHp: 200
     moveSpeed: 2.7
     armor: 10
@@ -40,6 +49,9 @@ MonoBehaviour:
     dodgeChance: 20
   - prefab: {fileID: 6987379787904698027, guid: 0beb6125401039748953a5a77d99d63b, type: 3}
     sprite: {fileID: 0}
+    overrideSkills: 1
+    skillPrefabs:
+    - {fileID: 4320821944930566623, guid: d5de22dae1c187740bed9a0f82493c09, type: 3}
     baseHp: 400
     moveSpeed: 2.8
     armor: 15

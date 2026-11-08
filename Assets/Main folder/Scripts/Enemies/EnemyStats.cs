@@ -194,9 +194,10 @@ public class EnemyStats : MonoBehaviour
             ResetColor();
         }
 
-        if (_data != null && _data.skillPrefabs != null)
+        var effectiveSkills = data != null ? data.GetSkillPrefabsForTier(tier) : (_data != null ? _data.skillPrefabs : null);
+        if (effectiveSkills != null)
         {
-            foreach (var prefab in _data.skillPrefabs)
+            foreach (var prefab in effectiveSkills)
             {
                 if (prefab == null) continue;
                 GameObject skillObj = Instantiate(prefab, transform);

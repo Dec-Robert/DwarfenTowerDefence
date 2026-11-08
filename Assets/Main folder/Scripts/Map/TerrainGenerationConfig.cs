@@ -18,10 +18,10 @@ public class RingFeatureRule
 
     [Header("Wagi Cech Terenu")]
     [Tooltip("Waga lasu w losowaniu")]
-    public int forestWeight = 30;
+    public int forestWeight = 24;
 
     [Tooltip("Waga żyznej gleby w losowaniu")]
-    public int fertileSoilWeight = 20;
+    public int fertileSoilWeight = 22;
 
     [Tooltip("Waga wzgórza w losowaniu")]
     public int hillWeight = 15;
@@ -30,17 +30,17 @@ public class RingFeatureRule
     public int mountainWeight = 0;
 
     [Tooltip("Waga zapadliska w losowaniu")]
-    public int sinkholeWeight = 5;
+    public int sinkholeWeight = 7;
 
     [Tooltip("Waga pustej trawy (brak cechy)")]
-    public int emptyWeight = 30;
+    public int emptyWeight = 32;
 
     [Header("Klastry Lasów")]
     [Tooltip("Czy w tym przedziale pierścieni generować klastry lasu")]
     public bool clusterForests = true;
 
     [Tooltip("Szansa procentowa na powstanie klastra lasu (0-100)")]
-    [Range(0, 100)] public int forestClusterChance = 35;
+    [Range(0, 100)] public int forestClusterChance = 30;
 
     [Tooltip("Minimalna liczba prób utworzenia klastra na chunk")]
     public int minForestClusters = 1;

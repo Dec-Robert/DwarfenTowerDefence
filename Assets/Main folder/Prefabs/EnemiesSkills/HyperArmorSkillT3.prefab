@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5703686286143360628}
   - component: {fileID: 4398520747780313943}
   m_Layer: 0
-  m_Name: PointDefenceSkill
+  m_Name: HyperArmorSkillT3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41,9 +41,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 4320821944930566623}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddb0eca6d6796004f8927965da39a0b8, type: 3}
+  m_Script: {fileID: 11500000, guid: c8aa7f91be680a747b7ad6276c138194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: 2
-  cooldown: 1
-  zapEffect: {fileID: 0}
+  charges: 18
+  shieldVFX: {fileID: 0}

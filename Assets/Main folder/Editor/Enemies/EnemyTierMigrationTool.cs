@@ -63,6 +63,7 @@ public static class EnemyTierMigrationTool
                 if (t.sprite == null && data.sprite != null) t.sprite = data.sprite;
                 if (t.baseHp <= 0f && data.baseHp > 0f) t.baseHp = data.baseHp;
                 if (t.moveSpeed <= 0f && data.moveSpeed > 0f) t.moveSpeed = data.moveSpeed;
+                if (t.skillPrefabs == null) t.skillPrefabs = new List<GameObject>();
             }
 
             data.baseHp = data.tiers[0].baseHp;

@@ -11,6 +11,13 @@ public class EnemyTierStats
     [Tooltip("Dedykowana ikonka dla tego tieru (jeśli puste, użyta zostanie domyślna ikonka wroga)")]
     public Sprite sprite;
 
+    [Header("Umiejętności Tieru")]
+    [Tooltip("Czy ten tier posiada własne (nadpisane) umiejętności")]
+    public bool overrideSkills = false;
+
+    [Tooltip("Dedykowane prefaby umiejętności dla tego tieru. Jeśli lista jest pusta i overrideSkills jest wyłączone, użyte zostaną umiejętności domyślne.")]
+    public List<GameObject> skillPrefabs = new List<GameObject>();
+
     [Header("Statystyki Bazowe Tieru")]
     public float baseHp = 100f;
     public float moveSpeed = 3f;
@@ -106,6 +113,23 @@ public class EnemyData : ScriptableObject
         return (t != null && t.sprite != null) ? t.sprite : sprite;
     }
 
+    public List<GameObject> GetSkillPrefabsForTier(int tierNumber)
+    {
+        var t = GetTier(tierNumber);
+        if (t != null)
+        {
+            if (t.overrideSkills)
+            {
+                return t.skillPrefabs != null ? t.skillPrefabs : new List<GameObject>();
+            }
+            if (t.skillPrefabs != null && t.skillPrefabs.Count > 0)
+            {
+                return t.skillPrefabs;
+            }
+        }
+        return skillPrefabs != null ? skillPrefabs : new List<GameObject>();
+    }
+
     public float CalculatePhysicalEHP(int tierNumber = 1)
     {
         var t = GetTier(tierNumber);
@@ -145,11 +169,17 @@ public class EnemyData : ScriptableObject
                     moveSpeed = moveSpeed > 0f ? moveSpeed : 3f,
                     armor = armor,
                     magicResist = magicResist,
-                    dodgeChance = dodgeChance
+                    dodgeChance = dodgeChance,
+                    overrideSkills = false,
+                    skillPrefabs = new List<GameObject>()
                 };
             }
             else
             {
+                if (tiers[i].skillPrefabs == null)
+                {
+                    tiers[i].skillPrefabs = new List<GameObject>();
+                }
                 if (i == 0 && baseHp > 0f && tiers[0].baseHp == 100f && baseHp != 100f)
                 {
                     tiers[0].baseHp = baseHp;

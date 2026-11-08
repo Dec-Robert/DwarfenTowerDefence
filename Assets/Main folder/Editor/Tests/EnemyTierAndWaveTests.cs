@@ -426,4 +426,143 @@ public class EnemyTierAndWaveTests
             prevThreat = threat;
         }
     }
+
+    [Test]
+    public void Test14_EnemyData_TierSpecificSkillsAndOverrides()
+    {
+        var enemy = ScriptableObject.CreateInstance<EnemyData>();
+        var fallbackSkill = new GameObject("FallbackSkill");
+        var customSkillT1 = new GameObject("CustomSkillT1");
+        var customSkillT2 = new GameObject("CustomSkillT2");
+
+        enemy.skillPrefabs = new List<GameObject> { fallbackSkill };
+        enemy.EnsureTiers();
+
+        // 1. Domyślnie brak override -> wszystkie tiery zwracają fallback
+        Assert.IsFalse(enemy.GetTier(1).overrideSkills);
+        Assert.AreEqual(1, enemy.GetSkillPrefabsForTier(1).Count);
+        Assert.AreEqual(fallbackSkill, enemy.GetSkillPrefabsForTier(1)[0]);
+        Assert.AreEqual(fallbackSkill, enemy.GetSkillPrefabsForTier(2)[0]);
+
+        // 2. Włączenie override dla T1 i T2
+        enemy.GetTier(1).overrideSkills = true;
+        enemy.GetTier(1).skillPrefabs = new List<GameObject> { customSkillT1 };
+
+        enemy.GetTier(2).overrideSkills = true;
+        enemy.GetTier(2).skillPrefabs = new List<GameObject> { customSkillT2 };
+
+        // 3. T3 i T4 nadal dziedziczą fallback
+        Assert.AreEqual(customSkillT1, enemy.GetSkillPrefabsForTier(1)[0]);
+        Assert.AreEqual(customSkillT2, enemy.GetSkillPrefabsForTier(2)[0]);
+        Assert.AreEqual(fallbackSkill, enemy.GetSkillPrefabsForTier(3)[0]);
+        Assert.AreEqual(fallbackSkill, enemy.GetSkillPrefabsForTier(4)[0]);
+
+        // 4. Wyciszenie umiejętności (override = true, ale pusta lista)
+        enemy.GetTier(3).overrideSkills = true;
+        enemy.GetTier(3).skillPrefabs = new List<GameObject>();
+        Assert.AreEqual(0, enemy.GetSkillPrefabsForTier(3).Count);
+
+        Object.DestroyImmediate(fallbackSkill);
+        Object.DestroyImmediate(customSkillT1);
+        Object.DestroyImmediate(customSkillT2);
+    }
+
+    [Test]
+    public void Test15_Abberracja_T1toT4_HyperArmorSkills_Assigned()
+    {
+        var enemy = AssetDatabase.LoadAssetAtPath<EnemyData>("Assets/Main folder/ScriptableObjects/Enemies/Abberracja.asset");
+        Assert.IsNotNull(enemy, "Abberracja.asset should exist");
+
+        // Weryfikacja wstecznej kompatybilności fallbacku
+        Assert.IsNotNull(enemy.skillPrefabs);
+        Assert.AreEqual(1, enemy.skillPrefabs.Count);
+        Assert.IsNotNull(enemy.skillPrefabs[0]);
+
+        // Weryfikacja tierów 1-4 z dedykowanymi umiejętnościami HyperArmorSkillT1..T4
+        string[] expectedSkillNames = { "HyperArmorSkillT1", "HyperArmorSkillT2", "HyperArmorSkillT3", "HyperArmorSkillT4" };
+
+        for (int tier = 1; tier <= 4; tier++)
+        {
+            var tierStats = enemy.GetTier(tier);
+            Assert.IsNotNull(tierStats, $"Tier {tier} should not be null");
+            Assert.IsTrue(tierStats.overrideSkills, $"Tier {tier} should have overrideSkills = true");
+
+            var skills = enemy.GetSkillPrefabsForTier(tier);
+            Assert.IsNotNull(skills, $"Tier {tier} skills should not be null");
+            Assert.AreEqual(1, skills.Count, $"Tier {tier} should have exactly 1 skill prefab");
+            Assert.IsNotNull(skills[0], $"Tier {tier} skill prefab should not be null");
+            Assert.AreEqual(expectedSkillNames[tier - 1], skills[0].name, $"Tier {tier} should have skill {expectedSkillNames[tier - 1]}");
+        }
+    }
+
+    [Test]
+    public void Test16_Blob_T1toT4_BlobRefacturingSkills_Assigned()
+    {
+        var enemy = AssetDatabase.LoadAssetAtPath<EnemyData>("Assets/Main folder/ScriptableObjects/Enemies/Blob.asset");
+        Assert.IsNotNull(enemy, "Blob.asset should exist");
+
+        // Fallback powinen wskazywać na T1
+        Assert.IsNotNull(enemy.skillPrefabs);
+        Assert.AreEqual(1, enemy.skillPrefabs.Count);
+        Assert.IsNotNull(enemy.skillPrefabs[0]);
+        Assert.AreEqual("BlobRefacturingSkillT1", enemy.skillPrefabs[0].name);
+
+        string[] expectedSkillNames = { "BlobRefacturingSkillT1", "BlobRefacturingSkillT2", "BlobRefacturingSkillT3", "BlobRefacturingSkillT4" };
+        int[] expectedChildren = { 2, 2, 3, 3 };
+        float[] expectedHpPercent = { 0.5f, 0.7f, 0.7f, 0.9f };
+
+        for (int tier = 1; tier <= 4; tier++)
+        {
+            var tierStats = enemy.GetTier(tier);
+            Assert.IsNotNull(tierStats, $"Tier {tier} should not be null");
+            Assert.IsTrue(tierStats.overrideSkills, $"Tier {tier} should have overrideSkills = true");
+
+            var skills = enemy.GetSkillPrefabsForTier(tier);
+            Assert.IsNotNull(skills, $"Tier {tier} skills should not be null");
+            Assert.AreEqual(1, skills.Count, $"Tier {tier} should have exactly 1 skill prefab");
+            Assert.IsNotNull(skills[0], $"Tier {tier} skill prefab should not be null");
+            Assert.AreEqual(expectedSkillNames[tier - 1], skills[0].name);
+
+            var splitSkill = skills[0].GetComponent<BlobSplitSkill>();
+            Assert.IsNotNull(splitSkill, $"Prefab {skills[0].name} must have BlobSplitSkill component");
+            Assert.AreEqual(expectedChildren[tier - 1], splitSkill.amountOfChildren);
+            Assert.AreEqual(expectedHpPercent[tier - 1], splitSkill.childHpPercent, 0.01f);
+            Assert.AreEqual(0.7f, splitSkill.scaleReduction, 0.01f);
+        }
+    }
+
+    [Test]
+    public void Test17_Arcanist_T1toT4_PointDefenceSkills_Assigned()
+    {
+        var enemy = AssetDatabase.LoadAssetAtPath<EnemyData>("Assets/Main folder/ScriptableObjects/Enemies/Arcanist.asset");
+        Assert.IsNotNull(enemy, "Arcanist.asset should exist");
+
+        // Fallback powinen wskazywać na T1
+        Assert.IsNotNull(enemy.skillPrefabs);
+        Assert.AreEqual(1, enemy.skillPrefabs.Count);
+        Assert.IsNotNull(enemy.skillPrefabs[0]);
+        Assert.AreEqual("PointDefenceSkillT1", enemy.skillPrefabs[0].name);
+
+        string[] expectedSkillNames = { "PointDefenceSkillT1", "PointDefenceSkillT2", "PointDefenceSkillT3", "PointDefenceSkillT4" };
+        float[] expectedRadius = { 4f, 5f, 6f, 6f };
+        float[] expectedCooldown = { 1f, 0.8f, 0.8f, 0.6f };
+
+        for (int tier = 1; tier <= 4; tier++)
+        {
+            var tierStats = enemy.GetTier(tier);
+            Assert.IsNotNull(tierStats, $"Tier {tier} should not be null");
+            Assert.IsTrue(tierStats.overrideSkills, $"Tier {tier} should have overrideSkills = true");
+
+            var skills = enemy.GetSkillPrefabsForTier(tier);
+            Assert.IsNotNull(skills, $"Tier {tier} skills should not be null");
+            Assert.AreEqual(1, skills.Count, $"Tier {tier} should have exactly 1 skill prefab");
+            Assert.IsNotNull(skills[0], $"Tier {tier} skill prefab should not be null");
+            Assert.AreEqual(expectedSkillNames[tier - 1], skills[0].name);
+
+            var pdSkill = skills[0].GetComponent<PointDefenseSkill>();
+            Assert.IsNotNull(pdSkill, $"Prefab {skills[0].name} must have PointDefenseSkill component");
+            Assert.AreEqual(expectedRadius[tier - 1], pdSkill.radius, 0.01f);
+            Assert.AreEqual(expectedCooldown[tier - 1], pdSkill.cooldown, 0.01f);
+        }
+    }
 }

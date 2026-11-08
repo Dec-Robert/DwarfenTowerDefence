@@ -669,7 +669,11 @@ public class WaveManagerEditorWindow : EditorWindow
                 float unitHp = baseHp * (entry.forceElite ? entry.enemy.eliteHpMultiplier : 1f);
                 float pEhp = tStats != null ? tStats.CalculatePhysicalEHP() * (entry.forceElite ? entry.enemy.eliteHpMultiplier : 1f) : unitHp;
                 float mEhp = tStats != null ? tStats.CalculateMagicEHP() * (entry.forceElite ? entry.enemy.eliteHpMultiplier : 1f) : unitHp;
-                EditorGUILayout.LabelField($"HP: {unitHp:0.#} (Σ {unitHp * entry.count:0.#}) | EHP: ⚔{FormatEhp(pEhp)} 🔮{FormatEhp(mEhp)}", EditorStyles.miniLabel);
+                var tierSkills = entry.enemy.GetSkillPrefabsForTier(entry.Tier);
+                string skillsText = (tierSkills != null && tierSkills.Count > 0)
+                    ? $" | ✨ {string.Join(", ", tierSkills.Where(s => s != null).Select(s => s.name))}"
+                    : string.Empty;
+                EditorGUILayout.LabelField($"HP: {unitHp:0.#} (Σ {unitHp * entry.count:0.#}) | EHP: ⚔{FormatEhp(pEhp)} 🔮{FormatEhp(mEhp)}{skillsText}", EditorStyles.miniLabel);
             }
 
             GUILayout.FlexibleSpace();
@@ -1180,6 +1184,91 @@ public class WaveManagerEditorWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
+        EditorGUILayout.Space(6);
+
+        // Row 11: Tier Skills (Konfiguracja Umiejętności Per-Tier)
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(new GUIContent("Umiejętności Tieru", "Specyficzne umiejętności dla danego Tieru wroga. Każdy Tier może posiadać inny skill (np. T1 HyperArmorSkillT1, T2 HyperArmorSkillT2 itd.) lub dziedziczyć umiejętności bazowe."), EditorStyles.boldLabel, GUILayout.Width(labelColWidth));
+        for (int t = 0; t < 4; t++)
+        {
+            var tierStats = enemy.tiers[t];
+            if (tierStats.skillPrefabs == null) tierStats.skillPrefabs = new List<GameObject>();
+
+            bool isOverridden = tierStats.overrideSkills || tierStats.skillPrefabs.Count > 0;
+
+            EditorGUILayout.BeginVertical("box", GUILayout.Width(tierColWidth));
+
+            EditorGUILayout.BeginHorizontal();
+            bool newOverride = EditorGUILayout.ToggleLeft(isOverridden ? "Dedykowane" : "Domyślne", isOverridden, EditorStyles.miniBoldLabel, GUILayout.Width(92));
+            if (newOverride != isOverridden)
+            {
+                tierStats.overrideSkills = newOverride;
+                if (!newOverride)
+                {
+                    tierStats.skillPrefabs.Clear();
+                }
+                else if (tierStats.skillPrefabs.Count == 0 && enemy.skillPrefabs != null && enemy.skillPrefabs.Count > 0)
+                {
+                    tierStats.skillPrefabs.AddRange(enemy.skillPrefabs);
+                }
+            }
+
+            if (isOverridden)
+            {
+                GUI.backgroundColor = new Color(0.4f, 0.85f, 0.4f);
+                if (GUILayout.Button("+", EditorStyles.miniButton, GUILayout.Width(22), GUILayout.Height(16)))
+                {
+                    tierStats.skillPrefabs.Add(null);
+                }
+                GUI.backgroundColor = Color.white;
+            }
+            EditorGUILayout.EndHorizontal();
+
+            if (!isOverridden)
+            {
+                if (enemy.skillPrefabs != null && enemy.skillPrefabs.Count > 0)
+                {
+                    foreach (var baseSkill in enemy.skillPrefabs)
+                    {
+                        string sName = baseSkill != null ? baseSkill.name : "(brak prefabu)";
+                        EditorGUILayout.LabelField($"↳ {sName}", EditorStyles.miniLabel, GUILayout.Width(tierColWidth - 10));
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("↳ (Brak skilli)", EditorStyles.miniLabel, GUILayout.Width(tierColWidth - 10));
+                }
+            }
+            else
+            {
+                int removeIdx = -1;
+                for (int s = 0; s < tierStats.skillPrefabs.Count; s++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    tierStats.skillPrefabs[s] = (GameObject)EditorGUILayout.ObjectField(
+                        tierStats.skillPrefabs[s], typeof(GameObject), false, GUILayout.Width(tierColWidth - 30));
+                    GUI.backgroundColor = new Color(0.9f, 0.35f, 0.35f);
+                    if (GUILayout.Button("X", EditorStyles.miniButton, GUILayout.Width(20), GUILayout.Height(16)))
+                    {
+                        removeIdx = s;
+                    }
+                    GUI.backgroundColor = Color.white;
+                    EditorGUILayout.EndHorizontal();
+                }
+                if (removeIdx >= 0)
+                {
+                    tierStats.skillPrefabs.RemoveAt(removeIdx);
+                }
+                if (tierStats.skillPrefabs.Count == 0)
+                {
+                    EditorGUILayout.LabelField("(Brak umiejętności - wyciszone)", EditorStyles.miniLabel, GUILayout.Width(tierColWidth - 10));
+                }
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+        EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.EndVertical();
     }
 
@@ -1228,6 +1317,8 @@ public class WaveManagerEditorWindow : EditorWindow
             enemy.tiers[i].armor = t1.armor;
             enemy.tiers[i].magicResist = t1.magicResist;
             enemy.tiers[i].dodgeChance = t1.dodgeChance;
+            enemy.tiers[i].overrideSkills = t1.overrideSkills;
+            enemy.tiers[i].skillPrefabs = t1.skillPrefabs != null ? new List<GameObject>(t1.skillPrefabs) : new List<GameObject>();
             if (enemy.tiers[i].prefab == null) enemy.tiers[i].prefab = t1.prefab;
             if (enemy.tiers[i].sprite == null) enemy.tiers[i].sprite = t1.sprite;
         }
@@ -1261,7 +1352,8 @@ public class WaveManagerEditorWindow : EditorWindow
     private void DrawSkillsSection(EnemyData enemy)
     {
         EditorGUILayout.BeginVertical("box");
-        EditorGUILayout.LabelField("✨ Prefaby Umiejętności (EnemySkill)", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("✨ Prefaby Umiejętności Domyślne / Fallback (EnemySkill)", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("Te umiejętności są przypisywane wrogom domyślnie. Poszczególne tiery (T1–T4) mogą dziedziczyć te skille lub posiadać własne dedykowane prefaby (np. HyperArmorSkillT1..T4) konfigurowane w Wierszu 11 macierzy poniżej.", MessageType.None);
 
         if (enemy.skillPrefabs == null) enemy.skillPrefabs = new List<GameObject>();
 
