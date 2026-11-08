@@ -16,9 +16,9 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2990
   stringTagMap:
-    RenderType: Opaque
+    RenderType: Transparent
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -28,8 +28,11 @@ Material:
     m_Floats:
     - _BlockedBrightness: 0.8
     - _BlockedEmission: 0.6
+    - _Cull: 0
     - _DiscoverableBrightness: 0.25
     - _DiscoverableEmission: 0.4
+    - _DstBlend: 0
+    - _MistAlpha: 0
     - _MistAnimationSpeed: 1.2
     - _MistDetailScale: 3
     - _MistDetailStrength: 0.3
@@ -37,11 +40,14 @@ Material:
     - _MistMacroScale: 0.6
     - _MistQuantizeSteps: 8
     - _MistRetroStrength: 1
+    - _MistSideDrop: 2.5
     - _MistTexelDensity: 12
     - _SparkBlinkSpeed: 1
     - _SparkDensity: 0.18
     - _SparkIntensity: 0.8
     - _SparkSize: 0.05
+    - _SrcBlend: 1
+    - _ZWrite: 1
     m_Colors:
     - _BlockedColorDark: {r: 0.09999997, g: 0.050999977, b: 0.23499995, a: 1}
     - _BlockedColorLight: {r: 0.27199998, g: 0.07799999, b: 0.34899998, a: 1}

@@ -47,6 +47,25 @@ public class HexMapVisualizer : MonoBehaviour
     [Tooltip("Wysokosc pionowa (Y) przypadajaca na kazdy poziom wzniesienia (gory, wzgorza) i zapadliny.")]
     public float elevationHeightStep = 0.25f;
 
+    [Header("Wspólna Wysokość Terenu i Mgły")]
+    [SerializeField]
+    private float maxTerrainSurfaceY = 0f;
+
+    /// <summary>
+    /// Maksymalna wysokość powierzchni terenu w przestrzeni świata (Y).
+    /// Wyliczana podczas generacji mapy jako najwyższy punkt powierzchni heksów.
+    /// Jeśli mapa nie została jeszcze wygenerowana, zwraca wysokość dla maksymalnego poziomu wzniesienia (5).
+    /// </summary>
+    public float MaxTerrainSurfaceY
+    {
+        get
+        {
+            if (maxTerrainSurfaceY > 0f) return maxTerrainSurfaceY;
+            return 5f * elevationHeightStep;
+        }
+        private set => maxTerrainSurfaceY = value;
+    }
+
     [Header("Boczne Sciany Heksow (Geometria Proceduralna)")]
     [Tooltip("Generuje proceduralny mesh heksa: submesh 0 = gora, submesh 1 = boczne sciany dopasowane do sasiadow. Wylaczenie przywraca oryginalny mesh prefabu.")]
     public bool generateSideWalls = true;
@@ -112,6 +131,7 @@ public class HexMapVisualizer : MonoBehaviour
         }
 
         // Globalne mapy (axial -> Y oraz axial -> isRoad) - potrzebne na granicach chunkow.
+        MaxTerrainSurfaceY = ComputeMaxTerrainHeight(worldData);
         globalHeightsMap = generateSideWalls ? BuildGlobalHeightMap(worldData, allValidChunks, chunkRadius) : null;
         globalRoadMap = BuildGlobalRoadMap(worldData, allValidChunks, chunkRadius);
 
@@ -159,6 +179,14 @@ public class HexMapVisualizer : MonoBehaviour
 
                     // Modyfikacja wysokości dla specjalnych terenów
                     float heightOffset = GetTerrainHeight(cellData);
+        if (heightOffset > maxTerrainSurfaceY)
+        {
+            maxTerrainSurfaceY = heightOffset;
+            if (FogOfWarManager.Instance != null)
+            {
+                FogOfWarManager.Instance.RefreshMistHeight();
+            }
+        }
 
                     Vector3 finalPos = basePos + Vector3.up * heightOffset;
 
@@ -343,6 +371,7 @@ public class HexMapVisualizer : MonoBehaviour
 
     public void ClearMap()
     {
+        maxTerrainSurfaceY = 0f;
         visualHexGrid.Clear();
         chunkGameObjects.Clear();
         globalRoadMap?.Clear();
@@ -401,6 +430,58 @@ public class HexMapVisualizer : MonoBehaviour
             return visualHexGrid[chunkCoord][localCoord];
         }
         return null;
+    }
+
+    /// <summary>
+    /// Zwraca rzeczywista wysokosc powierzchni Y w przestrzeni swiata dla heksa w danym chunku.
+    /// Uzywane przez GroundMist do dopasowania wysokosci mgly do kazdego heksa z osobna.
+    /// </summary>
+    public float GetHexTerrainSurfaceY(Vector2Int chunkCoord, Vector2Int localCoord)
+    {
+        HexCell cell = GetHexCell(chunkCoord, localCoord);
+        if (cell != null)
+        {
+            return cell.transform.position.y;
+        }
+        return 0f;
+    }
+
+    /// <summary>
+    /// Zwraca rzeczywista wysokosc powierzchni Y dla heksa odpowiadajacego podanej pozycji lokalnej w chunku.
+    /// </summary>
+    public float GetHexTerrainSurfaceYByLocalPos(Vector2Int chunkCoord, Vector3 localPos)
+    {
+        float hexStep = cachedHexRadius > 0f ? cachedHexRadius : 1f;
+        Vector2Int axial = HexGridMath.WorldToAxial(localPos.x, localPos.z, hexStep, 0f);
+        HexCell cell = GetHexCell(chunkCoord, axial);
+        if (cell != null)
+        {
+            return cell.transform.position.y;
+        }
+
+        if (visualHexGrid.TryGetValue(chunkCoord, out var cells))
+        {
+            float bestDistSq = float.MaxValue;
+            float bestY = 0f;
+            foreach (var kvp in cells)
+            {
+                if (kvp.Value == null) continue;
+                Vector3 p = kvp.Value.transform.localPosition;
+                float dx = p.x - localPos.x;
+                float dz = p.z - localPos.z;
+                float distSq = dx * dx + dz * dz;
+                if (distSq < bestDistSq)
+                {
+                    bestDistSq = distSq;
+                    bestY = kvp.Value.transform.position.y;
+                }
+            }
+            if (bestDistSq < 4.0f)
+            {
+                return bestY;
+            }
+        }
+        return 0f;
     }
     
     public void RedrawSingleHex(Vector2Int chunkCoord, Vector2Int localCoord, HexCellData cellData)
@@ -478,6 +559,32 @@ public class HexMapVisualizer : MonoBehaviour
         if (cellData.feature == HexFeatureType.Mountain) return 4f * elevationHeightStep;
         return 0f;
     }
+
+    /// <summary>
+    /// Oblicza maksymalną wysokość powierzchni terenu na podstawie danych komórek.
+    /// Jeśli dane są puste lub brak komórek o wysokości > 0, zwraca 5 * elevationHeightStep (poziom 5).
+    /// </summary>
+    public float ComputeMaxTerrainHeight(IReadOnlyDictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> data)
+    {
+        float maxH = 0f;
+        if (data != null)
+        {
+            foreach (var chunk in data.Values)
+            {
+                if (chunk == null) continue;
+                foreach (var cell in chunk.Values)
+                {
+                    if (cell != null)
+                    {
+                        float h = GetTerrainHeight(cell);
+                        if (h > maxH) maxH = h;
+                    }
+                }
+            }
+        }
+        return maxH > 0f ? maxH : (5f * elevationHeightStep);
+    }
+
 
     private Dictionary<Vector2Int, float> BuildGlobalHeightMap(
         Dictionary<Vector2Int, Dictionary<Vector2Int, HexCellData>> worldData,

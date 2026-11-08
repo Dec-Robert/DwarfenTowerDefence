@@ -38,6 +38,16 @@ Shader "Custom/MistHLSL"
         _BlockedBrightness ("Brightness (albedo)", Range(0.0, 3.0)) = 1.0
         _BlockedEmission   ("Emission",            Range(0.0, 3.0)) = 1.0
 
+        [Header(Mist Geometry and Transparency)]
+        _MistSideDrop          ("Side Drop (zejscie bokow w dol)",           Range(0.0, 5.0))  = 0.0
+        _MistAlpha             ("Mist Alpha (przezroczystosc)",              Range(0.0, 1.0))  = 1.0
+
+        [Header(Surface and Blending)]
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1.0
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0.0
+        [Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", Float) = 1.0
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2.0
+
         [Header(Chaos Sparks)]
         [HDR] _SparkColor ("Color", Color) = (1.0, 0.537, 0.931, 1)
         _SparkDensity    ("Density (odsetek komorek z iskra)", Range(0.0, 1.0))  = 0.18
@@ -51,9 +61,9 @@ Shader "Custom/MistHLSL"
         Tags
         {
             "RenderPipeline" = "UniversalPipeline"
-            "RenderType" = "Opaque"
+            "RenderType" = "Transparent"
             "UniversalMaterialType" = "Lit"
-            "Queue" = "Geometry"
+            "Queue" = "Transparent"
             "IgnoreProjector" = "True"
         }
         LOD 300
@@ -74,6 +84,8 @@ Shader "Custom/MistHLSL"
             float  _MistRetroStrength;
             float  _MistAnimationSpeed;
             float  _MistLegacyLook;
+            float  _MistSideDrop;
+            float  _MistAlpha;
 
             float4 _DiscoverableColorDark;
             float4 _DiscoverableColorLight;
@@ -593,10 +605,10 @@ Shader "Custom/MistHLSL"
             Name "Universal Forward"
             Tags { "LightMode" = "UniversalForward" }
 
-            Blend One Zero
-            ZWrite On
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
             ZTest LEqual
-            Cull Off
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma target 3.0
@@ -650,6 +662,7 @@ Shader "Custom/MistHLSL"
                 float3 normalWS                 : TEXCOORD1;
                 half4  fogFactorAndVertexLight  : TEXCOORD2;
                 DECLARE_LIGHTMAP_OR_SH(staticLightmapUV, vertexSH, 3);
+                float  normalOSY                : TEXCOORD4;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -661,12 +674,40 @@ Shader "Custom/MistHLSL"
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-                VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
-                VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
+                // Spod heksa (normalOS.y < -0.5) nigdy nie jest renderowany
+                if (input.normalOS.y < -0.5)
+                {
+                    output.positionCS = float4(0.0, 0.0, 0.0, 0.0);
+                    return output;
+                }
+
+                float3 posOS = input.positionOS.xyz;
+                if (input.normalOS.y < 0.5)
+                {
+                    if (posOS.y < -0.05)
+                    {
+                        posOS.y -= _MistSideDrop;
+                    }
+                    else
+                    {
+                        posOS.y -= 0.002;
+                    }
+                }
+                VertexPositionInputs vertexInput = GetVertexPositionInputs(posOS);
+
+                float3 normOS = input.normalOS;
+                if (normOS.y < 0.5)
+                {
+                    // Lagodne pochylenie normalnej ku gorze, aby boczne sciany mgly
+                    // nie byly oswietlane jak bialy mur, lecz mialy ten sam odcien co gora mgly
+                    normOS = normalize(float3(normOS.x * 0.25, 0.75, normOS.z * 0.25));
+                }
+                VertexNormalInputs normalInput = GetVertexNormalInputs(normOS, input.tangentOS);
 
                 output.positionCS = vertexInput.positionCS;
                 output.positionWS = vertexInput.positionWS;
                 output.normalWS = normalInput.normalWS;
+                output.normalOSY = input.normalOS.y;
 
                 half fogFactor = 0;
                 #if !defined(_FOG_FRAGMENT)
@@ -685,6 +726,8 @@ Shader "Custom/MistHLSL"
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+
+
 
                 float2 worldXZ = input.positionWS.xz;
 
@@ -760,13 +803,19 @@ Shader "Custom/MistHLSL"
                 surfaceData.normalTS            = half3(0.0, 0.0, 1.0);
                 surfaceData.emission            = emissionColor;
                 surfaceData.occlusion           = 1.0;
-                surfaceData.alpha               = 1.0;
+                float finalAlpha = _MistAlpha;
+                if (_MistAlpha < 0.999)
+                {
+                    // Lekkie rozejscie sie wzoru mgly nad eksplorowanym terenem
+                    finalAlpha = saturate(_MistAlpha * lerp(0.85, 1.15, mist));
+                }
+                surfaceData.alpha               = finalAlpha;
                 surfaceData.clearCoatMask       = 0.0;
                 surfaceData.clearCoatSmoothness = 1.0;
 
                 half4 color = UniversalFragmentPBR(inputData, surfaceData);
                 color.rgb = MixFog(color.rgb, inputData.fogCoord);
-                color.a = OutputAlpha(color.a, false);
+                color.a = surfaceData.alpha;
                 return color;
             }
             ENDHLSL
@@ -782,7 +831,7 @@ Shader "Custom/MistHLSL"
 
             ZWrite On
             ColorMask R
-            Cull Off
+            Cull Back
 
             HLSLPROGRAM
             #pragma target 3.0
@@ -793,6 +842,7 @@ Shader "Custom/MistHLSL"
             struct Attributes
             {
                 float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -810,7 +860,26 @@ Shader "Custom/MistHLSL"
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                if (input.normalOS.y < -0.5)
+                {
+                    output.positionCS = float4(0.0, 0.0, 0.0, 0.0);
+                    return output;
+                }
+
+                float3 posOS = input.positionOS.xyz;
+                if (input.normalOS.y < 0.5)
+                {
+                    if (posOS.y < -0.05)
+                    {
+                        posOS.y -= _MistSideDrop;
+                    }
+                    else
+                    {
+                        posOS.y -= 0.002;
+                    }
+                }
+
+                output.positionCS = TransformObjectToHClip(posOS);
                 return output;
             }
 
@@ -831,7 +900,7 @@ Shader "Custom/MistHLSL"
             Tags { "LightMode" = "DepthNormals" }
 
             ZWrite On
-            Cull Off
+            Cull Back
 
             HLSLPROGRAM
             #pragma target 3.0
@@ -862,7 +931,27 @@ Shader "Custom/MistHLSL"
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                if (input.normalOS.y < -0.5)
+                {
+                    output.positionCS = float4(0.0, 0.0, 0.0, 0.0);
+                    return output;
+                }
+
+                float3 posOS = input.positionOS.xyz;
+                if (input.normalOS.y < 0.5)
+                {
+                    if (posOS.y < -0.05)
+                    {
+                        posOS.y -= _MistSideDrop;
+                    }
+                    else
+                    {
+                        posOS.y -= 0.002;
+                    }
+                }
+
+                VertexPositionInputs vertexInput = GetVertexPositionInputs(posOS);
+                output.positionCS = vertexInput.positionCS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 return output;
             }

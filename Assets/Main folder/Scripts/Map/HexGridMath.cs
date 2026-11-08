@@ -32,6 +32,43 @@ public static class HexGridMath
         return new Vector3(x, 0, z);
     }
 
+    // Konwersja pozycji swiata (x, z) na koordynaty Axial (q, r) w siatce heksagonalnej Pointy-Topped
+    public static Vector2Int WorldToAxial(float x, float z, float size, float padding)
+    {
+        float totalSize = size + padding;
+        if (totalSize <= 0.0001f) totalSize = 1f;
+
+        float qFrac = (Mathf.Sqrt(3f) / 3f * x - 1f / 3f * z) / totalSize;
+        float rFrac = (2f / 3f * z) / totalSize;
+
+        float cubeX = qFrac;
+        float cubeZ = rFrac;
+        float cubeY = -cubeX - cubeZ;
+
+        int rx = Mathf.RoundToInt(cubeX);
+        int ry = Mathf.RoundToInt(cubeY);
+        int rz = Mathf.RoundToInt(cubeZ);
+
+        float xDiff = Mathf.Abs(rx - cubeX);
+        float yDiff = Mathf.Abs(ry - cubeY);
+        float zDiff = Mathf.Abs(rz - cubeZ);
+
+        if (xDiff > yDiff && xDiff > zDiff)
+        {
+            rx = -ry - rz;
+        }
+        else if (yDiff > zDiff)
+        {
+            ry = -rx - rz;
+        }
+        else
+        {
+            rz = -rx - ry;
+        }
+
+        return new Vector2Int(rx, rz);
+    }
+
     // Oblicza srodek chunku w swiecie
     public static Vector3 GetChunkCenterWorld(Vector2Int chunkCoord, int chunkRadius, float size, float padding)
     {

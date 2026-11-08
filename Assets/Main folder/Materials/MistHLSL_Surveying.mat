@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MistHLSL_Surveying
+  m_Shader: {fileID: 4800000, guid: a1b2c3d4e5f60718293a4b5c6d7e8f90, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3000
+  stringTagMap:
+    RenderType: Transparent
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _BlockedBrightness: 0.8
+    - _BlockedEmission: 0.6
+    - _Cull: 2
+    - _DiscoverableBrightness: 0.25
+    - _DiscoverableEmission: 0.4
+    - _DstBlend: 10
+    - _MistAlpha: 0.5
+    - _MistAnimationSpeed: 1.2
+    - _MistDetailScale: 3
+    - _MistDetailStrength: 0.3
+    - _MistLegacyLook: 0
+    - _MistMacroScale: 0.6
+    - _MistQuantizeSteps: 8
+    - _MistRetroStrength: 1
+    - _MistSideDrop: 2.5
+    - _MistTexelDensity: 12
+    - _SparkBlinkSpeed: 1
+    - _SparkDensity: 0.18
+    - _SparkIntensity: 0.8
+    - _SparkSize: 0.05
+    - _SrcBlend: 5
+    - _ZWrite: 0
+    m_Colors:
+    - _BlockedColorDark: {r: 0.09999997, g: 0.050999977, b: 0.23499995, a: 1}
+    - _BlockedColorLight: {r: 0.27199998, g: 0.07799999, b: 0.34899998, a: 1}
+    - _DiscoverableColorDark: {r: 0.29299998, g: 0.039, b: 0.46099997, a: 1}
+    - _DiscoverableColorLight: {r: 0.5169999, g: 0.18999997, b: 0.735, a: 1}
+    - _SparkColor: {r: 1, g: 0.537, b: 0.931, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
