@@ -23,6 +23,15 @@ public class FogOfWarManager : MonoBehaviour
 
         EnsureMaterials();
 
+        if (surveyTransitionDuration <= 0f) surveyTransitionDuration = 1.2f;
+        if (surveyPulseMultiplier <= 1f) surveyPulseMultiplier = 2.2f;
+        if (outskirtsTransitionDuration <= 0f) outskirtsTransitionDuration = 1.5f;
+        if (outskirtsSinkDistance <= 0f) outskirtsSinkDistance = 0.8f;
+        if (transitionEaseCurve == null || transitionEaseCurve.length == 0)
+        {
+            transitionEaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        }
+
         if (mistHeightOffset <= 0f && fogHeightOffset > 0f)
         {
             mistHeightOffset = fogHeightOffset;
@@ -36,6 +45,14 @@ public class FogOfWarManager : MonoBehaviour
     private void OnValidate()
     {
         EnsureMaterials();
+        if (surveyTransitionDuration <= 0f) surveyTransitionDuration = 1.2f;
+        if (surveyPulseMultiplier <= 1f) surveyPulseMultiplier = 2.2f;
+        if (outskirtsTransitionDuration <= 0f) outskirtsTransitionDuration = 1.5f;
+        if (outskirtsSinkDistance <= 0f) outskirtsSinkDistance = 0.8f;
+        if (transitionEaseCurve == null || transitionEaseCurve.length == 0)
+        {
+            transitionEaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        }
     }
 
     private void EnsureMaterials()
@@ -107,9 +124,29 @@ public class FogOfWarManager : MonoBehaviour
     [Tooltip("Czas plynnego pojawiania sie / zanikania Ground Mist w sekundach (0 = natychmiast).")]
     public float groundMistFadeDuration = 1.2f;
 
+    [Header("Animacje Przejść Mgły (Transitions)")]
+    [Tooltip("Czas trwania animacji rozpoczęcia badania chunka (Borderlands -> Surveying) w sekundach.")]
+    public float surveyTransitionDuration = 1.2f;
+    [Tooltip("Mnożnik rozbłysku emisji (rozjaśnienia) mgły w szczytowym momencie animacji badania.")]
+    public float surveyPulseMultiplier = 2.2f;
+    [Tooltip("Czas trwania animacji opadania mgły po zbadaniu chunka (Surveying -> Outskirts) w sekundach.")]
+    public float outskirtsTransitionDuration = 1.5f;
+    [Tooltip("Dystans w dół (w jednostkach świata), o jaki opada tafla mgły badawczej podczas przejścia w Outskirts.")]
+    public float outskirtsSinkDistance = 0.8f;
+    [Tooltip("Krzywa przejścia interpolacji animacji mgły.")]
+    public AnimationCurve transitionEaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
     private static readonly int PropGroundMistFade = Shader.PropertyToID("_GroundMistFade");
+    private static readonly int PropMistAlpha = Shader.PropertyToID("_MistAlpha");
+    private static readonly int PropDiscoverableEmission = Shader.PropertyToID("_DiscoverableEmission");
+    private static readonly WaitForFixedUpdate WaitForFixed = new WaitForFixedUpdate();
+
     private MaterialPropertyBlock groundMistPropertyBlock;
+    private MaterialPropertyBlock highMistPropertyBlock;
     private readonly Dictionary<Vector2Int, Coroutine> activeFadeCoroutines = new Dictionary<Vector2Int, Coroutine>();
+    private readonly Dictionary<Vector2Int, Coroutine> activeTransitionCoroutines = new Dictionary<Vector2Int, Coroutine>();
+    private readonly Dictionary<Vector2Int, GameObject> transitionalFogChunks = new Dictionary<Vector2Int, GameObject>();
+    private readonly Dictionary<Vector2Int, ChunkState> chunkFogStates = new Dictionary<Vector2Int, ChunkState>();
 
     [Header("Wspólna Wysokość Mgły (Mist World Height)")]
     [Tooltip("Czy automatycznie obliczać wysokość mgły na podstawie maksymalnej wysokości powierzchni terenu.")]
@@ -266,6 +303,7 @@ public class FogOfWarManager : MonoBehaviour
             expansionManager.OnMissionCompleted -= HandleMissionChanged;
         }
 
+        StopAllTransitionCoroutines();
         DestroyMaskTexture();
     }
 
@@ -489,16 +527,36 @@ public class FogOfWarManager : MonoBehaviour
 
     public void UpdateChunkFogState(Vector2Int coord, ChunkState state)
     {
+        UpdateChunkFogState(coord, state, true);
+    }
+
+    public void UpdateChunkFogState(Vector2Int coord, ChunkState state, bool animate)
+    {
+        bool hadPrev = chunkFogStates.TryGetValue(coord, out ChunkState prevState);
+        if (hadPrev && prevState == state)
+        {
+            // Stan tego chunka w ogóle się nie zmienił - ignorujemy powtórne wywołanie zdarzenia
+            // (np. natychmiastowe HandleMissionChanged z OnMissionStarted/OnMissionCompleted),
+            // aby nie przerywać trwającej właśnie animacji przejścia!
+            return;
+        }
+
+        chunkFogStates[coord] = state;
+
+        bool canAnimate = animate && Application.isPlaying && gameObject.activeInHierarchy && hadPrev;
+
         Material discMat = borderlandsFogMaterial != null ? borderlandsFogMaterial : defaultFogMaterial;
 
         switch (state)
         {
             case ChunkState.Wilderness:
+                StopTransitionCoroutine(coord);
                 SetFogFull(coord, defaultFogMaterial);
                 SetTerrainVisible(coord, false);
                 break;
 
             case ChunkState.Borderlands:
+                StopTransitionCoroutine(coord);
                 SetFogFull(coord, discMat);
                 SetTerrainVisible(coord, false);
                 break;
@@ -508,19 +566,38 @@ public class FogOfWarManager : MonoBehaviour
                 Material surveyMat = (surveyingFogMaterial != null && !surveyingFogMaterial.name.Contains("FogOfWar3"))
                     ? surveyingFogMaterial
                     : discMat;
-                SetFogFull(coord, surveyMat, surveyingDepthMaterial);
-                SetTerrainVisible(coord, true);
+
+                if (canAnimate && (prevState == ChunkState.Borderlands || prevState == ChunkState.Wilderness) && surveyTransitionDuration > 0f)
+                {
+                    StartSurveyingTransition(coord, surveyMat, surveyingDepthMaterial);
+                }
+                else
+                {
+                    StopTransitionCoroutine(coord);
+                    SetFogFull(coord, surveyMat, surveyingDepthMaterial);
+                    SetTerrainVisible(coord, true);
+                }
                 break;
 
             case ChunkState.Outskirts:
                 EnsureMaterials();
                 Material outskirtMat = outskirtsFogMaterial != null ? outskirtsFogMaterial : defaultFogMaterial;
-                SetFogLow(coord, outskirtMat);
-                SetTerrainVisible(coord, true);
-                OnChunkRevealed?.Invoke(coord);
+
+                if (canAnimate && (prevState == ChunkState.Surveying || prevState == ChunkState.Borderlands || prevState == ChunkState.Wilderness) && outskirtsTransitionDuration > 0f)
+                {
+                    StartOutskirtsTransition(coord, outskirtMat);
+                }
+                else
+                {
+                    StopTransitionCoroutine(coord);
+                    SetFogLow(coord, outskirtMat, true);
+                    SetTerrainVisible(coord, true);
+                    OnChunkRevealed?.Invoke(coord);
+                }
                 break;
 
             case ChunkState.Settled:
+                StopTransitionCoroutine(coord);
                 RemoveFogWithFade(coord, groundMistFadeDuration);
                 SetTerrainVisible(coord, true);
                 OnChunkRevealed?.Invoke(coord);
@@ -534,7 +611,7 @@ public class FogOfWarManager : MonoBehaviour
 
         foreach (var kvp in expansionManager.activeChunks)
         {
-            UpdateChunkFogState(kvp.Key, kvp.Value.EffectiveState);
+            UpdateChunkFogState(kvp.Key, kvp.Value.EffectiveState, false);
         }
 
         UpdateGlobalFogMask();
@@ -578,19 +655,9 @@ public class FogOfWarManager : MonoBehaviour
         ApplyMaterial(fog, mat, depthPrepassMat);
     }
 
-    private void SetFogLow(Vector2Int coord, Material mat)
+    private void DisableAndDestroyColliders(GameObject fog)
     {
-        StopFadeCoroutine(coord);
-
-        if (!activeFogChunks.ContainsKey(coord))
-        {
-            SpawnFogObject(coord);
-        }
-
-        var fog = activeFogChunks[coord];
         if (fog == null) return;
-
-        // Usuwamy collidery z mgly na Outskirts, aby gracz mogl swobodnie klikac teren, wybierac heksy i budowac
         Collider[] colliders = fog.GetComponentsInChildren<Collider>();
         for (int i = 0; i < colliders.Length; i++)
         {
@@ -607,6 +674,254 @@ public class FogOfWarManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void SetChunkHighMistProperties(GameObject fog, float alpha, float emission)
+    {
+        if (fog == null) return;
+        if (highMistPropertyBlock == null) highMistPropertyBlock = new MaterialPropertyBlock();
+        highMistPropertyBlock.SetFloat(PropMistAlpha, Mathf.Clamp01(alpha));
+        highMistPropertyBlock.SetFloat(PropDiscoverableEmission, Mathf.Max(0f, emission));
+
+        rendererBuffer.Clear();
+        fog.GetComponentsInChildren(rendererBuffer);
+        for (int i = 0; i < rendererBuffer.Count; i++)
+        {
+            rendererBuffer[i].SetPropertyBlock(highMistPropertyBlock);
+        }
+        rendererBuffer.Clear();
+    }
+
+    private void ClearPropertyBlock(GameObject fog)
+    {
+        if (fog == null) return;
+        rendererBuffer.Clear();
+        fog.GetComponentsInChildren(rendererBuffer);
+        for (int i = 0; i < rendererBuffer.Count; i++)
+        {
+            rendererBuffer[i].SetPropertyBlock(null);
+        }
+        rendererBuffer.Clear();
+    }
+
+    private void StopTransitionCoroutine(Vector2Int coord)
+    {
+        if (activeTransitionCoroutines.TryGetValue(coord, out var coroutine))
+        {
+            if (coroutine != null) StopCoroutine(coroutine);
+            activeTransitionCoroutines.Remove(coord);
+        }
+
+        if (transitionalFogChunks.TryGetValue(coord, out var transObj))
+        {
+            if (transObj != null)
+            {
+                if (Application.isPlaying) Destroy(transObj);
+                else DestroyImmediate(transObj);
+            }
+            transitionalFogChunks.Remove(coord);
+        }
+    }
+
+    private void StopAllTransitionCoroutines()
+    {
+        foreach (var coroutine in activeTransitionCoroutines.Values)
+        {
+            if (coroutine != null) StopCoroutine(coroutine);
+        }
+        activeTransitionCoroutines.Clear();
+
+        foreach (var transObj in transitionalFogChunks.Values)
+        {
+            if (transObj != null)
+            {
+                if (Application.isPlaying) Destroy(transObj);
+                else DestroyImmediate(transObj);
+            }
+        }
+        transitionalFogChunks.Clear();
+    }
+
+    private void StartSurveyingTransition(Vector2Int coord, Material surveyMat, Material depthPrepassMat)
+    {
+        StopTransitionCoroutine(coord);
+        StopFadeCoroutine(coord);
+
+        if (!activeFogChunks.ContainsKey(coord) || activeFogChunks[coord] == null)
+        {
+            SpawnFogObject(coord);
+        }
+
+        var fog = activeFogChunks[coord];
+        if (fog == null) return;
+
+        for (int i = 0; i < fog.transform.childCount; i++)
+        {
+            Transform child = fog.transform.GetChild(i);
+            child.localPosition = new Vector3(child.localPosition.x, 0f, child.localPosition.z);
+            child.localScale = Vector3.one;
+        }
+
+        float xzScale = hexSize > 0f ? (hexSize + padding) / hexSize : 1f;
+        fog.transform.localScale = new Vector3(xzScale, fogHeightScale, xzScale);
+        Vector3 pos = fog.transform.position;
+        pos.y = MistWorldHeight;
+        fog.transform.position = pos;
+
+        ApplyMaterial(fog, surveyMat, depthPrepassMat);
+        SetTerrainVisible(coord, true);
+
+        activeTransitionCoroutines[coord] = StartCoroutine(BorderlandsToSurveyingRoutine(coord, fog, surveyMat, surveyTransitionDuration));
+    }
+
+    private IEnumerator BorderlandsToSurveyingRoutine(Vector2Int coord, GameObject fog, Material surveyMat, float duration)
+    {
+        float targetAlpha = (surveyMat != null && surveyMat.HasProperty(PropMistAlpha))
+            ? surveyMat.GetFloat(PropMistAlpha)
+            : 0.5f;
+
+        float baseEmission = (surveyMat != null && surveyMat.HasProperty(PropDiscoverableEmission))
+            ? surveyMat.GetFloat(PropDiscoverableEmission)
+            : 0.4f;
+
+        float startAlpha = 1.0f;
+        float elapsed = 0f;
+
+        SetChunkHighMistProperties(fog, startAlpha, baseEmission);
+
+        while (elapsed < duration)
+        {
+            if (fog == null) break;
+
+            elapsed += Time.fixedDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float curveT = transitionEaseCurve != null ? transitionEaseCurve.Evaluate(t) : Mathf.SmoothStep(0f, 1f, t);
+
+            float currentAlpha = Mathf.Lerp(startAlpha, targetAlpha, curveT);
+            float pulse = Mathf.Sin(t * Mathf.PI);
+            float currentEmission = baseEmission * (1f + (surveyPulseMultiplier - 1f) * pulse);
+
+            SetChunkHighMistProperties(fog, currentAlpha, currentEmission);
+
+            yield return WaitForFixed;
+        }
+
+        if (fog != null)
+        {
+            ClearPropertyBlock(fog);
+        }
+
+        activeTransitionCoroutines.Remove(coord);
+    }
+
+    private void StartOutskirtsTransition(Vector2Int coord, Material outskirtMat)
+    {
+        StopTransitionCoroutine(coord);
+        StopFadeCoroutine(coord);
+
+        GameObject oldFog = null;
+        if (activeFogChunks.TryGetValue(coord, out var existingFog) && existingFog != null)
+        {
+            oldFog = existingFog;
+            activeFogChunks.Remove(coord);
+        }
+
+        GameObject newFog = SetFogLow(coord, outskirtMat, startGroundMistFade: false);
+        SetTerrainVisible(coord, true);
+        OnChunkRevealed?.Invoke(coord);
+
+        if (oldFog == null)
+        {
+            if (newFog != null)
+            {
+                if (Application.isPlaying && gameObject.activeInHierarchy && groundMistFadeDuration > 0f)
+                {
+                    activeFadeCoroutines[coord] = StartCoroutine(FadeGroundMistRoutine(newFog, 0f, 1f, groundMistFadeDuration, coord));
+                }
+                else
+                {
+                    SetChunkGroundMistFade(newFog, 1f);
+                }
+            }
+            return;
+        }
+
+        DisableAndDestroyColliders(oldFog);
+
+        var rend = oldFog.GetComponentInChildren<Renderer>();
+        Material surveyMat = rend != null ? rend.sharedMaterial : surveyingFogMaterial;
+        ApplyMaterial(oldFog, surveyMat, null);
+
+        oldFog.name = $"Fog_{coord.x}_{coord.y}_Sinking";
+        transitionalFogChunks[coord] = oldFog;
+
+        activeTransitionCoroutines[coord] = StartCoroutine(SurveyingToOutskirtsRoutine(coord, oldFog, newFog, surveyMat, outskirtsTransitionDuration));
+    }
+
+    private IEnumerator SurveyingToOutskirtsRoutine(Vector2Int coord, GameObject oldFog, GameObject newFog, Material surveyMat, float duration)
+    {
+        float startAlpha = (surveyMat != null && surveyMat.HasProperty(PropMistAlpha))
+            ? surveyMat.GetFloat(PropMistAlpha)
+            : 0.5f;
+
+        Vector3 startPos = oldFog != null ? oldFog.transform.position : Vector3.zero;
+        Vector3 targetPos = startPos - new Vector3(0f, outskirtsSinkDistance, 0f);
+
+        float elapsed = 0f;
+
+        if (oldFog != null) SetChunkHighMistProperties(oldFog, startAlpha, 0.4f);
+        if (newFog != null) SetChunkGroundMistFade(newFog, 0f);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.fixedDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float curveT = transitionEaseCurve != null ? transitionEaseCurve.Evaluate(t) : Mathf.SmoothStep(0f, 1f, t);
+
+            if (oldFog != null)
+            {
+                oldFog.transform.position = Vector3.Lerp(startPos, targetPos, curveT);
+                float curAlpha = Mathf.Lerp(startAlpha, 0f, curveT);
+                SetChunkHighMistProperties(oldFog, curAlpha, 0.4f);
+            }
+
+            if (newFog != null)
+            {
+                float curGroundFade = Mathf.Lerp(0f, 1f, curveT);
+                SetChunkGroundMistFade(newFog, curGroundFade);
+            }
+
+            yield return WaitForFixed;
+        }
+
+        if (oldFog != null)
+        {
+            Destroy(oldFog);
+        }
+        transitionalFogChunks.Remove(coord);
+
+        if (newFog != null)
+        {
+            SetChunkGroundMistFade(newFog, 1f);
+        }
+
+        activeTransitionCoroutines.Remove(coord);
+    }
+
+    private GameObject SetFogLow(Vector2Int coord, Material mat, bool startGroundMistFade = true)
+    {
+        StopFadeCoroutine(coord);
+
+        if (!activeFogChunks.ContainsKey(coord) || activeFogChunks[coord] == null)
+        {
+            SpawnFogObject(coord);
+        }
+
+        var fog = activeFogChunks[coord];
+        if (fog == null) return null;
+
+        // Usuwamy collidery z mgly na Outskirts, aby gracz mogl swobodnie klikac teren, wybierac heksy i budowac
+        DisableAndDestroyColliders(fog);
 
         Vector3 center = HexGridMath.GetChunkCenterWorld(coord, chunkRadius, hexSize, padding);
         fog.transform.position = new Vector3(center.x, 0f, center.z);
@@ -638,26 +953,42 @@ public class FogOfWarManager : MonoBehaviour
 
         ApplyMaterial(fog, mat);
 
-        if (Application.isPlaying && gameObject.activeInHierarchy && groundMistFadeDuration > 0f)
+        if (startGroundMistFade)
         {
-            activeFadeCoroutines[coord] = StartCoroutine(FadeGroundMistRoutine(fog, 0f, 1f, groundMistFadeDuration, coord));
+            if (Application.isPlaying && gameObject.activeInHierarchy && groundMistFadeDuration > 0f)
+            {
+                activeFadeCoroutines[coord] = StartCoroutine(FadeGroundMistRoutine(fog, 0f, 1f, groundMistFadeDuration, coord));
+            }
+            else
+            {
+                SetChunkGroundMistFade(fog, 1f);
+            }
         }
         else
         {
-            SetChunkGroundMistFade(fog, 1f);
+            SetChunkGroundMistFade(fog, 0f);
         }
+
+        return fog;
     }
 
     private void SetChunkGroundMistFade(GameObject fog, float fade)
     {
         if (fog == null) return;
         if (groundMistPropertyBlock == null) groundMistPropertyBlock = new MaterialPropertyBlock();
-        groundMistPropertyBlock.SetFloat(PropGroundMistFade, Mathf.Clamp01(fade));
+        float clamped = Mathf.Clamp01(fade);
+        groundMistPropertyBlock.SetFloat(PropGroundMistFade, clamped);
 
+        float targetAlpha = (outskirtsFogMaterial != null && outskirtsFogMaterial.HasProperty(PropMistAlpha))
+            ? outskirtsFogMaterial.GetFloat(PropMistAlpha)
+            : 0.2f;
+        groundMistPropertyBlock.SetFloat(PropMistAlpha, clamped * targetAlpha);
+
+        rendererBuffer.Clear();
         fog.GetComponentsInChildren(rendererBuffer);
-        foreach (var r in rendererBuffer)
+        for (int i = 0; i < rendererBuffer.Count; i++)
         {
-            r.SetPropertyBlock(groundMistPropertyBlock);
+            rendererBuffer[i].SetPropertyBlock(groundMistPropertyBlock);
         }
         rendererBuffer.Clear();
     }
@@ -678,11 +1009,11 @@ public class FogOfWarManager : MonoBehaviour
         while (elapsed < duration)
         {
             if (fog == null) break;
-            elapsed += Time.deltaTime;
+            elapsed += Time.fixedDeltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float currentFade = Mathf.Lerp(startFade, targetFade, t);
             SetChunkGroundMistFade(fog, currentFade);
-            yield return null;
+            yield return WaitForFixed;
         }
         if (fog != null)
         {
@@ -706,7 +1037,8 @@ public class FogOfWarManager : MonoBehaviour
             if (Application.isPlaying && gameObject.activeInHierarchy && duration > 0f)
             {
                 var rend = fogObj.GetComponentInChildren<Renderer>();
-                if (rend != null && rend.sharedMaterial != null && rend.sharedMaterial.HasProperty(PropGroundMistFade))
+                if (rend != null && rend.sharedMaterial != null &&
+                    (rend.sharedMaterial.HasProperty(PropGroundMistFade) || rend.sharedMaterial.HasProperty(PropMistAlpha)))
                 {
                     canFade = true;
                 }
@@ -802,6 +1134,8 @@ public class FogOfWarManager : MonoBehaviour
     private void ClearFog()
     {
         isMistHeightCached = false;
+        StopAllTransitionCoroutines();
+        chunkFogStates.Clear();
         foreach (var coroutine in activeFadeCoroutines.Values)
         {
             if (coroutine != null) StopCoroutine(coroutine);
