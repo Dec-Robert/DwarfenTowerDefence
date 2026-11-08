@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 31
   waveMessage: "Zwyci\u0119stwo nad besti\u0105 daje wytchnienie. Przeciwnik przegrupowuje
     si\u0142y."
-  etherPool: 102
+  etherPool: 17
   customSpawnInterval: 0.38
   hpMultiplier: 1
   speedMultiplier: 1

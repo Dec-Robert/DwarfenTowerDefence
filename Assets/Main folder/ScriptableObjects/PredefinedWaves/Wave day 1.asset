@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dayNumber: 1
   waveMessage: "Cienie z mg\u0142y podchodz\u0105 pod bram\u0119..."
-  etherPool: 5
+  etherPool: 1
   customSpawnInterval: 0.9
   hpMultiplier: 1
   speedMultiplier: 1

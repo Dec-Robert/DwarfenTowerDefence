@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 10
   waveMessage: "Z mg\u0142y wy\u0142aniaj\u0105 si\u0119 ci\u0119\u017Cko opancerzone
     Abberacje!"
-  etherPool: 32
+  etherPool: 6
   customSpawnInterval: 0.9
   hpMultiplier: 1
   speedMultiplier: 1

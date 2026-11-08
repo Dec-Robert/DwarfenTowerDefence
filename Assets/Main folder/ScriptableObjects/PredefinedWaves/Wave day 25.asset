@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 25
   waveMessage: "Watahy Prze\u015Bladowc\xF3w Mg\u0142y atakuj\u0105 z zab\xF3jcz\u0105
     pr\u0119dko\u015Bci\u0105 i zwinno\u015Bci\u0105!"
-  etherPool: 83
+  etherPool: 14
   customSpawnInterval: 0.6
   hpMultiplier: 1
   speedMultiplier: 1

@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 24
   waveMessage: "Pot\u0119\u017Cne uderzenie hordy! Nadci\u0105gaj\u0105 ulepszone
     Abberacje drugiego tieru!"
-  etherPool: 80
+  etherPool: 14
   customSpawnInterval: 0.6
   hpMultiplier: 1
   speedMultiplier: 1

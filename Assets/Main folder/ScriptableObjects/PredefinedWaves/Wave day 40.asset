@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 40
   waveMessage: "Pradawne szkielety osi\u0105gaj\u0105 szczyt swej pot\u0119gi!"
-  etherPool: 126
+  etherPool: 22
   customSpawnInterval: 0.38
   hpMultiplier: 1
   speedMultiplier: 1

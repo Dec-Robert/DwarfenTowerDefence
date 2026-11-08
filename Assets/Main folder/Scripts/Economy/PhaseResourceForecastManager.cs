@@ -145,10 +145,9 @@ public static class PhaseResourceForecastManager
             if (housing == null || housing.housingData == null) continue;
 
             int residentCount = housing.residents != null ? housing.residents.Count : 0;
-            if (residentCount <= 0) continue;
 
             // Produkcja z mieszkańców
-            if (housing.housingData.productionPerResident != null)
+            if (residentCount > 0 && housing.housingData.productionPerResident != null)
             {
                 foreach (var prod in housing.housingData.productionPerResident)
                 {

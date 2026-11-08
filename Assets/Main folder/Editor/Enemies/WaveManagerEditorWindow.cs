@@ -1589,7 +1589,7 @@ public class WaveManagerEditorWindow : EditorWindow
         string assetPath = AssetDatabase.GenerateUniqueAssetPath($"{WavesFolderPath}/Wave day {nextDay}.asset");
         WaveDefinition newWave = CreateInstance<WaveDefinition>();
         newWave.dayNumber = nextDay;
-        newWave.etherPool = Mathf.Max(3, 2 + nextDay);
+        newWave.etherPool = WaveGenerator50.CalculateEtherPool(nextDay);
         newWave.hpMultiplier = 1f;
         newWave.speedMultiplier = 1f;
         newWave.enemies = new List<WaveDefinition.WaveEntry>();

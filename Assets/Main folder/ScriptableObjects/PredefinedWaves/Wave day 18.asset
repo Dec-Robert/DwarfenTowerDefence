@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 18
   waveMessage: "Szybkie sylwetki mign\u0119\u0142y we mgle... B\u0105d\u017A czujny!"
-  etherPool: 60
+  etherPool: 11
   customSpawnInterval: 0.6
   hpMultiplier: 1
   speedMultiplier: 1

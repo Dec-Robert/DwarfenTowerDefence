@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 50
   waveMessage: "OSTATECZNE STARCIE: Prastary Zwiastun Mg\u0142y na czele legionu
     cieni!"
-  etherPool: 150
+  etherPool: 32
   customSpawnInterval: 0.22
   hpMultiplier: 1
   speedMultiplier: 1

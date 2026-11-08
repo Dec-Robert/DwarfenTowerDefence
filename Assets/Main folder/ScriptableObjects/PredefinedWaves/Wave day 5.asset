@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 5
   waveMessage: "Arkani\u015Bci Mg\u0142y do\u0142\u0105czaj\u0105 do szturmu! Uwa\u017Caj
     na ich tarcze przeciw pociskom."
-  etherPool: 15
+  etherPool: 3
   customSpawnInterval: 0.9
   hpMultiplier: 1
   speedMultiplier: 1

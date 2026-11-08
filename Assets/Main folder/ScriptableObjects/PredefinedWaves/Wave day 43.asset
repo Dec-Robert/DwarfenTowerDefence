@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
   dayNumber: 43
   waveMessage: 
-  etherPool: 134
+  etherPool: 28
   customSpawnInterval: 0.22
   hpMultiplier: 1
   speedMultiplier: 1

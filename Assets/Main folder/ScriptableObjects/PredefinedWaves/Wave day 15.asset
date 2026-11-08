@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 15
   waveMessage: "BOSS: Zwiastun Mg\u0142y przyby\u0142! Zg\u0142ad\u017A besti\u0119
     zanim skruszy bram\u0119!"
-  etherPool: 50
+  etherPool: 9
   customSpawnInterval: 0.9
   hpMultiplier: 1
   speedMultiplier: 1

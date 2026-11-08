@@ -329,19 +329,17 @@ public class EnemyTierAndWaveTests
             string path = $"Assets/Main folder/ScriptableObjects/PredefinedWaves/Wave day {day}.asset";
             var wave = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
 
-            Assert.GreaterOrEqual(wave.etherPool, 5, "etherPool must be >= 5");
-            Assert.LessOrEqual(wave.etherPool, 150, "etherPool must be <= 150");
+            Assert.GreaterOrEqual(wave.etherPool, 1, "etherPool must be >= 1");
+            Assert.LessOrEqual(wave.etherPool, 32, "etherPool must be <= 32");
             Assert.GreaterOrEqual(wave.etherPool, prevPool, $"etherPool must be monotonic at day {day}");
 
-            // Anchor points check: (1, 5), (5, 15), (10, 32), (20, 67), (30, 99), (40, 126), (49, 150), (50, 150)
-            if (day == 1) Assert.AreEqual(5, wave.etherPool);
-            if (day == 5) Assert.AreEqual(15, wave.etherPool);
-            if (day == 10) Assert.AreEqual(32, wave.etherPool);
-            if (day == 20) Assert.AreEqual(67, wave.etherPool);
-            if (day == 30) Assert.AreEqual(99, wave.etherPool);
-            if (day == 40) Assert.AreEqual(126, wave.etherPool);
-            if (day == 49) Assert.AreEqual(150, wave.etherPool);
-            if (day == 50) Assert.AreEqual(150, wave.etherPool);
+            // Anchor points check: (1, 1), (10, 6), (20, 12), (40, 22), (45, 32), (50, 32)
+            if (day == 1) Assert.AreEqual(1, wave.etherPool);
+            if (day == 10) Assert.AreEqual(6, wave.etherPool);
+            if (day == 20) Assert.AreEqual(12, wave.etherPool);
+            if (day == 40) Assert.AreEqual(22, wave.etherPool);
+            if (day == 45) Assert.AreEqual(32, wave.etherPool);
+            if (day == 50) Assert.AreEqual(32, wave.etherPool);
 
             prevPool = wave.etherPool;
         }

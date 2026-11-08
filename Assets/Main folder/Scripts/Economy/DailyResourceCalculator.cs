@@ -151,10 +151,9 @@ public static class DailyResourceCalculator
                 if (housing.housingData == null) continue;
 
                 int residentCount = housing.residents != null ? housing.residents.Count : 0;
-                if (residentCount <= 0) continue;
 
                 // Produkcja mieszkańców
-                if (housing.housingData.productionPerResident != null)
+                if (residentCount > 0 && housing.housingData.productionPerResident != null)
                 {
                     foreach (var prod in housing.housingData.productionPerResident)
                     {
@@ -170,7 +169,7 @@ public static class DailyResourceCalculator
                     }
                 }
 
-                // Przetrwanie mieszkańców (survival cost)
+                // Przetrwanie mieszkańców (survival cost: baza + na mieszkańca)
                 var survivalCosts = housing.CalculateSurvivalCost();
                 if (survivalCosts != null)
                 {

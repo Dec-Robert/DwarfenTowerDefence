@@ -140,22 +140,18 @@ public static class WaveGenerator50
 
     public static int CalculateEtherPool(int day)
     {
-        // Punkty kontrolne: (1, 5), (5, 15), (10, 32), (20, 67), (30, 99), (40, 126), (49, 150), (50, 150)
-        int[] days = { 1, 5, 10, 20, 30, 40, 49, 50 };
-        int[] pools = { 5, 15, 32, 67, 99, 126, 150, 150 };
-
-        if (day <= 1) return 5;
-        if (day >= 49) return 150;
-
-        for (int i = 0; i < days.Length - 1; i++)
-        {
-            if (day >= days[i] && day <= days[i + 1])
-            {
-                float t = (float)(day - days[i]) / (days[i + 1] - days[i]);
-                return Mathf.RoundToInt(Mathf.Lerp(pools[i], pools[i + 1], t));
-            }
-        }
-        return 150;
+        // Nowa zbalansowana skala eteru:
+        // Fale 1-10: 1 + (1 co 2 fale) -> 1, 2, 2, 3, 3, 4, 4, 5, 5, 6
+        // Fale 11-20: 6 + (3 co 4 fale) -> 7, 7, 8, 8, 9, 10, 10, 11, 11, 12
+        // Fale 21-40: 12 + (1 co 2 fale) -> fala 40 = 22
+        // Fale 41-45: +2 na falę -> 24, 26, 28, 30, 32
+        // Fale 46-50: stała wartość z fali 45 (32)
+        if (day <= 1) return 1;
+        if (day <= 10) return 1 + day / 2;
+        if (day <= 20) return Mathf.RoundToInt(6f + (day - 10) * 0.6f);
+        if (day <= 40) return 12 + (day - 20) / 2;
+        if (day <= 45) return 22 + (day - 40) * 2;
+        return 32;
     }
 
     public struct TierSplit

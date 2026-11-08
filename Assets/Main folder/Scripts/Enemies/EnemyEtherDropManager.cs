@@ -82,7 +82,12 @@ public class EnemyEtherDropManager : MonoBehaviour
         else
         {
             // Fallback kalkulacji puli, jeśli brak assetu: np. Dzień 1 = 3, Dzień 2 = 4, Dzień 3 = 6
-            currentWaveEtherPool = Mathf.Max(1, 2 + waveNumber);
+            if (waveNumber <= 1) currentWaveEtherPool = 1;
+            else if (waveNumber <= 10) currentWaveEtherPool = 1 + waveNumber / 2;
+            else if (waveNumber <= 20) currentWaveEtherPool = Mathf.RoundToInt(6f + (waveNumber - 10) * 0.6f);
+            else if (waveNumber <= 40) currentWaveEtherPool = 12 + (waveNumber - 20) / 2;
+            else if (waveNumber <= 45) currentWaveEtherPool = 22 + (waveNumber - 40) * 2;
+            else currentWaveEtherPool = 32;
         }
 
         activeGuaranteedPercent = BeaconEntity.GetGuaranteedEtherPercent();

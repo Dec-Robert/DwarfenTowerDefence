@@ -225,4 +225,102 @@ public class DailyResourceBalanceTests
         Assert.AreEqual(10, foodReport.totalDailyConsumption);
         Assert.AreEqual(15, foodReport.netDailyBalance); // +15 netto
     }
+
+    [Test]
+    public void Test06_HousingWithZeroResidents_IncludesGrowthAndBaseUpkeepInConsumption()
+    {
+        var housingData = ScriptableObject.CreateInstance<HousingBuildingData>();
+        housingData.buildingName = "Dom Ludzi";
+        housingData.type = BuildingType.Housing;
+        housingData.maxResidents = 5;
+        housingData.initialResidents = 0;
+        housingData.baseDailyUpkeep = new List<ResourceCost>
+        {
+            new ResourceCost { type = ResourceType.Food, amount = 2 }
+        };
+        housingData.growthSurplusCost = new List<ResourceCost>
+        {
+            new ResourceCost { type = ResourceType.Food, amount = 6 }
+        };
+        housingData.upkeepPerResident = new List<HousingBuildingData.PerCapitaCost>
+        {
+            new HousingBuildingData.PerCapitaCost { type = ResourceType.Food, amount = 3f }
+        };
+
+        var go = new GameObject("HousingEntity_Empty");
+        createdObjects.Add(go);
+        var housing = go.AddComponent<HousingEntity>();
+        housing.data = housingData;
+        housing.residents = new List<Citizen>(); // 0 residents
+        housing.stopGrowth = false;
+        registry.Register(housing);
+
+        var report = DailyResourceCalculator.CalculateDailyReport(ResourceType.Food);
+
+        // 2 (baza przetrwania) + 6 (wzrost) = 8
+        Assert.AreEqual(8, report.totalDailyConsumption, "Pusty dom z aktywnym wzrostem powinien wliczać koszt wzrostu oraz bazowy upkeep");
+        Assert.AreEqual(-8, report.netDailyBalance);
+
+        var survivalItem = report.consumptionSources.Find(x => x.label == "Utrzymanie populacji");
+        var growthItem = report.consumptionSources.Find(x => x.label == "Rozwój populacji");
+
+        Assert.IsNotNull(survivalItem, "Utrzymanie populacji powinno być w zużyciu (baza)");
+        Assert.AreEqual(2, survivalItem.totalAmount);
+
+        Assert.IsNotNull(growthItem, "Rozwój populacji powinien być w zużyciu dla 0 mieszkańców");
+        Assert.AreEqual(6, growthItem.totalAmount);
+    }
+
+    [Test]
+    public void Test07_HousingFullOrStoppedGrowth_ExcludesGrowthFromConsumption()
+    {
+        var housingData = ScriptableObject.CreateInstance<HousingBuildingData>();
+        housingData.buildingName = "Dom Krasnoludów";
+        housingData.type = BuildingType.Housing;
+        housingData.maxResidents = 3;
+        housingData.initialResidents = 0;
+        housingData.baseDailyUpkeep = new List<ResourceCost>
+        {
+            new ResourceCost { type = ResourceType.Food, amount = 1 }
+        };
+        housingData.growthSurplusCost = new List<ResourceCost>
+        {
+            new ResourceCost { type = ResourceType.Food, amount = 5 }
+        };
+        housingData.upkeepPerResident = new List<HousingBuildingData.PerCapitaCost>
+        {
+            new HousingBuildingData.PerCapitaCost { type = ResourceType.Food, amount = 2f }
+        };
+
+        var go = new GameObject("HousingEntity_Full");
+        createdObjects.Add(go);
+        var housing = go.AddComponent<HousingEntity>();
+        housing.data = housingData;
+        housing.stopGrowth = false;
+
+        // Wypełniamy do maksimum (3/3)
+        for (int i = 0; i < 3; i++)
+        {
+            housing.residents.Add(new Citizen());
+        }
+        registry.Register(housing);
+
+        var reportFull = DailyResourceCalculator.CalculateDailyReport(ResourceType.Food);
+
+        // Utrzymanie: 1 (baza) + 3 * 2 = 7. Wzrost: 0 (pełny)
+        Assert.AreEqual(7, reportFull.totalDailyConsumption);
+        var growthItemFull = reportFull.consumptionSources.Find(x => x.label == "Rozwój populacji");
+        Assert.IsNull(growthItemFull, "Pełny dom nie powinien generować kosztu wzrostu populacji");
+
+        // Teraz zmniejszamy populację do 1, ale wstrzymujemy wzrost (stopGrowth = true)
+        housing.residents.RemoveAt(0);
+        housing.residents.RemoveAt(0);
+        housing.stopGrowth = true;
+
+        var reportStopped = DailyResourceCalculator.CalculateDailyReport(ResourceType.Food);
+        // Utrzymanie: 1 + 1 * 2 = 3. Wzrost: 0 (wstrzymany)
+        Assert.AreEqual(3, reportStopped.totalDailyConsumption);
+        var growthItemStopped = reportStopped.consumptionSources.Find(x => x.label == "Rozwój populacji");
+        Assert.IsNull(growthItemStopped, "Dom ze wstrzymanym wzrostem nie powinien generować kosztu wzrostu populacji");
+    }
 }

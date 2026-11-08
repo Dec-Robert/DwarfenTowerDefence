@@ -576,9 +576,25 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
             if (txtToSurvive != null)
             {
+                var upkeepTexts = new List<string>();
+                if (housing.baseDailyUpkeep != null && housing.baseDailyUpkeep.Count > 0)
+                {
+                    foreach (var c in housing.baseDailyUpkeep)
+                    {
+                        if (c.amount > 0) upkeepTexts.Add($"{c.amount} {GetResourceDisplayName(c.type)} (baza)");
+                    }
+                }
                 if (housing.upkeepPerResident != null && housing.upkeepPerResident.Count > 0)
                 {
-                    txtToSurvive.text = $"Utrzymanie: {housing.upkeepPerResident[0].amount} {housing.upkeepPerResident[0].type}/osobę";
+                    foreach (var c in housing.upkeepPerResident)
+                    {
+                        if (c.amount > 0) upkeepTexts.Add($"{c.amount} {GetResourceDisplayName(c.type)}/os.");
+                    }
+                }
+
+                if (upkeepTexts.Count > 0)
+                {
+                    txtToSurvive.text = $"Utrzymanie: {string.Join(", ", upkeepTexts)}";
                 }
                 else
                 {
@@ -590,7 +606,11 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
             {
                 if (housing.growthSurplusCost != null && housing.growthSurplusCost.Count > 0)
                 {
-                    txtToGrow.text = $"Koszt wzrostu: {housing.growthSurplusCost[0].amount} {housing.growthSurplusCost[0].type}";
+                    var growthCosts = housing.growthSurplusCost
+                        .Where(c => c.amount > 0)
+                        .Select(c => $"{c.amount} {GetResourceDisplayName(c.type)}");
+                    string costStr = string.Join(", ", growthCosts);
+                    txtToGrow.text = string.IsNullOrEmpty(costStr) ? "Koszt wzrostu: Brak" : $"Koszt wzrostu: {costStr}";
                 }
                 else
                 {

@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 20
   waveMessage: "Wypaczone Bloby zalewaj\u0105 dolin\u0119! Po \u015Bmierci dziel\u0105
     si\u0119 na mniejsze poczwary."
-  etherPool: 67
+  etherPool: 12
   customSpawnInterval: 0.6
   hpMultiplier: 1
   speedMultiplier: 1

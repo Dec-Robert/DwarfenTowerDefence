@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 16
   waveMessage: "Mg\u0142a rzednie po uderzeniu bossa. Czas na regeneracj\u0119 i
     rozbudow\u0119 obrony."
-  etherPool: 53
+  etherPool: 10
   customSpawnInterval: 0.6
   hpMultiplier: 1
   speedMultiplier: 1

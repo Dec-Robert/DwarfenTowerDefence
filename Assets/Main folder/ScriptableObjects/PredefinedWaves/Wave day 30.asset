@@ -15,7 +15,7 @@ MonoBehaviour:
   dayNumber: 30
   waveMessage: "BOSS: Zwiastun Mg\u0142y powraca w pot\u0119\u017Cniejszej, zahartowanej
     formie!"
-  etherPool: 99
+  etherPool: 17
   customSpawnInterval: 0.6
   hpMultiplier: 1
   speedMultiplier: 1
