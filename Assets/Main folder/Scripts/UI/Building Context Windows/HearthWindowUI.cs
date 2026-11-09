@@ -347,7 +347,7 @@ public class HearthWindowUI : MonoBehaviour
 
             if (card.txtLevelIndex != null)
             {
-                card.txtLevelIndex.text = $"POZIOM {data.levelIndex}";
+                card.txtLevelIndex.text = LocalizationManager.GetFormat("UI_HEARTH_LEVEL_NUM", data.levelIndex);
                 card.txtLevelIndex.color = isSelected ? ColorGoldHighlight : new Color(0.68f, 0.65f, 0.60f, 1f);
             }
 
@@ -382,7 +382,7 @@ public class HearthWindowUI : MonoBehaviour
 
             if (card.txtLevelTitle != null)
             {
-                card.txtLevelTitle.text = data.title;
+                card.txtLevelTitle.text = data.DisplayTitle;
             }
 
             if (card.badgeTagImage != null)
@@ -392,7 +392,7 @@ public class HearthWindowUI : MonoBehaviour
 
             if (card.txtTag != null)
             {
-                card.txtTag.text = data.tagText;
+                card.txtTag.text = data.DisplayTagText;
                 card.txtTag.color = data.accentColor;
             }
         }
@@ -411,7 +411,7 @@ public class HearthWindowUI : MonoBehaviour
 
         if (txtPreviewLevelName != null)
         {
-            txtPreviewLevelName.text = $"POZIOM {selectedData.levelIndex}: {selectedData.title.ToUpperInvariant()}";
+            txtPreviewLevelName.text = LocalizationManager.GetFormat("UI_HEARTH_LEVEL_NAME_FMT", selectedData.levelIndex, selectedData.DisplayTitle.ToUpperInvariant());
             txtPreviewLevelName.color = selectedData.accentColor;
         }
 
@@ -428,7 +428,7 @@ public class HearthWindowUI : MonoBehaviour
         bool hasFireRate = !Mathf.Approximately(selectedData.towerFireRateBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(0),
-            "Szybkostrzelność wież",
+            LocalizationManager.Get("UI_HEARTH_EFF_FIRE_RATE", "Szybkostrzelność wież"),
             FormatPercentDelta(selectedData.towerFireRateBonus),
             GetPlayerBeneficialColor(selectedData.towerFireRateBonus),
             GetTowerFireRateDescription(selectedData.towerFireRateBonus),
@@ -439,7 +439,7 @@ public class HearthWindowUI : MonoBehaviour
         bool hasRange = !Mathf.Approximately(selectedData.towerRangeBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(1),
-            "Zasięg wież",
+            LocalizationManager.Get("UI_HEARTH_EFF_RANGE", "Zasięg wież"),
             FormatPercentDelta(selectedData.towerRangeBonus),
             GetPlayerBeneficialColor(selectedData.towerRangeBonus),
             GetTowerRangeDescription(selectedData.towerRangeBonus),
@@ -450,7 +450,7 @@ public class HearthWindowUI : MonoBehaviour
         bool hasEnemyStats = !Mathf.Approximately(selectedData.enemyStatsBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(2),
-            "Siła i prędkość wrogów w nocy",
+            LocalizationManager.Get("UI_HEARTH_EFF_ENEMY_STATS", "Siła i prędkość wrogów w nocy"),
             FormatPercentDelta(selectedData.enemyStatsBonus),
             GetPlayerBeneficialColor(-selectedData.enemyStatsBonus),
             GetEnemyStatsDescription(selectedData.enemyStatsBonus),
@@ -461,7 +461,7 @@ public class HearthWindowUI : MonoBehaviour
         bool hasRuneDrop = !Mathf.Approximately(selectedData.runeDropAndRarityBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(3),
-            "Szansa na drop i rzadkość Run",
+            LocalizationManager.Get("UI_HEARTH_EFF_RUNE_DROP", "Szansa na drop i rzadkość Run"),
             FormatPercentDelta(selectedData.runeDropAndRarityBonus),
             GetPlayerBeneficialColor(selectedData.runeDropAndRarityBonus),
             GetRuneDropDescription(selectedData.runeDropAndRarityBonus),
@@ -470,10 +470,10 @@ public class HearthWindowUI : MonoBehaviour
 
         // 5. Szanse na drop Etheru (Ether Wave Pool & Guarantee) - zawsze widoczne
         Color etherColor = GetEtherTierColor(selectedData.guaranteedEtherPercent);
-        string etherLabel = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "ŚREDNIE" : selectedData.etherChanceTierLabel.ToUpperInvariant();
+        string etherLabel = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? LocalizationManager.Get("hearth_ether_tier_średnie", "ŚREDNIE") : selectedData.DisplayEtherTierLabel.ToUpperInvariant();
         UpdateEffectItem(
             GetNightEffect(4),
-            "Szanse na drop Etheru",
+            LocalizationManager.Get("UI_HEARTH_EFF_ETHER_DROP", "Szanse na drop Etheru"),
             etherLabel,
             etherColor,
             string.Empty,
@@ -484,7 +484,7 @@ public class HearthWindowUI : MonoBehaviour
         bool hasDayProduction = !Mathf.Approximately(selectedData.nextDayProductionBonus, 0f);
         UpdateEffectItem(
             GetDayEffect(0),
-            "Produkcja wszystkich budynków",
+            LocalizationManager.Get("UI_HEARTH_EFF_PRODUCTION", "Produkcja wszystkich budynków"),
             FormatPercentDelta(selectedData.nextDayProductionBonus),
             GetPlayerBeneficialColor(selectedData.nextDayProductionBonus),
             GetDayProductionDescription(selectedData.nextDayProductionBonus),
@@ -525,8 +525,8 @@ public class HearthWindowUI : MonoBehaviour
 
         if (txtSummaryHeader != null)
         {
-            string costStr = coalCost <= 0 ? "0 Węgla" : $"{coalCost} Węgla";
-            txtSummaryHeader.text = $"WYBRANO: POZIOM {selectedData.levelIndex} – {selectedData.title.ToUpperInvariant()} (KOSZT: {costStr.ToUpperInvariant()})";
+            string costStr = coalCost <= 0 ? LocalizationManager.Get("UI_HEARTH_COST_ZERO", "0 Węgla") : LocalizationManager.GetFormat("UI_HEARTH_COST_FMT", coalCost);
+            txtSummaryHeader.text = LocalizationManager.GetFormat("UI_HEARTH_SUMMARY_HEADER_FMT", selectedData.levelIndex, selectedData.DisplayTitle.ToUpperInvariant(), costStr.ToUpperInvariant());
             txtSummaryHeader.color = selectedData.accentColor;
         }
 
@@ -534,20 +534,20 @@ public class HearthWindowUI : MonoBehaviour
         {
             if (!canIgniteNow)
             {
-                txtSummaryDetails.text = "Tryb podglądu (Morning) – rozpalenie Paleniska i rozpoczęcie Nocy będzie dostępne o Zmierzchu (Dusk).";
+                txtSummaryDetails.text = LocalizationManager.Get("UI_HEARTH_PREVIEW_MORNING", "Tryb podglądu (Morning) – rozpalenie Paleniska i rozpoczęcie Nocy będzie dostępne o Zmierzchu (Dusk).");
                 txtSummaryDetails.color = ColorNeutral;
             }
             else if (!hasEnoughCoal)
             {
                 int missing = coalCost - currentCoal;
-                txtSummaryDetails.text = $"Brak wystarczającej ilości węgla w skarbcu! Brakuje jeszcze {missing} szt. Węgla (posiadasz: {currentCoal}).";
+                txtSummaryDetails.text = LocalizationManager.GetFormat("UI_HEARTH_NOT_ENOUGH_COAL_DETAILS", missing, currentCoal);
                 txtSummaryDetails.color = ColorNegative;
             }
             else
             {
                 int remaining = currentCoal - coalCost;
-                string etherTier = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? "Średnie" : selectedData.etherChanceTierLabel;
-                txtSummaryDetails.text = $"Po rozpaleniu pozostanie {remaining} Węgla. Szanse na Ether: {etherTier}.";
+                string etherTier = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? LocalizationManager.Get("hearth_ether_tier_średnie", "Średnie") : selectedData.DisplayEtherTierLabel;
+                txtSummaryDetails.text = LocalizationManager.GetFormat("UI_HEARTH_AFTER_IGNITION_DETAILS", remaining, etherTier);
                 txtSummaryDetails.color = new Color(0.68f, 0.65f, 0.60f, 1f);
             }
         }
@@ -566,15 +566,15 @@ public class HearthWindowUI : MonoBehaviour
             {
                 if (!canIgniteNow)
                 {
-                    txtIgniteLabel.text = "DOSTĘPNE O ZMIERZCHU (DUSK)";
+                    txtIgniteLabel.text = LocalizationManager.Get("UI_HEARTH_AVAILABLE_AT_DUSK", "DOSTĘPNE O ZMIERZCHU (DUSK)");
                 }
                 else if (!hasEnoughCoal)
                 {
-                    txtIgniteLabel.text = $"BRAK WĘGLA ({currentCoal}/{coalCost})";
+                    txtIgniteLabel.text = LocalizationManager.GetFormat("UI_HEARTH_NO_COAL_FMT", currentCoal, coalCost);
                 }
                 else
                 {
-                    txtIgniteLabel.text = "ROZPAL PALENISKO I ROZPOCZNIJ NOC";
+                    txtIgniteLabel.text = LocalizationManager.Get("UI_HEARTH_IGNITE_BTN", "ROZPAL PALENISKO I ROZPOCZNIJ NOC");
                 }
             }
         }
@@ -619,7 +619,7 @@ public class HearthWindowUI : MonoBehaviour
     private static string FormatPercentDelta(float bonus)
     {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        if (pct == 0) return "0% (100% bazy)";
+        if (pct == 0) return LocalizationManager.Get("UI_HEARTH_EFF_BASE", "0% (100% bazy)");
         return pct > 0 ? $"+{pct}%" : $"{pct}%";
     }
 
@@ -632,50 +632,50 @@ public class HearthWindowUI : MonoBehaviour
     private static string GetTowerFireRateDescription(float bonus)
     {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        if (pct < 0) return $"Chłód i mrok spowalniają załogi – szybkostrzelność wież spada o {Mathf.Abs(pct)}%.";
-        if (pct > 0) return $"Żar Paleniska i wysokie morale przyspieszają tempo ostrzału wież o {pct}%.";
-        return "Wieże obronne strzelają ze standardową szybkostrzelnością (100% normy).";
+        if (pct < 0) return LocalizationManager.GetFormat("hearth_desc_firerate_neg", Mathf.Abs(pct));
+        if (pct > 0) return LocalizationManager.GetFormat("hearth_desc_firerate_pos", pct);
+        return LocalizationManager.Get("hearth_desc_firerate_zero", "Wieże obronne strzelają ze standardową szybkostrzelnością (100% normy).");
     }
 
     private static string GetTowerRangeDescription(float bonus)
     {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        if (pct < 0) return $"Gęsty mrok ogranicza widoczność przedpola – zasięg wież spada o {Mathf.Abs(pct)}%.";
-        if (pct > 0) return $"Blask ognia rozświetla przedpole – zasięg ostrzału wież rośnie o {pct}%.";
-        return "Standardowy zasięg widzenia i ostrzału wszystkich wież (100% normy).";
+        if (pct < 0) return LocalizationManager.GetFormat("hearth_desc_range_neg", Mathf.Abs(pct));
+        if (pct > 0) return LocalizationManager.GetFormat("hearth_desc_range_pos", pct);
+        return LocalizationManager.Get("hearth_desc_range_zero", "Standardowy zasięg widzenia i ostrzału wszystkich wież (100% normy).");
     }
 
     private static string GetEnemyStatsDescription(float bonus)
     {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        if (pct > 0) return $"Mrok rozzuchwala hordę – wrogowie posiadają o {pct}% więcej PŻ oraz poruszają się szybciej.";
-        if (pct < 0) return $"Oślepiający blask Paleniska osłabia napastników – wrogowie mają o {Mathf.Abs(pct)}% mniej PŻ i są wolniejsi.";
-        return "Wrogowie nacierają ze standardową siłą, wytrzymałością i prędkością ruchu.";
+        if (pct > 0) return LocalizationManager.GetFormat("hearth_desc_enemy_pos", pct);
+        if (pct < 0) return LocalizationManager.GetFormat("hearth_desc_enemy_neg", Mathf.Abs(pct));
+        return LocalizationManager.Get("hearth_desc_enemy_zero", "Wrogowie nacierają ze standardową siłą, wytrzymałością i prędkością ruchu.");
     }
 
     private static string GetRuneDropDescription(float bonus)
     {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        if (pct > 0) return $"Zagęszczona magia mroku zwiększa szansę na drop run oraz wylosowanie rzadkich run o {pct}%.";
-        if (pct < 0) return $"Czysty płomień wypala mroczną energię – szansa na drop rzadkich run jest niższa o {Mathf.Abs(pct)}%.";
-        return "Bazowa szansa na zdobycie run z pokonanych wrogów bez dodatkowych modyfikatorów.";
+        if (pct > 0) return LocalizationManager.GetFormat("hearth_desc_runes_pos", pct);
+        if (pct < 0) return LocalizationManager.GetFormat("hearth_desc_runes_neg", Mathf.Abs(pct));
+        return LocalizationManager.Get("hearth_desc_runes_zero", "Bazowa szansa na zdobycie run z pokonanych wrogów bez dodatkowych modyfikatorów.");
     }
 
     private static string GetDayProductionDescription(float bonus)
     {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        if (pct < 0) return $"Zmarznięci robotnicy pracują wolniej – produkcja wszystkich budynków następnego dnia spadnie o {Mathf.Abs(pct)}%.";
-        if (pct > 0) return $"Wysokie morale i ciepło kuźni zwiększą wydobycie oraz produkcję wszystkich budynków o {pct}%.";
-        return "Wszystkie kopalnie, tartaki i warsztaty pracują następnego dnia ze 100% bazowej wydajności.";
+        if (pct < 0) return LocalizationManager.GetFormat("hearth_desc_prod_neg", Mathf.Abs(pct));
+        if (pct > 0) return LocalizationManager.GetFormat("hearth_desc_prod_pos", pct);
+        return LocalizationManager.Get("hearth_desc_prod_zero", "Wszystkie kopalnie, tartaki i warsztaty pracują następnego dnia ze 100% bazowej wydajności.");
     }
 
     private static string GetCoalCostDescription(HearthLevelData data, int coalCost = -1)
     {
         if (coalCost < 0) coalCost = BeaconEntity.GetCoalCost(data);
-        if (coalCost <= 0) return "Wygaszone palenisko nie zużywa węgla, lecz wystawia twierdzę i robotników na dotkliwy chłód.";
-        if (data.levelIndex <= 2) return $"Oszczędne spalanie ({coalCost} szt. węgla) pozwala zachować zapasy kosztem lekkiego osłabienia.";
-        if (data.levelIndex == 3) return $"Standardowy przydział paliwa ({coalCost} szt. węgla) utrzymuje pełną równowagę w twierdzy.";
-        return $"Intensywne spalanie ({coalCost} szt. węgla) zapewnia potężne wsparcie obronne i gospodarcze.";
+        if (coalCost <= 0) return LocalizationManager.Get("hearth_desc_coal_zero", "Wygaszone palenisko nie zużywa węgla, lecz wystawia twierdzę i robotników na dotkliwy chłód.");
+        if (data.levelIndex <= 2) return LocalizationManager.GetFormat("hearth_desc_coal_low", coalCost);
+        if (data.levelIndex == 3) return LocalizationManager.GetFormat("hearth_desc_coal_mid", coalCost);
+        return LocalizationManager.GetFormat("hearth_desc_coal_high", coalCost);
     }
 
     private static Color GetEtherTierColor(float guaranteedPercent)
@@ -692,9 +692,9 @@ public class HearthWindowUI : MonoBehaviour
         int pct = Mathf.RoundToInt(data.guaranteedEtherPercent * 100f);
         if (pct > 0)
         {
-            return $"Gwarantowane pozyskanie co najmniej {pct}% Etheru z puli fali. Pozostały Ether może wydropić naturalnie (5% szansy).";
+            return LocalizationManager.GetFormat("hearth_desc_ether_guaranteed", pct);
         }
-        return "Brak gwarantowanego Etheru z fali – możliwe jedynie zdobycie rzadkiego naturalnego dropu (5% szansy) lub z Elit i Bossów.";
+        return LocalizationManager.Get("hearth_desc_ether_none", "Brak gwarantowanego Etheru z fali – możliwe jedynie zdobycie rzadkiego naturalnego dropu (5% szansy) lub z Elit i Bossów.");
     }
 
     // =========================================================================

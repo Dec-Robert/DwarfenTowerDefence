@@ -272,7 +272,7 @@ public class MetaGraphControllerUI : MonoBehaviour
 
         if (txtHopeCurrency != null)
         {
-            txtHopeCurrency.text = $"Nadzieja: {hope}";
+            txtHopeCurrency.text = LocalizationManager.GetFormat("UI_META_HOPE_CURRENCY_FMT", hope);
         }
     }
 
@@ -427,7 +427,7 @@ public class MetaGraphControllerUI : MonoBehaviour
             txtGraphTitle.fontSize = MetaNodeDetailsPanelUI.FontSizeHeader; // 20 pt
             txtGraphTitle.fontStyle = FontStyles.Bold;
             txtGraphTitle.color = new Color(0.95f, 0.85f, 0.45f);
-            txtGraphTitle.text = "DRZEWO ROZWOJU BASTIONU";
+            txtGraphTitle.text = LocalizationManager.Get("UI_META_GRAPH_TITLE", "DRZEWO ROZWOJU BASTIONU");
             txtGraphTitle.alignment = TextAlignmentOptions.MidlineLeft;
         }
         else if (txtGraphTitle == null)
@@ -452,7 +452,7 @@ public class MetaGraphControllerUI : MonoBehaviour
             txtHopeCurrency.fontSize = MetaNodeDetailsPanelUI.FontSizeSection; // 16 pt
             txtHopeCurrency.fontStyle = FontStyles.Bold;
             txtHopeCurrency.color = new Color(0.35f, 0.85f, 1.0f);
-            txtHopeCurrency.text = "Nadzieja: 0";
+            txtHopeCurrency.text = LocalizationManager.GetFormat("UI_META_HOPE_CURRENCY_FMT", 0);
             txtHopeCurrency.alignment = TextAlignmentOptions.Center;
         }
         else if (txtHopeCurrency == null)
@@ -491,7 +491,7 @@ public class MetaGraphControllerUI : MonoBehaviour
             TextMeshProUGUI lbl = lblObj.GetComponent<TextMeshProUGUI>();
             lbl.fontSize = MetaNodeDetailsPanelUI.FontSizeButton; // 16 pt
             lbl.alignment = TextAlignmentOptions.Center;
-            lbl.text = "CENTRUM [F]";
+            lbl.text = LocalizationManager.Get("UI_META_BTN_RECENTER", "CENTRUM [F]");
             lbl.color = Color.white;
         }
         else if (btnResetFocus == null)
@@ -530,7 +530,7 @@ public class MetaGraphControllerUI : MonoBehaviour
             TextMeshProUGUI lbl = lblObj.GetComponent<TextMeshProUGUI>();
             lbl.fontSize = MetaNodeDetailsPanelUI.FontSizeButton; // 16 pt
             lbl.alignment = TextAlignmentOptions.Center;
-            lbl.text = "POWRÓT";
+            lbl.text = LocalizationManager.Get("UI_RETURN", "POWRÓT");
             lbl.color = Color.white;
         }
         else if (btnClose == null)

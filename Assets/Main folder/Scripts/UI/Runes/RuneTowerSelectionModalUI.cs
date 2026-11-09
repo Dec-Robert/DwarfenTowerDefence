@@ -268,21 +268,21 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
         TextMeshProUGUI nameTmp = cardTr.Find("Txt_TowerName")?.GetComponent<TextMeshProUGUI>();
         if (nameTmp != null)
         {
-            nameTmp.text = tower.buildingName.ToUpper();
+            nameTmp.text = tower.DisplayName.ToUpper();
         }
 
         // Kategoria / Podtytuł
         TextMeshProUGUI catTmp = cardTr.Find("Txt_Category")?.GetComponent<TextMeshProUGUI>();
         if (catTmp != null)
         {
-            catTmp.text = "WIEŻA OBRONNA";
+            catTmp.text = LocalizationManager.Get("UI_TOWER_DEFAULT_TITLE", "WIEŻA OBRONNA");
         }
 
         // Opis
         TextMeshProUGUI descTmp = cardTr.Find("Txt_Description")?.GetComponent<TextMeshProUGUI>();
         if (descTmp != null)
         {
-            descTmp.text = string.IsNullOrEmpty(tower.description) ? "Ciężka konstrukcja obronna twierdzy." : tower.description;
+            descTmp.text = string.IsNullOrEmpty(tower.description) ? LocalizationManager.Get("UI_DRAFT_DEFAULT_DESC", "Ciężka konstrukcja obronna twierdzy.") : tower.DisplayDescription;
         }
 
         // Przycisk wyboru (obsługuje Btn_SelectBuilding lub Btn_SelectTower)
@@ -297,7 +297,7 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
             TextMeshProUGUI btnTxt = selectBtn.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (btnTxt != null)
             {
-                btnTxt.text = "WYBIERZ";
+                btnTxt.text = LocalizationManager.Get("UI_BTN_SELECT", "WYBIERZ");
             }
         }
     }
@@ -311,9 +311,7 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
         {
             if (txtWarningMessage != null)
             {
-                txtWarningMessage.text = $"Czy na pewno chcesz poświęcić tę Kuźnię dla: <b><color=#FFD700>{tower.buildingName.ToUpper()}</color></b>?\n\n" +
-                                         $"Wszystkie osadzone tu runy będą nasycać wyłącznie wybraną konstrukcję w całej twierdzy. " +
-                                         $"<b>Tej decyzji nie można cofnąć!</b>";
+                txtWarningMessage.text = LocalizationManager.GetFormat("UI_RUNE_SACRIFICE_PROMPT", tower.DisplayName.ToUpper());
             }
             pnlConfirmWarningDialog.SetActive(true);
         }

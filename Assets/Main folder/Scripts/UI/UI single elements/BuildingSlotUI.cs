@@ -83,7 +83,13 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         SubscribeToResourceManager();
         UpdateAffordability();
+        LocalizationManager.OnLanguageChanged += HandleLanguageChanged;
         StartCoroutine(DelayedLayoutRefresh());
+    }
+
+    private void HandleLanguageChanged()
+    {
+        if (buildingData != null) SetUpPanel(buildingData);
     }
 
     private void Start()
@@ -94,6 +100,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     private void OnDisable()
     {
+        LocalizationManager.OnLanguageChanged -= HandleLanguageChanged;
         UnsubscribeFromResourceManager();
         if (Tooltip_BuildingExtraInfo.Instance != null)
         {
@@ -232,7 +239,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         // 1. Nazwa, ikona, opis
         if (buildingNameText != null)
         {
-            buildingNameText.text = buildingData.buildingName;
+            buildingNameText.text = buildingData.DisplayName;
         }
 
         if (icon != null)
@@ -277,7 +284,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
                 break;
             case BuildingType.Utility or BuildingType.Unique:
                 descriptionPanel.SetActive(true);
-                descriptionText.text = string.IsNullOrEmpty(buildingData.description) ? "" : buildingData.description;
+                descriptionText.text = string.IsNullOrEmpty(buildingData.description) ? "" : buildingData.DisplayDescription;
                 break;
         }
     }
@@ -332,18 +339,18 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
                         break;
                 }
 
-                dmgText.text = $"Obrażenia: <color={colorHex}>{towerData.baseDamage}</color>";
+                dmgText.text = $"{LocalizationManager.Get("stat_damage_colon", "Obrażenia:")} <color={colorHex}>{towerData.baseDamage}</color>";
             }
 
             if (attackSpeedText != null)
             {
-                attackSpeedText.text = $"Prędkość ataku: {towerData.fireRate:F1}";
+                attackSpeedText.text = $"{LocalizationManager.Get("stat_attackspeed_colon", "Prędkość ataku:")} {towerData.fireRate:F1}";
             }
         }
         else
         {
-            if (dmgText != null) dmgText.text = "Obrażenia: -";
-            if (attackSpeedText != null) attackSpeedText.text = "Prędkość ataku: -";
+            if (dmgText != null) dmgText.text = $"{LocalizationManager.Get("stat_damage_colon", "Obrażenia:")} -";
+            if (attackSpeedText != null) attackSpeedText.text = $"{LocalizationManager.Get("stat_attackspeed_colon", "Prędkość ataku:")} -";
         }
     }
 
@@ -351,7 +358,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         if (productionInfoPanel != null)
         {
-            productionInfoPanel.text = "Produkcja bazowa";
+            productionInfoPanel.text = LocalizationManager.Get("UI_PRODUCTION_BASE", "Produkcja bazowa");
         }
 
         if (productionResourcesContainer != null)
@@ -380,18 +387,18 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         {
             if (housingStartingState != null)
             {
-                housingStartingState.text = $"Populacja: {housingData.initialResidents}/{housingData.maxResidents}";
+                housingStartingState.text = LocalizationManager.GetFormat("UI_SLOT_POP_FMT", housingData.initialResidents, housingData.maxResidents);
             }
 
             if (cyclesToGrowth != null)
             {
-                cyclesToGrowth.text = $"Prędkość rozwoju: {housingData.GetGrowthCyclesRequired(housingData.initialResidents)}";
+                cyclesToGrowth.text = $"{LocalizationManager.Get("UI_SLOT_GROWTH_SPEED", "Prędkość rozwoju:")} {housingData.GetGrowthCyclesRequired(housingData.initialResidents)}";
             }
         }
         else
         {
-            if (housingStartingState != null) housingStartingState.text = "Populacja: -";
-            if (cyclesToGrowth != null) cyclesToGrowth.text = "Prędkość rozwoju: -";
+            if (housingStartingState != null) housingStartingState.text = $"{LocalizationManager.Get("tooltip_growth_none", "Populacja: -")}";
+            if (cyclesToGrowth != null) cyclesToGrowth.text = $"{LocalizationManager.Get("UI_SLOT_GROWTH_SPEED", "Prędkość rozwoju:")} -";
         }
     }
 

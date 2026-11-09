@@ -252,7 +252,7 @@ public class TowerDraftModalUI : MonoBehaviour
 
         txtTitle = titleObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) txtTitle.font = fontAsset;
-        txtTitle.text = "WYBÓR WIEŻY OBRONNEJ • DRAFT ROZWOJU";
+        txtTitle.text = LocalizationManager.Get("UI_DRAFT_TITLE", "WYBÓR WIEŻY OBRONNEJ • DRAFT ROZWOJU");
         txtTitle.fontSize = FontSizeHeader; // 20 pt
         txtTitle.fontStyle = FontStyles.Bold;
         txtTitle.color = new Color(0.95f, 0.85f, 0.45f); // Złoty nagłówek
@@ -269,7 +269,7 @@ public class TowerDraftModalUI : MonoBehaviour
 
         txtSubtitle = subObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) txtSubtitle.font = fontAsset;
-        txtSubtitle.text = "Wybierz nową wieżę do odblokowania. Wybór jest trwały i udostępni wieżę do budowy w Bastionie.";
+        txtSubtitle.text = LocalizationManager.Get("UI_DRAFT_SUBTITLE", "Wybierz nową wieżę do odblokowania. Wybór jest trwały i udostępni wieżę do budowy w Bastionie.");
         txtSubtitle.fontSize = FontSizeHelper; // 10 pt
         txtSubtitle.color = new Color(0.72f, 0.74f, 0.78f);
         txtSubtitle.alignment = TextAlignmentOptions.MidlineLeft;
@@ -323,7 +323,7 @@ public class TowerDraftModalUI : MonoBehaviour
             emptyObj.transform.SetParent(cardsContainer, false);
             TextMeshProUGUI emptyTxt = emptyObj.GetComponent<TextMeshProUGUI>();
             if (fontAsset != null) emptyTxt.font = fontAsset;
-            emptyTxt.text = "Wszystkie wieże obronne zostały już odblokowane w Bastionie!";
+            emptyTxt.text = LocalizationManager.Get("UI_DRAFT_ALL_UNLOCKED", "Wszystkie wieże obronne zostały już odblokowane w Bastionie!");
             emptyTxt.fontSize = FontSizeButton; // 16 pt
             emptyTxt.alignment = TextAlignmentOptions.Center;
             emptyTxt.color = new Color(0.85f, 0.85f, 0.85f);
@@ -386,7 +386,7 @@ public class TowerDraftModalUI : MonoBehaviour
 
         TextMeshProUGUI nameTxt = nameObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) nameTxt.font = fontAsset;
-        nameTxt.text = !string.IsNullOrEmpty(tower.buildingName) ? tower.buildingName : tower.name;
+        nameTxt.text = tower != null ? tower.DisplayName : "";
         nameTxt.fontSize = FontSizeHeader; // 20 pt
         nameTxt.fontStyle = FontStyles.Bold;
         nameTxt.color = new Color(0.95f, 0.85f, 0.45f);
@@ -401,7 +401,9 @@ public class TowerDraftModalUI : MonoBehaviour
 
         TextMeshProUGUI descTxt = descObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) descTxt.font = fontAsset;
-        descTxt.text = !string.IsNullOrEmpty(tower.description) ? tower.description : "Machina obronna gotowa wesprzeć mury Bastionu.";
+        descTxt.text = (tower != null && !string.IsNullOrEmpty(tower.description)) 
+            ? tower.DisplayDescription 
+            : LocalizationManager.Get("UI_DRAFT_FALLBACK_DESC", "Machina obronna gotowa wesprzeć mury Bastionu.");
         descTxt.fontSize = FontSizeContent; // 13 pt
         descTxt.color = new Color(0.82f, 0.84f, 0.88f);
         descTxt.alignment = TextAlignmentOptions.TopLeft;
@@ -419,14 +421,14 @@ public class TowerDraftModalUI : MonoBehaviour
         statsVlg.childControlWidth = true;
         statsVlg.childControlHeight = false;
 
-        CreateStatRow(statsObj.transform, "Obrażenia:", $"{tower.baseDamage}", fontAsset);
-        CreateStatRow(statsObj.transform, "Zasięg:", $"{tower.baseRange}", fontAsset);
-        CreateStatRow(statsObj.transform, "Szybkostrzelność:", $"{tower.fireRate}/s", fontAsset);
-        CreateStatRow(statsObj.transform, "Penetracja Pancerza:", $"{tower.armorPenetration}%", fontAsset);
-        CreateStatRow(statsObj.transform, "Penetracja Magiczna:", $"{tower.magicPenetration}%", fontAsset);
+        CreateStatRow(statsObj.transform, LocalizationManager.Get("stat_damage_colon", "Obrażenia:"), $"{tower.baseDamage}", fontAsset);
+        CreateStatRow(statsObj.transform, LocalizationManager.Get("stat_range_colon", "Zasięg:"), $"{tower.baseRange}", fontAsset);
+        CreateStatRow(statsObj.transform, LocalizationManager.Get("stat_firerate_colon", "Szybkostrzelność:"), $"{tower.fireRate}/s", fontAsset);
+        CreateStatRow(statsObj.transform, LocalizationManager.Get("stat_armorpen_colon", "Penetracja Pancerza:"), $"{tower.armorPenetration}%", fontAsset);
+        CreateStatRow(statsObj.transform, LocalizationManager.Get("stat_magicpen_colon", "Penetracja Magiczna:"), $"{tower.magicPenetration}%", fontAsset);
 
         // 5. Przycisk Wyboru Wieży (16 pt wg GEMINI.md)
-        GameObject btnSelectObj = CreateButton(cardObj.transform, "Btn_SelectTower", "WYBIERZ WIEŻĘ", fontAsset, FontSizeButton, new Vector2(0f, 44f));
+        GameObject btnSelectObj = CreateButton(cardObj.transform, "Btn_SelectTower", LocalizationManager.Get("UI_DRAFT_SELECT_BTN", "WYBIERZ WIEŻĘ"), fontAsset, FontSizeButton, new Vector2(0f, 44f));
         LayoutElement btnLe = btnSelectObj.AddComponent<LayoutElement>();
         btnLe.preferredHeight = 44f;
         btnLe.minHeight = 44f;

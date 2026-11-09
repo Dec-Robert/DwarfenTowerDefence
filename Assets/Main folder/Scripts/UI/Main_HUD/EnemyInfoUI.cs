@@ -64,7 +64,7 @@ public class EnemyInfoUI : MonoBehaviour
         if (enemyStats == null || enemyStats.data == null) return;
 
         string tierText = (enemyStats.data.rank == EnemyRank.Boss || enemyStats.data.isBoss) ? "" : $" (T{enemyStats.Tier})";
-        monsterNameText.text = $"{enemyStats.data.enemyName}{tierText}";
+        monsterNameText.text = $"{enemyStats.data.DisplayName}{tierText}";
         healthText.text = $"{Mathf.CeilToInt(enemyStats.GetCurrentHealth())} / {Mathf.CeilToInt(enemyStats.GetMaxHealth())}";
         monsterSpeedText.text = $"{enemyStats.CurrentMoveSpeed:0.##}";
         monsterArmourText.text = $"{enemyStats.CurrentArmor * 100f:0.#}%";

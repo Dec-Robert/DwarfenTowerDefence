@@ -43,7 +43,9 @@ public class EnemyEtherDropManager : MonoBehaviour
     public int EliteBossEtherDropped => eliteBossEtherDropped;
     public float ActiveGuaranteedPercent => activeGuaranteedPercent;
     public float ActiveNaturalDropChance => activeNaturalDropChance;
-    public string ActiveEtherChanceLabel => activeEtherChanceLabel;
+    public string ActiveEtherChanceLabel => LocalizationManager.Instance != null && !string.IsNullOrEmpty(activeEtherChanceLabel)
+        ? LocalizationManager.Get($"hearth_ether_tier_{activeEtherChanceLabel.Trim().ToLowerInvariant()}", activeEtherChanceLabel)
+        : activeEtherChanceLabel;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
@@ -201,7 +203,7 @@ public class EnemyEtherDropManager : MonoBehaviour
 
         if (FloatingTextManager.Instance != null)
         {
-            FloatingTextManager.Instance.ShowGain(position, "Ether", amount);
+            FloatingTextManager.Instance.ShowGain(position, DailyResourceCalculator.GetResourceDisplayName(ResourceType.Ether), amount);
         }
 
         OnEtherDropped?.Invoke(amount, rank, isGuaranteed, position);

@@ -320,13 +320,19 @@ public class BeaconEntity : BuildingEntity
     /// </summary>
     public static string GetEtherChanceLabel()
     {
+        string raw = "Średnie";
         if (ActiveNightLevel > 0 && !string.IsNullOrEmpty(ActiveNightEtherChanceLabel))
         {
-            return ActiveNightEtherChanceLabel;
+            raw = ActiveNightEtherChanceLabel;
+        }
+        else
+        {
+            HearthConfigSO config = GetConfig();
+            if (config != null) raw = config.GetLevelData(SelectedDraftLevel).etherChanceTierLabel;
         }
 
-        HearthConfigSO config = GetConfig();
-        return config != null ? config.GetLevelData(SelectedDraftLevel).etherChanceTierLabel : "Średnie";
+        string key = $"hearth_ether_tier_{raw.Trim().ToLowerInvariant()}";
+        return LocalizationManager.Instance != null ? LocalizationManager.Get(key, raw) : raw;
     }
 
     /// <summary>

@@ -35,6 +35,23 @@ public class MetaUpgradeSO : ScriptableObject
     public Sprite icon;
     public int cost;
 
+    public string DisplayName => LocalizationManager.Get($"META_{GetLocalizationId()}_NAME", upgradeName);
+    public string DisplayDescription => LocalizationManager.Get($"META_{GetLocalizationId()}_DESC", description);
+
+    public string GetLocalizationId()
+    {
+        string raw = !string.IsNullOrEmpty(id) ? id : (!string.IsNullOrEmpty(upgradeName) ? upgradeName : name);
+        var sb = new System.Text.StringBuilder();
+        foreach (char c in raw)
+        {
+            if (char.IsLetterOrDigit(c)) sb.Append(char.ToUpperInvariant(c));
+            else if (c == ' ' || c == '_' || c == '-') sb.Append('_');
+        }
+        string clean = sb.ToString();
+        while (clean.Contains("__")) clean = clean.Replace("__", "_");
+        return clean.Trim('_');
+    }
+
     [Header("── Pozycja w grafie ─────────────────────")]
     public Vector2 nodePosition;
 

@@ -484,39 +484,39 @@ public class MapExpansionManager : MonoBehaviour
     {
         if (!activeChunks.TryGetValue(coord, out var data))
         {
-            reason = "Nieprawidłowy obszar.";
+            reason = LocalizationManager.Get("reason_invalid_chunk", "Nieprawidłowy obszar.");
             return false;
         }
 
         if (data.baseState != ChunkState.Borderlands)
         {
-            reason = "Obszar nie znajduje się na granicy (Borderlands).";
+            reason = LocalizationManager.Get("reason_not_borderlands", "Obszar nie znajduje się na granicy (Borderlands).");
             return false;
         }
 
         if (data.hasActiveMission)
         {
-            reason = "Na tym obszarze trwa już aktywna misja.";
+            reason = LocalizationManager.Get("reason_active_mission", "Na tym obszarze trwa już aktywna misja.");
             return false;
         }
 
         int minElves = costConfig != null ? costConfig.minElvesForSurvey : 2;
         if (elfCount < minElves)
         {
-            reason = $"Wymagane co najmniej {minElves} elfów.";
+            reason = LocalizationManager.GetFormat("reason_min_elves", minElves);
             return false;
         }
 
         if (AvailableEquipment < elfCount)
         {
-            reason = $"Brak wystarczającej liczby wolnego ekwipunku zwiadowczego ({AvailableEquipment}/{elfCount}).";
+            reason = LocalizationManager.GetFormat("reason_no_equipment", AvailableEquipment, elfCount);
             return false;
         }
 
         int idleElves = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(Race.Elves) : 0;
         if (idleElves < elfCount)
         {
-            reason = $"Brak wystarczającej liczby wolnych elfów ({idleElves}/{elfCount}).";
+            reason = LocalizationManager.GetFormat("reason_no_idle_elves", idleElves, elfCount);
             return false;
         }
 
@@ -527,10 +527,10 @@ public class MapExpansionManager : MonoBehaviour
                 ResourceManager.Instance.GetResourceAmount(ResourceType.Wood)))
         {
             var parts = new List<string>();
-            if (cost.foodCost > 0) parts.Add($"{cost.foodCost} Jedzenia");
-            if (cost.woodCost > 0) parts.Add($"{cost.woodCost} Drewna");
-            if (cost.etherCost > 0) parts.Add($"{cost.etherCost} Kryształ Eteru");
-            reason = $"Niewystarczające zasoby (Wymagane: {string.Join(", ", parts)}).";
+            if (cost.foodCost > 0) parts.Add($"{cost.foodCost} {DailyResourceCalculator.GetResourceDisplayName(ResourceType.Food)}");
+            if (cost.woodCost > 0) parts.Add($"{cost.woodCost} {DailyResourceCalculator.GetResourceDisplayName(ResourceType.Wood)}");
+            if (cost.etherCost > 0) parts.Add($"{cost.etherCost} {DailyResourceCalculator.GetResourceDisplayName(ResourceType.Ether)}");
+            reason = LocalizationManager.GetFormat("reason_insufficient_resources", string.Join(", ", parts));
             return false;
         }
 
@@ -573,39 +573,39 @@ public class MapExpansionManager : MonoBehaviour
     {
         if (!activeChunks.TryGetValue(coord, out var data))
         {
-            reason = "Nieprawidłowy obszar.";
+            reason = LocalizationManager.Get("reason_invalid_chunk", "Nieprawidłowy obszar.");
             return false;
         }
 
         if (data.baseState != ChunkState.Borderlands)
         {
-            reason = "Obszar nie znajduje się na granicy (Borderlands).";
+            reason = LocalizationManager.Get("reason_not_borderlands", "Obszar nie znajduje się na granicy (Borderlands).");
             return false;
         }
 
         if (data.hasActiveMission)
         {
-            reason = "Na tym obszarze trwa już aktywna misja.";
+            reason = LocalizationManager.Get("reason_active_mission", "Na tym obszarze trwa już aktywna misja.");
             return false;
         }
 
         if (data.hasReconIntel)
         {
-            reason = "Ten obszar został już zbadany przez zwiad wstępny.";
+            reason = LocalizationManager.Get("reason_already_reconned", "Ten obszar został już zbadany przez zwiad wstępny.");
             return false;
         }
 
         int reqElves = costConfig != null ? costConfig.reconElfRequirement : 3;
         if (AvailableEquipment < reqElves)
         {
-            reason = $"Brak ekwipunku zwiadowczego ({AvailableEquipment}/{reqElves}).";
+            reason = LocalizationManager.GetFormat("reason_no_equipment_short", AvailableEquipment, reqElves);
             return false;
         }
 
         int idleElves = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(Race.Elves) : 0;
         if (idleElves < reqElves)
         {
-            reason = $"Brak wolnych elfów ({idleElves}/{reqElves}).";
+            reason = LocalizationManager.GetFormat("reason_no_idle_elves_short", idleElves, reqElves);
             return false;
         }
 
@@ -616,10 +616,10 @@ public class MapExpansionManager : MonoBehaviour
                 ResourceManager.Instance.GetResourceAmount(ResourceType.Wood)))
         {
             var parts = new List<string>();
-            if (cost.foodCost > 0) parts.Add($"{cost.foodCost} Jedzenia");
-            if (cost.woodCost > 0) parts.Add($"{cost.woodCost} Drewna");
-            if (cost.etherCost > 0) parts.Add($"{cost.etherCost} Kryształ Eteru");
-            reason = $"Niewystarczające zasoby (Wymagane: {string.Join(", ", parts)}).";
+            if (cost.foodCost > 0) parts.Add($"{cost.foodCost} {DailyResourceCalculator.GetResourceDisplayName(ResourceType.Food)}");
+            if (cost.woodCost > 0) parts.Add($"{cost.woodCost} {DailyResourceCalculator.GetResourceDisplayName(ResourceType.Wood)}");
+            if (cost.etherCost > 0) parts.Add($"{cost.etherCost} {DailyResourceCalculator.GetResourceDisplayName(ResourceType.Ether)}");
+            reason = LocalizationManager.GetFormat("reason_insufficient_resources", string.Join(", ", parts));
             return false;
         }
 

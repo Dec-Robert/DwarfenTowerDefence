@@ -12,6 +12,18 @@ public class HearthLevelData
     public Color accentColor = new Color(0.28f, 0.56f, 0.78f, 1f);
     public Sprite levelIcon;
 
+    public string DisplayTitle => LocalizationManager.Instance != null ? LocalizationManager.Get($"hearth_lvl_{levelIndex}_title", title) : title;
+    public string DisplayTagText => LocalizationManager.Instance != null ? LocalizationManager.Get($"hearth_lvl_{levelIndex}_tag", tagText) : tagText;
+    public string DisplayEtherTierLabel
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(etherChanceTierLabel)) return string.Empty;
+            string key = $"hearth_ether_tier_{etherChanceTierLabel.Trim().ToLowerInvariant()}";
+            return LocalizationManager.Instance != null ? LocalizationManager.Get(key, etherChanceTierLabel) : etherChanceTierLabel;
+        }
+    }
+
     [Header("Koszt rozpalenia")]
     [Tooltip("Mnożnik n dla tego poziomu (np. Poziom 1 = 0, Poziom 2 = 1, Poziom 3 = 2, itd.).")]
     public int coalCostMultiplier = 0;

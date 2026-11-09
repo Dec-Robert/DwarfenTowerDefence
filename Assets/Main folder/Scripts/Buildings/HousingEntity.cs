@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -123,7 +123,7 @@ public class HousingEntity : BuildingEntity
 
             if (FloatingTextManager.Instance != null)
             {
-                FloatingTextManager.Instance.ShowGain(transform.position, prod.type.ToString(), totalAmount);
+                FloatingTextManager.Instance.ShowGain(transform.position, DailyResourceCalculator.GetResourceDisplayName(prod.type), totalAmount);
             }
         }
     }

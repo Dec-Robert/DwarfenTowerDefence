@@ -171,11 +171,20 @@ public class BuildingWorkerOverlayHintUI : MonoBehaviour
         BuildingWorkerOverlayManager.OnVisibilityChanged -= RefreshState;
         BuildingWorkerOverlayManager.OnVisibilityChanged += RefreshState;
 
+        LocalizationManager.OnLanguageChanged -= OnLangChanged;
+        LocalizationManager.OnLanguageChanged += OnLangChanged;
+
+        RefreshState(BuildingWorkerOverlayManager.Instance != null && BuildingWorkerOverlayManager.Instance.IsVisible);
+    }
+
+    private void OnLangChanged()
+    {
         RefreshState(BuildingWorkerOverlayManager.Instance != null && BuildingWorkerOverlayManager.Instance.IsVisible);
     }
 
     private void OnDestroy()
     {
+        LocalizationManager.OnLanguageChanged -= OnLangChanged;
         BuildingWorkerOverlayManager.OnVisibilityChanged -= RefreshState;
         if (Instance == this) Instance = null;
     }
@@ -184,7 +193,9 @@ public class BuildingWorkerOverlayHintUI : MonoBehaviour
     {
         if (hintText != null)
         {
-            hintText.text = isOverlayVisible ? DefaultOnText : DefaultOffText;
+            hintText.text = isOverlayVisible
+                ? LocalizationManager.Get("UI_HINT_OVERLAY_ON", DefaultOnText)
+                : LocalizationManager.Get("UI_HINT_OVERLAY_OFF", DefaultOffText);
         }
 
         if (backgroundImage != null)

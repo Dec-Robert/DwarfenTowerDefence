@@ -127,9 +127,9 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
         switch (fogState)
         {
             case MetaFogState.Purchased:
-                txtNodeName.text = upgrade.upgradeName;
-                txtDescription.text = !string.IsNullOrEmpty(upgrade.description) ? upgrade.description : "Ulepszenie aktywne.";
-                txtCostValue.text = "WYKUPIONE";
+                txtNodeName.text = upgrade.DisplayName;
+                txtDescription.text = !string.IsNullOrEmpty(upgrade.description) ? upgrade.DisplayDescription : LocalizationManager.Get("META_UPGRADE_ACTIVE", "Ulepszenie aktywne.");
+                txtCostValue.text = LocalizationManager.Get("META_PURCHASED", "WYKUPIONE");
                 txtCostValue.color = new Color(0.55f, 0.95f, 0.55f);
                 if (imgNodeIcon != null)
                 {
@@ -137,16 +137,16 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
                     if (upgrade.icon != null) imgNodeIcon.sprite = upgrade.icon;
                 }
                 FormatPrerequisites(upgrade);
-                txtHelper.text = "Ulepszenie jest trwale aktywne w Twoim Bastionie.";
+                txtHelper.text = LocalizationManager.Get("META_PERMANENT_INFO", "Ulepszenie jest trwale aktywne w Twoim Bastionie.");
                 txtHelper.color = new Color(0.70f, 0.75f, 0.80f);
                 btnPurchase.interactable = false;
-                txtPurchaseButton.text = "ODBLOKOWANE";
+                txtPurchaseButton.text = LocalizationManager.Get("META_UNLOCKED", "ODBLOKOWANE");
                 break;
 
             case MetaFogState.Available:
-                txtNodeName.text = upgrade.upgradeName;
-                txtDescription.text = !string.IsNullOrEmpty(upgrade.description) ? upgrade.description : "Brak opisu.";
-                txtCostValue.text = $"{upgrade.cost} Nadziei";
+                txtNodeName.text = upgrade.DisplayName;
+                txtDescription.text = !string.IsNullOrEmpty(upgrade.description) ? upgrade.DisplayDescription : LocalizationManager.Get("META_NO_DESC", "Brak opisu.");
+                txtCostValue.text = LocalizationManager.GetFormat("UI_META_COST_HOPE_FMT", upgrade.cost);
                 txtCostValue.color = new Color(0.35f, 0.85f, 1.0f);
                 if (imgNodeIcon != null)
                 {
@@ -157,36 +157,36 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
 
                 bool canAfford = currentHope >= upgrade.cost;
                 btnPurchase.interactable = canAfford;
-                txtPurchaseButton.text = "KUP ULEPSZENIE";
+                txtPurchaseButton.text = LocalizationManager.Get("UI_META_PURCHASE_BTN", "KUP ULEPSZENIE");
 
                 if (canAfford)
                 {
-                    txtHelper.text = "Posiadasz wystarczającą ilość Nadziei, aby odblokować to ulepszenie.";
+                    txtHelper.text = LocalizationManager.Get("UI_META_ENOUGH_HOPE", "Posiadasz wystarczającą ilość Nadziei, aby odblokować to ulepszenie.");
                     txtHelper.color = new Color(0.40f, 0.90f, 0.50f);
                 }
                 else
                 {
                     int missing = upgrade.cost - currentHope;
-                    txtHelper.text = $"Brakuje {missing} Nadziei do zakupu tego ulepszenia.";
+                    txtHelper.text = LocalizationManager.GetFormat("UI_META_NEED_HOPE_FMT", missing);
                     txtHelper.color = new Color(0.95f, 0.40f, 0.40f);
                 }
                 break;
 
             case MetaFogState.Mystery:
                 txtNodeName.text = "???";
-                txtDescription.text = "Zbadaj wcześniejsze ulepszenia";
+                txtDescription.text = LocalizationManager.Get("UI_META_MYSTERY_DESC", "Zbadaj wcześniejsze ulepszenia");
                 txtCostValue.text = "???";
                 txtCostValue.color = new Color(0.60f, 0.62f, 0.68f);
                 if (imgNodeIcon != null)
                 {
                     imgNodeIcon.color = new Color(0.25f, 0.28f, 0.35f, 0.7f);
                 }
-                txtPrereqList.text = "Wymagania: Nieznane (ukryte w mgle)";
+                txtPrereqList.text = LocalizationManager.Get("UI_META_PREREQ_UNKNOWN", "Wymagania: Nieznane (ukryte w mgle)");
                 txtPrereqList.color = new Color(0.60f, 0.62f, 0.68f);
-                txtHelper.text = "Wymaga odblokowania wcześniejszych węzłów.";
+                txtHelper.text = LocalizationManager.Get("UI_META_PREREQ_REQUIRED", "Wymaga odblokowania wcześniejszych węzłów.");
                 txtHelper.color = new Color(0.70f, 0.72f, 0.75f);
                 btnPurchase.interactable = false;
-                txtPurchaseButton.text = "ZABLOKOWANE";
+                txtPurchaseButton.text = LocalizationManager.Get("UI_META_LOCKED", "ZABLOKOWANE");
                 break;
         }
 
@@ -200,7 +200,7 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
     {
         if (upgrade == null || upgrade.prerequisites == null || upgrade.prerequisites.Count == 0)
         {
-            txtPrereqList.text = "Brak wymagań wstępnych (Węzeł początkowy)";
+            txtPrereqList.text = LocalizationManager.Get("UI_META_NO_PREREQ", "Brak wymagań wstępnych (Węzeł początkowy)");
             txtPrereqList.color = new Color(0.55f, 0.95f, 0.55f);
             return;
         }
@@ -346,21 +346,21 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
         // Karta A
         if (txtVariantATitle != null && currentUpgrade.variantA != null)
         {
-            txtVariantATitle.text = !string.IsNullOrEmpty(currentUpgrade.variantA.upgradeName) ? currentUpgrade.variantA.upgradeName : "Wariant A";
+            txtVariantATitle.text = !string.IsNullOrEmpty(currentUpgrade.variantA.upgradeName) ? currentUpgrade.variantA.DisplayName : LocalizationManager.Get("UI_META_VARIANT_A", "Wariant A");
         }
         if (txtVariantADesc != null && currentUpgrade.variantA != null)
         {
-            txtVariantADesc.text = currentUpgrade.variantA.description;
+            txtVariantADesc.text = currentUpgrade.variantA.DisplayDescription;
         }
 
         // Karta B
         if (txtVariantBTitle != null && currentUpgrade.variantB != null)
         {
-            txtVariantBTitle.text = !string.IsNullOrEmpty(currentUpgrade.variantB.upgradeName) ? currentUpgrade.variantB.upgradeName : "Wariant B";
+            txtVariantBTitle.text = !string.IsNullOrEmpty(currentUpgrade.variantB.upgradeName) ? currentUpgrade.variantB.DisplayName : LocalizationManager.Get("UI_META_VARIANT_B", "Wariant B");
         }
         if (txtVariantBDesc != null && currentUpgrade.variantB != null)
         {
-            txtVariantBDesc.text = currentUpgrade.variantB.description;
+            txtVariantBDesc.text = currentUpgrade.variantB.DisplayDescription;
         }
 
         RefreshVariantSelectionVisuals(activeVariant);
@@ -390,16 +390,16 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
         {
             if (selectedVariant == activeVariant)
             {
-                txtPurchaseButton.text = $"WARIANT {selectedVariant} AKTYWNY";
+                txtPurchaseButton.text = LocalizationManager.GetFormat("UI_META_VARIANT_ACTIVE_FMT", selectedVariant);
                 btnPurchase.interactable = false;
-                txtHelper.text = "Ten wariant jest obecnie aktywny. Wybierz drugi wariant, aby go bezpłatnie przełączyć.";
+                txtHelper.text = LocalizationManager.Get("UI_META_VARIANT_ACTIVE_HINT", "Ten wariant jest obecnie aktywny. Wybierz drugi wariant, aby go bezpłatnie przełączyć.");
                 txtHelper.color = new Color(0.70f, 0.75f, 0.80f);
             }
             else
             {
-                txtPurchaseButton.text = $"AKTYWUJ WARIANT {selectedVariant} (0 Nadziei)";
+                txtPurchaseButton.text = LocalizationManager.GetFormat("UI_META_ACTIVATE_VARIANT_FMT", selectedVariant);
                 btnPurchase.interactable = true;
-                txtHelper.text = $"Kliknij, aby bezpłatnie przełączyć aktywną specjalizację na Wariant {selectedVariant}.";
+                txtHelper.text = LocalizationManager.GetFormat("UI_META_SWITCH_VARIANT_HINT", selectedVariant);
                 txtHelper.color = new Color(0.40f, 0.90f, 0.50f);
             }
         }
@@ -411,8 +411,8 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
 
             bool canAfford = currentHope >= currentUpgrade.cost;
             btnPurchase.interactable = canAfford;
-            txtPurchaseButton.text = $"KUP: WARIANT {selectedVariant} ({currentUpgrade.cost} Nadziei)";
-            txtHelper.text = $"Wybierz wariant przed zakupem (Wariant {selectedVariant}). Po zakupie możesz go dowolnie zmieniać.";
+            txtPurchaseButton.text = LocalizationManager.GetFormat("UI_META_BUY_VARIANT_FMT", selectedVariant, currentUpgrade.cost);
+            txtHelper.text = LocalizationManager.GetFormat("UI_META_BUY_VARIANT_HINT", selectedVariant);
         }
     }
 
@@ -516,7 +516,7 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
             txtCostSection.fontSize = FontSizeSection; // 16 pt
             txtCostSection.fontStyle = FontStyles.Bold;
             txtCostSection.color = new Color(0.85f, 0.88f, 0.95f);
-            txtCostSection.text = "KOSZT ULEPSZENIA";
+            txtCostSection.text = LocalizationManager.Get("UI_META_COST_SECTION", "KOSZT ULEPSZENIA");
         }
         else if (txtCostSection == null)
         {
@@ -539,7 +539,7 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
             txtCostValue = costValObj.GetComponent<TextMeshProUGUI>();
             txtCostValue.fontSize = FontSizeDescription; // 13 pt
             txtCostValue.color = new Color(0.35f, 0.85f, 1.0f);
-            txtCostValue.text = "100 Nadziei";
+            txtCostValue.text = LocalizationManager.GetFormat("UI_META_COST_HOPE_FMT", 100);
         }
         else if (txtCostValue == null)
         {
@@ -582,7 +582,7 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
             txtEffectSection.fontSize = FontSizeSection; // 16 pt
             txtEffectSection.fontStyle = FontStyles.Bold;
             txtEffectSection.color = new Color(0.85f, 0.88f, 0.95f);
-            txtEffectSection.text = "EFEKT I OPIS";
+            txtEffectSection.text = LocalizationManager.Get("UI_META_EFFECT_SECTION", "EFEKT I OPIS");
         }
         else if (txtEffectSection == null)
         {
@@ -716,7 +716,7 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
             txtPrereqSection.fontSize = FontSizeSection; // 16 pt
             txtPrereqSection.fontStyle = FontStyles.Bold;
             txtPrereqSection.color = new Color(0.85f, 0.88f, 0.95f);
-            txtPrereqSection.text = "WYMAGANIA WSTĘPNE";
+            txtPrereqSection.text = LocalizationManager.Get("UI_META_PREREQ_HEADER", "WYMAGANIA WSTĘPNE");
         }
         else if (txtPrereqSection == null)
         {
@@ -798,7 +798,7 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
             txtPurchaseButton.fontStyle = FontStyles.Bold;
             txtPurchaseButton.alignment = TextAlignmentOptions.Center;
             txtPurchaseButton.color = Color.white;
-            txtPurchaseButton.text = "KUP ULEPSZENIE";
+            txtPurchaseButton.text = LocalizationManager.Get("UI_META_PURCHASE_BTN", "KUP ULEPSZENIE");
         }
         else
         {

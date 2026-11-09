@@ -263,7 +263,7 @@ public class BuildingEntity : MonoBehaviour
                     ResourceManager.Instance.AddResource(cost.type, intRefund);
 
                     if (FloatingTextManager.Instance != null)
-                        FloatingTextManager.Instance.ShowGain(transform.position, cost.type.ToString(), intRefund);
+                        FloatingTextManager.Instance.ShowGain(transform.position, DailyResourceCalculator.GetResourceDisplayName(cost.type), intRefund);
                 }
             }
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Kontroler menu pauzy / menu gry podpięty pod Canvas_MainMenu na Game scene.
-/// Zgodny ze standardami UI z GEMINI.md.
+/// Zgodny ze standardami UI z GEMINI.md oraz systemem lokalizacji.
 /// </summary>
 public class CanvasMainMenuUI : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class CanvasMainMenuUI : MonoBehaviour
     [Header("Przyciski")]
     [SerializeField] private Button btnResume;
     [SerializeField] private Button btnBackToMenu;
+    [SerializeField] private Button btnLanguage;
     [SerializeField] private Button btnExit;
 
     [Header("Konfiguracja Scen")]
@@ -34,6 +36,16 @@ public class CanvasMainMenuUI : MonoBehaviour
         {
             pnlBackground.SetActive(false);
         }
+    }
+
+    private void OnEnable()
+    {
+        LocalizationManager.OnLanguageChanged += ApplyGeminiUIStandards;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationManager.OnLanguageChanged -= ApplyGeminiUIStandards;
     }
 
     private void Start()
@@ -73,23 +85,41 @@ public class CanvasMainMenuUI : MonoBehaviour
         }
 
         Transform container = pnlBackground != null ? pnlBackground.transform : transform;
+        Transform btnContainer = container.Find("Pnl_Button") ?? container;
 
         if (btnResume == null)
         {
-            Transform t = container.Find("Pnl_Button/Btn_Start") ?? container.Find("Btn_Start");
+            Transform t = btnContainer.Find("Btn_Start");
             if (t != null) btnResume = t.GetComponent<Button>();
         }
 
         if (btnBackToMenu == null)
         {
-            Transform t = container.Find("Pnl_Button/Btn_Back_To_Menu") ?? container.Find("Btn_Back_To_Menu");
+            Transform t = btnContainer.Find("Btn_Back_To_Menu");
             if (t != null) btnBackToMenu = t.GetComponent<Button>();
         }
 
         if (btnExit == null)
         {
-            Transform t = container.Find("Pnl_Button/Btn_Exit") ?? container.Find("Btn_Exit");
+            Transform t = btnContainer.Find("Btn_Exit");
             if (t != null) btnExit = t.GetComponent<Button>();
+        }
+
+        if (btnLanguage == null)
+        {
+            Transform t = btnContainer.Find("Btn_Language");
+            if (t != null)
+            {
+                btnLanguage = t.GetComponent<Button>();
+            }
+            else if (btnExit != null)
+            {
+                // Dynamiczne utworzenie przycisku języka obok wyjścia
+                GameObject langGo = Instantiate(btnExit.gameObject, btnExit.transform.parent);
+                langGo.name = "Btn_Language";
+                langGo.transform.SetSiblingIndex(btnExit.transform.GetSiblingIndex());
+                btnLanguage = langGo.GetComponent<Button>();
+            }
         }
     }
 
@@ -107,6 +137,12 @@ public class CanvasMainMenuUI : MonoBehaviour
             btnBackToMenu.onClick.AddListener(BackToMainMenu);
         }
 
+        if (btnLanguage != null)
+        {
+            btnLanguage.onClick.RemoveAllListeners();
+            btnLanguage.onClick.AddListener(ToggleLanguage);
+        }
+
         if (btnExit != null)
         {
             btnExit.onClick.RemoveAllListeners();
@@ -114,12 +150,26 @@ public class CanvasMainMenuUI : MonoBehaviour
         }
     }
 
+    private void ToggleLanguage()
+    {
+        string nextLang = LocalizationManager.CurrentLanguage == "pl" ? "en" : "pl";
+        LocalizationManager.SetLanguage(nextLang);
+    }
+
     private void ApplyGeminiUIStandards()
     {
         // GEMINI.md: 16 pt dla sekcji / przycisków funkcyjnych
-        SetButtonTextAndSize(btnResume, "Wznów grę", 16f);
-        SetButtonTextAndSize(btnBackToMenu, "Wróć do menu", 16f);
-        SetButtonTextAndSize(btnExit, "Wyjdź z gry", 16f);
+        SetButtonTextAndSize(btnResume, LocalizationManager.Get("UI_BTN_RESUME", "Wznów grę"), 16f);
+        SetButtonTextAndSize(btnBackToMenu, LocalizationManager.Get("UI_BTN_BACK_TO_MENU", "Wróć do menu"), 16f);
+        SetButtonTextAndSize(btnExit, LocalizationManager.Get("UI_BTN_EXIT", "Wyjdź z gry"), 16f);
+
+        if (btnLanguage != null)
+        {
+            string label = LocalizationManager.CurrentLanguage == "pl" 
+                ? "Język: Polski (Switch to EN)" 
+                : "Language: English (Zmień na PL)";
+            SetButtonTextAndSize(btnLanguage, label, 14f);
+        }
     }
 
     private void SetButtonTextAndSize(Button btn, string newText, float fontSize)
@@ -148,30 +198,21 @@ public class CanvasMainMenuUI : MonoBehaviour
     public void PauseGame()
     {
         isPaused = true;
-        previousTimeScale = Time.timeScale > 0f ? Time.timeScale : 1f;
+        previousTimeScale = Time.timeScale;
         Time.timeScale = 0f;
-
-        if (TimePhaseManager.Instance != null)
-        {
-            TimePhaseManager.Instance.PauseWave();
-        }
 
         if (pnlBackground != null)
         {
             pnlBackground.SetActive(true);
         }
+
+        ApplyGeminiUIStandards();
     }
 
     public void ResumeGame()
     {
         isPaused = false;
-        Time.timeScale = previousTimeScale > 0f ? previousTimeScale : 1f;
-
-        if (TimePhaseManager.Instance != null && previousTimeScale > 0f)
-        {
-            TimePhaseManager.Instance.ContinueWave();
-            Time.timeScale = previousTimeScale;
-        }
+        Time.timeScale = previousTimeScale > 0.001f ? previousTimeScale : 1f;
 
         if (pnlBackground != null)
         {
@@ -183,23 +224,17 @@ public class CanvasMainMenuUI : MonoBehaviour
     {
         Time.timeScale = 1f;
 
-        if (Application.CanStreamedLevelBeLoaded(mainMenuSceneName))
-        {
-            LoadingScreenManager.LoadScene(mainMenuSceneName, "Powrót do twierdzy...");
-        }
-        else if (Application.CanStreamedLevelBeLoaded(fallbackMainMenuSceneName))
-        {
-            LoadingScreenManager.LoadScene(fallbackMainMenuSceneName, "Powrót do twierdzy...");
-        }
-        else
-        {
-            Debug.LogError($"[CanvasMainMenuUI] Nie można załadować sceny menu głównego ({mainMenuSceneName} / {fallbackMainMenuSceneName})!");
-        }
+        string targetScene = Application.CanStreamedLevelBeLoaded(mainMenuSceneName)
+            ? mainMenuSceneName
+            : fallbackMainMenuSceneName;
+
+        SceneManager.LoadScene(targetScene);
     }
 
     public void QuitGame()
     {
         Time.timeScale = 1f;
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else

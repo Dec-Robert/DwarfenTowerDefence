@@ -64,6 +64,23 @@ public class BuildingData : ScriptableObject
     public Sprite icon;
     public BuildingType type;
 
+    public string DisplayName => LocalizationManager.Get($"BUILDING_{GetLocalizationId()}_NAME", buildingName);
+    public string DisplayDescription => LocalizationManager.Get($"BUILDING_{GetLocalizationId()}_DESC", description);
+
+    public string GetLocalizationId()
+    {
+        string raw = !string.IsNullOrEmpty(buildingName) ? buildingName : name;
+        var sb = new System.Text.StringBuilder();
+        foreach (char c in raw)
+        {
+            if (char.IsLetterOrDigit(c)) sb.Append(char.ToUpperInvariant(c));
+            else if (c == ' ' || c == '_' || c == '-') sb.Append('_');
+        }
+        string clean = sb.ToString();
+        while (clean.Contains("__")) clean = clean.Replace("__", "_");
+        return clean.Trim('_');
+    }
+
     [Header("Ekonomia Produkcji")]
     [HideInInspector]
     [Tooltip("Ile każdy DODATKOWY pracownik zwiększa zużycie/produkcję względem bazy. 0.25 = 25%")]

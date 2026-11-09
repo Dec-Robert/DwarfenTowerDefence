@@ -213,20 +213,20 @@ public static class DailyResourceCalculator
 
         if (housingProdAmount > 0)
         {
-            report.productionSources.Add(new ResourceSourceItem("Mieszkańcy", housingProdResidents, housingProdAmount));
+            report.productionSources.Add(new ResourceSourceItem(LocalizationManager.Get("source_residents", "Mieszkańcy"), housingProdResidents, housingProdAmount));
             report.totalDailyProduction += housingProdAmount;
         }
 
         // --- Składanie zużycia ---
         if (totalSurvivalCost > 0)
         {
-            report.consumptionSources.Add(new ResourceSourceItem("Utrzymanie populacji", 0, totalSurvivalCost));
+            report.consumptionSources.Add(new ResourceSourceItem(LocalizationManager.Get("source_upkeep_population", "Utrzymanie populacji"), 0, totalSurvivalCost));
             report.totalDailyConsumption += totalSurvivalCost;
         }
 
         if (totalGrowthCost > 0)
         {
-            report.consumptionSources.Add(new ResourceSourceItem("Rozwój populacji", 0, totalGrowthCost));
+            report.consumptionSources.Add(new ResourceSourceItem(LocalizationManager.Get("source_growth_population", "Rozwój populacji"), 0, totalGrowthCost));
             report.totalDailyConsumption += totalGrowthCost;
         }
 
@@ -247,23 +247,12 @@ public static class DailyResourceCalculator
 
     public static string GetBuildingDisplayName(BuildingData data)
     {
-        if (data == null) return "Budynek";
-        if (!string.IsNullOrEmpty(data.buildingName)) return data.buildingName;
-        return data.name;
+        if (data == null) return LocalizationManager.Get("UI_DEFAULT_BUILDING", "Budynek");
+        return data.DisplayName;
     }
 
     public static string GetResourceDisplayName(ResourceType type)
     {
-        switch (type)
-        {
-            case ResourceType.Ether: return "Eter";
-            case ResourceType.Wood: return "Drewno";
-            case ResourceType.Stone: return "Kamień";
-            case ResourceType.Coal: return "Węgiel";
-            case ResourceType.Food: return "Żywność";
-            case ResourceType.Iron: return "Żelazo";
-            case ResourceType.Hope: return "Nadzieja";
-            default: return type.ToString();
-        }
+        return LocalizationManager.Get($"RES_{type.ToString().ToUpperInvariant()}", type.ToString());
     }
 }

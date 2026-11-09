@@ -320,14 +320,14 @@ public class RuneForgeWindowUI : MonoBehaviour
 
         var canonicalStats = new (BattleStats stat, string label)[]
         {
-            (BattleStats.Damage, "Obrażenia"),
-            (BattleStats.FireRate, "Szybkostrzelność"),
-            (BattleStats.Range, "Zasięg"),
-            (BattleStats.DamageType, "Typ obrażeń"),
-            (BattleStats.CriticalChancel, "Szansa na krytyk"),
-            (BattleStats.CriticalMultiplier, "Mnożnik krytyczny"),
-            (BattleStats.ArmorPenetration, "Przebicie pancerza"),
-            (BattleStats.MagicPenetration, "Przebicie magii")
+            (BattleStats.Damage, LocalizationManager.Get("stat_damage", "Obrażenia")),
+            (BattleStats.FireRate, LocalizationManager.Get("stat_firerate", "Szybkostrzelność")),
+            (BattleStats.Range, LocalizationManager.Get("stat_range", "Zasięg")),
+            (BattleStats.DamageType, LocalizationManager.Get("stat_damagetype", "Typ obrażeń")),
+            (BattleStats.CriticalChancel, LocalizationManager.Get("stat_critchance", "Szansa na krytyk")),
+            (BattleStats.CriticalMultiplier, LocalizationManager.Get("stat_critmultiplier", "Mnożnik krytyczny")),
+            (BattleStats.ArmorPenetration, LocalizationManager.Get("stat_armorpen", "Przebicie pancerza")),
+            (BattleStats.MagicPenetration, LocalizationManager.Get("stat_magicpen", "Przebicie magii"))
         };
 
         for (int i = 0; i < pnlStatsGrid.childCount; i++)
@@ -490,12 +490,12 @@ public class RuneForgeWindowUI : MonoBehaviour
         {
             ddRarity.ClearOptions();
             ddRarity.AddOptions(new List<string> {
-                "Wszystkie rzadkości",
-                "Zwykłe (Common)",
-                "Niepospolite (Uncommon)",
-                "Rzadkie (Rare)",
-                "Legendarne (Legendary)",
-                "Przeklęte (Cursed)"
+                LocalizationManager.Get("UI_RUNE_FILTER_ALL_RARITIES", "Wszystkie rzadkości"),
+                LocalizationManager.Get("UI_RUNE_FILTER_COMMON", "Zwykłe (Common)"),
+                LocalizationManager.Get("UI_RUNE_FILTER_UNCOMMON", "Niepospolite (Uncommon)"),
+                LocalizationManager.Get("UI_RUNE_FILTER_RARE", "Rzadkie (Rare)"),
+                LocalizationManager.Get("UI_RUNE_FILTER_LEGENDARY", "Legendarne (Legendary)"),
+                LocalizationManager.Get("UI_RUNE_FILTER_CURSED", "Przeklęte (Cursed)")
             });
             ddRarity.onValueChanged.RemoveAllListeners();
             ddRarity.onValueChanged.AddListener(_ => RefreshInventoryView());
@@ -505,14 +505,14 @@ public class RuneForgeWindowUI : MonoBehaviour
         {
             ddStat.ClearOptions();
             ddStat.AddOptions(new List<string> {
-                "Wszystkie statystyki",
-                "Obrażenia",
-                "Zasięg",
-                "Szybkostrzelność",
-                "Przebicie pancerza",
-                "Przebicie magii",
-                "Szansa na krytyk",
-                "Mnożnik krytyczny"
+                LocalizationManager.Get("UI_RUNE_FILTER_ALL_STATS", "Wszystkie statystyki"),
+                LocalizationManager.Get("stat_damage", "Obrażenia"),
+                LocalizationManager.Get("stat_range", "Zasięg"),
+                LocalizationManager.Get("stat_firerate", "Szybkostrzelność"),
+                LocalizationManager.Get("stat_armorpen", "Przebicie pancerza"),
+                LocalizationManager.Get("stat_magicpen", "Przebicie magii"),
+                LocalizationManager.Get("stat_critchance", "Szansa na krytyk"),
+                LocalizationManager.Get("stat_critmultiplier", "Mnożnik krytyczny")
             });
             ddStat.onValueChanged.RemoveAllListeners();
             ddStat.onValueChanged.AddListener(_ => RefreshInventoryView());
@@ -637,8 +637,8 @@ public class RuneForgeWindowUI : MonoBehaviour
     {
         if (txtForgeTitle != null)
         {
-            string towerName = currentForge.infusedTowerData != null ? currentForge.infusedTowerData.buildingName.ToUpper() : "BRAK PRZYPISANEJ WIEŻY";
-            txtForgeTitle.text = $"KUŹNIA RUNICZNA — [{towerName}]";
+            string towerName = currentForge.infusedTowerData != null ? currentForge.infusedTowerData.DisplayName.ToUpper() : LocalizationManager.Get("UI_RUNE_NO_TOWER_ASSIGNED", "BRAK PRZYPISANEJ WIEŻY");
+            txtForgeTitle.text = LocalizationManager.GetFormat("UI_RUNE_FORGE_TITLE_FMT", towerName);
         }
     }
 
@@ -648,7 +648,7 @@ public class RuneForgeWindowUI : MonoBehaviour
         {
             int towersCount = currentForge.GetNeighboringRuneTowersCount();
             int maxSlots = currentForge.GetMaxSlots();
-            txtRuneTowersDesc.text = $"Sąsiednie wieże runiczne: <b>{towersCount}/4</b>\nOdblokowane sloty: <b>{maxSlots}/5</b>";
+            txtRuneTowersDesc.text = LocalizationManager.GetFormat("UI_RUNE_TOWERS_DESC_FMT", towersCount, maxSlots);
         }
 
         bool fusionUnlocked = MetaUpgradeManager.Instance == null || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockRuneFusion);
@@ -660,7 +660,7 @@ public class RuneForgeWindowUI : MonoBehaviour
             var txt = btnTabFusion.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (txt != null)
             {
-                txt.text = fusionUnlocked ? "Fuzja Run" : "Fuzja (Zablokowana)";
+                txt.text = fusionUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_FUSION", "Fuzja Run") : LocalizationManager.Get("UI_RUNE_TAB_FUSION_LOCKED", "Fuzja (Zablokowana)");
             }
         }
 
@@ -670,7 +670,7 @@ public class RuneForgeWindowUI : MonoBehaviour
             var txt = btnTabTransmutation.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (txt != null)
             {
-                txt.text = transmuteUnlocked ? "Transmutacja Run" : "Transmutacja (Zablokowana)";
+                txt.text = transmuteUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE", "Transmutacja Run") : LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE_LOCKED", "Transmutacja (Zablokowana)");
             }
         }
     }
@@ -682,7 +682,7 @@ public class RuneForgeWindowUI : MonoBehaviour
         var tower = currentForge.infusedTowerData;
         if (txtTowerHeaderName != null)
         {
-            txtTowerHeaderName.text = tower != null ? tower.buildingName.ToUpper() : "NIE WYBRANO WIEŻY";
+            txtTowerHeaderName.text = tower != null ? tower.DisplayName.ToUpper() : LocalizationManager.Get("UI_RUNE_NO_TOWER_SELECTED", "NIE WYBRANO WIEŻY");
         }
 
         if (imgTowerHeaderIcon != null)
@@ -731,14 +731,19 @@ public class RuneForgeWindowUI : MonoBehaviour
                     if (iconImg != null) iconImg.gameObject.SetActive(false);
                     if (lblTmp != null)
                     {
-                        lblTmp.text = $"<color=#666666>SLOT {slotIndex + 1}</color>\n<size=10><color=#555555>WYMAGA WIEŻY</color></size>";
+                        lblTmp.text = LocalizationManager.GetFormat("UI_RUNE_SLOT_REQUIRES_TOWER_FMT", slotIndex + 1);
                     }
                 }
                 else if (!hasSmith)
                 {
                     // 2. Odblokowany przez wieżę, ale brak kowala
                     if (lockObj != null) lockObj.gameObject.SetActive(false);
-                    if (badgeMissingSmith != null) badgeMissingSmith.gameObject.SetActive(true);
+                    if (badgeMissingSmith != null)
+                    {
+                        badgeMissingSmith.gameObject.SetActive(true);
+                        var badgeTxt = badgeMissingSmith.GetComponentInChildren<TextMeshProUGUI>();
+                        if (badgeTxt != null) badgeTxt.text = LocalizationManager.Get("UI_RUNE_NO_SMITH", "BRAK KOWALA");
+                    }
                     if (iconImg != null)
                     {
                         if (currentRune != null)
@@ -757,7 +762,7 @@ public class RuneForgeWindowUI : MonoBehaviour
                     }
                     if (lblTmp != null)
                     {
-                        lblTmp.text = $"<color=#CCCCCC>SLOT {slotIndex + 1}</color>\n<size=10><color=#FFCC66>WYMAGA KOWALA</color></size>";
+                        lblTmp.text = LocalizationManager.GetFormat("UI_RUNE_SLOT_REQUIRES_SMITH_FMT", slotIndex + 1);
                     }
                 }
                 else
@@ -779,7 +784,8 @@ public class RuneForgeWindowUI : MonoBehaviour
 
                         if (lblTmp != null)
                         {
-                            string labelText = $"<b>{currentRune.definition?.runeName}</b>\n<size=10>{currentRune.GetPrimaryText()}</size>";
+                            string runeDisplayName = currentRune.definition != null ? currentRune.definition.DisplayName : "Runa";
+                            string labelText = $"<b>{runeDisplayName}</b>\n<size=10>{currentRune.GetPrimaryText()}</size>";
                             if (currentRune.hasPenalty)
                             {
                                 labelText += $"\n<size=9>{currentRune.GetPenaltyText()}</size>";
@@ -798,7 +804,7 @@ public class RuneForgeWindowUI : MonoBehaviour
                         }
                         if (lblTmp != null)
                         {
-                            lblTmp.text = $"<color=white>SLOT {slotIndex + 1}</color>\n<size=10><color=#888888>WOLNY</color></size>";
+                            lblTmp.text = LocalizationManager.GetFormat("UI_RUNE_SLOT_FREE_FMT", slotIndex + 1);
                         }
                     }
                 }
@@ -926,7 +932,7 @@ public class RuneForgeWindowUI : MonoBehaviour
 
         if (txtInvCount != null)
         {
-            txtInvCount.text = $"EKWIPUNEK RUN ({filtered.Count}/{allRunes.Count})";
+            txtInvCount.text = LocalizationManager.GetFormat("UI_RUNE_INV_COUNT_FMT", filtered.Count, allRunes.Count);
         }
 
         int activeCount = 0;
@@ -1021,7 +1027,7 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (txtFusionReqHeader != null)
         {
             int placed = (fusionRune1 != null ? 1 : 0) + (fusionRune2 != null ? 1 : 0);
-            txtFusionReqHeader.text = $"WYMAGANIA FUZJI: <color={(canFuse ? "#45F375" : "#FFCC66")}>{placed}/2 RUN (TA SAMA STATYSTYKA I RZADKOŚĆ)</color>";
+            txtFusionReqHeader.text = LocalizationManager.GetFormat("UI_RUNE_FUSION_REQ_FMT", canFuse ? "#45F375" : "#FFCC66", placed);
         }
 
         if (btnCraftFusion != null)
@@ -1044,7 +1050,7 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (txtTransmuteReqHeader != null)
         {
             int placed = (transmuteRune1 != null ? 1 : 0) + (transmuteRune2 != null ? 1 : 0) + (transmuteRune3 != null ? 1 : 0);
-            txtTransmuteReqHeader.text = $"WYMAGANIA TRANSMUTACJI: <color={(canTransmute ? "#45F375" : "#FFCC66")}>{placed}/3 RUN (TA SAMA RZADKOŚĆ)</color>";
+            txtTransmuteReqHeader.text = LocalizationManager.GetFormat("UI_RUNE_TRANSMUTE_REQ_FMT", canTransmute ? "#45F375" : "#FFCC66", placed);
         }
 
         if (btnCraftTransmute != null)
@@ -1072,7 +1078,8 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (rune != null)
         {
             if (plusTmp != null) plusTmp.gameObject.SetActive(false);
-            if (lblTmp != null) lblTmp.text = $"{rune.definition?.runeName}\n<size=10>{rune.GetPrimaryText()}</size>";
+            string runeDisplayName = rune.definition != null ? rune.definition.DisplayName : string.Empty;
+            if (lblTmp != null) lblTmp.text = $"{runeDisplayName}\n<size=10>{rune.GetPrimaryText()}</size>";
             if (iconImg != null)
             {
                 iconImg.gameObject.SetActive(true);
@@ -1084,7 +1091,7 @@ public class RuneForgeWindowUI : MonoBehaviour
         else
         {
             if (plusTmp != null) plusTmp.gameObject.SetActive(true);
-            if (lblTmp != null) lblTmp.text = "WOLNY SLOT\n<size=10><color=#888888>PRZECIĄGNIJ / KLIKNIJ</color></size>";
+            if (lblTmp != null) lblTmp.text = LocalizationManager.Get("UI_RUNE_FREE_SLOT_HINT", "WOLNY SLOT\n<size=10><color=#888888>PRZECIĄGNIJ / KLIKNIJ</color></size>");
             if (iconImg != null)
             {
                 iconImg.gameObject.SetActive(false);
@@ -1107,7 +1114,7 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (isReady && nextRarity.HasValue)
         {
             if (plusTmp != null) plusTmp.gameObject.SetActive(false);
-            if (lblTmp != null) lblTmp.text = $"REZULTAT:\n<color=#FFD700>Poziom {nextRarity.Value}</color>";
+            if (lblTmp != null) lblTmp.text = LocalizationManager.GetFormat("UI_RUNE_RESULT_TIER_FMT", nextRarity.Value);
             if (iconImg != null)
             {
                 iconImg.gameObject.SetActive(true);
@@ -1117,7 +1124,7 @@ public class RuneForgeWindowUI : MonoBehaviour
         else
         {
             if (plusTmp != null) plusTmp.gameObject.SetActive(true);
-            if (lblTmp != null) lblTmp.text = "REZULTAT\n<size=10><color=#888888>OCZEKIWANIE</color></size>";
+            if (lblTmp != null) lblTmp.text = LocalizationManager.Get("UI_RUNE_RESULT_WAITING", "REZULTAT\n<size=10><color=#888888>OCZEKIWANIE</color></size>");
             if (iconImg != null) iconImg.gameObject.SetActive(false);
         }
     }
@@ -1271,8 +1278,15 @@ public class RuneForgeWindowUI : MonoBehaviour
                     break;
 
                 case BattleStats.DamageType:
-                    if (view.txtBaseValue != null) view.txtBaseValue.text = $"{tower.damageType}";
-                    if (view.txtCurrentValue != null) view.txtCurrentValue.text = $"{tower.damageType}";
+                    string dmgTypeName = tower.damageType switch
+                    {
+                        DamageType.Physical => LocalizationManager.Get("damage_type_physical", "Fizyczne"),
+                        DamageType.Magic => LocalizationManager.Get("damage_type_magic", "Magiczne"),
+                        DamageType.True => LocalizationManager.Get("damage_type_true", "Czyste"),
+                        _ => tower.damageType.ToString()
+                    };
+                    if (view.txtBaseValue != null) view.txtBaseValue.text = dmgTypeName;
+                    if (view.txtCurrentValue != null) view.txtCurrentValue.text = dmgTypeName;
                     continue;
 
                 case BattleStats.CriticalChancel:
@@ -1375,12 +1389,12 @@ public class RuneForgeWindowUI : MonoBehaviour
 
         if (txtDwarfTitle != null)
         {
-            txtDwarfTitle.text = "KOWALE RUN (KRASNOLUDY)";
+            txtDwarfTitle.text = LocalizationManager.Get("UI_RUNE_SMITHS_TITLE", "KOWALE RUN (KRASNOLUDY)");
         }
 
         if (txtDwarfFree != null)
         {
-            txtDwarfFree.text = $"Wolni: {freeDwarves}";
+            txtDwarfFree.text = LocalizationManager.GetFormat("UI_RUNE_SMITHS_FREE_FMT", freeDwarves);
         }
 
         if (txtDwarfCount != null)

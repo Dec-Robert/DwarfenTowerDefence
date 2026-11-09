@@ -172,12 +172,12 @@ public class MetaNodeItemUI : MonoBehaviour
                 if (bgImage != null) bgImage.color = ColorPurchasedBg;
                 if (txtTitle != null)
                 {
-                    txtTitle.text = upgrade != null ? upgrade.upgradeName : "Start";
+                    txtTitle.text = upgrade != null ? upgrade.DisplayName : LocalizationManager.Get("UI_META_START_NODE", "Start");
                     txtTitle.color = new Color(0.96f, 0.90f, 0.70f);
                 }
                 if (txtCost != null)
                 {
-                    txtCost.text = "ODBLOKOWANE";
+                    txtCost.text = LocalizationManager.Get("META_UNLOCKED", "ODBLOKOWANE");
                     txtCost.color = new Color(0.55f, 0.95f, 0.55f);
                 }
                 if (iconImage != null)
@@ -193,12 +193,12 @@ public class MetaNodeItemUI : MonoBehaviour
                 if (bgImage != null) bgImage.color = ColorAvailableBg;
                 if (txtTitle != null)
                 {
-                    txtTitle.text = upgrade != null ? upgrade.upgradeName : "";
+                    txtTitle.text = upgrade != null ? upgrade.DisplayName : "";
                     txtTitle.color = Color.white;
                 }
                 if (txtCost != null)
                 {
-                    txtCost.text = upgrade != null ? $"{upgrade.cost} Nadziei" : "";
+                    txtCost.text = upgrade != null ? LocalizationManager.GetFormat("UI_META_COST_HOPE_FMT", upgrade.cost) : "";
                     txtCost.color = new Color(0.35f, 0.85f, 1.0f);
                 }
                 if (iconImage != null)

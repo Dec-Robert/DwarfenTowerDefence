@@ -250,8 +250,8 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         isVisible = true;
 
         // Shared Info
-        if (txtName != null) txtName.text = data.buildingName;
-        if (txtDescription != null) txtDescription.text = string.IsNullOrEmpty(data.description) ? "" : data.description;
+        if (txtName != null) txtName.text = data.DisplayName;
+        if (txtDescription != null) txtDescription.text = string.IsNullOrEmpty(data.description) ? "" : data.DisplayDescription;
 
         // Building Cost
         SetupResourcePool(costSlots, data.constructionCost);
@@ -330,50 +330,50 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         switch (tower.damageType)
         {
             case DamageType.Physical:
-                typeName = "Fizyczne";
+                typeName = LocalizationManager.Get("damage_type_physical", "Fizyczne");
                 typeColor = new Color32(255, 140, 52, 255);
                 break;
             case DamageType.Magic:
-                typeName = "Magiczne";
+                typeName = LocalizationManager.Get("damage_type_magic", "Magiczne");
                 typeColor = new Color32(0, 176, 240, 255);
                 break;
             case DamageType.True:
-                typeName = "Czyste";
+                typeName = LocalizationManager.Get("damage_type_true", "Czyste");
                 typeColor = Color.white;
                 break;
         }
 
         // Stat 0: Zasięg
         statSlots[0].gameObject.SetActive(true);
-        statSlots[0].Setup("Zasięg:", tower.baseRange % 1f == 0 ? tower.baseRange.ToString("F0") : tower.baseRange.ToString("F1"));
+        statSlots[0].Setup(LocalizationManager.Get("stat_range_colon", "Zasięg:"), tower.baseRange % 1f == 0 ? tower.baseRange.ToString("F0") : tower.baseRange.ToString("F1"));
 
         // Stat 1: Obrażenia
         statSlots[1].gameObject.SetActive(true);
-        statSlots[1].Setup("Obrażenia:", tower.baseDamage.ToString("F0"), typeColor);
+        statSlots[1].Setup(LocalizationManager.Get("stat_damage_colon", "Obrażenia:"), tower.baseDamage.ToString("F0"), typeColor);
 
         // Stat 2: Szybkostrzelność
         statSlots[2].gameObject.SetActive(true);
-        statSlots[2].Setup("Atak/s:", tower.fireRate.ToString("F2"));
+        statSlots[2].Setup(LocalizationManager.Get("stat_attacks_per_sec_colon", "Atak/s:"), tower.fireRate.ToString("F2"));
 
         // Stat 3: Szansa na kryt
         statSlots[3].gameObject.SetActive(true);
-        statSlots[3].Setup("Szansa kryt:", (tower.criticalChancel * 100f).ToString("F0") + "%");
+        statSlots[3].Setup(LocalizationManager.Get("stat_crit_chance_colon", "Szansa kryt:"), (tower.criticalChancel * 100f).ToString("F0") + "%");
 
         // Stat 4: Mnożnik kryta
         statSlots[4].gameObject.SetActive(true);
-        statSlots[4].Setup("Mnożnik kryt:", (tower.criticalDamageMultiplier * 100f).ToString("F0") + "%");
+        statSlots[4].Setup(LocalizationManager.Get("stat_crit_mult_colon", "Mnożnik kryt:"), (tower.criticalDamageMultiplier * 100f).ToString("F0") + "%");
 
         // Stat 5: Penetracja pancerza
         statSlots[5].gameObject.SetActive(true);
-        statSlots[5].Setup("Pen. pancerza:", (tower.armorPenetration * 100f).ToString("F0") + "%");
+        statSlots[5].Setup(LocalizationManager.Get("stat_armor_pen_colon", "Pen. pancerza:"), (tower.armorPenetration * 100f).ToString("F0") + "%");
 
         // Stat 6: Penetracja magii
         statSlots[6].gameObject.SetActive(true);
-        statSlots[6].Setup("Pen. magii:", (tower.magicPenetration * 100f).ToString("F0") + "%");
+        statSlots[6].Setup(LocalizationManager.Get("stat_magic_pen_colon", "Pen. magii:"), (tower.magicPenetration * 100f).ToString("F0") + "%");
 
         // Stat 7: Typ obrażeń
         statSlots[7].gameObject.SetActive(true);
-        statSlots[7].Setup("Typ:", typeName, typeColor);
+        statSlots[7].Setup(LocalizationManager.Get("stat_type_colon", "Typ:"), typeName, typeColor);
 
         // Deactivate unused stat slots if pool > 8
         for (int i = 8; i < statSlots.Count; i++)
@@ -384,28 +384,18 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
     private string GetResourceDisplayName(ResourceType type)
     {
-        return type switch
-        {
-            ResourceType.Ether => "Kryształ Eteru",
-            ResourceType.Wood => "Drewno",
-            ResourceType.Stone => "Kamień",
-            ResourceType.Iron => "Żelazo",
-            ResourceType.Coal => "Węgiel",
-            ResourceType.Food => "Żywność",
-            ResourceType.Hope => "Nadzieja",
-            _ => type.ToString()
-        };
+        return DailyResourceCalculator.GetResourceDisplayName(type);
     }
 
     private string GetFeatureDisplayName(HexFeatureType feature)
     {
         return feature switch
         {
-            HexFeatureType.Forest => "LAS",
-            HexFeatureType.Meadow => "ŁĄKI",
-            HexFeatureType.Mountain => "GÓRY",
-            HexFeatureType.Hill => "WZGÓRZA",
-            _ => feature.ToString().ToUpperInvariant()
+            HexFeatureType.Forest => LocalizationManager.Get("feature_forest_upper", "LAS"),
+            HexFeatureType.Meadow => LocalizationManager.Get("feature_meadow_upper", "ŁĄKI"),
+            HexFeatureType.Mountain => LocalizationManager.Get("feature_mountain_upper", "GÓRY"),
+            HexFeatureType.Hill => LocalizationManager.Get("feature_hill_upper", "WZGÓRZA"),
+            _ => LocalizationManager.Get("feature_none_upper", "BRAK")
         };
     }
 
@@ -449,11 +439,11 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         }
         if (hasElevation)
         {
-            string hillName = "WZGÓRZA";
+            string hillName = LocalizationManager.Get("feature_hill_upper", "WZGÓRZA");
             if (!terrainNames.Contains(hillName)) terrainNames.Add(hillName);
         }
 
-        string terrainText = terrainNames.Count > 0 ? string.Join(" / ", terrainNames) : "BRAK";
+        string terrainText = terrainNames.Count > 0 ? string.Join(" / ", terrainNames) : LocalizationManager.Get("feature_none_upper", "BRAK");
 
         // 2. Bonus za postawienie na danym surowcu (on-top)
         var onTopDescriptions = new List<string>();
@@ -473,7 +463,7 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         }
         if (hasElevation && data.elevationBonus.onTopBonusPerLevel > 0f)
         {
-            onTopDescriptions.Add($"+{data.elevationBonus.onTopBonusPerLevel.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(data.elevationBonus.resourceType)} / poziom wzgórza");
+            onTopDescriptions.Add($"+{data.elevationBonus.onTopBonusPerLevel.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(data.elevationBonus.resourceType)}{LocalizationManager.Get("bonus_per_hill_level", " / poziom wzgórza")}");
         }
 
         // 3. Bonus za każdy surowiec wokół (adjacent)
@@ -487,14 +477,14 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
                 {
                     if (y.baseBonusPerHex > 0f)
                     {
-                        adjacentDescriptions.Add($"+{y.baseBonusPerHex.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(y.resourceType)} / pole");
+                        adjacentDescriptions.Add($"+{y.baseBonusPerHex.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(y.resourceType)}{LocalizationManager.Get("bonus_per_tile", " / pole")}");
                     }
                 }
             }
         }
         if (hasElevation && data.elevationBonus.adjacentBonusPerLevel > 0f)
         {
-            adjacentDescriptions.Add($"+{data.elevationBonus.adjacentBonusPerLevel.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(data.elevationBonus.resourceType)} / poziom wokół");
+            adjacentDescriptions.Add($"+{data.elevationBonus.adjacentBonusPerLevel.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} {GetResourceDisplayName(data.elevationBonus.resourceType)}{LocalizationManager.Get("bonus_per_adjacent_level", " / poziom wokół")}");
         }
 
         bool hasAnyBonuses = terrainNames.Count > 0 || onTopDescriptions.Count > 0 || adjacentDescriptions.Count > 0;
@@ -522,12 +512,12 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
             var placingLines = new List<string>();
             if (terrainNames.Count > 0)
             {
-                placingLines.Add($"Bonus do postawienia na terenie: {terrainText}");
+                placingLines.Add(LocalizationManager.GetFormat("tooltip_bonus_terrain_line", terrainText));
             }
 
             if (onTopDescriptions.Count > 0)
             {
-                placingLines.Add($"Bonus za postawienie na danym surowcu: {string.Join(", ", onTopDescriptions)}");
+                placingLines.Add(LocalizationManager.GetFormat("tooltip_bonus_ontop_line", string.Join(", ", onTopDescriptions)));
             }
 
             if (placingLines.Count > 0)
@@ -547,7 +537,7 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
             if (adjacentDescriptions.Count > 0)
             {
                 txtBonusForSurround.gameObject.SetActive(true);
-                txtBonusForSurround.text = $"Bonus za każdy surowiec wokół: {string.Join(", ", adjacentDescriptions)}";
+                txtBonusForSurround.text = LocalizationManager.GetFormat("tooltip_bonus_adjacent_line", string.Join(", ", adjacentDescriptions));
             }
             else
             {
@@ -563,15 +553,15 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
         if (housing != null)
         {
-            if (txtPop != null) txtPop.text = $"Populacja: {housing.initialResidents}/{housing.maxResidents}";
+            if (txtPop != null) txtPop.text = LocalizationManager.GetFormat("tooltip_pop_fmt", housing.initialResidents, housing.maxResidents);
             if (txtGrowthCycles != null)
             {
                 if (housing.growthCycles == null || housing.growthCycles.Length == 0)
-                    txtGrowthCycles.text = "Wzrost: -";
+                    txtGrowthCycles.text = LocalizationManager.Get("tooltip_growth_none", "Wzrost: -");
                 else if (housing.growthCycles.Length == 1 || housing.growthCycles[0] == housing.growthCycles[housing.growthCycles.Length - 1])
-                    txtGrowthCycles.text = $"Wzrost: co {housing.growthCycles[0]} cykli";
+                    txtGrowthCycles.text = LocalizationManager.GetFormat("tooltip_growth_every_fmt", housing.growthCycles[0]);
                 else
-                    txtGrowthCycles.text = $"Wzrost: {housing.growthCycles[0]}-{housing.growthCycles[housing.growthCycles.Length - 1]} cykli";
+                    txtGrowthCycles.text = LocalizationManager.GetFormat("tooltip_growth_range_fmt", housing.growthCycles[0], housing.growthCycles[housing.growthCycles.Length - 1]);
             }
 
             if (txtToSurvive != null)
@@ -581,24 +571,24 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
                 {
                     foreach (var c in housing.baseDailyUpkeep)
                     {
-                        if (c.amount > 0) upkeepTexts.Add($"{c.amount} {GetResourceDisplayName(c.type)} (baza)");
+                        if (c.amount > 0) upkeepTexts.Add($"{c.amount} {GetResourceDisplayName(c.type)}{LocalizationManager.Get("tooltip_upkeep_base_suffix", " (baza)")}");
                     }
                 }
                 if (housing.upkeepPerResident != null && housing.upkeepPerResident.Count > 0)
                 {
                     foreach (var c in housing.upkeepPerResident)
                     {
-                        if (c.amount > 0) upkeepTexts.Add($"{c.amount} {GetResourceDisplayName(c.type)}/os.");
+                        if (c.amount > 0) upkeepTexts.Add($"{c.amount} {GetResourceDisplayName(c.type)}{LocalizationManager.Get("tooltip_upkeep_per_resident_suffix", "/os.")}");
                     }
                 }
 
                 if (upkeepTexts.Count > 0)
                 {
-                    txtToSurvive.text = $"Utrzymanie: {string.Join(", ", upkeepTexts)}";
+                    txtToSurvive.text = LocalizationManager.GetFormat("tooltip_upkeep_fmt", string.Join(", ", upkeepTexts));
                 }
                 else
                 {
-                    txtToSurvive.text = "Utrzymanie: Brak";
+                    txtToSurvive.text = LocalizationManager.Get("tooltip_upkeep_none", "Utrzymanie: Brak");
                 }
             }
 
@@ -610,11 +600,11 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
                         .Where(c => c.amount > 0)
                         .Select(c => $"{c.amount} {GetResourceDisplayName(c.type)}");
                     string costStr = string.Join(", ", growthCosts);
-                    txtToGrow.text = string.IsNullOrEmpty(costStr) ? "Koszt wzrostu: Brak" : $"Koszt wzrostu: {costStr}";
+                    txtToGrow.text = string.IsNullOrEmpty(costStr) ? LocalizationManager.Get("tooltip_growth_cost_none", "Koszt wzrostu: Brak") : LocalizationManager.GetFormat("tooltip_growth_cost_fmt", costStr);
                 }
                 else
                 {
-                    txtToGrow.text = "Koszt wzrostu: Brak";
+                    txtToGrow.text = LocalizationManager.Get("tooltip_growth_cost_none", "Koszt wzrostu: Brak");
                 }
             }
         }
@@ -626,7 +616,7 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
 
         if (txtSpecialDesc != null)
         {
-            txtSpecialDesc.text = string.IsNullOrEmpty(data.description) ? "Budynek unikalny / użytkowy" : data.description;
+            txtSpecialDesc.text = string.IsNullOrEmpty(data.description) ? LocalizationManager.Get("UI_TOOLTIP_SPECIAL_DEFAULT", "Budynek unikalny / użytkowy") : data.DisplayDescription;
         }
     }
 

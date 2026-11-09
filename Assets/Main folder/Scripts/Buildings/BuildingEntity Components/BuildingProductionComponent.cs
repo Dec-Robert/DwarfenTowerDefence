@@ -73,7 +73,7 @@ public class BuildingProductionComponent
 
                 if (FloatingTextManager.Instance != null)
                 {
-                    FloatingTextManager.Instance.ShowGain(buildingTransform.position, kvp.Key.ToString(), wholeProduced);
+                    FloatingTextManager.Instance.ShowGain(buildingTransform.position, DailyResourceCalculator.GetResourceDisplayName(kvp.Key), wholeProduced);
                 }
             }
         }

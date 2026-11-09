@@ -239,6 +239,11 @@ public class ResourceTooltipUI : MonoBehaviour
             txtResourceTitle.text = resName;
         }
 
+        if (txtProductionHeader != null) txtProductionHeader.text = LocalizationManager.Get("UI_TOOLTIP_PRODUCTION", "PRODUKCJA");
+        if (txtProductionEmpty != null) txtProductionEmpty.text = LocalizationManager.Get("UI_TOOLTIP_NO_PRODUCTION", "(Brak produkcji)");
+        if (txtConsumptionHeader != null) txtConsumptionHeader.text = LocalizationManager.Get("UI_TOOLTIP_CONSUMPTION", "ZUŻYCIE");
+        if (txtConsumptionEmpty != null) txtConsumptionEmpty.text = LocalizationManager.Get("UI_TOOLTIP_NO_CONSUMPTION", "(Brak zużycia)");
+
         // 2. Bilans Dobowy Netto
         if (txtDailyNetBalance != null)
         {
@@ -246,7 +251,7 @@ public class ResourceTooltipUI : MonoBehaviour
             string sign = net > 0 ? "+" : (net < 0 ? "-" : "");
             int absNet = Mathf.Abs(net);
 
-            txtDailyNetBalance.text = $"Bilans dobowy: {sign}{absNet}";
+            txtDailyNetBalance.text = LocalizationManager.GetFormat("UI_TOOLTIP_DAILY_BALANCE", $"{sign}{absNet}");
             txtDailyNetBalance.color = net >= 0 ? positiveColor : negativeColor;
         }
 
@@ -480,7 +485,7 @@ public class ResourceTooltipUI : MonoBehaviour
         txtDailyNetBalance.font = TMP_Settings.defaultFontAsset;
         txtDailyNetBalance.color = positiveColor;
         txtDailyNetBalance.raycastTarget = false;
-        txtDailyNetBalance.text = "Bilans dobowy: +0";
+        txtDailyNetBalance.text = LocalizationManager.Get("UI_TOOLTIP_DAILY_BALANCE_ZERO", "Bilans dobowy: +0");
 
         // --- SEPARATOR 1 (Kreska 4px) ---
         dividerHeaderToProd = CreateDivider4px(rootGO.transform, "Divider_4px_HeaderToProd");
@@ -499,7 +504,7 @@ public class ResourceTooltipUI : MonoBehaviour
         var prodHeaderGO = new GameObject("Txt_ProductionHeader", typeof(RectTransform), typeof(TextMeshProUGUI));
         prodHeaderGO.transform.SetParent(pnlProductionSection.transform, false);
         txtProductionHeader = prodHeaderGO.GetComponent<TextMeshProUGUI>();
-        txtProductionHeader.text = "PRODUKCJA";
+        txtProductionHeader.text = LocalizationManager.Get("UI_TOOLTIP_PRODUCTION", "PRODUKCJA");
         txtProductionHeader.fontSize = 16f;
         txtProductionHeader.fontStyle = FontStyles.Bold;
         txtProductionHeader.font = TMP_Settings.defaultFontAsset;
@@ -521,7 +526,7 @@ public class ResourceTooltipUI : MonoBehaviour
         var prodEmptyGO = new GameObject("Txt_ProductionEmpty", typeof(RectTransform), typeof(TextMeshProUGUI));
         prodEmptyGO.transform.SetParent(pnlProductionSection.transform, false);
         txtProductionEmpty = prodEmptyGO.GetComponent<TextMeshProUGUI>();
-        txtProductionEmpty.text = "(Brak produkcji)";
+        txtProductionEmpty.text = LocalizationManager.Get("UI_TOOLTIP_NO_PRODUCTION", "(Brak produkcji)");
         txtProductionEmpty.fontSize = 12f;
         txtProductionEmpty.fontStyle = FontStyles.Italic;
         txtProductionEmpty.font = TMP_Settings.defaultFontAsset;
@@ -545,7 +550,7 @@ public class ResourceTooltipUI : MonoBehaviour
         var consHeaderGO = new GameObject("Txt_ConsumptionHeader", typeof(RectTransform), typeof(TextMeshProUGUI));
         consHeaderGO.transform.SetParent(pnlConsumptionSection.transform, false);
         txtConsumptionHeader = consHeaderGO.GetComponent<TextMeshProUGUI>();
-        txtConsumptionHeader.text = "ZUŻYCIE";
+        txtConsumptionHeader.text = LocalizationManager.Get("UI_TOOLTIP_CONSUMPTION", "ZUŻYCIE");
         txtConsumptionHeader.fontSize = 16f;
         txtConsumptionHeader.fontStyle = FontStyles.Bold;
         txtConsumptionHeader.font = TMP_Settings.defaultFontAsset;
@@ -567,7 +572,7 @@ public class ResourceTooltipUI : MonoBehaviour
         var consEmptyGO = new GameObject("Txt_ConsumptionEmpty", typeof(RectTransform), typeof(TextMeshProUGUI));
         consEmptyGO.transform.SetParent(pnlConsumptionSection.transform, false);
         txtConsumptionEmpty = consEmptyGO.GetComponent<TextMeshProUGUI>();
-        txtConsumptionEmpty.text = "(Brak zużycia)";
+        txtConsumptionEmpty.text = LocalizationManager.Get("UI_TOOLTIP_NO_CONSUMPTION", "(Brak zużycia)");
         txtConsumptionEmpty.fontSize = 12f;
         txtConsumptionEmpty.fontStyle = FontStyles.Italic;
         txtConsumptionEmpty.font = TMP_Settings.defaultFontAsset;

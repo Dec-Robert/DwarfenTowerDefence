@@ -297,7 +297,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         // Ustawienia tytułu
         if (txtTitle != null)
         {
-            txtTitle.text = $"EKSPEDYCJA: CHUNK [{chunkCoord.x}, {chunkCoord.y}]";
+            txtTitle.text = LocalizationManager.GetFormat("UI_EXPEDITION_MODAL_TITLE_FMT", chunkCoord.x, chunkCoord.y);
         }
 
         // Podpięcie przycisku zamknięcia
@@ -449,7 +449,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
             if (btnTabRecon != null) btnTabRecon.interactable = false;
             if (txtTabReconLabel != null)
             {
-                txtTabReconLabel.text = "ZWIAD UKOŃCZONY";
+                txtTabReconLabel.text = LocalizationManager.Get("UI_RECON_COMPLETED", "ZWIAD UKOŃCZONY");
                 txtTabReconLabel.color = ColorTextMuted;
             }
             if (!isSurveyTabActive)
@@ -463,7 +463,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
             if (btnTabRecon != null) btnTabRecon.interactable = true;
             if (txtTabReconLabel != null)
             {
-                txtTabReconLabel.text = "ZWIAD TAKTYCZNY";
+                txtTabReconLabel.text = LocalizationManager.Get("UI_RECON_TACTICAL", "ZWIAD TAKTYCZNY");
             }
         }
 
@@ -472,7 +472,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         int usedEq = MapExpansionManager.Instance.UsedEquipment;
         if (txtSurveyUsageSummary != null)
         {
-            txtSurveyUsageSummary.text = $"{usedEq} / {totalEq} W użyciu";
+            txtSurveyUsageSummary.text = LocalizationManager.GetFormat("UI_EXPEDITION_IN_USE", usedEq, totalEq);
         }
         RebuildSlotsRow(totalEq, usedEq);
 
@@ -504,7 +504,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         if (txtElfCount != null) txtElfCount.text = assignedElves.ToString();
         if (txtFreeWorkers != null)
         {
-            txtFreeWorkers.text = $"Dostępne elfy: {idleElves} wolnych";
+            txtFreeWorkers.text = LocalizationManager.GetFormat("UI_EXPEDITION_AVAILABLE_ELVES", idleElves);
             txtFreeWorkers.color = idleElves >= assignedElves ? ColorTextWhite : ColorTextRed;
         }
 
@@ -517,13 +517,13 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         int duration = surveyCost.days;
         if (txtSurveyDuration != null)
         {
-            string cycleWord = duration == 1 ? "Cykl" : "Cykle";
+            string cycleWord = duration == 1 ? LocalizationManager.Get("UI_CYCLE_SINGULAR_CAP", "Cykl") : LocalizationManager.Get("UI_CYCLES_PLURAL_CAP", "Cykle");
             txtSurveyDuration.text = $"{duration} {cycleWord}";
         }
 
         if (txtSurveyNeededElves != null)
         {
-            txtSurveyNeededElves.text = $"{assignedElves} Zwiadowców";
+            txtSurveyNeededElves.text = LocalizationManager.GetFormat("UI_EXPEDITION_SCOUTS_COUNT", assignedElves);
         }
 
         int etherCost = surveyCost.etherCost;
@@ -545,18 +545,18 @@ public class ChunkExpeditionModalUI : MonoBehaviour
             {
                 if (canStart)
                 {
-                    txtSendSurveyLabel.text = "WYŚLIJ EKSPEDYCJE";
+                    txtSendSurveyLabel.text = LocalizationManager.Get("UI_EXPEDITION_SEND_EXPEDITION", "WYŚLIJ EKSPEDYCJE");
                     txtSendSurveyLabel.color = ColorTextWhite;
                 }
                 else
                 {
                     txtSendSurveyLabel.color = ColorTextRed;
                     if (currentEther < etherCost || currentFood < foodCost || currentWood < woodCost)
-                        txtSendSurveyLabel.text = "BRAK ZASOBÓW";
+                        txtSendSurveyLabel.text = LocalizationManager.Get("UI_EXPEDITION_NO_RESOURCES", "BRAK ZASOBÓW");
                     else if (idleElves < assignedElves)
-                        txtSendSurveyLabel.text = "BRAK WOLNYCH ELFÓW";
+                        txtSendSurveyLabel.text = LocalizationManager.Get("UI_EXPEDITION_NO_ELVES", "BRAK WOLNYCH ELFÓW");
                     else if (availableGear < assignedElves)
-                        txtSendSurveyLabel.text = "BRAK EKWIPUNKU";
+                        txtSendSurveyLabel.text = LocalizationManager.Get("UI_EXPEDITION_NO_EQUIPMENT", "BRAK EKWIPUNKU");
                     else
                         txtSendSurveyLabel.text = reason.ToUpper();
                 }
@@ -570,7 +570,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         int availableGear = MapExpansionManager.Instance.AvailableEquipment;
 
         if (txtReconNeededElves != null)
-            txtReconNeededElves.text = $"{config.reconElfRequirement} Zwiadowca";
+            txtReconNeededElves.text = LocalizationManager.GetFormat("UI_EXPEDITION_RECON_SCOUTS_FMT", config.reconElfRequirement);
 
         if (txtReconDuration != null)
         {
@@ -599,18 +599,18 @@ public class ChunkExpeditionModalUI : MonoBehaviour
             {
                 if (canStart)
                 {
-                    txtSendReconLabel.text = "WYŚLIJ ZWIAD TAKTYCZNY";
+                    txtSendReconLabel.text = LocalizationManager.Get("UI_EXPEDITION_SEND_RECON", "WYŚLIJ ZWIAD TAKTYCZNY");
                     txtSendReconLabel.color = ColorTextWhite;
                 }
                 else
                 {
                     txtSendReconLabel.color = ColorTextRed;
                     if (currentEther < etherCost || currentFood < foodCost || currentWood < woodCost)
-                        txtSendReconLabel.text = "BRAK ZASOBÓW";
+                        txtSendReconLabel.text = LocalizationManager.Get("UI_EXPEDITION_NO_RESOURCES", "BRAK ZASOBÓW");
                     else if (idleElves < config.reconElfRequirement)
-                        txtSendReconLabel.text = "BRAK WOLNYCH ELFÓW";
+                        txtSendReconLabel.text = LocalizationManager.Get("UI_EXPEDITION_NO_ELVES", "BRAK WOLNYCH ELFÓW");
                     else if (availableGear < config.reconElfRequirement)
-                        txtSendReconLabel.text = "BRAK EKWIPUNKU";
+                        txtSendReconLabel.text = LocalizationManager.Get("UI_EXPEDITION_NO_EQUIPMENT", "BRAK EKWIPUNKU");
                     else
                         txtSendReconLabel.text = reason.ToUpper();
                 }
@@ -711,9 +711,9 @@ public class ChunkExpeditionModalUI : MonoBehaviour
 
         if (featureTilePrefab == null || intel == null) return;
 
-        CreateFeatureTile("Las :", intel.GetAbundance(HexFeatureType.Forest));
-        CreateFeatureTile("Łąka :", intel.GetAbundance(HexFeatureType.Meadow));
-        CreateFeatureTile("Góry :", intel.GetAbundance(HexFeatureType.Mountain));
+        CreateFeatureTile(LocalizationManager.Get("feature_forest_colon", "Las :"), intel.GetAbundance(HexFeatureType.Forest));
+        CreateFeatureTile(LocalizationManager.Get("feature_meadow_colon", "Łąka :"), intel.GetAbundance(HexFeatureType.Meadow));
+        CreateFeatureTile(LocalizationManager.Get("feature_mountain_colon", "Góry :"), intel.GetAbundance(HexFeatureType.Mountain));
     }
 
     private void CreateFeatureTile(string featureName, ReconAbundance abundance)
@@ -729,10 +729,10 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         {
             txtAbundance.text = abundance switch
             {
-                ReconAbundance.Abundant => "obfite",
-                ReconAbundance.Moderate => "umiarkowane",
-                ReconAbundance.Scarce   => "znikome",
-                _                       => "brak"
+                ReconAbundance.Abundant => LocalizationManager.Get("recon_abundant", "obfite"),
+                ReconAbundance.Moderate => LocalizationManager.Get("recon_moderate", "umiarkowane"),
+                ReconAbundance.Scarce   => LocalizationManager.Get("recon_scarce", "znikome"),
+                _                       => LocalizationManager.Get("recon_none", "brak")
             };
 
             txtAbundance.color = abundance switch

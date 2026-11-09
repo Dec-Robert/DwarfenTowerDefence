@@ -145,6 +145,7 @@ public class MainMenuDemoUI : MonoBehaviour
 
     private RuntimeDropdownUI ddResolution;
     private RuntimeDropdownUI ddWindowMode;
+    private RuntimeDropdownUI ddLanguage;
     private TextMeshProUGUI txtSettingsFeedback;
 
     // Elementy runtime dla modalu
@@ -158,6 +159,25 @@ public class MainMenuDemoUI : MonoBehaviour
     private void Awake()
     {
         FindButtonReferences();
+    }
+
+    private void OnEnable()
+    {
+        LocalizationManager.OnLanguageChanged += HandleLanguageChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationManager.OnLanguageChanged -= HandleLanguageChanged;
+    }
+
+    private void HandleLanguageChanged()
+    {
+        ApplyGeminiUIStandards();
+        if (howToPlayModal != null && howToPlayModal.activeSelf)
+        {
+            ShowCard(currentCardIndex);
+        }
     }
 
     private void Start()
@@ -299,11 +319,11 @@ public class MainMenuDemoUI : MonoBehaviour
     private void ApplyGeminiUIStandards()
     {
         // Standardy UI z GEMINI.md: 16 pt dla przycisków / opisów sekcji
-        SetButtonTextAndSize(btnStart, "Rozpocznij Demo", 16f);
-        SetButtonTextAndSize(btnHowToPlay, "Jak Grać", 16f);
-        SetButtonTextAndSize(btnMetaGraph, "Drzewo Rozwoju", 16f);
-        SetButtonTextAndSize(btnSettings, "Ustawienia", 16f);
-        SetButtonTextAndSize(btnExit, "Wyjście", 16f);
+        SetButtonTextAndSize(btnStart, LocalizationManager.Get("UI_BTN_START", "Rozpocznij Demo"), 16f);
+        SetButtonTextAndSize(btnHowToPlay, LocalizationManager.Get("UI_BTN_HOW_TO_PLAY", "Jak Grać"), 16f);
+        SetButtonTextAndSize(btnMetaGraph, LocalizationManager.Get("UI_META_PROGRESSION", "Drzewo Rozwoju"), 16f);
+        SetButtonTextAndSize(btnSettings, LocalizationManager.Get("UI_BTN_OPTIONS", "Ustawienia"), 16f);
+        SetButtonTextAndSize(btnExit, LocalizationManager.Get("UI_BTN_EXIT", "Wyjście"), 16f);
     }
 
     private void SetButtonTextAndSize(Button btn, string newText, float fontSize)
@@ -410,9 +430,15 @@ public class MainMenuDemoUI : MonoBehaviour
 
         GuideCard card = cards[index];
 
-        if (modalCardTitle != null) modalCardTitle.text = card.cardTitle;
-        if (modalCardContent != null) modalCardContent.text = card.content;
-        if (modalPageIndicator != null) modalPageIndicator.text = $"Karta {index + 1} z {cards.Count} • Poradnik Obrońcy";
+        if (modalCardTitle != null) modalCardTitle.text = LocalizationManager.Get($"GUIDE_CARD_{index}_TITLE", card.cardTitle);
+        if (modalCardContent != null) modalCardContent.text = LocalizationManager.Get($"GUIDE_CARD_{index}_CONTENT", card.content);
+        if (modalPageIndicator != null)
+        {
+            string guideTitle = LocalizationManager.Get("UI_HEADER_HOW_TO_PLAY", "Poradnik Obrońcy");
+            modalPageIndicator.text = LocalizationManager.CurrentLanguage == "pl"
+                ? $"Karta {index + 1} z {cards.Count} • {guideTitle}"
+                : $"Card {index + 1} of {cards.Count} • {guideTitle}";
+        }
 
         if (modalBtnPrev != null)
         {
@@ -424,7 +450,10 @@ public class MainMenuDemoUI : MonoBehaviour
             TextMeshProUGUI nextTxt = modalBtnNext.GetComponentInChildren<TextMeshProUGUI>();
             if (nextTxt != null)
             {
-                nextTxt.text = (index == cards.Count - 1) ? "Zakończ" : "Następna >";
+                bool isLast = (index == cards.Count - 1);
+                string finishLabel = LocalizationManager.Get("UI_BTN_CLOSE", "Zakończ");
+                string nextLabel = LocalizationManager.CurrentLanguage == "pl" ? "Następna >" : "Next >";
+                nextTxt.text = isLast ? finishLabel : nextLabel;
                 nextTxt.fontSize = 14f;
             }
         }
@@ -517,7 +546,7 @@ public class MainMenuDemoUI : MonoBehaviour
 
         TextMeshProUGUI headerTitle = titleTxtObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) headerTitle.font = fontAsset;
-        headerTitle.text = "JAK GRAĆ • PORADNIK BASTIONU";
+        headerTitle.text = LocalizationManager.Get("UI_GUIDE_HEADER_TITLE", "JAK GRAĆ • PORADNIK BASTIONU");
         headerTitle.fontSize = 20f; // GEMINI.md: 20 pt nagłówek
         headerTitle.fontStyle = FontStyles.Bold;
         headerTitle.color = new Color(0.95f, 0.85f, 0.45f); // złoty akcent
@@ -643,15 +672,15 @@ public class MainMenuDemoUI : MonoBehaviour
         navLayout.childForceExpandWidth = true;
         navLayout.childForceExpandHeight = true;
 
-        GameObject btnPrevObj = CreateSimpleButton(navBtnContainer.transform, "Btn_Prev", "< Poprzednia", fontAsset, 14f, new Vector2(110f, 36f));
+        GameObject btnPrevObj = CreateSimpleButton(navBtnContainer.transform, "Btn_Prev", LocalizationManager.Get("UI_GUIDE_BTN_PREV", "< Poprzednia"), fontAsset, 14f, new Vector2(110f, 36f));
         modalBtnPrev = btnPrevObj.GetComponent<Button>();
         modalBtnPrev.onClick.AddListener(PrevCard);
 
-        GameObject btnNextObj = CreateSimpleButton(navBtnContainer.transform, "Btn_Next", "Następna >", fontAsset, 14f, new Vector2(110f, 36f));
+        GameObject btnNextObj = CreateSimpleButton(navBtnContainer.transform, "Btn_Next", LocalizationManager.Get("UI_GUIDE_BTN_NEXT", "Następna >"), fontAsset, 14f, new Vector2(110f, 36f));
         modalBtnNext = btnNextObj.GetComponent<Button>();
         modalBtnNext.onClick.AddListener(NextCard);
 
-        GameObject btnCloseFooterObj = CreateSimpleButton(navBtnContainer.transform, "Btn_CloseFooter", "Zamknij", fontAsset, 14f, new Vector2(110f, 36f));
+        GameObject btnCloseFooterObj = CreateSimpleButton(navBtnContainer.transform, "Btn_CloseFooter", LocalizationManager.Get("UI_GUIDE_BTN_CLOSE", "Zamknij"), fontAsset, 14f, new Vector2(110f, 36f));
         btnCloseFooterObj.GetComponent<Button>().onClick.AddListener(CloseHowToPlay);
 
         howToPlayModal = modalObj;
@@ -789,9 +818,14 @@ public class MainMenuDemoUI : MonoBehaviour
         {
             ddWindowMode.SetValue(GetCurrentWindowModeIndex(), notify: false);
         }
+        if (ddLanguage != null)
+        {
+            int curLangIdx = LocalizationManager.CurrentLanguage == "en" ? 1 : 0;
+            ddLanguage.SetValue(curLangIdx, notify: false);
+        }
         if (txtSettingsFeedback != null)
         {
-            txtSettingsFeedback.text = "Zmiany są natychmiast aplikowane i zapamiętywane w preferencjach gry.";
+            txtSettingsFeedback.text = LocalizationManager.Get("UI_SETTINGS_FEEDBACK_HINT", "Zmiany są natychmiast aplikowane i zapamiętywane w preferencjach gry.");
             txtSettingsFeedback.color = new Color(0.60f, 0.65f, 0.70f, 1f);
         }
     }
@@ -843,6 +877,12 @@ public class MainMenuDemoUI : MonoBehaviour
     private void OnWindowModeSelected(int index)
     {
         ApplySettings();
+    }
+
+    private void OnLanguageSelected(int index)
+    {
+        string lang = (index == 1) ? "en" : "pl";
+        LocalizationManager.SetLanguage(lang);
     }
 
     public void ApplySettings()
@@ -906,7 +946,7 @@ public class MainMenuDemoUI : MonoBehaviour
         windowRect.anchorMin = new Vector2(0.5f, 0.5f);
         windowRect.anchorMax = new Vector2(0.5f, 0.5f);
         windowRect.pivot = new Vector2(0.5f, 0.5f);
-        windowRect.sizeDelta = new Vector2(560f, 430f);
+        windowRect.sizeDelta = new Vector2(560f, 510f);
 
         Image windowImg = windowObj.GetComponent<Image>();
         windowImg.color = new Color(0.12f, 0.13f, 0.15f, 0.98f); // elegancki ciemny grafit
@@ -931,7 +971,7 @@ public class MainMenuDemoUI : MonoBehaviour
 
         TextMeshProUGUI headerTitle = titleTxtObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) headerTitle.font = fontAsset;
-        headerTitle.text = "USTAWIENIA EKRANU";
+        headerTitle.text = LocalizationManager.Get("UI_SETTINGS_HEADER_TITLE", "USTAWIENIA EKRANU");
         headerTitle.fontSize = 20f; // GEMINI.md: 20 pt nagłówek
         headerTitle.fontStyle = FontStyles.Bold;
         headerTitle.color = new Color(0.95f, 0.85f, 0.45f); // złoty akcent Bastionu
@@ -975,7 +1015,7 @@ public class MainMenuDemoUI : MonoBehaviour
         resLabelObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 24f);
         TextMeshProUGUI resLabel = resLabelObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) resLabel.font = fontAsset;
-        resLabel.text = "Rozdzielczość ekranu:";
+        resLabel.text = LocalizationManager.Get("UI_SETTINGS_RESOLUTION_LABEL", "Rozdzielczość ekranu:");
         resLabel.fontSize = 16f; // GEMINI.md: 16 pt sekcja
         resLabel.fontStyle = FontStyles.Bold;
         resLabel.color = new Color(0.85f, 0.90f, 0.96f, 1f);
@@ -999,7 +1039,7 @@ public class MainMenuDemoUI : MonoBehaviour
         modeLabelObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 24f);
         TextMeshProUGUI modeLabel = modeLabelObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) modeLabel.font = fontAsset;
-        modeLabel.text = "Typ ramki (Tryb okna):";
+        modeLabel.text = LocalizationManager.Get("UI_SETTINGS_WINDOW_MODE_LABEL", "Typ ramki (Tryb okna):");
         modeLabel.fontSize = 16f; // GEMINI.md: 16 pt sekcja
         modeLabel.fontStyle = FontStyles.Bold;
         modeLabel.color = new Color(0.85f, 0.90f, 0.96f, 1f);
@@ -1010,13 +1050,37 @@ public class MainMenuDemoUI : MonoBehaviour
         ddWindowMode.SetOptions(modeLabels, GetCurrentWindowModeIndex());
         ddWindowMode.onValueChanged += OnWindowModeSelected;
 
+        // Sekcja Języka Gry (Language)
+        GameObject langSection = new GameObject("Sec_Language", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        langSection.transform.SetParent(contentBox.transform, false);
+        VerticalLayoutGroup langLayout = langSection.GetComponent<VerticalLayoutGroup>();
+        langLayout.spacing = 6f;
+        langLayout.childControlHeight = false;
+        langLayout.childControlWidth = true;
+
+        GameObject langLabelObj = new GameObject("Lbl_Language", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        langLabelObj.transform.SetParent(langSection.transform, false);
+        langLabelObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 24f);
+        TextMeshProUGUI langLabel = langLabelObj.GetComponent<TextMeshProUGUI>();
+        if (fontAsset != null) langLabel.font = fontAsset;
+        langLabel.text = LocalizationManager.Get("UI_LABEL_LANGUAGE_SELECT", "Język gry (Language):");
+        langLabel.fontSize = 16f; // GEMINI.md: 16 pt sekcja
+        langLabel.fontStyle = FontStyles.Bold;
+        langLabel.color = new Color(0.85f, 0.90f, 0.96f, 1f);
+
+        ddLanguage = RuntimeDropdownUI.Create(langSection.transform, windowObj.transform, "Dd_Language", new Vector2(500f, 38f), fontAsset);
+        List<string> langLabels = new List<string> { "Polski", "English" };
+        int curLangIdx = LocalizationManager.CurrentLanguage == "en" ? 1 : 0;
+        ddLanguage.SetOptions(langLabels, curLangIdx);
+        ddLanguage.onValueChanged += OnLanguageSelected;
+
         // Sekcja 3: Tekst pomocniczy / status
         GameObject feedbackObj = new GameObject("Txt_Feedback", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         feedbackObj.transform.SetParent(contentBox.transform, false);
         feedbackObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 22f);
         txtSettingsFeedback = feedbackObj.GetComponent<TextMeshProUGUI>();
         if (fontAsset != null) txtSettingsFeedback.font = fontAsset;
-        txtSettingsFeedback.text = "Zmiany są natychmiast aplikowane i zapamiętywane w preferencjach gry.";
+        txtSettingsFeedback.text = LocalizationManager.Get("UI_SETTINGS_FEEDBACK_HINT", "Zmiany są natychmiast aplikowane i zapamiętywane w preferencjach gry.");
         txtSettingsFeedback.fontSize = 10f; // GEMINI.md: 10 pt tekst pomocniczy
         txtSettingsFeedback.color = new Color(0.60f, 0.65f, 0.70f, 1f);
         txtSettingsFeedback.alignment = TextAlignmentOptions.MidlineLeft;
@@ -1037,7 +1101,7 @@ public class MainMenuDemoUI : MonoBehaviour
         footerLayout.childForceExpandWidth = false;
         footerLayout.childForceExpandHeight = true;
 
-        GameObject btnApplyObj = CreateSimpleButton(footerObj.transform, "Btn_Apply", "Zastosuj", fontAsset, 16f, new Vector2(140f, 38f));
+        GameObject btnApplyObj = CreateSimpleButton(footerObj.transform, "Btn_Apply", LocalizationManager.Get("UI_SETTINGS_BTN_APPLY", "Zastosuj"), fontAsset, 16f, new Vector2(140f, 38f));
         Button btnApply = btnApplyObj.GetComponent<Button>();
         Image btnApplyImg = btnApplyObj.GetComponent<Image>();
         btnApplyImg.color = new Color(0.22f, 0.38f, 0.28f, 1f); // subtelny zielony akcent zatwierdzenia
@@ -1048,7 +1112,7 @@ public class MainMenuDemoUI : MonoBehaviour
         btnApply.colors = cba;
         btnApply.onClick.AddListener(ApplySettings);
 
-        GameObject btnCloseFooterObj = CreateSimpleButton(footerObj.transform, "Btn_CloseFooter", "Zamknij", fontAsset, 14f, new Vector2(120f, 38f));
+        GameObject btnCloseFooterObj = CreateSimpleButton(footerObj.transform, "Btn_CloseFooter", LocalizationManager.Get("UI_GUIDE_BTN_CLOSE", "Zamknij"), fontAsset, 14f, new Vector2(120f, 38f));
         btnCloseFooterObj.GetComponent<Button>().onClick.AddListener(CloseSettings);
 
         settingsModal = modalObj;

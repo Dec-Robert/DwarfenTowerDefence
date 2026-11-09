@@ -22,6 +22,14 @@ public class HopeMilestoneConfigSO : ScriptableObject
     public class MilestoneGoal
     {
         public string description;        // np. "Zabij 100 wrogów" (dla UI na ekranie końcowym)
+        public string DisplayDescription
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(description)) return string.Empty;
+                return LocalizationManager.Instance != null ? LocalizationManager.Get("milestone_" + description.Replace(" ", "_").ToLowerInvariant(), description) : description;
+            }
+        }
         public MilestoneType type;
         
         [Tooltip("Wymagana wartość do osiągnięcia celu (np. 100 wrogów, 5. noc)")]

@@ -9,6 +9,23 @@ public class BuildingUpgradeSO : ScriptableObject
     public Sprite icon;
     [TextArea] public string description;
 
+    public string DisplayName => LocalizationManager.Get($"UPGRADE_{GetLocalizationId()}_NAME", upgradeName);
+    public string DisplayDescription => LocalizationManager.Get($"UPGRADE_{GetLocalizationId()}_DESC", description);
+
+    public string GetLocalizationId()
+    {
+        string raw = !string.IsNullOrEmpty(upgradeName) ? upgradeName : name;
+        var sb = new System.Text.StringBuilder();
+        foreach (char c in raw)
+        {
+            if (char.IsLetterOrDigit(c)) sb.Append(char.ToUpperInvariant(c));
+            else if (c == ' ' || c == '_' || c == '-') sb.Append('_');
+        }
+        string clean = sb.ToString();
+        while (clean.Contains("__")) clean = clean.Replace("__", "_");
+        return clean.Trim('_');
+    }
+
     [Header("Koszt")] public List<ResourceCost> cost;
 
     [Header("Efekty Statystyczne (Addytywne)")]
@@ -34,14 +51,13 @@ public class BuildingUpgradeSO : ScriptableObject
     // Dodaj te pola do klasy BuildingUpgradeSO:
     [Header("Bonusy do Miejsc Pracy")] public int extraShifts; // Np. +1 Zmiana
 
-    public int extraWorkersPerShift; // Np. +1 Pracownik na zmian�
+    public int extraWorkersPerShift; // Np. +1 Pracownik na zmianę
 
     [Header("Logika Specjalna")]
-    // Np. "AUTO_REPLANT" - ID dla skryptu, �eby wiedzia� co robi�
+    // Np. "AUTO_REPLANT" - ID dla skryptu, żeby wiedział co robić
     public List<string> specialEffectIDs = new();
 
-
     [Header("Drzewko Rozwoju")]
-    // Jakie ulepszenia staną si� dost�pne po wykupieniu tego? (To jest ten Tier + 1)
+    // Jakie ulepszenia staną się dostępne po wykupieniu tego? (To jest ten Tier + 1)
     public List<BuildingUpgradeSO> nextTierOptions;
 }

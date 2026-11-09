@@ -9,6 +9,22 @@ public class RuneDefinitionSO : ScriptableObject
     public Sprite icon;
     public RuneRarity rarity;
 
+    public string DisplayName => LocalizationManager.Get($"RUNE_{GetLocalizationId()}_NAME", runeName);
+
+    public string GetLocalizationId()
+    {
+        string raw = !string.IsNullOrEmpty(runeName) ? runeName : name;
+        var sb = new System.Text.StringBuilder();
+        foreach (char c in raw)
+        {
+            if (char.IsLetterOrDigit(c)) sb.Append(char.ToUpperInvariant(c));
+            else if (c == ' ' || c == '_' || c == '-') sb.Append('_');
+        }
+        string clean = sb.ToString();
+        while (clean.Contains("__")) clean = clean.Replace("__", "_");
+        return clean.Trim('_');
+    }
+
     [Header("Główna Statystyka (Buff)")]
     public RuneStatType primaryStat;
     public RuneValueType valueType;

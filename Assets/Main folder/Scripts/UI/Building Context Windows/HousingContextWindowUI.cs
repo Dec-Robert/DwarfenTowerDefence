@@ -272,10 +272,14 @@ public class HousingContextWindowUI : MonoBehaviour
         {
             currentHousing.OnHousingStateChanged += HandleMorningStarted;
         }
+
+        LocalizationManager.OnLanguageChanged += RefreshAll;
     }
 
     private void UnsubscribeEvents()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshAll;
+
         if (PopLifeCycleManager.Instance != null)
         {
             PopLifeCycleManager.Instance.OnCitizenBorn -= HandleCitizenChanged;
@@ -352,7 +356,7 @@ public class HousingContextWindowUI : MonoBehaviour
     {
         if (txtBuildingName != null)
         {
-            string name = currentHousing.data != null ? currentHousing.data.buildingName : "CHATA";
+            string name = currentHousing.data != null ? currentHousing.data.DisplayName : LocalizationManager.Get("UI_HOUSING_DEFAULT_TITLE", "CHATA");
             txtBuildingName.text = name.ToUpper();
         }
     }
@@ -381,7 +385,7 @@ public class HousingContextWindowUI : MonoBehaviour
         // Licznik mieszkańców
         if (txtPopulationCount != null)
         {
-            txtPopulationCount.text = $"Mieszkańcy: {currentPop} / {maxPop}";
+            txtPopulationCount.text = LocalizationManager.GetFormat("UI_HOUSING_RESIDENTS_FMT", currentPop, maxPop);
         }
 
         // Pasek zapełnienia miejsc
@@ -468,11 +472,11 @@ public class HousingContextWindowUI : MonoBehaviour
 
             if (summaryList.Count > 0)
             {
-                txtResidentUpkeepTotal.text = $"Łączny koszt: {string.Join(", ", summaryList)} / świt";
+                txtResidentUpkeepTotal.text = LocalizationManager.GetFormat("UI_HOUSING_TOTAL_COST_FMT", string.Join(", ", summaryList));
             }
             else
             {
-                txtResidentUpkeepTotal.text = "Łączny koszt: brak kosztów utrzymania";
+                txtResidentUpkeepTotal.text = LocalizationManager.Get("UI_HOUSING_TOTAL_COST_NONE", "Łączny koszt: brak kosztów utrzymania");
             }
         }
 
@@ -541,7 +545,7 @@ public class HousingContextWindowUI : MonoBehaviour
             btnToggleGrowth.interactable = false;
             if (txtGrowthStatusLabel != null)
             {
-                txtGrowthStatusLabel.text = "WZROST: PEŁNY";
+                txtGrowthStatusLabel.text = LocalizationManager.Get("UI_HOUSING_GROWTH_FULL", "WZROST: PEŁNY");
                 txtGrowthStatusLabel.color = growthFullTxt;
             }
             if (imgGrowthStatusBackground != null)
@@ -555,7 +559,7 @@ public class HousingContextWindowUI : MonoBehaviour
             btnToggleGrowth.interactable = true;
             if (txtGrowthStatusLabel != null)
             {
-                txtGrowthStatusLabel.text = "WZROST: WSTRZYMANY";
+                txtGrowthStatusLabel.text = LocalizationManager.Get("UI_HOUSING_GROWTH_PAUSED", "WZROST: WSTRZYMANY");
                 txtGrowthStatusLabel.color = growthPausedTxt;
             }
             if (imgGrowthStatusBackground != null)
@@ -569,7 +573,7 @@ public class HousingContextWindowUI : MonoBehaviour
             btnToggleGrowth.interactable = true;
             if (txtGrowthStatusLabel != null)
             {
-                txtGrowthStatusLabel.text = "WZROST: AKTYWNY";
+                txtGrowthStatusLabel.text = LocalizationManager.Get("UI_HOUSING_GROWTH_ACTIVE", "WZROST: AKTYWNY");
                 txtGrowthStatusLabel.color = growthActiveTxt;
             }
             if (imgGrowthStatusBackground != null)
@@ -594,7 +598,7 @@ public class HousingContextWindowUI : MonoBehaviour
         // Liczba wymaganych cykli
         if (txtCyclesRequired != null)
         {
-            txtCyclesRequired.text = isFull ? "WYMAGANE: PEŁNY" : $"WYMAGANE: {requiredTicks} CYKLE";
+            txtCyclesRequired.text = isFull ? LocalizationManager.Get("UI_HOUSING_REQ_FULL", "WYMAGANE: PEŁNY") : LocalizationManager.GetFormat("UI_HOUSING_REQ_CYCLES_FMT", requiredTicks);
         }
 
         // Pasek postępu
@@ -611,29 +615,37 @@ public class HousingContextWindowUI : MonoBehaviour
         {
             if (isFull)
             {
-                txtProgressStatus.text = "Maksymalna populacja osiągnięta";
+                txtProgressStatus.text = LocalizationManager.Get("UI_HOUSING_MAX_POP_REACHED", "Maksymalna populacja osiągnięta");
                 txtProgressStatus.color = new Color(0.45f, 0.95f, 0.55f, 1f);
             }
             else
             {
                 int percentage = Mathf.RoundToInt(progressRatio * 100f);
                 string growthStatus = currentHousing.GetGrowthStatus();
+                string localizedStatus = growthStatus switch
+                {
+                    "GŁÓD (-1 CYKL)" => LocalizationManager.Get("UI_HOUSING_STATUS_STARVATION", "GŁÓD (-1 CYKL)"),
+                    "BRAK NADWYŻKI" => LocalizationManager.Get("UI_HOUSING_STATUS_NO_SURPLUS", "BRAK NADWYŻKI"),
+                    "WSTRZYMANY" => LocalizationManager.Get("UI_HOUSING_STATUS_PAUSED", "WSTRZYMANY"),
+                    "BRAK ZASOBÓW" => LocalizationManager.Get("UI_HOUSING_STATUS_NO_RESOURCES", "BRAK ZASOBÓW"),
+                    _ => growthStatus
+                };
 
                 if (growthStatus == "GŁÓD (-1 CYKL)" || growthStatus == "BRAK ZASOBÓW")
                 {
-                    txtProgressStatus.text = $"Postęp: {currentTicks} z {requiredTicks} cykli ({percentage}%) - <color=#FF6666>{growthStatus}</color>";
+                    txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_PROGRESS_WITH_STATUS", currentTicks, requiredTicks, percentage, "FF6666", localizedStatus);
                 }
                 else if (growthStatus == "BRAK NADWYŻKI")
                 {
-                    txtProgressStatus.text = $"Postęp: {currentTicks} z {requiredTicks} cykli ({percentage}%) - <color=#FF9944>BRAK NADWYŻKI</color>";
+                    txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_PROGRESS_WITH_STATUS", currentTicks, requiredTicks, percentage, "FF9944", localizedStatus);
                 }
                 else if (growthStatus == "WSTRZYMANY")
                 {
-                    txtProgressStatus.text = $"Postęp: {currentTicks} z {requiredTicks} cykli ({percentage}%) - <color=#FFCC66>WSTRZYMANY</color>";
+                    txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_PROGRESS_WITH_STATUS", currentTicks, requiredTicks, percentage, "FFCC66", localizedStatus);
                 }
                 else
                 {
-                    txtProgressStatus.text = $"Postęp: {currentTicks} z {requiredTicks} cykli ({percentage}%)";
+                    txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_PROGRESS_FMT", currentTicks, requiredTicks, percentage);
                 }
                 txtProgressStatus.color = Color.white;
             }
@@ -642,7 +654,7 @@ public class HousingContextWindowUI : MonoBehaviour
         // Etykieta tempa
         if (txtProgressRate != null)
         {
-            txtProgressRate.text = "1 cykl / świt (gdy zapewnione zasoby)";
+            txtProgressRate.text = LocalizationManager.Get("UI_HOUSING_RATE_HINT", "1 cykl / świt (gdy zapewnione zasoby)");
         }
     }
 
@@ -673,7 +685,7 @@ public class HousingContextWindowUI : MonoBehaviour
             // Krok 1: Oczekiwanie na potwierdzenie
             isDemolishConfirming = true;
             int percent = currentHousing.RefundPercentage;
-            if (txtDemolishLabel != null) txtDemolishLabel.text = $"NA PEWNO? ({percent}%)";
+            if (txtDemolishLabel != null) txtDemolishLabel.text = LocalizationManager.GetFormat("UI_BTN_DEMOLISH_CONFIRM_FMT", percent);
             if (imgDemolishBackground != null) imgDemolishBackground.color = demolishConfirmBg;
             if (txtDemolishLabel != null) txtDemolishLabel.color = demolishConfirmTxt;
         }
@@ -701,11 +713,11 @@ public class HousingContextWindowUI : MonoBehaviour
         {
             if (canDemolish && currentHousing != null)
             {
-                txtDemolishLabel.text = $"WYBURZ ({currentHousing.RefundPercentage}%)";
+                txtDemolishLabel.text = LocalizationManager.GetFormat("UI_BTN_DEMOLISH_REFUND_FMT", currentHousing.RefundPercentage);
             }
             else
             {
-                txtDemolishLabel.text = "WYBURZ";
+                txtDemolishLabel.text = LocalizationManager.Get("UI_BTN_DEMOLISH", "WYBURZ");
             }
             txtDemolishLabel.color = demolishNormalTxt;
         }
@@ -787,25 +799,16 @@ public class HousingContextWindowUI : MonoBehaviour
     {
         return race switch
         {
-            Race.Humans => "LUDZIE",
-            Race.Elves => "ELFY",
-            Race.Dwarves => "KRASNOLUDY",
+            Race.Humans => LocalizationManager.Get("RACE_HUMANS", "LUDZIE").ToUpper(),
+            Race.Elves => LocalizationManager.Get("RACE_ELVES", "ELFY").ToUpper(),
+            Race.Dwarves => LocalizationManager.Get("RACE_DWARVES", "KRASNOLUDY").ToUpper(),
             _ => race.ToString().ToUpper()
         };
     }
 
     private string GetResourcePolishName(ResourceType type)
     {
-        return type switch
-        {
-            ResourceType.Ether => "Kryształ Eteru",
-            ResourceType.Wood => "Drewno",
-            ResourceType.Stone => "Kamień",
-            ResourceType.Iron => "Żelazo",
-            ResourceType.Coal => "Węgiel",
-            ResourceType.Food => "Żywność",
-            _ => type.ToString()
-        };
+        return DailyResourceCalculator.GetResourceDisplayName(type);
     }
 
     private void AddToDict(Dictionary<ResourceType, int> d, ResourceType t, int a)

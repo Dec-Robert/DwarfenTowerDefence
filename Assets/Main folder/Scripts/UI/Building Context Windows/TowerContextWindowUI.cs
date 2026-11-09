@@ -456,11 +456,13 @@ public class TowerContextWindowUI : MonoBehaviour
         SetupTargetingButtonListeners();
 
         // Pełne odświeżenie widoku
+        LocalizationManager.OnLanguageChanged += RefreshAll;
         RefreshAll();
     }
 
     private void UnsubscribeEvents()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshAll;
         if (currentTower != null && currentTower.controller != null)
         {
             currentTower.controller.OnStatsChanged -= OnTowerStatsChanged;
@@ -497,8 +499,8 @@ public class TowerContextWindowUI : MonoBehaviour
         // 1. Tytuł wieży
         if (txtTowerName != null)
         {
-            string towerName = currentTower.data != null ? currentTower.data.buildingName : currentTower.name;
-            txtTowerName.text = string.IsNullOrEmpty(towerName) ? "WIEŻA" : towerName.ToUpper();
+            string towerName = currentTower.data != null ? currentTower.data.DisplayName : currentTower.name;
+            txtTowerName.text = string.IsNullOrEmpty(towerName) ? LocalizationManager.Get("UI_TOWER_DEFAULT_TITLE", "WIEŻA") : towerName.ToUpper();
         }
 
         // 2. Sekcje
@@ -582,7 +584,7 @@ public class TowerContextWindowUI : MonoBehaviour
         // Podsumowanie
         if (txtWorkerCount != null)
         {
-            txtWorkerCount.text = $"Pracownicy: {totalWorkers} / {maxWorkers}";
+            txtWorkerCount.text = LocalizationManager.GetFormat("UI_PROD_WORKERS_FMT", totalWorkers, maxWorkers);
         }
 
         // Kafelki 3 ras
@@ -592,7 +594,7 @@ public class TowerContextWindowUI : MonoBehaviour
             int freeCount = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(rc.race) : 0;
 
             if (rc.txtCount != null) rc.txtCount.text = assignedCount.ToString();
-            if (rc.txtFree != null) rc.txtFree.text = $"Wolni: {freeCount}";
+            if (rc.txtFree != null) rc.txtFree.text = LocalizationManager.GetFormat("UI_PROD_FREE_WORKERS_FMT", freeCount);
 
             if (rc.btnMinus != null) rc.btnMinus.interactable = assignedCount > 0;
             if (rc.btnPlus != null) rc.btnPlus.interactable = (totalWorkers < maxWorkers) && (freeCount > 0);
@@ -615,7 +617,7 @@ public class TowerContextWindowUI : MonoBehaviour
         // Nagłówek statusu
         if (txtCurrentThresholdStatus != null)
         {
-            txtCurrentThresholdStatus.text = $"Poziom {currentThresholdLevel}: {Mathf.RoundToInt(currentEffVal * 100f)}%";
+            txtCurrentThresholdStatus.text = LocalizationManager.GetFormat("UI_PROD_LEVEL_FMT", currentThresholdLevel, Mathf.RoundToInt(currentEffVal * 100f));
         }
 
         // Upewnij się, że mamy odpowiednią liczbę segmentów w kontenerze (od poziomu 0 do maxWorkers)
@@ -707,7 +709,7 @@ public class TowerContextWindowUI : MonoBehaviour
 
         if (txtEfficiencyPercentage != null)
         {
-            txtEfficiencyPercentage.text = $"Wydajność: {Mathf.RoundToInt(curEff * 100f)}%";
+            txtEfficiencyPercentage.text = LocalizationManager.GetFormat("UI_TOWER_EFFICIENCY_FMT", Mathf.RoundToInt(curEff * 100f));
         }
 
         // Odświeżenie 8 statystyk
@@ -849,15 +851,15 @@ public class TowerContextWindowUI : MonoBehaviour
             switch (dmgType)
             {
                 case DamageType.Physical:
-                    view.txtCurrentValue.text = "FIZYCZNE";
+                    view.txtCurrentValue.text = LocalizationManager.Get("UI_TOWER_DMG_PHYSICAL", "FIZYCZNE");
                     view.txtCurrentValue.color = new Color32(255, 140, 52, 255);
                     break;
                 case DamageType.Magic:
-                    view.txtCurrentValue.text = "MAGICZNE";
+                    view.txtCurrentValue.text = LocalizationManager.Get("UI_TOWER_DMG_MAGIC", "MAGICZNE");
                     view.txtCurrentValue.color = new Color32(0, 176, 240, 255);
                     break;
                 case DamageType.True:
-                    view.txtCurrentValue.text = "CZYSTE";
+                    view.txtCurrentValue.text = LocalizationManager.Get("UI_TOWER_DMG_TRUE", "CZYSTE");
                     view.txtCurrentValue.color = Color.white;
                     break;
             }
@@ -995,15 +997,15 @@ public class TowerContextWindowUI : MonoBehaviour
     {
         switch (mode)
         {
-            case TargetingMode.Closest: return "BLISKO";
-            case TargetingMode.Furthest: return "DALEKO";
-            case TargetingMode.FurthestOnTrack: return "START\nTRASY";
-            case TargetingMode.ClosestOnTrack: return "KONIEC\nTRASY";
-            case TargetingMode.MostHP: return "MAX HP";
-            case TargetingMode.LeastHP: return "MIN HP";
-            case TargetingMode.HighestThreat: return "ELITA\nBOSS";
-            case TargetingMode.Random: return "LOSOWY";
-            case TargetingMode.Chunk: return "PUNKT";
+            case TargetingMode.Closest: return LocalizationManager.Get("UI_TARGETING_CLOSEST", "BLISKO");
+            case TargetingMode.Furthest: return LocalizationManager.Get("UI_TARGETING_FURTHEST", "DALEKO");
+            case TargetingMode.FurthestOnTrack: return LocalizationManager.Get("UI_TARGETING_FURTHEST_TRACK", "START\nTRASY");
+            case TargetingMode.ClosestOnTrack: return LocalizationManager.Get("UI_TARGETING_CLOSEST_TRACK", "KONIEC\nTRASY");
+            case TargetingMode.MostHP: return LocalizationManager.Get("UI_TARGETING_MOST_HP", "MAX HP");
+            case TargetingMode.LeastHP: return LocalizationManager.Get("UI_TARGETING_LEAST_HP", "MIN HP");
+            case TargetingMode.HighestThreat: return LocalizationManager.Get("UI_TARGETING_HIGHEST_THREAT", "ELITA\nBOSS");
+            case TargetingMode.Random: return LocalizationManager.Get("UI_TARGETING_RANDOM", "LOSOWY");
+            case TargetingMode.Chunk: return LocalizationManager.Get("UI_TARGETING_CHUNK", "PUNKT");
             default: return mode.ToString();
         }
     }

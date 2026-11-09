@@ -65,6 +65,22 @@ public class EnemyData : ScriptableObject
     [Header("Podstawowe")]
     public string enemyName;
 
+    public string DisplayName => LocalizationManager.Get($"ENEMY_{GetLocalizationId()}_NAME", enemyName);
+
+    public string GetLocalizationId()
+    {
+        string raw = !string.IsNullOrEmpty(enemyName) ? enemyName : name;
+        var sb = new System.Text.StringBuilder();
+        foreach (char c in raw)
+        {
+            if (char.IsLetterOrDigit(c)) sb.Append(char.ToUpperInvariant(c));
+            else if (c == ' ' || c == '_' || c == '-') sb.Append('_');
+        }
+        string clean = sb.ToString();
+        while (clean.Contains("__")) clean = clean.Replace("__", "_");
+        return clean.Trim('_');
+    }
+
     [Header("Tiery Wroga (1 - 4)")]
     [Tooltip("Statystyki dla 4 tierów tego wroga. Każdy tier może posiadać inny prefab, ikonkę oraz statystyki.")]
     public EnemyTierStats[] tiers = new EnemyTierStats[4];

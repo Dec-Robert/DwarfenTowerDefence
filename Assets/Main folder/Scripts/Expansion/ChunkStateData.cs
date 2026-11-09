@@ -19,10 +19,10 @@ public class ChunkReconIntel
     {
         switch (abundance)
         {
-            case ReconAbundance.Scarce: return "Znikome";
-            case ReconAbundance.Moderate: return "Umiarkowane";
-            case ReconAbundance.Abundant: return "Obfite";
-            default: return "Brak";
+            case ReconAbundance.Scarce: return LocalizationManager.Get("recon_scarce", "Znikome");
+            case ReconAbundance.Moderate: return LocalizationManager.Get("recon_moderate", "Umiarkowane");
+            case ReconAbundance.Abundant: return LocalizationManager.Get("recon_abundant", "Obfite");
+            default: return LocalizationManager.Get("recon_none", "Brak");
         }
     }
 
@@ -30,9 +30,9 @@ public class ChunkReconIntel
     {
         switch (feature)
         {
-            case HexFeatureType.Forest: return "Las";
-            case HexFeatureType.Mountain: return "Góra";
-            case HexFeatureType.Meadow: return "Łąka";
+            case HexFeatureType.Forest: return LocalizationManager.Get("feature_forest", "Las");
+            case HexFeatureType.Mountain: return LocalizationManager.Get("feature_mountain", "Góra");
+            case HexFeatureType.Meadow: return LocalizationManager.Get("feature_meadow", "Łąka");
             default: return feature.ToString();
         }
     }

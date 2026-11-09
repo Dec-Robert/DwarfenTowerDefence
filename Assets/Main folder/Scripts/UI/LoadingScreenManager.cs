@@ -132,16 +132,19 @@ public class LoadingScreenManager : MonoBehaviour
         if (tipBodyText != null && dwarvenTips != null && dwarvenTips.Length > 0)
         {
             int tipIdx = UnityEngine.Random.Range(0, dwarvenTips.Length);
-            tipBodyText.text = dwarvenTips[tipIdx];
+            tipBodyText.text = LocalizationManager.Get($"loading_tip_{tipIdx}", dwarvenTips[tipIdx]);
         }
 
         // 2. Ustaw status początkowy
-        string initialStatus = !string.IsNullOrEmpty(customStatus)
-            ? customStatus
-            : (sceneName.ToLower().Contains("menu") ? "Powrót do twierdzy..." : "Wkraczanie do doliny...");
+        string defaultStatus = sceneName.ToLower().Contains("menu")
+            ? LocalizationManager.Get("loading_status_return", "Powrót do twierdzy...")
+            : LocalizationManager.Get("loading_status_enter", "Wkraczanie do doliny...");
+        string initialStatus = !string.IsNullOrEmpty(customStatus) ? customStatus : defaultStatus;
 
         UpdateStatusText(initialStatus);
         UpdateProgressUI(0f);
+        if (tipCategoryText != null) tipCategoryText.text = LocalizationManager.Get("loading_tip_category", "WSKAZÓWKA KRASNOLUDÓW");
+        if (hintFooterText != null) hintFooterText.text = LocalizationManager.Get("loading_hint_fullscreen", "Wciśnij ALT+ENTER, aby przełączyć tryb pełnoekranowy.");
 
         canvas.gameObject.SetActive(true);
         canvas.enabled = true;
@@ -154,7 +157,7 @@ public class LoadingScreenManager : MonoBehaviour
         // 4. Jeśli prekompilacja shaderów jest w trakcie, dokończ ją
         if (ShaderPrewarmer.Instance != null && !ShaderPrewarmer.Instance.IsWarmedUp)
         {
-            UpdateStatusText("Rozpalanie kuźni... Podgrzewanie shaderów...");
+            UpdateStatusText(LocalizationManager.Get("loading_status_shaders", "Rozpalanie kuźni... Podgrzewanie shaderów..."));
             while (!ShaderPrewarmer.Instance.IsWarmedUp)
             {
                 float shaderProg = ShaderPrewarmer.Instance.Progress * 0.4f;
@@ -457,7 +460,7 @@ public class LoadingScreenManager : MonoBehaviour
             tipCategoryText.fontSize = 16f; // GEMINI.md: 16 pt
             tipCategoryText.fontStyle = FontStyles.Bold;
             tipCategoryText.color = new Color32(0xE5, 0xA8, 0x3B, 0xFF);
-            tipCategoryText.text = "WSKAZÓWKA KRASNOLUDÓW";
+            tipCategoryText.text = LocalizationManager.Get("loading_tip_category", "WSKAZÓWKA KRASNOLUDÓW");
             RectTransform catRect = tipCatObj.GetComponent<RectTransform>();
             if (catRect != null)
             {
@@ -498,7 +501,7 @@ public class LoadingScreenManager : MonoBehaviour
             hintFooterText.fontSize = 10f; // GEMINI.md: 10 pt
             hintFooterText.color = new Color32(0x80, 0x85, 0x95, 0xFF);
             hintFooterText.alignment = TextAlignmentOptions.Center;
-            hintFooterText.text = "Wciśnij ALT+ENTER, aby przełączyć tryb pełnoekranowy.";
+            hintFooterText.text = LocalizationManager.Get("loading_hint_fullscreen", "Wciśnij ALT+ENTER, aby przełączyć tryb pełnoekranowy.");
             RectTransform hintRect = hintObj.GetComponent<RectTransform>();
             if (hintRect != null)
             {

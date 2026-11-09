@@ -217,15 +217,15 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
             txtBuildingsValue.text = centersCount > 0 ? $"{centersCount}" : "0";
 
         if (txtEquipmentValue != null)
-            txtEquipmentValue.text = $"{totalEquipment} slotów";
+            txtEquipmentValue.text = LocalizationManager.GetFormat("UI_EXPEDITION_TOTAL_SLOTS", totalEquipment);
 
         if (txtAvailableValue != null)
-            txtAvailableValue.text = $"{availableEquipment} wolne";
+            txtAvailableValue.text = LocalizationManager.GetFormat("UI_EXPEDITION_AVAILABLE_SLOTS", availableEquipment);
 
         // 2. Karta zużycia ekwipunków
         if (txtUsageSummary != null)
         {
-            txtUsageSummary.text = $"{usedEquipment} / {totalEquipment} W użyciu";
+            txtUsageSummary.text = LocalizationManager.GetFormat("UI_EXPEDITION_IN_USE", usedEquipment, totalEquipment);
         }
 
         // Rząd slotów (kapsułki 1..N)
@@ -296,7 +296,7 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
                 ?? cardObj.transform.Find("Txt_Title")?.GetComponent<TextMeshProUGUI>();
             if (txtTitle != null)
             {
-                string typePrefix = mission.missionType == ScoutingMissionType.Recon ? "Zwiad taktyczny" : "Ekspedycja";
+                string typePrefix = mission.missionType == ScoutingMissionType.Recon ? LocalizationManager.Get("UI_EXPEDITION_TYPE_RECON", "Zwiad taktyczny") : LocalizationManager.Get("UI_EXPEDITION_TYPE_SURVEY", "Ekspedycja");
                 txtTitle.text = $"{typePrefix}: Chunk [{mission.targetChunk.x}, {mission.targetChunk.y}]";
             }
 
@@ -305,8 +305,8 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
                 ?? cardObj.transform.Find("Txt_Subtitle")?.GetComponent<TextMeshProUGUI>();
             if (txtSub != null)
             {
-                string cycleWord = mission.daysRemaining == 1 ? "cykl" : "cykle";
-                txtSub.text = $"Pozostało: {mission.daysRemaining} {cycleWord} ({mission.assignedElves.Count} elfów)";
+                string cycleWord = mission.daysRemaining == 1 ? LocalizationManager.Get("UI_CYCLE_SINGULAR", "cykl") : LocalizationManager.Get("UI_CYCLES_PLURAL", "cykle");
+                txtSub.text = LocalizationManager.GetFormat("UI_EXPEDITION_REMAINING_FMT", mission.daysRemaining, cycleWord, mission.assignedElves.Count);
             }
 
             // Przycisk NAMIERZ (Btn_Focus)

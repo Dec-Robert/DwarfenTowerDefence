@@ -489,8 +489,8 @@ public class ProductionContextWindowUI : MonoBehaviour
         // 1. Tytuł budynku
         if (txtBuildingName != null)
         {
-            string bName = currentBuilding.data != null ? currentBuilding.data.buildingName : currentBuilding.name;
-            txtBuildingName.text = string.IsNullOrEmpty(bName) ? "BUDYNEK PRODUKCYJNY" : bName.ToUpper();
+            string bName = currentBuilding.data != null ? currentBuilding.data.DisplayName : currentBuilding.name;
+            txtBuildingName.text = string.IsNullOrEmpty(bName) ? LocalizationManager.Get("UI_PROD_DEFAULT_TITLE", "BUDYNEK PRODUKCYJNY") : bName.ToUpper();
         }
 
         // 2. Stan wstrzymania i przycisk wstrzymania
@@ -526,7 +526,7 @@ public class ProductionContextWindowUI : MonoBehaviour
         {
             if (txtPauseLabel != null)
             {
-                txtPauseLabel.text = isActive ? "WSTRZYMAJ" : "WZNÓW";
+                txtPauseLabel.text = isActive ? LocalizationManager.Get("UI_BTN_PAUSE_WORK", "WSTRZYMAJ") : LocalizationManager.Get("UI_BTN_RESUME_WORK", "WZNÓW");
                 txtPauseLabel.color = isActive ? pauseActiveTxt : pauseStoppedTxt;
             }
 
@@ -613,7 +613,7 @@ public class ProductionContextWindowUI : MonoBehaviour
         // Podsumowanie pracowników
         if (txtWorkerCount != null)
         {
-            txtWorkerCount.text = $"Pracownicy: {totalWorkers} / {maxWorkers}";
+            txtWorkerCount.text = LocalizationManager.GetFormat("UI_PROD_WORKERS_FMT", totalWorkers, maxWorkers);
         }
 
         // Procent wydajności w podsumowaniu
@@ -629,7 +629,7 @@ public class ProductionContextWindowUI : MonoBehaviour
             int freeCount = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(rc.race) : 0;
 
             if (rc.txtCount != null) rc.txtCount.text = assignedCount.ToString();
-            if (rc.txtFree != null) rc.txtFree.text = $"Wolni: {freeCount}";
+            if (rc.txtFree != null) rc.txtFree.text = LocalizationManager.GetFormat("UI_PROD_FREE_WORKERS_FMT", freeCount);
 
             // Gdy budynek jest wstrzymany, przyciski są zablokowane
             if (rc.btnMinus != null) rc.btnMinus.interactable = isBuildingActive && (assignedCount > 0);
@@ -653,7 +653,7 @@ public class ProductionContextWindowUI : MonoBehaviour
         // Nagłówek statusu
         if (txtCurrentThresholdStatus != null)
         {
-            txtCurrentThresholdStatus.text = $"Poziom {currentThresholdLevel}: {Mathf.RoundToInt(currentEffVal * 100f)}%";
+            txtCurrentThresholdStatus.text = LocalizationManager.GetFormat("UI_PROD_LEVEL_FMT", currentThresholdLevel, Mathf.RoundToInt(currentEffVal * 100f));
         }
 
         // Rozbudowa segmentów w kontenerze, jeśli potrzeba
@@ -1154,7 +1154,7 @@ public class ProductionContextWindowUI : MonoBehaviour
             // Krok 1: oczekiwanie na potwierdzenie
             isDemolishConfirming = true;
             int percent = currentBuilding.RefundPercentage;
-            if (txtDemolishLabel != null) txtDemolishLabel.text = $"NA PEWNO? ({percent}%)";
+            if (txtDemolishLabel != null) txtDemolishLabel.text = LocalizationManager.GetFormat("UI_BTN_DEMOLISH_CONFIRM_FMT", percent);
             if (imgDemolishBackground != null) imgDemolishBackground.color = demolishConfirmBg;
             if (txtDemolishLabel != null) txtDemolishLabel.color = demolishConfirmTxt;
         }
@@ -1182,11 +1182,11 @@ public class ProductionContextWindowUI : MonoBehaviour
         {
             if (canDemolish && currentBuilding != null)
             {
-                txtDemolishLabel.text = $"WYBURZ ({currentBuilding.RefundPercentage}%)";
+                txtDemolishLabel.text = LocalizationManager.GetFormat("UI_BTN_DEMOLISH_REFUND_FMT", currentBuilding.RefundPercentage);
             }
             else
             {
-                txtDemolishLabel.text = "WYBURZ";
+                txtDemolishLabel.text = LocalizationManager.Get("UI_BTN_DEMOLISH", "WYBURZ");
             }
             txtDemolishLabel.color = demolishNormalTxt;
         }
