@@ -6,6 +6,7 @@ public class BuildingEntity : MonoBehaviour
 {
     [Header("Base Data")]
     public BuildingData data;
+    public BuildingData Data => data;
 
     [Header("Management")]
     public bool isBuildingActive = true;

@@ -12,7 +12,9 @@ public enum MilestoneType
     EnemiesKilled,
     ProductionBuildingsBuilt,
     LegendaryOrCursedRunesObtained,
-    RuneCraftingDone // Fuzje i Transmutacje łącznie
+    RuneCraftingDone, // Fuzje i Transmutacje łącznie
+    Victory,
+    ExpeditionsCompleted
 }
 
 [CreateAssetMenu(fileName = "HopeMilestones", menuName = "Game/Meta Progression/Hope Milestones Config")]
@@ -21,6 +23,7 @@ public class HopeMilestoneConfigSO : ScriptableObject
     [System.Serializable]
     public class MilestoneGoal
     {
+        public string id;
         public string description;        // np. "Zabij 100 wrogów" (dla UI na ekranie końcowym)
         public string DisplayDescription
         {

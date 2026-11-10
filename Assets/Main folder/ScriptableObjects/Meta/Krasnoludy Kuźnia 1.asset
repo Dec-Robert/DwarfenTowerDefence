@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -20,8 +20,12 @@ MonoBehaviour:
   nodePosition: {x: 3180, y: 720}
   isUnlocked: 0
   prerequisites:
-  - {fileID: 11400000, guid: d4cc19db4ac871e46895c4fb5b6aec37, type: 2}
+  - {fileID: 11400000, guid: 4be356ef62cf4464ba976ae64b4104ed, type: 2}
   effectType: 119
   effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}
+  hasVariants: 0
+  isVariantOption: 0
+  variantA: {fileID: 0}
+  variantB: {fileID: 0}

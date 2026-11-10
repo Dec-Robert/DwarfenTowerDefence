@@ -63,6 +63,7 @@ public class BuildingData : ScriptableObject
     [TextArea] public string description;
     public Sprite icon;
     public BuildingType type;
+    public BuildingType buildingType => type;
 
     public string DisplayName => LocalizationManager.Get($"BUILDING_{GetLocalizationId()}_NAME", buildingName);
     public string DisplayDescription => LocalizationManager.Get($"BUILDING_{GetLocalizationId()}_DESC", description);

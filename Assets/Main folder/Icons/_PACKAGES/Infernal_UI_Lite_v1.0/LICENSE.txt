@@ -1,0 +1,17 @@
+Infernal UI Asset Pack — Licence (v1.0)
+
+You may:
+- Use the assets in any number of personal and commercial projects (games, apps, videos,
+  prototypes, client work) without paying royalties.
+- Modify, recolour, crop, animate and combine the assets.
+- Ship the assets inside your compiled project. Credit is appreciated, not required.
+
+You may not:
+- Resell, redistribute, sublicense or share the assets or modified versions as assets,
+  templates, packs, NFTs, or in any form where the assets themselves are the product.
+- Upload the assets to public repositories or asset stores.
+- Use the assets to train, fine-tune or evaluate generative AI models.
+- Claim the assets as your own creation.
+
+Fonts in fonts/ are third-party and carry their own licences (see the licence file in each folder under fonts/).
+Questions: https://brunkagames.itch.io (post a comment on the pack page).

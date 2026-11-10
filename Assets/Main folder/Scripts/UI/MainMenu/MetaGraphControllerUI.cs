@@ -5,13 +5,16 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Główny kontroler grafu meta-progresji 2D w Menu Głównym (Master Controller).
-/// Odpowiada za:
-/// - Inicjalizację i pozycjonowanie 88 węzłów MetaNodeItemUI na bazie upgrade.nodePosition
-/// - Dynamiczną ewaluację stanów Mgły Odkrywania (Fog of War) w całym DAG
-/// - Generowanie i odświeżanie procedury linii połączeń w UILineRenderer
-/// - Aktualizację stanu waluty Nadziei w TopBarze
-/// - Połączenie z panelem szczegółów (MetaNodeDetailsPanelUI) oraz modalem draftu wież (TowerDraftModalUI)
+/// Kontroler okna Meta-Progresji (Pnl_MetaUpgrade) w Menu Głównym.
+/// Obsługuje:
+/// - Podział na zakładki Legacy (Legacy of Town - aktywne; Legacy of Power i Defence - wkrótce dostępne)
+/// - Wyświetlanie listy ulepszeń w ScrollView z ukrywaniem zablokowanych (brak spełnionych prerequisites)
+/// - Przenoszenie w pełni odblokowanych ulepszeń na sam dół listy
+/// - Prezentację stanu waluty Nadziei w Txt_hope
+/// - Integrację z mechaniką Hold-to-Invest na kafelkach MetaUpgradeItemUI
+/// - Wywołanie TowerDraftModalUI w przypadku ulepszeń odblokowujących wybór nowej wieży
+/// - Zamknięcie klawiszem ESC oraz dedykowanym przyciskiem
+/// - Nienaruszanie czcionek i ich rozmiarów ze sceny (zgodnie z wytycznymi użytkownika)
 /// </summary>
 public class MetaGraphControllerUI : MonoBehaviour
 {
@@ -19,35 +22,29 @@ public class MetaGraphControllerUI : MonoBehaviour
 
     [Header("Referencje Główne")]
     [SerializeField] private GameObject graphRoot;
-    [SerializeField] private RectTransform viewportRect;
-    [SerializeField] private RectTransform contentRect;
-    [SerializeField] private RectTransform nodesContainer;
-    [SerializeField] private UILineRenderer lineRenderer;
-    [SerializeField] private MetaGraphPanZoomUI panZoomUI;
-    [SerializeField] private MetaNodeDetailsPanelUI detailsPanel;
-
-    [Header("Pasek Górny (TopBar)")]
     [SerializeField] private TextMeshProUGUI txtGraphTitle;
     [SerializeField] private TextMeshProUGUI txtHopeCurrency;
-    [SerializeField] private Image imgHopeIcon;
     [SerializeField] private Button btnClose;
-    [SerializeField] private Button btnResetFocus;
 
-    [Header("Dane Meta-Ulepszeń")]
+    [Header("Zakładki Legacy")]
+    [SerializeField] private Button tabTown;
+    [SerializeField] private Button tabPower;
+    [SerializeField] private Button tabDefence;
+
+    [Header("Kontener ScrollView")]
+    [SerializeField] private Transform contentContainer;
+    [SerializeField] private GameObject itemTemplate;
+
+    [Header("Katalog Ulepszeń")]
     [SerializeField] private List<MetaUpgradeSO> allUpgrades = new List<MetaUpgradeSO>();
 
-    private readonly Dictionary<MetaUpgradeSO, MetaNodeItemUI> spawnedNodeItems = new Dictionary<MetaUpgradeSO, MetaNodeItemUI>();
+    private readonly List<MetaUpgradeItemUI> spawnedItems = new List<MetaUpgradeItemUI>();
     private bool isInitialized = false;
 
-    public IReadOnlyDictionary<MetaUpgradeSO, MetaNodeItemUI> SpawnedNodeItems => spawnedNodeItems;
-    public MetaGraphPanZoomUI PanZoom => panZoomUI;
-    public UILineRenderer LineRenderer => lineRenderer;
-    public MetaNodeDetailsPanelUI DetailsPanel => detailsPanel;
+    public bool IsOpen => graphRoot != null && graphRoot.activeSelf;
+    public List<MetaUpgradeSO> AllUpgrades => allUpgrades;
     public TextMeshProUGUI TxtHopeCurrency => txtHopeCurrency;
     public Button BtnClose => btnClose;
-    public Button BtnResetFocus => btnResetFocus;
-    public List<MetaUpgradeSO> AllUpgrades => allUpgrades;
-    public bool IsOpen => graphRoot != null && graphRoot.activeSelf;
 
     private void Awake()
     {
@@ -58,15 +55,19 @@ public class MetaGraphControllerUI : MonoBehaviour
         }
 
         Instance = this;
-        EnsureHierarchyBuilt();
+        FindReferencesIfNull();
     }
 
     private void Start()
     {
-        EnsureHierarchyBuilt();
-        if (!isInitialized)
+        FindReferencesIfNull();
+        SetupTabs();
+        SetupCloseButton();
+        EnsureUpgradesLoaded();
+
+        if (graphRoot != null)
         {
-            InitializeFromAvailableData();
+            graphRoot.SetActive(false);
         }
     }
 
@@ -78,614 +79,363 @@ public class MetaGraphControllerUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Pobiera istniejącą instancję kontrolera lub buduje procedurę UI na Canvasie.
-    /// </summary>
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && IsOpen)
+        {
+            CloseGraph();
+        }
+    }
+
     public static MetaGraphControllerUI GetOrCreateInstance()
     {
         if (Instance != null) return Instance;
 
-        Instance = FindFirstObjectByType<MetaGraphControllerUI>();
+        Instance = FindFirstObjectByType<MetaGraphControllerUI>(FindObjectsInactive.Include);
         if (Instance != null) return Instance;
 
         Canvas canvas = FindFirstObjectByType<Canvas>();
-        if (canvas == null)
+        Transform metaTr = canvas != null ? canvas.transform.Find("Pnl_MetaUpgrade") : null;
+        if (metaTr != null)
         {
-            GameObject canvasObj = new GameObject("Canvas_MainMenu", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvas = canvasObj.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            Instance = metaTr.GetComponent<MetaGraphControllerUI>() ?? metaTr.gameObject.AddComponent<MetaGraphControllerUI>();
+            return Instance;
         }
 
-        GameObject graphObj = new GameObject("Pnl_MetaGraphRoot", typeof(RectTransform));
-        graphObj.transform.SetParent(canvas.transform, false);
-        Instance = graphObj.AddComponent<MetaGraphControllerUI>();
-        Instance.EnsureHierarchyBuilt();
+        GameObject go = new GameObject("Pnl_MetaUpgrade", typeof(RectTransform));
+        if (canvas != null) go.transform.SetParent(canvas.transform, false);
+        Instance = go.AddComponent<MetaGraphControllerUI>();
         return Instance;
     }
 
-    /// <summary>
-    /// Inicjalizuje graf na bazie listy 88 ulepszeń.
-    /// </summary>
-    public void InitializeGraph(List<MetaUpgradeSO> upgrades)
+    public void FindReferencesIfNull()
     {
-        EnsureHierarchyBuilt();
-
-        allUpgrades = (upgrades != null) ? new List<MetaUpgradeSO>(upgrades) : new List<MetaUpgradeSO>();
-
-        // Synchronizuj stan odblokowań z SaveManagerem
-        if (SaveManager.Instance != null)
+        if (graphRoot == null)
         {
-            SaveManager.Instance.SyncUpgradesWithSave(allUpgrades);
-        }
-
-        BuildOrUpdateNodes();
-        RefreshGraph();
-
-        // Znajdź węzeł początkowy i ustaw domyślne centrum
-        MetaUpgradeSO startNode = allUpgrades.Find(u => u != null && (u.id == "start" || u.upgradeName == "Start"));
-        if (startNode != null && panZoomUI != null)
-        {
-            panZoomUI.DefaultFocusPosition = startNode.nodePosition;
-            panZoomUI.ResetViewInstant();
-        }
-
-        isInitialized = true;
-    }
-
-    /// <summary>
-    /// Tworzy instancje węzłów MetaNodeItemUI dla wszystkich 88 ulepszeń.
-    /// </summary>
-    private void BuildOrUpdateNodes()
-    {
-        if (nodesContainer == null) return;
-
-        // Usuń stare instancje jeśli istnieją
-        foreach (var kvp in spawnedNodeItems)
-        {
-            if (kvp.Value != null)
+            if (name.Contains("MetaUpgrade") || name.Contains("Pnl_Meta"))
             {
-                Destroy(kvp.Value.gameObject);
+                graphRoot = gameObject;
+            }
+            else
+            {
+                Transform t = transform.Find("Pnl_MetaUpgrade") ?? FindFirstObjectByType<Canvas>()?.transform.Find("Pnl_MetaUpgrade");
+                if (t != null) graphRoot = t.gameObject;
+                else graphRoot = gameObject;
             }
         }
-        spawnedNodeItems.Clear();
 
-        foreach (var upgrade in allUpgrades)
+        Transform rootTr = graphRoot != null ? graphRoot.transform : transform;
+
+        if (txtGraphTitle == null)
         {
-            if (upgrade == null) continue;
-            if (upgrade.isVariantOption) continue;
-
-            GameObject nodeObj = new GameObject($"Node_{upgrade.id}", typeof(RectTransform), typeof(CanvasRenderer));
-            nodeObj.transform.SetParent(nodesContainer, false);
-
-            MetaNodeItemUI itemUI = nodeObj.AddComponent<MetaNodeItemUI>();
-            itemUI.Setup(upgrade, OnNodeSelected);
-            itemUI.RectTransform.anchoredPosition = upgrade.nodePosition;
-
-            spawnedNodeItems[upgrade] = itemUI;
-        }
-    }
-
-    /// <summary>
-    /// Odświeża stany Mgły Odkrywania dla wszystkich węzłów oraz przelicza linie połączeń.
-    /// </summary>
-    public void RefreshGraph()
-    {
-        // 1. Zaktualizuj stan waluty Nadziei w TopBarze
-        UpdateHopeCurrency();
-
-        // 2. Przelicz stan Mgły Odkrywania (Fog of War) dla każdego węzła
-        foreach (var kvp in spawnedNodeItems)
-        {
-            MetaUpgradeSO upgrade = kvp.Key;
-            MetaNodeItemUI item = kvp.Value;
-            if (upgrade == null || item == null) continue;
-
-            MetaFogState state = MetaNodeItemUI.CalculateFogState(upgrade);
-            item.UpdateVisuals(state);
+            Transform t = rootTr.Find("Txt_GameName");
+            if (t != null) txtGraphTitle = t.GetComponent<TextMeshProUGUI>();
         }
 
-        // 3. Wygeneruj połączenia Beziera dla UILineRenderer
-        List<GraphConnection> connections = new List<GraphConnection>();
-
-        foreach (var kvp in spawnedNodeItems)
+        if (txtHopeCurrency == null)
         {
-            MetaUpgradeSO childUpgrade = kvp.Key;
-            MetaNodeItemUI childItem = kvp.Value;
-            if (childUpgrade == null || childItem == null) continue;
+            Transform t = rootTr.Find("Txt_hope");
+            if (t != null) txtHopeCurrency = t.GetComponent<TextMeshProUGUI>();
+        }
 
-            MetaFogState childState = childItem.CurrentFogState;
-            if (childState == MetaFogState.Hidden) continue;
-
-            if (childUpgrade.prerequisites == null || childUpgrade.prerequisites.Count == 0) continue;
-
-            foreach (var parentUpgrade in childUpgrade.prerequisites)
+        if (btnClose == null)
+        {
+            // Przycisk powrotu / zamknięcia
+            Button[] btns = rootTr.GetComponentsInChildren<Button>(true);
+            foreach (var b in btns)
             {
-                if (parentUpgrade == null) continue;
-                if (!spawnedNodeItems.TryGetValue(parentUpgrade, out MetaNodeItemUI parentItem) || parentItem == null) continue;
-
-                ConnectionStyle style;
-                if (parentUpgrade.isUnlocked && childUpgrade.isUnlocked)
+                if (b.name.Contains("Close") || b.name.Contains("Back") || b.name.Contains("Return") || b.transform.parent == rootTr)
                 {
-                    style = ConnectionStyle.Active;
-                }
-                else if (parentUpgrade.isUnlocked && childState == MetaFogState.Available)
-                {
-                    style = ConnectionStyle.Available;
-                }
-                else if (childState == MetaFogState.Mystery)
-                {
-                    style = ConnectionStyle.Mystery;
-                }
-                else
-                {
-                    style = ConnectionStyle.Hidden;
-                }
-
-                if (style != ConnectionStyle.Hidden)
-                {
-                    // Łączenie od prawej krawędzi rodzica do lewej krawędzi dziecka
-                    Vector2 startPt = parentUpgrade.nodePosition + new Vector2(MetaNodeItemUI.NodeWidth * 0.5f, 0f);
-                    Vector2 endPt = childUpgrade.nodePosition - new Vector2(MetaNodeItemUI.NodeWidth * 0.5f, 0f);
-
-                    connections.Add(new GraphConnection(startPt, endPt, style));
+                    if (b != tabTown && b != tabPower && b != tabDefence)
+                    {
+                        btnClose = b;
+                        break;
+                    }
                 }
             }
         }
 
-        if (lineRenderer != null)
+        Transform tabsTr = rootTr.Find("Pnl_LegacyTabs/Pnl_Tabs");
+        if (tabsTr != null)
         {
-            lineRenderer.SetConnections(connections);
+            if (tabTown == null) tabTown = tabsTr.Find("Pnl_Tab1")?.GetComponent<Button>();
+            if (tabPower == null) tabPower = tabsTr.Find("Pnl_Tab2")?.GetComponent<Button>();
+            if (tabDefence == null) tabDefence = tabsTr.Find("Pnl_Tab3")?.GetComponent<Button>();
         }
 
-        // 4. Jeśli panel szczegółów jest otwarty, odśwież aktualny węzeł
-        if (detailsPanel != null && detailsPanel.CurrentUpgrade != null)
+        if (contentContainer == null)
         {
-            MetaFogState curState = MetaNodeItemUI.CalculateFogState(detailsPanel.CurrentUpgrade);
-            detailsPanel.DisplayNode(detailsPanel.CurrentUpgrade, curState);
+            Transform cTr = rootTr.Find("Pnl_LegacyTabs/Content/Scroll View/Viewport/Content");
+            if (cTr != null) contentContainer = cTr;
+        }
+
+        if (contentContainer != null && itemTemplate == null)
+        {
+            Transform t = contentContainer.Find("Pnl_MetaUpgrade");
+            if (t != null) itemTemplate = t.gameObject;
         }
     }
 
-    /// <summary>
-    /// Wybór węzła przez gracza – otwiera panel szczegółów po prawej stronie ekranu.
-    /// </summary>
-    public void OnNodeSelected(MetaUpgradeSO upgrade)
+    private void SetupTabs()
     {
-        if (upgrade == null) return;
-        if (!spawnedNodeItems.TryGetValue(upgrade, out MetaNodeItemUI item)) return;
-
-        if (item.CurrentFogState == MetaFogState.Hidden) return;
-
-        if (detailsPanel != null)
+        if (tabTown != null)
         {
-            detailsPanel.DisplayNode(upgrade, item.CurrentFogState);
+            tabTown.interactable = true;
+            tabTown.onClick.RemoveAllListeners();
+            tabTown.onClick.AddListener(SelectTabTown);
+        }
+
+        // Zgodnie z ustaleniami: Tab 2 i Tab 3 są zablokowane (wkrótce dostępne)
+        if (tabPower != null)
+        {
+            tabPower.interactable = false;
+            DimTabVisual(tabPower);
+        }
+
+        if (tabDefence != null)
+        {
+            tabDefence.interactable = false;
+            DimTabVisual(tabDefence);
         }
     }
 
-    /// <summary>
-    /// Aktualizuje wskaźnik Nadziei w pasku górnym.
-    /// </summary>
-    public void UpdateHopeCurrency()
+    private void DimTabVisual(Button btn)
     {
-        int hope = (SaveManager.Instance != null && SaveManager.Instance.currentSaveData != null)
-            ? SaveManager.Instance.currentSaveData.totalHope
-            : 0;
+        if (btn == null) return;
+        CanvasGroup cg = btn.GetComponent<CanvasGroup>();
+        if (cg == null) cg = btn.gameObject.AddComponent<CanvasGroup>();
+        cg.alpha = 0.45f;
+    }
 
-        if (txtHopeCurrency != null)
+    private void SetupCloseButton()
+    {
+        if (btnClose != null)
         {
-            txtHopeCurrency.text = LocalizationManager.GetFormat("UI_META_HOPE_CURRENCY_FMT", hope);
+            btnClose.onClick.RemoveAllListeners();
+            btnClose.onClick.AddListener(CloseGraph);
         }
     }
 
-    /// <summary>
-    /// Otwiera widok grafu meta-progresji i centruje widok.
-    /// </summary>
+    private void SelectTabTown()
+    {
+        RefreshUpgradesList();
+    }
+
     public void OpenGraph()
     {
-        EnsureHierarchyBuilt();
+        FindReferencesIfNull();
+        EnsureUpgradesLoaded();
 
         if (graphRoot != null)
         {
             graphRoot.SetActive(true);
         }
-        gameObject.SetActive(true);
 
-        if (!isInitialized)
-        {
-            InitializeFromAvailableData();
-        }
-        else
-        {
-            if (SaveManager.Instance != null)
-            {
-                SaveManager.Instance.SyncUpgradesWithSave(allUpgrades);
-            }
-            RefreshGraph();
-        }
-
-        if (panZoomUI != null)
-        {
-            panZoomUI.ResetViewInstant();
-        }
+        RefreshHopeUI();
+        RefreshUpgradesList();
     }
 
-    /// <summary>
-    /// Zamyka widok grafu i powraca do menu głównego.
-    /// </summary>
     public void CloseGraph()
     {
-        if (detailsPanel != null)
-        {
-            detailsPanel.ClosePanel();
-        }
-
         if (graphRoot != null)
         {
             graphRoot.SetActive(false);
         }
-        gameObject.SetActive(false);
     }
 
-    private void InitializeFromAvailableData()
+    public void RefreshHopeUI()
     {
-        List<MetaUpgradeSO> upgradesToUse = null;
-
-        if (MetaUpgradeManager.Instance != null && MetaUpgradeManager.Instance.allUpgrades != null && MetaUpgradeManager.Instance.allUpgrades.Count > 0)
+        if (txtHopeCurrency != null)
         {
-            upgradesToUse = MetaUpgradeManager.Instance.allUpgrades;
-        }
-        else
-        {
-            upgradesToUse = LoadAllUpgradeAssets();
-        }
-
-        InitializeGraph(upgradesToUse);
-    }
-
-    private List<MetaUpgradeSO> LoadAllUpgradeAssets()
-    {
-        List<MetaUpgradeSO> list = new List<MetaUpgradeSO>();
-
-#if UNITY_EDITOR
-        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:MetaUpgradeSO");
-        foreach (string guid in guids)
-        {
-            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
-            MetaUpgradeSO so = UnityEditor.AssetDatabase.LoadAssetAtPath<MetaUpgradeSO>(path);
-            if (so != null && !list.Contains(so))
+            int hope = 0;
+            if (SaveManager.Instance != null && SaveManager.Instance.currentSaveData != null)
             {
-                list.Add(so);
+                hope = SaveManager.Instance.currentSaveData.totalHope;
             }
+            txtHopeCurrency.text = $"{hope} Nadziei";
         }
-#else
-        MetaUpgradeSO[] loaded = Resources.FindObjectsOfTypeAll<MetaUpgradeSO>();
-        if (loaded != null)
-        {
-            list.AddRange(loaded);
-        }
-#endif
-        return list;
     }
 
-    /// <summary>
-    /// Buduje proceduralną hierarchię grafu UGUI spełniającą GEMINI.md, jeśli brakuje przypisanych referencji.
-    /// </summary>
-    public void EnsureHierarchyBuilt()
+    private void EnsureUpgradesLoaded()
     {
-        if (graphRoot == null) graphRoot = gameObject;
-
-        RectTransform rootRect = GetComponent<RectTransform>();
-        if (rootRect == null) rootRect = gameObject.AddComponent<RectTransform>();
-        rootRect.anchorMin = Vector2.zero;
-        rootRect.anchorMax = Vector2.one;
-        rootRect.offsetMin = Vector2.zero;
-        rootRect.offsetMax = Vector2.zero;
-
-        // Ciemne tło całego panelu grafu
-        Image rootImg = GetComponent<Image>();
-        if (rootImg == null)
+        if (allUpgrades == null || allUpgrades.Count == 0)
         {
-            rootImg = gameObject.AddComponent<Image>();
-            rootImg.color = new Color(0.05f, 0.06f, 0.08f, 0.98f);
-        }
-
-        // 1. Pasek Górny (TopBar)
-        Transform topBarTrans = transform.Find("TopBar");
-        GameObject topBarObj;
-        if (topBarTrans == null)
-        {
-            topBarObj = new GameObject("TopBar", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            topBarObj.transform.SetParent(transform, false);
-            RectTransform tbRect = topBarObj.GetComponent<RectTransform>();
-            tbRect.anchorMin = new Vector2(0f, 1f);
-            tbRect.anchorMax = new Vector2(1f, 1f);
-            tbRect.pivot = new Vector2(0.5f, 1f);
-            tbRect.anchoredPosition = Vector2.zero;
-            tbRect.sizeDelta = new Vector2(0f, 60f);
-
-            Image tbImg = topBarObj.GetComponent<Image>();
-            tbImg.color = new Color(0.08f, 0.09f, 0.12f, 0.95f);
-        }
-        else
-        {
-            topBarObj = topBarTrans.gameObject;
-        }
-
-        // Tytuł grafu (20 pt)
-        Transform titleTrans = topBarObj.transform.Find("Txt_GraphTitle");
-        if (titleTrans == null)
-        {
-            GameObject titleObj = new GameObject("Txt_GraphTitle", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-            titleObj.transform.SetParent(topBarObj.transform, false);
-            RectTransform titleRect = titleObj.GetComponent<RectTransform>();
-            titleRect.anchorMin = new Vector2(0f, 0.5f);
-            titleRect.anchorMax = new Vector2(0f, 0.5f);
-            titleRect.pivot = new Vector2(0f, 0.5f);
-            titleRect.anchoredPosition = new Vector2(25f, 0f);
-            titleRect.sizeDelta = new Vector2(400f, 40f);
-
-            txtGraphTitle = titleObj.GetComponent<TextMeshProUGUI>();
-            txtGraphTitle.fontSize = MetaNodeDetailsPanelUI.FontSizeHeader; // 20 pt
-            txtGraphTitle.fontStyle = FontStyles.Bold;
-            txtGraphTitle.color = new Color(0.95f, 0.85f, 0.45f);
-            txtGraphTitle.text = LocalizationManager.Get("UI_META_GRAPH_TITLE", "DRZEWO ROZWOJU BASTIONU");
-            txtGraphTitle.alignment = TextAlignmentOptions.MidlineLeft;
-        }
-        else if (txtGraphTitle == null)
-        {
-            txtGraphTitle = titleTrans.GetComponent<TextMeshProUGUI>();
-        }
-
-        // Licznik Nadziei (16 pt) + Ikona (24 px)
-        Transform hopeTrans = topBarObj.transform.Find("Txt_HopeCurrency");
-        if (hopeTrans == null)
-        {
-            GameObject hopeObj = new GameObject("Txt_HopeCurrency", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-            hopeObj.transform.SetParent(topBarObj.transform, false);
-            RectTransform hopeRect = hopeObj.GetComponent<RectTransform>();
-            hopeRect.anchorMin = new Vector2(0.5f, 0.5f);
-            hopeRect.anchorMax = new Vector2(0.5f, 0.5f);
-            hopeRect.pivot = new Vector2(0.5f, 0.5f);
-            hopeRect.anchoredPosition = new Vector2(0f, 0f);
-            hopeRect.sizeDelta = new Vector2(240f, 36f);
-
-            txtHopeCurrency = hopeObj.GetComponent<TextMeshProUGUI>();
-            txtHopeCurrency.fontSize = MetaNodeDetailsPanelUI.FontSizeSection; // 16 pt
-            txtHopeCurrency.fontStyle = FontStyles.Bold;
-            txtHopeCurrency.color = new Color(0.35f, 0.85f, 1.0f);
-            txtHopeCurrency.text = LocalizationManager.GetFormat("UI_META_HOPE_CURRENCY_FMT", 0);
-            txtHopeCurrency.alignment = TextAlignmentOptions.Center;
-        }
-        else if (txtHopeCurrency == null)
-        {
-            txtHopeCurrency = hopeTrans.GetComponent<TextMeshProUGUI>();
-        }
-
-        // Przycisk "CENTRUM [F]" (16 pt)
-        Transform resetTrans = topBarObj.transform.Find("Btn_ResetFocus");
-        if (resetTrans == null)
-        {
-            GameObject resetObj = new GameObject("Btn_ResetFocus", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            resetObj.transform.SetParent(topBarObj.transform, false);
-            RectTransform resRect = resetObj.GetComponent<RectTransform>();
-            resRect.anchorMin = new Vector2(1f, 0.5f);
-            resRect.anchorMax = new Vector2(1f, 0.5f);
-            resRect.pivot = new Vector2(1f, 0.5f);
-            resRect.anchoredPosition = new Vector2(-160f, 0f);
-            resRect.sizeDelta = new Vector2(140f, 40f);
-
-            Image resImg = resetObj.GetComponent<Image>();
-            resImg.color = new Color(0.18f, 0.22f, 0.28f, 1f);
-
-            btnResetFocus = resetObj.GetComponent<Button>();
-            btnResetFocus.onClick.RemoveAllListeners();
-            btnResetFocus.onClick.AddListener(() => panZoomUI?.ResetView());
-
-            GameObject lblObj = new GameObject("Txt_Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-            lblObj.transform.SetParent(resetObj.transform, false);
-            RectTransform lblRect = lblObj.GetComponent<RectTransform>();
-            lblRect.anchorMin = Vector2.zero;
-            lblRect.anchorMax = Vector2.one;
-            lblRect.offsetMin = Vector2.zero;
-            lblRect.offsetMax = Vector2.zero;
-
-            TextMeshProUGUI lbl = lblObj.GetComponent<TextMeshProUGUI>();
-            lbl.fontSize = MetaNodeDetailsPanelUI.FontSizeButton; // 16 pt
-            lbl.alignment = TextAlignmentOptions.Center;
-            lbl.text = LocalizationManager.Get("UI_META_BTN_RECENTER", "CENTRUM [F]");
-            lbl.color = Color.white;
-        }
-        else if (btnResetFocus == null)
-        {
-            btnResetFocus = resetTrans.GetComponent<Button>();
-        }
-
-        // Przycisk "POWRÓT" (16 pt)
-        Transform closeTrans = topBarObj.transform.Find("Btn_Close");
-        if (closeTrans == null)
-        {
-            GameObject closeObj = new GameObject("Btn_Close", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            closeObj.transform.SetParent(topBarObj.transform, false);
-            RectTransform clRect = closeObj.GetComponent<RectTransform>();
-            clRect.anchorMin = new Vector2(1f, 0.5f);
-            clRect.anchorMax = new Vector2(1f, 0.5f);
-            clRect.pivot = new Vector2(1f, 0.5f);
-            clRect.anchoredPosition = new Vector2(-15f, 0f);
-            clRect.sizeDelta = new Vector2(130f, 40f);
-
-            Image clImg = closeObj.GetComponent<Image>();
-            clImg.color = new Color(0.55f, 0.20f, 0.20f, 1f);
-
-            btnClose = closeObj.GetComponent<Button>();
-            btnClose.onClick.RemoveAllListeners();
-            btnClose.onClick.AddListener(CloseGraph);
-
-            GameObject lblObj = new GameObject("Txt_Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-            lblObj.transform.SetParent(closeObj.transform, false);
-            RectTransform lblRect = lblObj.GetComponent<RectTransform>();
-            lblRect.anchorMin = Vector2.zero;
-            lblRect.anchorMax = Vector2.one;
-            lblRect.offsetMin = Vector2.zero;
-            lblRect.offsetMax = Vector2.zero;
-
-            TextMeshProUGUI lbl = lblObj.GetComponent<TextMeshProUGUI>();
-            lbl.fontSize = MetaNodeDetailsPanelUI.FontSizeButton; // 16 pt
-            lbl.alignment = TextAlignmentOptions.Center;
-            lbl.text = LocalizationManager.Get("UI_RETURN", "POWRÓT");
-            lbl.color = Color.white;
-        }
-        else if (btnClose == null)
-        {
-            btnClose = closeTrans.GetComponent<Button>();
-        }
-
-        // 2. Viewport (z RectMask2D)
-        Transform vpTrans = transform.Find("Viewport");
-        GameObject vpObj;
-        if (vpTrans == null)
-        {
-            vpObj = new GameObject("Viewport", typeof(RectTransform), typeof(CanvasRenderer), typeof(RectMask2D), typeof(Image));
-            vpObj.transform.SetParent(transform, false);
-            viewportRect = vpObj.GetComponent<RectTransform>();
-            viewportRect.anchorMin = Vector2.zero;
-            viewportRect.anchorMax = Vector2.one;
-            viewportRect.offsetMin = Vector2.zero;
-            viewportRect.offsetMax = new Vector2(-360f, -60f); // Miejsce na prawy panel i górny pasek
-
-            Image vpImg = vpObj.GetComponent<Image>();
-            vpImg.color = new Color(0f, 0f, 0f, 0.01f); // Cienki raycast target dla Pan & Zoom
-        }
-        else
-        {
-            vpObj = vpTrans.gameObject;
-            viewportRect = vpObj.GetComponent<RectTransform>();
-        }
-
-        // 3. Content (z MetaGraphPanZoomUI)
-        Transform contentTrans = vpObj.transform.Find("Content");
-        GameObject contentObj;
-        if (contentTrans == null)
-        {
-            contentObj = new GameObject("Content", typeof(RectTransform));
-            contentObj.transform.SetParent(vpObj.transform, false);
-            contentRect = contentObj.GetComponent<RectTransform>();
-            contentRect.anchorMin = Vector2.zero;
-            contentRect.anchorMax = Vector2.zero;
-            contentRect.pivot = Vector2.zero;
-            contentRect.anchoredPosition = Vector2.zero;
-            contentRect.sizeDelta = new Vector2(6000f, 5000f);
-
-            panZoomUI = vpObj.AddComponent<MetaGraphPanZoomUI>();
-            panZoomUI.Initialize(contentRect, viewportRect);
-        }
-        else
-        {
-            contentObj = contentTrans.gameObject;
-            contentRect = contentObj.GetComponent<RectTransform>();
-            if (panZoomUI == null) panZoomUI = vpObj.GetComponent<MetaGraphPanZoomUI>();
-            if (panZoomUI != null) panZoomUI.Initialize(contentRect, viewportRect);
-        }
-
-        // 4. UILineRenderer (Proceduralne linie w 1 draw call)
-        Transform lineTrans = contentObj.transform.Find("LinesRenderer");
-        if (lineTrans == null)
-        {
-            GameObject lineObj = new GameObject("LinesRenderer", typeof(RectTransform), typeof(CanvasRenderer), typeof(UILineRenderer));
-            lineObj.transform.SetParent(contentObj.transform, false);
-            RectTransform lrRect = lineObj.GetComponent<RectTransform>();
-            lrRect.anchorMin = Vector2.zero;
-            lrRect.anchorMax = Vector2.zero;
-            lrRect.pivot = Vector2.zero;
-            lrRect.anchoredPosition = Vector2.zero;
-            lrRect.sizeDelta = contentRect.sizeDelta;
-
-            lineRenderer = lineObj.GetComponent<UILineRenderer>();
-        }
-        else
-        {
-            if (lineTrans.GetComponent<CanvasRenderer>() == null)
+            if (MetaUpgradeManager.Instance != null && MetaUpgradeManager.Instance.allUpgrades != null && MetaUpgradeManager.Instance.allUpgrades.Count > 0)
             {
-                lineTrans.gameObject.AddComponent<CanvasRenderer>();
+                allUpgrades = new List<MetaUpgradeSO>(MetaUpgradeManager.Instance.allUpgrades);
             }
-
-            if (lineRenderer == null)
+            else
             {
-                lineRenderer = lineTrans.GetComponent<UILineRenderer>();
-                if (lineRenderer == null)
+                MetaUpgradeManager mgr = FindFirstObjectByType<MetaUpgradeManager>();
+                if (mgr != null && mgr.allUpgrades != null && mgr.allUpgrades.Count > 0)
                 {
-                    lineRenderer = lineTrans.gameObject.AddComponent<UILineRenderer>();
+                    allUpgrades = new List<MetaUpgradeSO>(mgr.allUpgrades);
+                }
+                else
+                {
+                    allUpgrades = new List<MetaUpgradeSO>(Resources.LoadAll<MetaUpgradeSO>(""));
                 }
             }
         }
-        if (lineRenderer != null)
+    }
+
+    public void RefreshUpgradesList()
+    {
+        FindReferencesIfNull();
+        EnsureUpgradesLoaded();
+
+        if (contentContainer == null || itemTemplate == null) return;
+
+        // Upewnij się, że template ma MetaUpgradeItemUI i jest ukryty
+        MetaUpgradeItemUI templateItem = itemTemplate.GetComponent<MetaUpgradeItemUI>();
+        if (templateItem == null)
         {
-            if (lineRenderer.GetComponent<CanvasRenderer>() == null)
+            templateItem = itemTemplate.AddComponent<MetaUpgradeItemUI>();
+        }
+        itemTemplate.SetActive(false);
+
+        // Usuń stare placeholderowe rodzeństwo ze sceny (np. Pnl_MetaUpgrade (1) do (4)) jeśli nie mają poprawnego setupu
+        for (int i = contentContainer.childCount - 1; i >= 0; i--)
+        {
+            Transform child = contentContainer.GetChild(i);
+            if (child.gameObject == itemTemplate) continue;
+
+            MetaUpgradeItemUI itemUI = child.GetComponent<MetaUpgradeItemUI>();
+            if (itemUI == null || !spawnedItems.Contains(itemUI))
             {
-                lineRenderer.gameObject.AddComponent<CanvasRenderer>();
+                Destroy(child.gameObject);
+            }
+        }
+
+        // 1. Filtrowanie ulepszeń dla Legacy of Town:
+        // - Brak ulepszeń typu A/B
+        // - Brak ulepszeń, których prerequisites nie zostały jeszcze spełnione
+        List<MetaUpgradeSO> eligibleUpgrades = new List<MetaUpgradeSO>();
+        foreach (var u in allUpgrades)
+        {
+            if (u == null) continue;
+
+            // Wyklucz warianty A/B zgodnie z ustaleniami
+            if (u.hasVariants || u.isVariantOption) continue;
+
+            // Sprawdź czy ulepszenie jest już odblokowane w SaveManager
+            if (SaveManager.Instance != null && SaveManager.Instance.currentSaveData != null)
+            {
+                if (SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Contains(u.id))
+                {
+                    u.isUnlocked = true;
+                }
             }
 
-            RectTransform lrRect = lineRenderer.GetComponent<RectTransform>();
-            if (lrRect != null)
+            // Jeśli ulepszenie nie jest odblokowane, sprawdź czy jego prerequisites są spełnione
+            if (!u.isUnlocked && !ArePrerequisitesMet(u))
             {
-                lrRect.anchorMin = Vector2.zero;
-                lrRect.anchorMax = Vector2.zero;
-                lrRect.pivot = Vector2.zero;
-                lrRect.anchoredPosition = Vector2.zero;
-                lrRect.sizeDelta = contentRect.sizeDelta;
+                // Ukryj zablokowane ulepszenia
+                continue;
             }
+
+            eligibleUpgrades.Add(u);
         }
 
-        // 5. Nodes Container
-        Transform nodesTrans = contentObj.transform.Find("NodesContainer");
-        if (nodesTrans == null)
+        // 2. Sortowanie:
+        // - Dostępne / w trakcie rozwijania (nieodblokowane) na górze listy
+        // - W pełni odblokowane ulepszenia na sam dół listy
+        eligibleUpgrades.Sort((a, b) =>
         {
-            GameObject ncObj = new GameObject("NodesContainer", typeof(RectTransform));
-            ncObj.transform.SetParent(contentObj.transform, false);
-            nodesContainer = ncObj.GetComponent<RectTransform>();
-            nodesContainer.anchorMin = Vector2.zero;
-            nodesContainer.anchorMax = Vector2.zero;
-            nodesContainer.pivot = Vector2.zero;
-            nodesContainer.anchoredPosition = Vector2.zero;
-            nodesContainer.sizeDelta = contentRect.sizeDelta;
-        }
-        else if (nodesContainer == null)
+            int unlockedA = a.isUnlocked ? 1 : 0;
+            int unlockedB = b.isUnlocked ? 1 : 0;
+            if (unlockedA != unlockedB)
+            {
+                return unlockedA.CompareTo(unlockedB);
+            }
+            return string.Compare(a.DisplayName, b.DisplayName, StringComparison.Ordinal);
+        });
+
+        // 3. Dopasowanie liczby obiektów w puli
+        while (spawnedItems.Count < eligibleUpgrades.Count)
         {
-            nodesContainer = nodesTrans.GetComponent<RectTransform>();
-        }
-        if (nodesContainer != null)
-        {
-            nodesContainer.anchorMin = Vector2.zero;
-            nodesContainer.anchorMax = Vector2.zero;
-            nodesContainer.pivot = Vector2.zero;
-            nodesContainer.anchoredPosition = Vector2.zero;
-            nodesContainer.sizeDelta = contentRect.sizeDelta;
+            GameObject newObj = Instantiate(itemTemplate, contentContainer);
+            MetaUpgradeItemUI newItem = newObj.GetComponent<MetaUpgradeItemUI>() ?? newObj.AddComponent<MetaUpgradeItemUI>();
+            spawnedItems.Add(newItem);
         }
 
-        // 6. Panel Szczegółów (Prawy panel, 360 px)
-        Transform detailsTrans = transform.Find("Pnl_NodeDetails");
-        if (detailsTrans == null)
+        for (int i = 0; i < spawnedItems.Count; i++)
         {
-            GameObject detailsObj = new GameObject("Pnl_NodeDetails", typeof(RectTransform));
-            detailsObj.transform.SetParent(transform, false);
-            RectTransform dtRect = detailsObj.GetComponent<RectTransform>();
-            dtRect.anchorMin = new Vector2(1f, 0f);
-            dtRect.anchorMax = new Vector2(1f, 1f);
-            dtRect.pivot = new Vector2(1f, 0.5f);
-            dtRect.anchoredPosition = Vector2.zero;
-            dtRect.sizeDelta = new Vector2(360f, -60f); // Poniżej topbara
-
-            detailsPanel = detailsObj.AddComponent<MetaNodeDetailsPanelUI>();
-            detailsPanel.EnsureHierarchyBuilt();
-            detailsPanel.SetOnPurchasedCallback(OnUpgradePurchased);
-        }
-        else if (detailsPanel == null)
-        {
-            detailsPanel = detailsTrans.GetComponent<MetaNodeDetailsPanelUI>();
-            detailsPanel.SetOnPurchasedCallback(OnUpgradePurchased);
+            if (i < eligibleUpgrades.Count)
+            {
+                spawnedItems[i].gameObject.SetActive(true);
+                spawnedItems[i].transform.SetSiblingIndex(i + 1); // po template
+                spawnedItems[i].Setup(eligibleUpgrades[i], OnUpgradeUnlocked, RefreshHopeUI);
+            }
+            else
+            {
+                spawnedItems[i].gameObject.SetActive(false);
+            }
         }
     }
 
-    private void OnUpgradePurchased(MetaUpgradeSO upgrade)
+    private bool ArePrerequisitesMet(MetaUpgradeSO upgrade)
     {
-        RefreshGraph();
+        if (upgrade == null || upgrade.prerequisites == null || upgrade.prerequisites.Count == 0)
+        {
+            return true;
+        }
+
+        foreach (var req in upgrade.prerequisites)
+        {
+            if (req == null) continue;
+
+            bool isReqUnlocked = req.isUnlocked;
+            if (!isReqUnlocked && SaveManager.Instance != null && SaveManager.Instance.currentSaveData != null)
+            {
+                isReqUnlocked = SaveManager.Instance.currentSaveData.unlockedUpgradeIDs.Contains(req.id);
+            }
+
+            if (!isReqUnlocked)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void OnUpgradeUnlocked(MetaUpgradeSO unlockedUpgrade)
+    {
+        RefreshHopeUI();
+        RefreshUpgradesList();
+    }
+
+    /// <summary>
+    /// Metoda pomocnicza dla kompatybilności wstecznej (np. DebugCheatManager).
+    /// </summary>
+    public void UpdateHopeCurrency()
+    {
+        RefreshHopeUI();
+    }
+
+    /// <summary>
+    /// Metoda pomocnicza dla kompatybilności wstecznej (np. DebugCheatManager).
+    /// </summary>
+    public void RefreshGraph()
+    {
+        RefreshUpgradesList();
+    }
+
+    /// <summary>
+    /// Metoda pomocnicza dla kompatybilności wstecznej.
+    /// </summary>
+    public void EnsureHierarchyBuilt()
+    {
+        FindReferencesIfNull();
+    }
+
+    /// <summary>
+    /// Inicjalizuje listę ulepszeń z podanej listy.
+    /// </summary>
+    public void InitializeGraph(List<MetaUpgradeSO> upgrades)
+    {
+        allUpgrades = upgrades != null ? new List<MetaUpgradeSO>(upgrades) : new List<MetaUpgradeSO>();
+        RefreshUpgradesList();
     }
 }

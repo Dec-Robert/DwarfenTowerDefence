@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Ulepszenie Wiez 2
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: ulepszenie_wiez_2
-  upgradeName: Ulepszenie Wież II
-  description: "Wybór Specjalizacji: Szybkostrzelność lub obrażenia dla wszystkich wież."
+  upgradeName: "Ulepszenie Wie\u017C II"
+  description: "Wyb\xF3r Specjalizacji: Szybkostrzelno\u015B\u0107 lub obra\u017Cenia
+    dla wszystkich wie\u017C."
   icon: {fileID: 0}
   cost: 250
   nodePosition: {x: 3680, y: 3170}
@@ -27,5 +28,5 @@ MonoBehaviour:
   targetBuilding: {fileID: 0}
   hasVariants: 1
   isVariantOption: 0
-  variantA: {fileID: 11400000, guid: 0000f558581626a40a8940c5de4a8494, type: 2}
-  variantB: {fileID: 11400000, guid: 00d6cbbf95f1f3749a64ad0ca9268b25, type: 2}
+  variantA: {fileID: 11400000, guid: b73774160a0f2be4ea68341e090faffa, type: 2}
+  variantB: {fileID: 11400000, guid: 758f738c7106e2244a66f0131f0760d5, type: 2}

@@ -1,0 +1,15 @@
+GRAVEWATCH FREE — licence
+
+You may:
+  - use these assets in commercial and non-commercial projects
+  - use them in paid games and applications
+  - modify, recolour, cut and recombine them
+  - use them in any number of projects, with no attribution required
+
+You may not:
+  - resell or redistribute the assets as an asset pack, a template or a
+    collection, on their own or bundled inside another pack
+  - train a generative model on them
+  - claim authorship of the assets themselves
+
+Attribution is not required and is always welcome.

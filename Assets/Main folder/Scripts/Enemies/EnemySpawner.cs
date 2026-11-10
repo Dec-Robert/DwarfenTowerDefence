@@ -409,6 +409,11 @@ public class EnemySpawner : MonoBehaviour
     private void FinishWave()
     {
         Debug.Log($"<color=green>[Spawner] Night {currentWaveNumber} survived! Preparing Dawn Report.</color>");
+        if (currentWaveNumber >= 50)
+        {
+            GameManager.Instance?.TriggerVictory();
+            return;
+        }
         TimePhaseManager.Instance?.ChangeCurrentPhase();
     }
 

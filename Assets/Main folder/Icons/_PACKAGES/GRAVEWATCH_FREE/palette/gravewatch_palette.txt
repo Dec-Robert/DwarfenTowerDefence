@@ -1,0 +1,17 @@
+; GRAVEWATCH — o tom em que cada material resolve
+; hex      nome
+  444442    pedra deep
+  8E8B86    pedra base
+  9A9790    pedra chip
+  30343C    ferro deep
+  6A707C    ferro base
+  A6ACB4    ferro chip
+  404832    bronze deep
+  967440    bronze base
+  C4A460    bronze chip
+  807054    pergaminho deep
+  C4B494    pergaminho base
+  E0D6BE    pergaminho chip
+  38261C    couro deep
+  78553E    couro base
+  8C7056    couro chip

@@ -482,61 +482,46 @@ public class MetaGraphUITests
     }
 
     // =========================================================================
-    // TEST 6: WERYFIKACJA KOMPONENTU CANVASRENDERER DLA LINESRENDERER
+    // TEST 6: CZĘŚCIOWE INWESTOWANIE NADZIEI I ODBLOKOWYWANIE ULEPSZEŃ
     // =========================================================================
 
     [Test]
-    public void Test6_MetaGraphHierarchy_LinesRendererHasCanvasRenderer()
+    public void Test6_PartialInvestmentAndUnlock_PersistsInSaveManager()
     {
-        GameObject canvasObj = new GameObject("TestCanvas", typeof(Canvas));
-        spawnedGameObjects.Add(canvasObj);
+        saveManager.currentSaveData.totalHope = 300;
+        var upgrade = CreateTestUpgrade("test_invest", "Test Upgrade", 100, Vector2.zero);
 
-        GameObject rootObj = new GameObject("Pnl_MetaGraphRoot", typeof(RectTransform));
-        rootObj.transform.SetParent(canvasObj.transform, false);
-        spawnedGameObjects.Add(rootObj);
+        // Częściowe zdeponowanie 40 Nadziei
+        saveManager.SetInvestedHope(upgrade.id, 40);
+        Assert.AreEqual(40, saveManager.GetInvestedHope(upgrade.id));
+        Assert.IsFalse(upgrade.isUnlocked);
 
-        MetaGraphControllerUI controller = rootObj.AddComponent<MetaGraphControllerUI>();
-        controller.EnsureHierarchyBuilt();
+        // Dokończenie inwestycji do 100 i odblokowanie
+        saveManager.SetInvestedHope(upgrade.id, 100);
+        saveManager.UnlockUpgrade(upgrade);
 
-        Transform linesTrans = rootObj.transform.Find("Viewport/Content/LinesRenderer");
-        Assert.IsNotNull(linesTrans, "LinesRenderer musi istnieć w Content po EnsureHierarchyBuilt.");
-
-        CanvasRenderer cr = linesTrans.GetComponent<CanvasRenderer>();
-        Assert.IsNotNull(cr, "LinesRenderer musi posiadać CanvasRenderer, aby zapobiec MissingComponentException.");
-
-        UILineRenderer lr = linesTrans.GetComponent<UILineRenderer>();
-        Assert.IsNotNull(lr, "LinesRenderer musi posiadać UILineRenderer.");
-
-        // Ponowne EnsureHierarchyBuilt nie niszczy ani nie usuwa CanvasRenderer
-        controller.EnsureHierarchyBuilt();
-        Assert.IsNotNull(linesTrans.GetComponent<CanvasRenderer>(), "Drugie wywołanie EnsureHierarchyBuilt musi zachować CanvasRenderer.");
+        Assert.AreEqual(100, saveManager.GetInvestedHope(upgrade.id));
+        Assert.IsTrue(upgrade.isUnlocked);
+        Assert.IsTrue(saveManager.currentSaveData.unlockedUpgradeIDs.Contains("test_invest"));
     }
 
+    // =========================================================================
+    // TEST 7: WERYFIKACJA WYMAGAŃ ULEPSZEŃ (PREREQUISITES)
+    // =========================================================================
+
     [Test]
-    public void Test7_MetaGraphHierarchy_NodeItemsHaveCanvasRenderer()
+    public void Test7_MetaUpgradePrerequisites_PrerequisitesResolution()
     {
-        GameObject canvasObj = new GameObject("TestCanvas", typeof(Canvas));
-        spawnedGameObjects.Add(canvasObj);
+        var root = CreateTestUpgrade("root_up", "Root", 50, Vector2.zero, isUnlocked: true);
+        var child = CreateTestUpgrade("child_up", "Child", 100, Vector2.zero, isUnlocked: false);
+        child.prerequisites.Add(root);
 
-        GameObject rootObj = new GameObject("Pnl_MetaGraphRoot", typeof(RectTransform));
-        rootObj.transform.SetParent(canvasObj.transform, false);
-        spawnedGameObjects.Add(rootObj);
+        saveManager.currentSaveData.unlockedUpgradeIDs = new List<string> { root.id };
+        Assert.IsTrue(root.isUnlocked);
 
-        MetaGraphControllerUI controller = rootObj.AddComponent<MetaGraphControllerUI>();
-        var testNode = CreateTestUpgrade("test_node", "Test Node", 100, new Vector2(100, 100));
-        controller.InitializeGraph(new List<MetaUpgradeSO> { testNode });
-
-        Transform nodeTrans = rootObj.transform.Find("Viewport/Content/NodesContainer/Node_test_node");
-        Assert.IsNotNull(nodeTrans, "Node_test_node musi istnieć w NodesContainer.");
-
-        CanvasRenderer nodeCr = nodeTrans.GetComponent<CanvasRenderer>();
-        Assert.IsNotNull(nodeCr, "Node_test_node musi posiadać CanvasRenderer dla BorderImage.");
-
-        foreach (var graphic in nodeTrans.GetComponentsInChildren<Graphic>(true))
-        {
-            Assert.IsNotNull(graphic.GetComponent<CanvasRenderer>(),
-                $"Komponent graficzny {graphic.gameObject.name} wewnątrz węzła musi posiadać CanvasRenderer.");
-        }
+        // Child ma spełnione wymagania
+        bool childPrereqsMet = child.prerequisites.TrueForAll(p => p.isUnlocked || saveManager.currentSaveData.unlockedUpgradeIDs.Contains(p.id));
+        Assert.IsTrue(childPrereqsMet);
     }
 
     [Test]

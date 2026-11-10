@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
 
     public event Action<int> OnHealthChanged;
     public event Action OnGameOver;
+    public event Action OnVictory;
 
     private void Awake()
     {
@@ -89,5 +90,11 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("KONIEC GRY!");
         OnGameOver?.Invoke(); 
+    }
+
+    public void TriggerVictory()
+    {
+        Debug.Log("[GameManager] ZWYCIĘSTWO!");
+        OnVictory?.Invoke(); 
     }
 }

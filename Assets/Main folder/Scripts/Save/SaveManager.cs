@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
 using System.Collections.Generic;
@@ -49,7 +49,7 @@ public class SaveManager : MonoBehaviour
         else
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // SaveManager żyje mi�dzy scenami
+            DontDestroyOnLoad(gameObject); // SaveManager żyje mi?dzy scenami
         }
 
         if (string.IsNullOrEmpty(savePath))
@@ -82,8 +82,8 @@ public class SaveManager : MonoBehaviour
     [ContextMenu("Save Game")]
     public void SaveGame()
     {
-        // 1. Przygotuj dane do zapisu (np. zaktualizuj list� ID z SO)
-        // (Wi�kszo�� danych aktualizujemy w locie w currentSaveData)
+        // 1. Przygotuj dane do zapisu (np. zaktualizuj list? ID z SO)
+        // (Wi?kszo?? danych aktualizujemy w locie w currentSaveData)
 
         if (string.IsNullOrEmpty(savePath))
         {
@@ -134,7 +134,7 @@ public class SaveManager : MonoBehaviour
                 currentSaveData = DeserializeSaveDataManual(json);
             }
 
-            Debug.Log("[SaveManager] Wczytano post�p gracza.");
+            Debug.Log("[SaveManager] Wczytano post?p gracza.");
         }
         else
         {
@@ -237,6 +237,47 @@ public class SaveManager : MonoBehaviour
         }
 
         SaveGame();
+    }
+
+    public int GetInvestedHope(string upgradeId)
+    {
+        return currentSaveData != null ? currentSaveData.GetInvestedHope(upgradeId) : 0;
+    }
+
+    public void SetInvestedHope(string upgradeId, int amount, bool autoSave = true)
+    {
+        if (currentSaveData == null) return;
+        currentSaveData.SetInvestedHope(upgradeId, amount);
+        if (autoSave) SaveGame();
+    }
+
+    /// <summary>
+    /// Odblokowuje ulepszenie po ID i trwale zapisuje stan gry.
+    /// </summary>
+    public void UnlockUpgrade(string upgradeId, bool autoSave = true)
+    {
+        if (string.IsNullOrEmpty(upgradeId) || currentSaveData == null) return;
+        if (currentSaveData.unlockedUpgradeIDs == null)
+        {
+            currentSaveData.unlockedUpgradeIDs = new List<string>();
+        }
+
+        if (!currentSaveData.unlockedUpgradeIDs.Contains(upgradeId))
+        {
+            currentSaveData.unlockedUpgradeIDs.Add(upgradeId);
+        }
+
+        if (autoSave) SaveGame();
+    }
+
+    /// <summary>
+    /// Odblokowuje ulepszenie na podstawie ScriptableObject i trwale zapisuje stan gry.
+    /// </summary>
+    public void UnlockUpgrade(MetaUpgradeSO upgrade, bool autoSave = true)
+    {
+        if (upgrade == null) return;
+        upgrade.isUnlocked = true;
+        UnlockUpgrade(upgrade.id, autoSave);
     }
 
     // Synchronizacja stanu odblokowania wiez z SaveData

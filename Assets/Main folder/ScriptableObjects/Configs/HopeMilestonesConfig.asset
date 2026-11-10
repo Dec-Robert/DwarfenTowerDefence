@@ -12,4 +12,207 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4279a51b3002450fac0cca8014fb43cf, type: 3}
   m_Name: HopeMilestonesConfig
   m_EditorClassIdentifier: 
-  milestones: []
+  milestones:
+  - id: boss_1
+    description: "Zg\u0142adzenie pierwszego Bossa"
+    type: 5
+    targetValue: 1
+    hopeReward: 50
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: boss_2
+    description: "Zg\u0142adzenie 2 Boss\u00f3w"
+    type: 5
+    targetValue: 2
+    hopeReward: 200
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: boss_3
+    description: "Zg\u0142adzenie 3 Boss\u00f3w"
+    type: 5
+    targetValue: 3
+    hopeReward: 500
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: boss_4
+    description: "Zg\u0142adzenie 4 Boss\u00f3w"
+    type: 5
+    targetValue: 4
+    hopeReward: 600
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: victory_endgame
+    description: "Zwyci\u0119stwo (Przetrwanie 50 nocy)"
+    type: 10
+    targetValue: 1
+    hopeReward: 1500
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: exp_2
+    description: "Uko\u0144czenie 2 ekspedycji zwiadowczych"
+    type: 11
+    targetValue: 2
+    hopeReward: 25
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: exp_5
+    description: "Uko\u0144czenie 5 ekspedycji zwiadowczych"
+    type: 11
+    targetValue: 5
+    hopeReward: 80
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: exp_10
+    description: "Uko\u0144czenie 10 ekspedycji zwiadowczych"
+    type: 11
+    targetValue: 10
+    hopeReward: 200
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: exp_15
+    description: "Uko\u0144czenie 15 ekspedycji zwiadowczych"
+    type: 11
+    targetValue: 15
+    hopeReward: 350
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: kills_100
+    description: "Wyeliminowanie 100 wrog\u00f3w"
+    type: 6
+    targetValue: 100
+    hopeReward: 20
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: kills_500
+    description: "Wyeliminowanie 500 wrog\u00f3w"
+    type: 6
+    targetValue: 500
+    hopeReward: 60
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: kills_1500
+    description: "Wyeliminowanie 1500 wrog\u00f3w"
+    type: 6
+    targetValue: 1500
+    hopeReward: 150
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: kills_3000
+    description: "Wyeliminowanie 3000 wrog\u00f3w"
+    type: 6
+    targetValue: 3000
+    hopeReward: 250
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: pop_15
+    description: "Osi\u0105gni\u0119cie 15 mieszka\u0144c\u00f3w"
+    type: 0
+    targetValue: 15
+    hopeReward: 20
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: pop_30
+    description: "Osi\u0105gni\u0119cie 30 mieszka\u0144c\u00f3w"
+    type: 0
+    targetValue: 30
+    hopeReward: 60
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: pop_60
+    description: "Osi\u0105gni\u0119cie 60 mieszka\u0144c\u00f3w"
+    type: 0
+    targetValue: 60
+    hopeReward: 150
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: pop_100
+    description: "Osi\u0105gni\u0119cie 100 mieszka\u0144c\u00f3w"
+    type: 0
+    targetValue: 100
+    hopeReward: 250
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: towers_5
+    description: "Wzniesienie 5 wie\u017c obronnych"
+    type: 2
+    targetValue: 5
+    hopeReward: 15
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: towers_12
+    description: "Wzniesienie 12 wie\u017c obronnych"
+    type: 2
+    targetValue: 12
+    hopeReward: 50
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: towers_25
+    description: "Wzniesienie 25 wie\u017c obronnych"
+    type: 2
+    targetValue: 25
+    hopeReward: 120
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: towers_40
+    description: "Wzniesienie 40 wie\u017c obronnych"
+    type: 2
+    targetValue: 40
+    hopeReward: 250
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: prod_4
+    description: "Wzniesienie 4 budynk\u00f3w produkcyjnych"
+    type: 7
+    targetValue: 4
+    hopeReward: 15
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: prod_8
+    description: "Wzniesienie 8 budynk\u00f3w produkcyjnych"
+    type: 7
+    targetValue: 8
+    hopeReward: 50
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: prod_15
+    description: "Wzniesienie 15 budynk\u00f3w produkcyjnych"
+    type: 7
+    targetValue: 15
+    hopeReward: 120
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: rune_craft_1
+    description: "Wykucie pierwszej runy"
+    type: 9
+    targetValue: 1
+    hopeReward: 20
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: rune_craft_5
+    description: "Wykucie 5 run"
+    type: 9
+    targetValue: 5
+    hopeReward: 60
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: rune_craft_15
+    description: "Wykucie 15 run"
+    type: 9
+    targetValue: 15
+    hopeReward: 150
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: rune_rare_1
+    description: "Pozyskanie rzadkiej lub epickiej runy"
+    type: 8
+    targetValue: 1
+    hopeReward: 60
+    targetRace: 0
+    targetTower: {fileID: 0}
+  - id: rune_legendary_1
+    description: "Pozyskanie legendarnej lub przekl\u0119tej runy"
+    type: 8
+    targetValue: 2
+    hopeReward: 200
+    targetRace: 0
+    targetTower: {fileID: 0}

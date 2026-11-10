@@ -1,0 +1,2883 @@
+{
+ "aliases": {},
+ "assets": {
+  "bar_fill_blue": {
+   "canvas": {
+    "h": 7,
+    "w": 32
+   },
+   "category": "controls",
+   "family": "bar_fill_blue",
+   "files": [
+    {
+     "file": "bar_fill_blue.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "64x7",
+      "96x7",
+      "128x7",
+      "192x7"
+     ]
+    }
+   ],
+   "group": "bar",
+   "id": "bar_fill_blue",
+   "nine_slice": {
+    "b": 0,
+    "l": 3,
+    "r": 1,
+    "repeat": "stretch-x",
+    "t": 0
+   },
+   "repeat": "stretch-x",
+   "tags": [],
+   "usage": {
+    "attach": "inside bar_track at (+1, +1), height 7",
+    "min_draw_width": 4,
+    "min_draw_width_rule": "bar_fill, bar_fill_special: minimum drawn width 4 px (the 3 px left cap plus 1 px end): hosts clamp any non-zero value to at least 4 px, because below 4 px nothing draws; a value of exactly 0 draws no fill",
+    "note": "minimum drawn width 4 px (the 3 px left cap plus 1 px end): hosts clamp any non-zero value to at least 4 px, because below 4 px nothing draws; a value of exactly 0 draws no fill"
+   }
+  },
+  "bar_fill_green": {
+   "canvas": {
+    "h": 7,
+    "w": 32
+   },
+   "category": "controls",
+   "family": "bar_fill_green",
+   "files": [
+    {
+     "file": "bar_fill_green.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "64x7",
+      "96x7",
+      "128x7",
+      "192x7"
+     ]
+    }
+   ],
+   "group": "bar",
+   "id": "bar_fill_green",
+   "nine_slice": {
+    "b": 0,
+    "l": 3,
+    "r": 1,
+    "repeat": "stretch-x",
+    "t": 0
+   },
+   "repeat": "stretch-x",
+   "tags": [],
+   "usage": {
+    "attach": "inside bar_track at (+1, +1), height 7",
+    "min_draw_width": 4,
+    "min_draw_width_rule": "bar_fill, bar_fill_special: minimum drawn width 4 px (the 3 px left cap plus 1 px end): hosts clamp any non-zero value to at least 4 px, because below 4 px nothing draws; a value of exactly 0 draws no fill",
+    "note": "minimum drawn width 4 px (the 3 px left cap plus 1 px end): hosts clamp any non-zero value to at least 4 px, because below 4 px nothing draws; a value of exactly 0 draws no fill"
+   }
+  },
+  "bar_fill_red": {
+   "canvas": {
+    "h": 7,
+    "w": 32
+   },
+   "category": "controls",
+   "family": "bar_fill_red",
+   "files": [
+    {
+     "file": "bar_fill_red.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "64x7",
+      "96x7",
+      "128x7",
+      "192x7"
+     ]
+    }
+   ],
+   "group": "bar",
+   "id": "bar_fill_red",
+   "nine_slice": {
+    "b": 0,
+    "l": 3,
+    "r": 1,
+    "repeat": "stretch-x",
+    "t": 0
+   },
+   "repeat": "stretch-x",
+   "tags": [],
+   "usage": {
+    "attach": "inside bar_track at (+1, +1), height 7; draw only when width >= 4",
+    "min_draw_width": 4,
+    "min_draw_width_rule": "a value of exactly 0 draws no fill",
+    "note": "minimum drawn width 4 px (the 3 px left cap plus 1 px end): hosts clamp any non-zero value to at least 4 px, because below 4 px nothing draws; a value of exactly 0 draws no fill"
+   }
+  },
+  "bar_track": {
+   "canvas": {
+    "h": 9,
+    "w": 32
+   },
+   "category": "controls",
+   "family": "bar_track",
+   "files": [
+    {
+     "file": "bar_track.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "64x9",
+      "96x9",
+      "128x9",
+      "192x9"
+     ]
+    }
+   ],
+   "group": "bar",
+   "id": "bar_track",
+   "nine_slice": {
+    "b": 0,
+    "l": 3,
+    "r": 3,
+    "repeat": "stretch-x",
+    "t": 0
+   },
+   "repeat": "stretch-x",
+   "tags": [],
+   "usage": {
+    "fill_box": "the fill goes at (+1, +1); a full fill is track_w - 2 wide; width = round((track_w - 2) * value), at least the fill's min_draw_width when value > 0",
+    "fill_inset_w": 2,
+    "fill_offset": [
+     1,
+     1
+    ],
+    "native_height": 9,
+    "resize_axes": [
+     "x"
+    ]
+   }
+  },
+  "btn_stone_md": {
+   "canvas": {
+    "h": 42,
+    "w": 98
+   },
+   "category": "buttons",
+   "family": "btn_stone_md",
+   "files": [
+    {
+     "file": "btn_stone_md_disabled.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "130x42",
+      "162x42",
+      "242x42"
+     ],
+     "state": "disabled"
+    },
+    {
+     "file": "btn_stone_md_focus.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "130x42",
+      "162x42",
+      "242x42"
+     ],
+     "state": "focus"
+    },
+    {
+     "file": "btn_stone_md_hover.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "130x42",
+      "162x42",
+      "242x42"
+     ],
+     "state": "hover"
+    },
+    {
+     "file": "btn_stone_md_idle.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "130x42",
+      "162x42",
+      "242x42"
+     ],
+     "state": "idle"
+    },
+    {
+     "file": "btn_stone_md_pressed.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "130x42",
+      "162x42",
+      "242x42"
+     ],
+     "state": "pressed"
+    },
+    {
+     "file": "btn_stone_md_selected.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "130x42",
+      "162x42",
+      "242x42"
+     ],
+     "state": "selected"
+    },
+    {
+     "file": "btn_stone_md_selected_focus.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "130x42",
+      "162x42",
+      "242x42"
+     ],
+     "state": "selected_focus"
+    }
+   ],
+   "group": "btn",
+   "id": "btn_stone_md",
+   "nine_slice": {
+    "b": 0,
+    "l": 12,
+    "r": 12,
+    "repeat": "stretch-x",
+    "t": 0
+   },
+   "repeat": "stretch-x",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle",
+    "pressed",
+    "selected",
+    "selected_focus"
+   ],
+   "tags": [],
+   "usage": {
+    "body_native_height": 42,
+    "body_native_offset": [
+     -1,
+     -1
+    ],
+    "body_native_offset_meaning": "body_native_offset [-1, -1]: the PNG has a 1 px outline margin on every side, so the content box is the PNG minus 1 px each side. Lay out by the PNG box: 9-slice the PNG to the on-screen width you want (the presets and the layout JSON boxes are PNG sizes) and centre the label on it. Only if you think in content sizes, draw the PNG at (x - 1, y - 1) with width W + 2.",
+    "content_box": {
+     "height": 40,
+     "origin": [
+      0,
+      0
+     ],
+     "width": "content_box_width W supplied to Canvas"
+    },
+    "disabled_label_token": "ink-4",
+    "label_box": {
+     "anchor": "centre",
+     "bounds": [
+      0,
+      "6+dy",
+      "W",
+      "34+dy"
+     ],
+     "dy": "1 only for pressed, otherwise 0",
+     "origin": "same content-box origin x,y"
+    },
+    "label_box_y": [
+     6,
+     34
+    ],
+    "label_font": "ui_bold (fonts/bitmap/pixel_operator_16_bold), caps",
+    "label_ink_png_y": 16,
+    "label_rule": "centre the label's ink on the PNG width; cap top at PNG y 16, 17 when pressed",
+    "label_token": "ink-1",
+    "native_height": 42,
+    "pressed_label_dy": 1,
+    "resize_axes": [
+     "x"
+    ]
+   }
+  },
+  "btn_stone_sm": {
+   "canvas": {
+    "h": 22,
+    "w": 22
+   },
+   "category": "buttons",
+   "family": "btn_stone_sm",
+   "files": [
+    {
+     "file": "btn_stone_sm_disabled.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "48x22",
+      "72x22",
+      "98x22"
+     ],
+     "state": "disabled"
+    },
+    {
+     "file": "btn_stone_sm_focus.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "48x22",
+      "72x22",
+      "98x22"
+     ],
+     "state": "focus"
+    },
+    {
+     "file": "btn_stone_sm_hover.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "48x22",
+      "72x22",
+      "98x22"
+     ],
+     "state": "hover"
+    },
+    {
+     "file": "btn_stone_sm_idle.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "48x22",
+      "72x22",
+      "98x22"
+     ],
+     "state": "idle"
+    },
+    {
+     "file": "btn_stone_sm_pressed.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "48x22",
+      "72x22",
+      "98x22"
+     ],
+     "state": "pressed"
+    },
+    {
+     "file": "btn_stone_sm_selected.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "48x22",
+      "72x22",
+      "98x22"
+     ],
+     "state": "selected"
+    },
+    {
+     "file": "btn_stone_sm_selected_focus.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "48x22",
+      "72x22",
+      "98x22"
+     ],
+     "state": "selected_focus"
+    }
+   ],
+   "group": "btn",
+   "id": "btn_stone_sm",
+   "nine_slice": {
+    "b": 0,
+    "l": 5,
+    "r": 5,
+    "repeat": "stretch-x",
+    "t": 0
+   },
+   "repeat": "stretch-x",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle",
+    "pressed",
+    "selected",
+    "selected_focus"
+   ],
+   "tags": [],
+   "usage": {
+    "body_only": true,
+    "glyph_pressed_dy": 1,
+    "glyph_to_selection_clearance": 1,
+    "glyphs_and_labels_included": false,
+    "label_font": "caption_bold (fonts/bitmap/pixel_operator_8_bold), caps",
+    "label_rule": "centre the ink on the PNG width; cap top at PNG y 7, 8 when pressed",
+    "label_token": "ink-1",
+    "native_height": 22,
+    "resize_axes": [
+     "x"
+    ],
+    "selected_band_rows": [
+     {
+      "token": "brim-2",
+      "x": [
+       5,
+       17
+      ],
+      "y": 16
+     }
+    ],
+    "selected_focus": "selected plus exact focus-idle pixel delta; selection and keyboard focus are independent",
+    "selection_boundary": "Unchanged native front face [5,5,17,17); side framing preserved"
+   }
+  },
+  "checkbox_off": {
+   "canvas": {
+    "h": 20,
+    "w": 20
+   },
+   "category": "controls",
+   "family": "checkbox_off",
+   "files": [
+    {
+     "file": "checkbox_off_disabled.png",
+     "state": "disabled"
+    },
+    {
+     "file": "checkbox_off_focus.png",
+     "state": "focus"
+    },
+    {
+     "file": "checkbox_off_hover.png",
+     "state": "hover"
+    },
+    {
+     "file": "checkbox_off_idle.png",
+     "state": "idle"
+    }
+   ],
+   "group": "checkbox",
+   "id": "checkbox_off",
+   "repeat": "fixed",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle"
+   ],
+   "tags": [],
+   "usage": {
+    "native_height": 20
+   }
+  },
+  "checkbox_on": {
+   "canvas": {
+    "h": 20,
+    "w": 20
+   },
+   "category": "controls",
+   "family": "checkbox_on",
+   "files": [
+    {
+     "file": "checkbox_on_disabled.png",
+     "state": "disabled"
+    },
+    {
+     "file": "checkbox_on_focus.png",
+     "state": "focus"
+    },
+    {
+     "file": "checkbox_on_hover.png",
+     "state": "hover"
+    },
+    {
+     "file": "checkbox_on_idle.png",
+     "state": "idle"
+    }
+   ],
+   "group": "checkbox",
+   "id": "checkbox_on",
+   "repeat": "fixed",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle"
+   ],
+   "tags": [],
+   "usage": {
+    "native_height": 20
+   }
+  },
+  "divider_plain_h": {
+   "canvas": {
+    "h": 2,
+    "w": 8
+   },
+   "category": "panels",
+   "family": "divider_plain_h",
+   "files": [
+    {
+     "file": "divider_plain_h.png"
+    }
+   ],
+   "group": "divider",
+   "id": "divider_plain_h",
+   "repeat": "stretch-x",
+   "tags": [],
+   "usage": {
+    "resize": "a uniform 2 px strip: stretch the whole sprite along x (no insets needed)"
+   }
+  },
+  "ibtn_marked_close_32": {
+   "canvas": {
+    "h": 32,
+    "w": 32
+   },
+   "category": "buttons",
+   "family": "ibtn_marked_close_32",
+   "files": [
+    {
+     "file": "ibtn_marked_close_32_disabled.png",
+     "state": "disabled"
+    },
+    {
+     "file": "ibtn_marked_close_32_focus.png",
+     "state": "focus"
+    },
+    {
+     "file": "ibtn_marked_close_32_hover.png",
+     "state": "hover"
+    },
+    {
+     "file": "ibtn_marked_close_32_idle.png",
+     "state": "idle"
+    },
+    {
+     "file": "ibtn_marked_close_32_pressed.png",
+     "state": "pressed"
+    },
+    {
+     "file": "ibtn_marked_close_32_selected.png",
+     "state": "selected"
+    },
+    {
+     "file": "ibtn_marked_close_32_selected_focus.png",
+     "state": "selected_focus"
+    }
+   ],
+   "group": "ibtn",
+   "id": "ibtn_marked_close_32",
+   "repeat": "fixed",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle",
+    "pressed",
+    "selected",
+    "selected_focus"
+   ],
+   "tags": [],
+   "usage": {
+    "baked": true,
+    "native_height": 32,
+    "origin": [
+     6,
+     6
+    ],
+    "pressed_origin": [
+     6,
+     7
+    ],
+    "rule": "square32 body + glyph_{item}_19_{HOST_GLYPH[state]} at (6,6), pressed (6,7)"
+   }
+  },
+  "ibtn_marked_settings_gear_32": {
+   "canvas": {
+    "h": 32,
+    "w": 32
+   },
+   "category": "buttons",
+   "family": "ibtn_marked_settings_gear_32",
+   "files": [
+    {
+     "file": "ibtn_marked_settings_gear_32_disabled.png",
+     "state": "disabled"
+    },
+    {
+     "file": "ibtn_marked_settings_gear_32_focus.png",
+     "state": "focus"
+    },
+    {
+     "file": "ibtn_marked_settings_gear_32_hover.png",
+     "state": "hover"
+    },
+    {
+     "file": "ibtn_marked_settings_gear_32_idle.png",
+     "state": "idle"
+    },
+    {
+     "file": "ibtn_marked_settings_gear_32_pressed.png",
+     "state": "pressed"
+    },
+    {
+     "file": "ibtn_marked_settings_gear_32_selected.png",
+     "state": "selected"
+    },
+    {
+     "file": "ibtn_marked_settings_gear_32_selected_focus.png",
+     "state": "selected_focus"
+    }
+   ],
+   "group": "ibtn",
+   "id": "ibtn_marked_settings_gear_32",
+   "repeat": "fixed",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle",
+    "pressed",
+    "selected",
+    "selected_focus"
+   ],
+   "tags": [],
+   "usage": {
+    "baked": true,
+    "native_height": 32,
+    "origin": [
+     6,
+     6
+    ],
+    "pressed_origin": [
+     6,
+     7
+    ],
+    "rule": "square32 body + glyph_{item}_19_{HOST_GLYPH[state]} at (6,6), pressed (6,7)"
+   }
+  },
+  "icon_chest_closed_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_chest_closed_24",
+   "files": [
+    {
+     "file": "icon_chest_closed_24.png"
+    },
+    {
+     "file": "icon_chest_closed_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_chest_closed_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "chest_closed",
+   "tags": [
+    "24",
+    "chest_closed",
+    "disabled",
+    "icon"
+   ]
+  },
+  "icon_coin_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_coin_24",
+   "files": [
+    {
+     "file": "icon_coin_24.png"
+    },
+    {
+     "file": "icon_coin_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_coin_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "coin",
+   "tags": [
+    "24",
+    "coin",
+    "disabled",
+    "icon"
+   ]
+  },
+  "icon_exit_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_exit_24",
+   "files": [
+    {
+     "file": "icon_exit_24.png"
+    },
+    {
+     "file": "icon_exit_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_exit_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "exit",
+   "tags": [
+    "24",
+    "disabled",
+    "exit",
+    "icon"
+   ]
+  },
+  "icon_flame_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_flame_24",
+   "files": [
+    {
+     "file": "icon_flame_24.png"
+    },
+    {
+     "file": "icon_flame_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_flame_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "flame",
+   "tags": [
+    "24",
+    "disabled",
+    "flame",
+    "icon"
+   ]
+  },
+  "icon_gem_red_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_gem_red_24",
+   "files": [
+    {
+     "file": "icon_gem_red_24.png"
+    },
+    {
+     "file": "icon_gem_red_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_gem_red_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "gem_red",
+   "tags": [
+    "24",
+    "disabled",
+    "gem_red",
+    "icon"
+   ]
+  },
+  "icon_heart_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_heart_24",
+   "files": [
+    {
+     "file": "icon_heart_24.png"
+    },
+    {
+     "file": "icon_heart_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_heart_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "heart",
+   "tags": [
+    "24",
+    "disabled",
+    "heart",
+    "icon"
+   ]
+  },
+  "icon_info_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_info_24",
+   "files": [
+    {
+     "file": "icon_info_24.png"
+    },
+    {
+     "file": "icon_info_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_info_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "info",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "info"
+   ]
+  },
+  "icon_key_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_key_24",
+   "files": [
+    {
+     "file": "icon_key_24.png"
+    },
+    {
+     "file": "icon_key_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_key_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "key",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "key"
+   ]
+  },
+  "icon_left_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_left_24",
+   "files": [
+    {
+     "file": "icon_left_24.png"
+    },
+    {
+     "file": "icon_left_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_left_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "left",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "left"
+   ]
+  },
+  "icon_map_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_map_24",
+   "files": [
+    {
+     "file": "icon_map_24.png"
+    },
+    {
+     "file": "icon_map_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_map_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "map",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "map"
+   ]
+  },
+  "icon_menu_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_menu_24",
+   "files": [
+    {
+     "file": "icon_menu_24.png"
+    },
+    {
+     "file": "icon_menu_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_menu_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "menu",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "menu"
+   ]
+  },
+  "icon_pause_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_pause_24",
+   "files": [
+    {
+     "file": "icon_pause_24.png"
+    },
+    {
+     "file": "icon_pause_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_pause_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "pause",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "pause"
+   ]
+  },
+  "icon_play_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_play_24",
+   "files": [
+    {
+     "file": "icon_play_24.png"
+    },
+    {
+     "file": "icon_play_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_play_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "play",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "play"
+   ]
+  },
+  "icon_potion_blue_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_potion_blue_24",
+   "files": [
+    {
+     "file": "icon_potion_blue_24.png"
+    },
+    {
+     "file": "icon_potion_blue_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_potion_blue_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "potion_blue",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "potion_blue"
+   ]
+  },
+  "icon_potion_red_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_potion_red_24",
+   "files": [
+    {
+     "file": "icon_potion_red_24.png"
+    },
+    {
+     "file": "icon_potion_red_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_potion_red_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "potion_red",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "potion_red"
+   ]
+  },
+  "icon_right_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_right_24",
+   "files": [
+    {
+     "file": "icon_right_24.png"
+    },
+    {
+     "file": "icon_right_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_right_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "right",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "right"
+   ]
+  },
+  "icon_shield_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_shield_24",
+   "files": [
+    {
+     "file": "icon_shield_24.png"
+    },
+    {
+     "file": "icon_shield_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_shield_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "shield",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "shield"
+   ]
+  },
+  "icon_skull_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_skull_24",
+   "files": [
+    {
+     "file": "icon_skull_24.png"
+    },
+    {
+     "file": "icon_skull_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_skull_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "skull",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "skull"
+   ]
+  },
+  "icon_soul_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_soul_24",
+   "files": [
+    {
+     "file": "icon_soul_24.png"
+    },
+    {
+     "file": "icon_soul_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_soul_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "soul",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "soul"
+   ]
+  },
+  "icon_sound_off_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_sound_off_24",
+   "files": [
+    {
+     "file": "icon_sound_off_24.png"
+    },
+    {
+     "file": "icon_sound_off_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_sound_off_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "sound_off",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "sound_off"
+   ]
+  },
+  "icon_sound_on_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_sound_on_24",
+   "files": [
+    {
+     "file": "icon_sound_on_24.png"
+    },
+    {
+     "file": "icon_sound_on_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_sound_on_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "sound_on",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "sound_on"
+   ]
+  },
+  "icon_star_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_star_24",
+   "files": [
+    {
+     "file": "icon_star_24.png"
+    },
+    {
+     "file": "icon_star_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_star_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "star",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "star"
+   ]
+  },
+  "icon_sword_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_sword_24",
+   "files": [
+    {
+     "file": "icon_sword_24.png"
+    },
+    {
+     "file": "icon_sword_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_sword_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "sword",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "sword"
+   ]
+  },
+  "icon_trophy_24": {
+   "canvas": {
+    "h": 24,
+    "w": 24
+   },
+   "category": "icons",
+   "family": "icon_trophy_24",
+   "files": [
+    {
+     "file": "icon_trophy_24.png"
+    },
+    {
+     "file": "icon_trophy_24_disabled.png",
+     "state": "disabled"
+    }
+   ],
+   "group": "icon",
+   "id": "icon_trophy_24",
+   "repeat": "fixed",
+   "states": [
+    "disabled"
+   ],
+   "subject": "trophy",
+   "tags": [
+    "24",
+    "disabled",
+    "icon",
+    "trophy"
+   ]
+  },
+  "panel_card_plain_regular_9s": {
+   "canvas": {
+    "h": 30,
+    "w": 30
+   },
+   "category": "panels",
+   "family": "panel_card_plain_regular_9s",
+   "files": [
+    {
+     "file": "panel_card_plain_regular_9s_disabled.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "96x64",
+      "128x96",
+      "192x128",
+      "256x160",
+      "320x192",
+      "480x270"
+     ],
+     "state": "disabled"
+    },
+    {
+     "file": "panel_card_plain_regular_9s_focus.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "96x64",
+      "128x96",
+      "192x128",
+      "256x160",
+      "320x192",
+      "480x270"
+     ],
+     "state": "focus"
+    },
+    {
+     "file": "panel_card_plain_regular_9s_hover.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "96x64",
+      "128x96",
+      "192x128",
+      "256x160",
+      "320x192",
+      "480x270"
+     ],
+     "state": "hover"
+    },
+    {
+     "file": "panel_card_plain_regular_9s_idle.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "96x64",
+      "128x96",
+      "192x128",
+      "256x160",
+      "320x192",
+      "480x270"
+     ],
+     "state": "idle"
+    },
+    {
+     "file": "panel_card_plain_regular_9s_selected.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "96x64",
+      "128x96",
+      "192x128",
+      "256x160",
+      "320x192",
+      "480x270"
+     ],
+     "state": "selected"
+    },
+    {
+     "file": "panel_card_plain_regular_9s_selected_focus.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "96x64",
+      "128x96",
+      "192x128",
+      "256x160",
+      "320x192",
+      "480x270"
+     ],
+     "state": "selected_focus"
+    }
+   ],
+   "group": "panel",
+   "id": "panel_card_plain_regular_9s",
+   "nine_slice": {
+    "b": 13,
+    "l": 13,
+    "r": 13,
+    "repeat": "stretch",
+    "t": 13
+   },
+   "repeat": "stretch",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle",
+    "selected",
+    "selected_focus"
+   ],
+   "tags": [
+    "panel_card_plain_regular"
+   ],
+   "usage": {
+    "focus": "1 px brim-2 ring flush on the outline (stone_md rule)",
+    "focus_margin": 1,
+    "min_size": [
+     28,
+     28
+    ],
+    "selection": "1A \u00b7 gold rule"
+   }
+  },
+  "pip_off": {
+   "canvas": {
+    "h": 10,
+    "w": 10
+   },
+   "category": "controls",
+   "family": "pip_off",
+   "files": [
+    {
+     "file": "pip_off.png"
+    }
+   ],
+   "group": "pip",
+   "id": "pip_off",
+   "repeat": "fixed",
+   "tags": [],
+   "usage": {
+    "native_height": 10
+   }
+  },
+  "pip_on": {
+   "canvas": {
+    "h": 10,
+    "w": 10
+   },
+   "category": "controls",
+   "family": "pip_on",
+   "files": [
+    {
+     "file": "pip_on.png"
+    }
+   ],
+   "group": "pip",
+   "id": "pip_on",
+   "repeat": "fixed",
+   "tags": [],
+   "usage": {
+    "native_height": 10
+   }
+  },
+  "slider_fill": {
+   "canvas": {
+    "h": 10,
+    "w": 32
+   },
+   "category": "controls",
+   "family": "slider_fill",
+   "files": [
+    {
+     "file": "slider_fill.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "64x10",
+      "96x10",
+      "128x10",
+      "192x10"
+     ]
+    }
+   ],
+   "group": "slider",
+   "id": "slider_fill",
+   "nine_slice": {
+    "b": 0,
+    "l": 3,
+    "r": 1,
+    "repeat": "stretch-x",
+    "t": 0
+   },
+   "repeat": "stretch-x",
+   "tags": [],
+   "usage": {
+    "attach": "inside slider_track at (+1, +1); width = round((track_w - 2) * value), at least 4 when value > 0 (none at 0)",
+    "min_draw_width": 4,
+    "native_height": 10,
+    "resize_axes": [
+     "x"
+    ]
+   }
+  },
+  "slider_knob": {
+   "canvas": {
+    "h": 26,
+    "w": 22
+   },
+   "category": "controls",
+   "family": "slider_knob",
+   "files": [
+    {
+     "file": "slider_knob_disabled.png",
+     "state": "disabled"
+    },
+    {
+     "file": "slider_knob_focus.png",
+     "state": "focus"
+    },
+    {
+     "file": "slider_knob_hover.png",
+     "state": "hover"
+    },
+    {
+     "file": "slider_knob_idle.png",
+     "state": "idle"
+    },
+    {
+     "file": "slider_knob_pressed.png",
+     "state": "pressed"
+    }
+   ],
+   "group": "slider",
+   "id": "slider_knob",
+   "repeat": "fixed",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle",
+    "pressed"
+   ],
+   "tags": [],
+   "usage": {
+    "attach": "x = track_x + 1 + fill_w - 11 (the knob's centre column on the fill's end), y = track_y - 7; at value 0, x = track_x - 10",
+    "native_height": 26,
+    "states_note": "idle, hover, pressed, focus, disabled"
+   }
+  },
+  "slider_track": {
+   "canvas": {
+    "h": 13,
+    "w": 32
+   },
+   "category": "controls",
+   "family": "slider_track",
+   "files": [
+    {
+     "file": "slider_track.png",
+     "pieces": [
+      "l",
+      "c",
+      "r"
+     ],
+     "presized": [
+      "64x13",
+      "96x13",
+      "128x13",
+      "192x13"
+     ]
+    }
+   ],
+   "group": "slider",
+   "id": "slider_track",
+   "nine_slice": {
+    "b": 0,
+    "l": 4,
+    "r": 4,
+    "repeat": "stretch-x",
+    "t": 0
+   },
+   "repeat": "stretch-x",
+   "tags": [],
+   "usage": {
+    "attach": "slider_fill inside at (+1, +1), height 10; the knob centred on the fill's right end",
+    "hit_area": "the track and the knob are one hit area: a press anywhere on the track jumps the knob there and starts a drag; hover on the track shows the knob's hover",
+    "native_height": 13,
+    "resize_axes": [
+     "x"
+    ]
+   }
+  },
+  "slot_item_32": {
+   "canvas": {
+    "h": 32,
+    "w": 32
+   },
+   "category": "controls",
+   "family": "slot_item_32",
+   "files": [
+    {
+     "file": "slot_item_32_disabled.png",
+     "state": "disabled"
+    },
+    {
+     "file": "slot_item_32_drag_over.png",
+     "state": "drag_over"
+    },
+    {
+     "file": "slot_item_32_empty.png",
+     "state": "empty"
+    },
+    {
+     "file": "slot_item_32_focus.png",
+     "state": "focus"
+    },
+    {
+     "file": "slot_item_32_hover.png",
+     "state": "hover"
+    },
+    {
+     "file": "slot_item_32_idle.png",
+     "state": "idle"
+    },
+    {
+     "file": "slot_item_32_locked.png",
+     "state": "locked"
+    },
+    {
+     "file": "slot_item_32_selected.png",
+     "state": "selected"
+    },
+    {
+     "file": "slot_item_32_selected_focus.png",
+     "state": "selected_focus"
+    }
+   ],
+   "group": "slot",
+   "id": "slot_item_32",
+   "repeat": "fixed",
+   "states": [
+    "disabled",
+    "drag_over",
+    "empty",
+    "focus",
+    "hover",
+    "idle",
+    "locked",
+    "selected",
+    "selected_focus"
+   ],
+   "tags": [],
+   "usage": {
+    "drag_over": "drag_over: the slot under an item being dragged (a drop target); show it on the slot under the pointer while a drag is active",
+    "hole": {
+     "draw_order": [
+      "slot",
+      "icon (24x24 at 4,4)",
+      "rarity ring (32x32 at 0,0)",
+      "its hole is the 24x24 at 4,4)",
+      "up to 2 digits; larger amounts go beside the slot)"
+     ],
+     "floor": [
+      4,
+      4,
+      25,
+      25
+     ],
+     "icon": [
+      4,
+      4,
+      24,
+      24
+     ],
+     "rim": {
+      "bottom": 3,
+      "left": 4,
+      "right": 3,
+      "top": 4
+     }
+    },
+    "pressed": "no pressed file: show selected while the pointer is down"
+   }
+  },
+  "tip_box_9s": {
+   "canvas": {
+    "h": 12,
+    "w": 12
+   },
+   "category": "panels",
+   "family": "tip_box_9s",
+   "files": [
+    {
+     "file": "tip_box_9s.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "96x64",
+      "128x96",
+      "192x128",
+      "256x160",
+      "320x192",
+      "480x270"
+     ]
+    }
+   ],
+   "group": "tip",
+   "id": "tip_box_9s",
+   "nine_slice": {
+    "b": 4,
+    "l": 4,
+    "r": 4,
+    "repeat": "stretch",
+    "t": 4
+   },
+   "repeat": "stretch",
+   "tags": [
+    "tip_box"
+   ],
+   "usage": {
+    "min_size": [
+     9,
+     9
+    ],
+    "sizing": "pen at x + 6; width = 6 + the widest line's ink right edge measured from the pen (ink_left + ink_width from measureText) + 6; height = 8 + 11 per line + 4, whatever the role: a ui_bold title line takes the same 11 px step as a caption line; first cap top at y + 6, then every 11 px"
+   }
+  },
+  "tip_tail_up": {
+   "canvas": {
+    "h": 9,
+    "w": 13
+   },
+   "category": "panels",
+   "family": "tip_tail_up",
+   "files": [
+    {
+     "file": "tip_tail_up.png"
+    }
+   ],
+   "group": "tip",
+   "id": "tip_tail_up",
+   "repeat": "fixed",
+   "tags": [],
+   "usage": {
+    "attach": {
+     "dx": -6,
+     "dy": -6,
+     "edge": "top",
+     "rule": "x = tail centre column + dx, y = box top + dy; the centre must be at least 9 px from each box corner"
+    },
+    "attach_note": "'draw above the box' in attach.rule means draw order: draw the tail after (on top of) the box; the position comes from dx, dy",
+    "pairs_with": "tip_box_9s"
+   }
+  },
+  "toggle_off": {
+   "canvas": {
+    "h": 30,
+    "w": 50
+   },
+   "category": "controls",
+   "family": "toggle_off",
+   "files": [
+    {
+     "file": "toggle_off_disabled.png",
+     "state": "disabled"
+    },
+    {
+     "file": "toggle_off_focus.png",
+     "state": "focus"
+    },
+    {
+     "file": "toggle_off_hover.png",
+     "state": "hover"
+    },
+    {
+     "file": "toggle_off_idle.png",
+     "state": "idle"
+    },
+    {
+     "file": "toggle_off_pressed.png",
+     "state": "pressed"
+    }
+   ],
+   "group": "toggle",
+   "id": "toggle_off",
+   "repeat": "fixed",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle",
+    "pressed"
+   ],
+   "tags": [],
+   "usage": {
+    "hit_area": "the toggle and its row label are one hit area (the whole settings row)",
+    "label": "the label sits to the right: ui ink-1, pen x + 62, cap top y + 11",
+    "native_height": 30
+   }
+  },
+  "toggle_on": {
+   "canvas": {
+    "h": 30,
+    "w": 50
+   },
+   "category": "controls",
+   "family": "toggle_on",
+   "files": [
+    {
+     "file": "toggle_on_disabled.png",
+     "state": "disabled"
+    },
+    {
+     "file": "toggle_on_focus.png",
+     "state": "focus"
+    },
+    {
+     "file": "toggle_on_hover.png",
+     "state": "hover"
+    },
+    {
+     "file": "toggle_on_idle.png",
+     "state": "idle"
+    },
+    {
+     "file": "toggle_on_pressed.png",
+     "state": "pressed"
+    }
+   ],
+   "group": "toggle",
+   "id": "toggle_on",
+   "repeat": "fixed",
+   "states": [
+    "disabled",
+    "focus",
+    "hover",
+    "idle",
+    "pressed"
+   ],
+   "tags": [],
+   "usage": {
+    "hit_area": "the toggle and its row label are one hit area (the whole settings row)",
+    "label": "the label sits to the right: ui ink-1, pen x + 62, cap top y + 11",
+    "native_height": 30
+   }
+  },
+  "well": {
+   "canvas": {
+    "h": 16,
+    "w": 16
+   },
+   "category": "panels",
+   "family": "well",
+   "files": [
+    {
+     "file": "well.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "96x64",
+      "128x96",
+      "192x128",
+      "256x160",
+      "320x192",
+      "480x270"
+     ]
+    }
+   ],
+   "group": "well",
+   "id": "well",
+   "nine_slice": {
+    "b": 3,
+    "l": 3,
+    "r": 3,
+    "repeat": "stretch",
+    "t": 3
+   },
+   "repeat": "stretch",
+   "tags": [],
+   "usage": {
+    "native_height": 16,
+    "resize_axes": [
+     "x",
+     "y"
+    ]
+   }
+  },
+  "window_clean_titlebar_9s": {
+   "canvas": {
+    "h": 258,
+    "w": 352
+   },
+   "category": "panels",
+   "family": "window_clean_titlebar_9s",
+   "files": [
+    {
+     "file": "window_clean_titlebar_9s.png",
+     "pieces": [
+      "tl",
+      "t",
+      "tr",
+      "l",
+      "c",
+      "r",
+      "bl",
+      "b",
+      "br"
+     ],
+     "presized": [
+      "480x270"
+     ]
+    }
+   ],
+   "group": "window",
+   "id": "window_clean_titlebar_9s",
+   "nine_slice": {
+    "b": 81,
+    "l": 103,
+    "r": 57,
+    "repeat": "repeat",
+    "t": 81,
+    "tile_origin": "top_left"
+   },
+   "repeat": "repeat",
+   "tags": [
+    "window_clean_titlebar"
+   ],
+   "usage": {
+    "avoid_heights": [
+     204,
+     205,
+     206,
+     207,
+     208,
+     209,
+     210,
+     300,
+     301,
+     302,
+     303,
+     304,
+     305,
+     306,
+     396,
+     397,
+     398,
+     399,
+     400,
+     401,
+     402,
+     492,
+     493,
+     494,
+     495,
+     496,
+     497,
+     498
+    ],
+    "content_padding": "keep content 12-16 px inside the face; the bottom corner sigils reach about 18 px into the face's bottom corners",
+    "face": {
+     "insets": {
+      "b": 43,
+      "l": 38,
+      "r": 38,
+      "t": 49
+     },
+     "note": "the content area at any size: x from 38 to w - 38, y from 49 (under the gold rule, rows 45-47) to h - 43. The 9-slice insets are larger than the face because the corner sigils sit inside them; the face margins are symmetric"
+    },
+    "min_size": [
+     160,
+     162
+    ],
+    "practical_min_size": [
+     200,
+     210
+    ],
+    "title": {
+     "band_rows": [
+      21,
+      40
+     ],
+     "recipe": "no plate (the default look): the title in UPPERCASE, font jersey_10_infernal_40 in brim-2 with a 1 px ember-1 copy one row lower behind it, ink centred on the window width, cap top at y + 59 (11 clear rows under the orange header rule, rows 45-47); start the content 11 clear rows under the title's lowest ink."
+    }
+   }
+  }
+ },
+ "categories": {
+  "buttons": {
+   "families": 4,
+   "sprites": 28
+  },
+  "controls": {
+   "families": 14,
+   "sprites": 40
+  },
+  "icons": {
+   "families": 24,
+   "sprites": 48
+  },
+  "panels": {
+   "families": 6,
+   "sprites": 11
+  }
+ },
+ "conventions": {
+  "coordinates": "top-left of the 1x canvas, integer pixels; hotspots, anchors and offsets are 1x",
+  "naming": "{category}_{variant}[_{size}][_{state}][_{frameNN}].png",
+  "nine_slice_order": "left, top, right, bottom (keys l, t, r, b), in 1x pixels; multiply by the scale",
+  "states": "idle|hover|pressed|disabled|focus|selected|selected_focus|locked (cursors: idle|click)",
+  "text": "no baked text except corner ribbons and badges; your game draws labels",
+  "text_anchor": "'y + N' in a usage note is the cap top of the text, from the sprite's top-left",
+  "text_roles": {
+   "caption": "pixel_operator_8",
+   "caption_bold": "pixel_operator_8_bold",
+   "display": "jersey_10_infernal_20",
+   "title": "jersey_10_infernal_40",
+   "ui": "pixel_operator_16",
+   "ui_bold": "pixel_operator_16_bold"
+  }
+ },
+ "counts": {
+  "categories": 4,
+  "families": 48,
+  "full_animations": 3,
+  "full_categories": 12,
+  "full_cursors": 12,
+  "full_families": 502,
+  "full_icon_subjects": 122,
+  "full_screens": 7,
+  "full_sprites": 1099,
+  "icon_families": 24,
+  "icons": 48,
+  "nine_slice_families": 12,
+  "nine_slice_files": 29,
+  "piece_sets": 29,
+  "presized_files": 115,
+  "screens": 0,
+  "sprites": 127
+ },
+ "filtering": "nearest",
+ "fonts": [
+  {
+   "file": "fonts/jersey-10-infernal/Jersey10Infernal-Regular.ttf",
+   "licence": "SIL OFL 1.1 (fonts/jersey-10-infernal/OFL.txt)",
+   "px": [
+    20,
+    40
+   ],
+   "role": "display: titles, headings, hero numbers; one weight, never synthesised bold"
+  },
+  {
+   "file": "fonts/pixel-operator/PixelOperator8-Regular.ttf",
+   "licence": "CC0 1.0 (fonts/pixel-operator/LICENSE.txt)",
+   "px": [
+    8,
+    16,
+    24,
+    32,
+    40
+   ],
+   "role": "UI and data"
+  },
+  {
+   "file": "fonts/pixel-operator/PixelOperatorMono8-Regular.ttf",
+   "licence": "CC0 1.0 (fonts/pixel-operator/LICENSE.txt)",
+   "px": [
+    8,
+    16,
+    24,
+    32,
+    40
+   ],
+   "role": "tabular figures (timers, scores, columns)"
+  },
+  {
+   "file": "fonts/pixel-operator/PixelOperator8-Bold.ttf",
+   "licence": "CC0 1.0 (fonts/pixel-operator/LICENSE.txt)",
+   "px": [
+    8,
+    16,
+    24,
+    32,
+    40
+   ],
+   "role": "UI and data (bold: titles, emphasis)"
+  },
+  {
+   "file": "fonts/pixel-operator/PixelOperatorMono8-Bold.ttf",
+   "licence": "CC0 1.0 (fonts/pixel-operator/LICENSE.txt)",
+   "px": [
+    8,
+    16,
+    24,
+    32,
+    40
+   ],
+   "role": "tabular figures (timers, scores, columns)"
+  },
+  {
+   "file": "fonts/pixel-operator/PixelOperator16-Regular.ttf",
+   "licence": "CC0 1.0 (fonts/pixel-operator/LICENSE.txt)",
+   "px": [
+    16,
+    32
+   ],
+   "role": "UI and data"
+  },
+  {
+   "file": "fonts/pixel-operator/PixelOperatorMono16-Regular.ttf",
+   "licence": "CC0 1.0 (fonts/pixel-operator/LICENSE.txt)",
+   "px": [
+    16,
+    32
+   ],
+   "role": "tabular figures (timers, scores, columns)"
+  },
+  {
+   "file": "fonts/pixel-operator/PixelOperator16-Bold.ttf",
+   "licence": "CC0 1.0 (fonts/pixel-operator/LICENSE.txt)",
+   "px": [
+    16,
+    32
+   ],
+   "role": "UI and data (bold: titles, emphasis)"
+  },
+  {
+   "file": "fonts/pixel-operator/PixelOperatorMono16-Bold.ttf",
+   "licence": "CC0 1.0 (fonts/pixel-operator/LICENSE.txt)",
+   "px": [
+    16,
+    32
+   ],
+   "role": "tabular figures (timers, scores, columns)"
+  },
+  {
+   "file": "fonts/bitmap/jersey_10_infernal_20.png|json",
+   "licence": "same as its source font",
+   "px": [
+    20
+   ],
+   "role": "glyph atlas: display: titles, headings, hero numbers (1 font px = 1 screen px)"
+  },
+  {
+   "file": "fonts/bitmap/jersey_10_infernal_40.png|json",
+   "licence": "same as its source font",
+   "px": [
+    40
+   ],
+   "role": "glyph atlas: display at exactly 2x: big titles, result banners"
+  },
+  {
+   "file": "fonts/bitmap/pixel_operator_8.png|json",
+   "licence": "same as its source font",
+   "px": [
+    8
+   ],
+   "role": "glyph atlas: captions, small labels"
+  },
+  {
+   "file": "fonts/bitmap/pixel_operator_8_bold.png|json",
+   "licence": "same as its source font",
+   "px": [
+    8
+   ],
+   "role": "glyph atlas: small emphasised labels, badges"
+  },
+  {
+   "file": "fonts/bitmap/pixel_operator_16.png|json",
+   "licence": "same as its source font",
+   "px": [
+    16
+   ],
+   "role": "glyph atlas: UI body: buttons, tabs, list rows, tooltips, data"
+  },
+  {
+   "file": "fonts/bitmap/pixel_operator_16_bold.png|json",
+   "licence": "same as its source font",
+   "px": [
+    16
+   ],
+   "role": "glyph atlas: window titles, emphasised labels"
+  },
+  {
+   "file": "fonts/bitmap/pixel_operator_16_bold_32.png|json",
+   "licence": "same as its source font",
+   "px": [
+    32
+   ],
+   "role": "glyph atlas: big labels at exactly 2x"
+  }
+ ],
+ "full_pack": {
+  "adds": [
+   "481 icons (122 subjects at 24 and 48 px, the 48s with more detail), most with a disabled version",
+   "every button style: brimstone, hero with end caps, danger, ghost, text, round and square icon buttons, steppers, tabs",
+   "more windows and panels: ready-made settings, pause and modal windows, a dialog window, thin and inset panels, list rows",
+   "radios, text fields, search and multiline fields, dropdowns, scroll bars, key-binding cells",
+   "boss, XP and thin bars, sigil bar caps, more pip colours, health and mana orbs, radial meters, a cooldown overlay",
+   "the hotbar slot, rarity frames and equipment silhouettes",
+   "dialogue boxes, name plates, portrait frames, popups, toasts, header and footer strips, HUD frames",
+   "banners, ribbons, badges, sigil corners, flourishes and outlined numbers",
+   "a deckbuilder module: card frames by rarity and type, cost gems, energy orbs, enemy intents, run-map nodes",
+   "12 cursors with hotspots and 3 animations",
+   "7 example screens with layout files, spritesheets with Aseprite-style JSON, contact sheets",
+   "3x and 4x exports (1440p and 4K)",
+   "the full LLM_GUIDE.md with every inset table and screen recipes, plus catalog.json"
+  ],
+  "families": 502,
+  "name": "Infernal UI",
+  "price": "$4.99",
+  "scales": [
+   "1x",
+   "2x",
+   "3x",
+   "4x"
+  ],
+  "sprites": 1099
+ },
+ "grid": {
+  "gap_px": 4,
+  "grid_px": 8,
+  "hairline_px": 1,
+  "pad_px": 4
+ },
+ "layout": {
+  "pieces": "{scale}/{category}/pieces/{stem}/{stem}_{piece}.png",
+  "presized": "{scale}/{category}/presized/{stem}_{w}x{h}.png",
+  "previews": "previews/lite_contents.png (every Lite sprite, 2x); previews/full_pack_teaser.png (a picture of what the full pack adds)",
+  "sprites": "{scale}/{category}/{file}"
+ },
+ "native_scale": 1,
+ "pack": "Infernal UI",
+ "palette": [
+  {
+   "hex": "#080809",
+   "role": "screen ground",
+   "token": "bg-0"
+  },
+  {
+   "hex": "#0b0b0c",
+   "role": "half step bg-0/bg-1: first row of a recess's drop shadow",
+   "token": "bg-05"
+  },
+  {
+   "hex": "#101011",
+   "role": "card / panel fill",
+   "token": "bg-1"
+  },
+  {
+   "hex": "#141415",
+   "role": "half step bg-1/bg-2: subtle bottom halves on neutral buttons",
+   "token": "bg-15"
+  },
+  {
+   "hex": "#181819",
+   "role": "raised fill for buttons, title bar",
+   "token": "bg-2"
+  },
+  {
+   "hex": "#1c1c1d",
+   "role": "half step bg-2/bg-3: second row of a recess's drop, small-button hover",
+   "token": "bg-25"
+  },
+  {
+   "hex": "#212122",
+   "role": "pressed fill, inset wells, track interiors",
+   "token": "bg-3"
+  },
+  {
+   "hex": "#262627",
+   "role": "half step bg-3/bg-4: lit lip inside a recess",
+   "token": "bg-35"
+  },
+  {
+   "hex": "#2c2c2e",
+   "role": "hover fill, lifted surfaces",
+   "token": "bg-4"
+  },
+  {
+   "hex": "#0c0c0d",
+   "role": "deepest line: outline around frames, pressed border",
+   "token": "obsidian-0"
+  },
+  {
+   "hex": "#161617",
+   "role": "dark frame line, disabled border, toggle-off knob rim",
+   "token": "obsidian-1"
+  },
+  {
+   "hex": "#19191a",
+   "role": "stone band shadow",
+   "token": "frame-1"
+  },
+  {
+   "hex": "#272728",
+   "role": "stone band body",
+   "token": "frame-2"
+  },
+  {
+   "hex": "#323234",
+   "role": "stone mottle: half step frame-2/frame-3 for slab texture and knob rings",
+   "token": "frame-25"
+  },
+  {
+   "hex": "#3f3f41",
+   "role": "stone bevel; disabled and pressed frame line",
+   "token": "frame-3"
+  },
+  {
+   "hex": "#606062",
+   "role": "stone lit edge and idle line of buttons, fields, toggles: the painted bevel #4f4037 lifted to 3:1 on the panel (bg-1)",
+   "token": "frame-4"
+  },
+  {
+   "hex": "#6a6a6e",
+   "role": "stone top highlight: the lit top bevel of stone buttons, as sampled from the target RESET",
+   "token": "frame-5"
+  },
+  {
+   "hex": "#3a2520",
+   "role": "heated stone shade: stone pixels beside lava cracks, hero-button rim shade",
+   "token": "heat-0"
+  },
+  {
+   "hex": "#6e4630",
+   "role": "heated stone lit: hero-button rim, the glow side of knob and toggle rims",
+   "token": "heat-1"
+  },
+  {
+   "hex": "#4c1806",
+   "role": "deep ember: bottom half of primary buttons, pressed primary fill",
+   "token": "ember-00"
+  },
+  {
+   "hex": "#662207",
+   "role": "ember shade: primary pressed border, bar fill shadow",
+   "token": "ember-0"
+  },
+  {
+   "hex": "#852e09",
+   "role": "half step ember-0/ember-1: hover on primary, lava seam shade",
+   "token": "ember-05"
+  },
+  {
+   "hex": "#a93f0a",
+   "role": "primary button fill, lava seam body",
+   "token": "ember-1"
+  },
+  {
+   "hex": "#d75b0e",
+   "role": "accent: lava seams, bar fill, toggle-on knob, primary border",
+   "token": "ember-2"
+  },
+  {
+   "hex": "#ec8a14",
+   "role": "ember highlight line on fills and knobs",
+   "token": "ember-3"
+  },
+  {
+   "hex": "#f8a821",
+   "role": "hottest ember spark pixel",
+   "token": "ember-4"
+  },
+  {
+   "hex": "#ffbe3c",
+   "role": "molten hover: hero-button and knob fill one step above ember-4",
+   "token": "ember-5"
+  },
+  {
+   "hex": "#39260c",
+   "role": "heading drop shadow",
+   "token": "brim-0"
+  },
+  {
+   "hex": "#a16a0e",
+   "role": "brimstone shade: sigil body, hover line on buttons and fields",
+   "token": "brim-1"
+  },
+  {
+   "hex": "#dda016",
+   "role": "heading gold, selected border, focus ring, tab text",
+   "token": "brim-2"
+  },
+  {
+   "hex": "#f8c81a",
+   "role": "heading highlight, title text",
+   "token": "brim-3"
+  },
+  {
+   "hex": "#fde44c",
+   "role": "brimstone sparkle pixel",
+   "token": "brim-4"
+  },
+  {
+   "hex": "#f8f6ef",
+   "role": "brightest text, icon white",
+   "token": "ink-0"
+  },
+  {
+   "hex": "#dbd6cc",
+   "role": "body text, values",
+   "token": "ink-1"
+  },
+  {
+   "hex": "#a39b8f",
+   "role": "caption text",
+   "token": "ink-2"
+  },
+  {
+   "hex": "#6e6e70",
+   "role": "dim text, placeholder, toggle-off knob",
+   "token": "ink-3"
+  },
+  {
+   "hex": "#464648",
+   "role": "disabled text and icons",
+   "token": "ink-4"
+  },
+  {
+   "hex": "#194314",
+   "role": "dark green shade",
+   "token": "green-0"
+  },
+  {
+   "hex": "#397c20",
+   "role": "positive bar body, success fill",
+   "token": "green-1"
+  },
+  {
+   "hex": "#67b031",
+   "role": "money, positive deltas, success",
+   "token": "green-2"
+  },
+  {
+   "hex": "#a4d860",
+   "role": "green highlight",
+   "token": "green-3"
+  },
+  {
+   "hex": "#380518",
+   "role": "deep red: bottom half of danger buttons, pressed danger fill",
+   "token": "red-00"
+  },
+  {
+   "hex": "#4c0720",
+   "role": "dark red shade, danger button fill",
+   "token": "red-0"
+  },
+  {
+   "hex": "#680a2e",
+   "role": "half step red-0/red-1: danger hover",
+   "token": "red-05"
+  },
+  {
+   "hex": "#8c103e",
+   "role": "danger border and fill line; never text (about 2:1 on bg-1)",
+   "token": "red-1"
+  },
+  {
+   "hex": "#cd2569",
+   "role": "loss and damage text, hearts, alerts (crimson-rose, hue 3 vs ember 45)",
+   "token": "red-2"
+  },
+  {
+   "hex": "#f585b0",
+   "role": "red highlight",
+   "token": "red-3"
+  },
+  {
+   "hex": "#102a47",
+   "role": "dark blue shade",
+   "token": "blue-0"
+  },
+  {
+   "hex": "#215b8d",
+   "role": "mana / info mid",
+   "token": "blue-1"
+  },
+  {
+   "hex": "#438fca",
+   "role": "mana bar fill, info",
+   "token": "blue-2"
+  },
+  {
+   "hex": "#8ac6ec",
+   "role": "blue highlight",
+   "token": "blue-3"
+  },
+  {
+   "hex": "#2d1338",
+   "role": "dark purple shade",
+   "token": "purple-0"
+  },
+  {
+   "hex": "#6f358e",
+   "role": "rare / magic",
+   "token": "purple-1"
+  },
+  {
+   "hex": "#ac6cca",
+   "role": "purple highlight",
+   "token": "purple-2"
+  },
+  {
+   "hex": "#8d5a3b",
+   "role": "warning shade",
+   "token": "orange-0"
+  },
+  {
+   "hex": "#f4b68a",
+   "role": "warning (pale peach: lighter and greyer than ember-3 and brim-2); as text always with the warning icon; text on a warning fill is bg-0",
+   "token": "orange-1"
+  },
+  {
+   "hex": "#ffc898",
+   "role": "warning highlight pixel on fills (never text)",
+   "token": "orange-2"
+  },
+  {
+   "hex": "#e6f283",
+   "role": "stars, XP, coin core (lemon: greener than the brimstone title)",
+   "token": "yellow-1"
+  },
+  {
+   "hex": "#3c3633",
+   "role": "locked / iron shade",
+   "token": "grey-0"
+  },
+  {
+   "hex": "#8a827c",
+   "role": "empty pips, iron mid",
+   "token": "grey-1"
+  },
+  {
+   "hex": "#bdb6af",
+   "role": "iron highlight",
+   "token": "grey-2"
+  },
+  {
+   "hex": "#ac1a53",
+   "role": "half step red-1/red-2: danger button hover top fill, one step above red-1",
+   "token": "red-15"
+  },
+  {
+   "hex": "#c0850f",
+   "role": "half step brim-1/brim-2: pressed brimstone lower band",
+   "token": "brim-15"
+  },
+  {
+   "hex": "#eab418",
+   "role": "half step brim-2/brim-3: idle brimstone lower band, a softer split than brim-3/brim-2",
+   "token": "brim-25"
+  },
+  {
+   "hex": "#c8261e",
+   "role": "warm heart red (hue 3, between crimson-rose red-2 at 336 and ember-1 at 20): body of hearts, red potions and red badges on icons; shade is red-0",
+   "token": "red-icon"
+  },
+  {
+   "hex": "#4a0c0a",
+   "role": "warm red, deepest (hue 2): danger button shade edge and pressed lit edge",
+   "token": "redw-00"
+  },
+  {
+   "hex": "#6e1410",
+   "role": "warm red shade (hue 3): danger idle lit edge, pressed lower band, hover shade edge",
+   "token": "redw-0"
+  },
+  {
+   "hex": "#9c1d16",
+   "role": "warm red mid (hue 3): danger idle lower band, hover lit edge, pressed upper band",
+   "token": "redw-05"
+  },
+  {
+   "hex": "#e0392a",
+   "role": "warm red light (hue 5), one step above red-icon: danger hover upper band",
+   "token": "redw-15"
+  },
+  {
+   "hex": "#ffc85a",
+   "role": "icon highlight on ember-3: upper-left rim of ember icon parts, one step above ember-4",
+   "token": "ember-45"
+  },
+  {
+   "hex": "#f05a36",
+   "role": "icon highlight on red-icon (hue 11, shifted warm from the proposed #f06a4a, which read salmon at 1x): upper-left rim of hearts, red potions and red badges",
+   "token": "red-hl"
+  },
+  {
+   "hex": "#295f1a",
+   "role": "icon half shade on green-1, between green-0 and green-1: half-shade and core bands of green icon parts at 48",
+   "token": "green-05"
+  },
+  {
+   "hex": "#18426a",
+   "role": "icon half shade on blue-1, between blue-0 and blue-1: half-shade bands of blue icon parts at 48",
+   "token": "blue-05"
+  },
+  {
+   "hex": "#8e50ad",
+   "role": "",
+   "token": "purple-15"
+  },
+  {
+   "hex": "#4b2262",
+   "role": "icon half shade on purple-1, between purple-0 and purple-1: half-shade bands of purple icon parts at 48",
+   "token": "purple-05"
+  }
+ ],
+ "scales": [
+  "1x",
+  "2x"
+ ],
+ "tier": "lite",
+ "usage": {
+  "checkbox_pressed_fallback": {
+   "category": "controls",
+   "value": {
+    "off": "checkbox_off_idle.png",
+    "on": "checkbox_on_idle.png"
+   }
+  },
+  "page_sizes": {
+   "category": "buttons",
+   "value": {
+    "btn_stone_sm": [
+     [
+      22,
+      22
+     ]
+    ]
+   }
+  },
+  "presets": {
+   "category": "buttons",
+   "value": {
+    "btn_stone_md": [
+     98,
+     130,
+     162,
+     242
+    ],
+    "btn_stone_sm": [
+     48,
+     72,
+     98
+    ]
+   }
+  },
+  "width_rules": {
+   "category": "buttons",
+   "value": {
+    "btn_stone_sm": {
+     "icon_only_width": 22,
+     "min_width": "label ink + 22",
+     "preset_48": "holds labels up to 26 px of bold ink (about 3 letters: OK/NO/YES)"
+    }
+   }
+  }
+ },
+ "version": "1.0",
+ "virtual_screen": [
+  960,
+  540
+ ]
+}

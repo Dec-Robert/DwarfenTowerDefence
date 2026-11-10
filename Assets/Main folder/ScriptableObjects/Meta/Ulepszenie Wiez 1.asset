@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Ulepszenie Wiez 1
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: ulepszenie_wiez_1
-  upgradeName: Ulepszenie Wież I
-  description: "Wybór Specjalizacji: Przebicie pancerza lub przebicie magiczne dla wszystkich wież."
+  upgradeName: "Ulepszenie Wie\u017C I"
+  description: "Wyb\xF3r Specjalizacji: Przebicie pancerza lub przebicie magiczne
+    dla wszystkich wie\u017C."
   icon: {fileID: 0}
   cost: 175
   nodePosition: {x: 3020, y: 3170}
@@ -27,5 +28,5 @@ MonoBehaviour:
   targetBuilding: {fileID: 0}
   hasVariants: 1
   isVariantOption: 0
-  variantA: {fileID: 11400000, guid: 5f7ced480bfee1543a14ba9e7ff25f57, type: 2}
-  variantB: {fileID: 11400000, guid: 5a731a8f201ed0d498a18361e786827b, type: 2}
+  variantA: {fileID: 11400000, guid: 143619e28ae447e4a8e521848d4504fb, type: 2}
+  variantB: {fileID: 11400000, guid: d3d52b6aebfc0474794b8cc08c7999f3, type: 2}

@@ -11,6 +11,7 @@ public class PopulationInfoPanelUI : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Image icon;
     [SerializeField] private TextMeshProUGUI txtFree;
+    [SerializeField] private TextMeshProUGUI txtWorking;
     [SerializeField] private TextMeshProUGUI txtAll;
 
     [Header("Visual Feedback")]
@@ -20,6 +21,49 @@ public class PopulationInfoPanelUI : MonoBehaviour
     private bool isSubscribed;
 
     public Race Race => race;
+    public TextMeshProUGUI TxtFree => txtFree;
+    public TextMeshProUGUI TxtWorking => txtWorking;
+    public TextMeshProUGUI TxtAll => txtAll;
+
+    private void Awake()
+    {
+        AutoBindFields();
+    }
+
+    private void OnValidate()
+    {
+        AutoBindFields();
+    }
+
+    private void AutoBindFields()
+    {
+        if (txtWorking != null && txtAll != null && txtFree != null) return;
+
+        var texts = GetComponentsInChildren<TextMeshProUGUI>(true);
+        foreach (var t in texts)
+        {
+            Transform current = t.transform.parent;
+            while (current != null && current != transform)
+            {
+                if (txtFree == null && current.name.IndexOf("Free", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    txtFree = t;
+                    break;
+                }
+                if (txtWorking == null && current.name.IndexOf("Working", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    txtWorking = t;
+                    break;
+                }
+                if (txtAll == null && current.name.IndexOf("Overall", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    txtAll = t;
+                    break;
+                }
+                current = current.parent;
+            }
+        }
+    }
 
     private void OnEnable()
     {
@@ -74,7 +118,16 @@ public class PopulationInfoPanelUI : MonoBehaviour
             txtFree.color = stats.Idle > 0 ? normalColor : noFreeWorkersColor;
         }
 
+        if (txtWorking != null)
+        {
+            txtWorking.text = stats.Working.ToString();
+            txtWorking.color = normalColor;
+        }
+
         if (txtAll != null)
+        {
             txtAll.text = stats.Total.ToString();
+            txtAll.color = normalColor;
+        }
     }
 }

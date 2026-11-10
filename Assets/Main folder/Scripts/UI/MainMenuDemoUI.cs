@@ -31,6 +31,7 @@ public class MainMenuDemoUI : MonoBehaviour
 
     [Header("Modal Ustawień Ekranu (opcjonalny prefab / obiekt)")]
     [SerializeField] private GameObject settingsModal;
+    [SerializeField] private SettingsPanelUI settingsPanel;
 
     // Struktura karty poradnika
     [Serializable]
@@ -92,61 +93,9 @@ public class MainMenuDemoUI : MonoBehaviour
     public IReadOnlyList<GuideCard> Cards => cards;
     public Button BtnMetaGraph => btnMetaGraph;
     public Button BtnSettings => btnSettings;
-    public GameObject SettingsModal => settingsModal;
+    public SettingsPanelUI SettingsPanel => settingsPanel;
+    public GameObject SettingsModal => settingsPanel != null ? settingsPanel.gameObject : settingsModal;
 
-    [Serializable]
-    public struct ResolutionOption
-    {
-        public int width;
-        public int height;
-        public string label;
-
-        public ResolutionOption(int w, int h, string l)
-        {
-            width = w;
-            height = h;
-            label = l;
-        }
-    }
-
-    [Serializable]
-    public struct WindowModeOption
-    {
-        public FullScreenMode mode;
-        public string label;
-
-        public WindowModeOption(FullScreenMode m, string l)
-        {
-            mode = m;
-            label = l;
-        }
-    }
-
-    private readonly List<ResolutionOption> resolutionOptions = new List<ResolutionOption>()
-    {
-        new ResolutionOption(1280, 720, "1280 x 720 (16:9 HD)"),
-        new ResolutionOption(1366, 768, "1366 x 768 (16:9)"),
-        new ResolutionOption(1600, 900, "1600 x 900 (16:9 HD+)"),
-        new ResolutionOption(1920, 1080, "1920 x 1080 (16:9 Full HD)"),
-        new ResolutionOption(2560, 1440, "2560 x 1440 (16:9 2K QHD)"),
-        new ResolutionOption(3840, 2160, "3840 x 2160 (16:9 4K UHD)")
-    };
-
-    private readonly List<WindowModeOption> windowModeOptions = new List<WindowModeOption>()
-    {
-        new WindowModeOption(FullScreenMode.ExclusiveFullScreen, "Pełny ekran (Exclusive Fullscreen)"),
-        new WindowModeOption(FullScreenMode.FullScreenWindow, "Okno bez ramek (Borderless)"),
-        new WindowModeOption(FullScreenMode.Windowed, "W oknie (Windowed)")
-    };
-
-    private const string PREF_RES_WIDTH = "Settings_Resolution_Width";
-    private const string PREF_RES_HEIGHT = "Settings_Resolution_Height";
-    private const string PREF_WINDOW_MODE = "Settings_Window_Mode";
-
-    private RuntimeDropdownUI ddResolution;
-    private RuntimeDropdownUI ddWindowMode;
-    private RuntimeDropdownUI ddLanguage;
-    private TextMeshProUGUI txtSettingsFeedback;
 
     // Elementy runtime dla modalu
     private TextMeshProUGUI modalCardTitle;
@@ -190,7 +139,6 @@ public class MainMenuDemoUI : MonoBehaviour
         SetupHowToPlayModal();
 
         // Przygotuj modal "Ustawienia Ekranu" generowany na start gry
-        InitializeResolutionList();
         LoadAndApplySavedSettings();
         SetupSettingsModal();
         if (ShaderPrewarmer.Instance != null) ShaderPrewarmer.Instance.StartWarmup();
@@ -200,10 +148,7 @@ public class MainMenuDemoUI : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (settingsModal != null && settingsModal.activeSelf)
-            {
-                CloseSettings();
-            }
+            if (settingsPanel != null && settingsPanel.IsOpen) { CloseSettings(); } else if (settingsModal != null && settingsModal.activeSelf) { CloseSettings(); }
             else if (howToPlayModal != null && howToPlayModal.activeSelf)
             {
                 CloseHowToPlay();
@@ -238,7 +183,7 @@ public class MainMenuDemoUI : MonoBehaviour
 
         if (btnMetaGraph == null)
         {
-            Transform t = container.Find("Pnl_Background/Pnl_Button/Btn_MetaGraph") 
+            Transform t = container.Find("Pnl_Background/Pnl_Button/Btn_MetaProgression") ?? container.Find("Pnl_Button/Btn_MetaProgression") ?? container.Find("Btn_MetaProgression") ?? container.Find("Pnl_Background/Pnl_Button/Btn_MetaGraph") 
                        ?? container.Find("Pnl_Button/Btn_MetaGraph")
                        ?? container.Find("Btn_MetaGraph")
                        ?? container.Find("Pnl_Background/Pnl_Button/Btn_DrzewoRozwoju")
@@ -257,7 +202,7 @@ public class MainMenuDemoUI : MonoBehaviour
 
         if (btnSettings == null)
         {
-            Transform t = container.Find("Pnl_Background/Pnl_Button/Btn_Settings") 
+            Transform t = container.Find("Pnl_Background/Pnl_Button/Btn_Setting") ?? container.Find("Pnl_Button/Btn_Setting") ?? container.Find("Btn_Setting") ?? container.Find("Pnl_Background/Pnl_Button/Btn_Settings") 
                        ?? container.Find("Pnl_Button/Btn_Settings")
                        ?? container.Find("Btn_Settings")
                        ?? container.Find("Pnl_Background/Pnl_Button/Btn_Ustawienia")
@@ -272,6 +217,21 @@ public class MainMenuDemoUI : MonoBehaviour
                 int siblingIndex = (btnMetaGraph != null) ? btnMetaGraph.transform.GetSiblingIndex() + 1 : btnHowToPlay.transform.GetSiblingIndex() + 1;
                 newBtnObj.transform.SetSiblingIndex(siblingIndex);
             }
+        }
+
+                if (settingsPanel == null)
+        {
+            settingsPanel = GetComponentInChildren<SettingsPanelUI>(true) 
+                         ?? FindFirstObjectByType<SettingsPanelUI>(FindObjectsInactive.Include);
+            if (settingsPanel == null && settingsModal != null)
+            {
+                settingsPanel = settingsModal.GetComponent<SettingsPanelUI>();
+            }
+        }
+
+        if (settingsModal == null && settingsPanel != null)
+        {
+            settingsModal = settingsPanel.gameObject;
         }
 
         if (btnExit == null)
@@ -318,23 +278,28 @@ public class MainMenuDemoUI : MonoBehaviour
 
     private void ApplyGeminiUIStandards()
     {
-        // Standardy UI z GEMINI.md: 16 pt dla przycisków / opisów sekcji
-        SetButtonTextAndSize(btnStart, LocalizationManager.Get("UI_BTN_START", "Rozpocznij Demo"), 16f);
-        SetButtonTextAndSize(btnHowToPlay, LocalizationManager.Get("UI_BTN_HOW_TO_PLAY", "Jak Grać"), 16f);
-        SetButtonTextAndSize(btnMetaGraph, LocalizationManager.Get("UI_META_PROGRESSION", "Drzewo Rozwoju"), 16f);
-        SetButtonTextAndSize(btnSettings, LocalizationManager.Get("UI_BTN_OPTIONS", "Ustawienia"), 16f);
-        SetButtonTextAndSize(btnExit, LocalizationManager.Get("UI_BTN_EXIT", "Wyjście"), 16f);
+        // Aktualizacja etykiet lokalizacyjnych z zachowaniem czcionek i ich rozmiarów ze sceny
+        SetButtonText(btnStart, LocalizationManager.Get("UI_BTN_START", "Rozpocznij Demo"));
+        SetButtonText(btnHowToPlay, LocalizationManager.Get("UI_BTN_HOW_TO_PLAY", "Jak Grać"));
+        SetButtonText(btnMetaGraph, LocalizationManager.Get("UI_META_PROGRESSION", "Drzewo Rozwoju"));
+        SetButtonText(btnSettings, LocalizationManager.Get("UI_BTN_OPTIONS", "Ustawienia"));
+        SetButtonText(btnExit, LocalizationManager.Get("UI_BTN_EXIT", "Wyjście"));
     }
 
-    private void SetButtonTextAndSize(Button btn, string newText, float fontSize)
+    private void SetButtonText(Button btn, string newText)
     {
         if (btn == null) return;
         TextMeshProUGUI tmp = btn.GetComponentInChildren<TextMeshProUGUI>();
         if (tmp != null)
         {
             if (!string.IsNullOrEmpty(newText)) tmp.text = newText;
-            tmp.fontSize = fontSize;
+            // Czcionki i ich rozmiary (font / fontSize) pozostają nienaruszone, takie jak w scenie/inspektorze
         }
+    }
+
+    private void SetButtonTextAndSize(Button btn, string newText, float fontSize)
+    {
+        SetButtonText(btn, newText);
     }
 
     public void StartDemoGame()
@@ -725,52 +690,16 @@ public class MainMenuDemoUI : MonoBehaviour
     }
 
     // ==========================================
-    // SEKCJA: USTAWIENIA EKRANU (Menu Grafiki)
+    // SEKCJA: USTAWIENIA (SettingsPanelUI)
     // ==========================================
-
-    private void InitializeResolutionList()
-    {
-        int nativeW = Screen.currentResolution.width;
-        int nativeH = Screen.currentResolution.height;
-
-        bool exists = false;
-        for (int i = 0; i < resolutionOptions.Count; i++)
-        {
-            if (resolutionOptions[i].width == nativeW && resolutionOptions[i].height == nativeH)
-            {
-                exists = true;
-                break;
-            }
-        }
-
-        if (!exists && nativeW > 0 && nativeH > 0)
-        {
-            resolutionOptions.Add(new ResolutionOption(nativeW, nativeH, $"{nativeW} x {nativeH} (Wykryta / Natywna)"));
-            resolutionOptions.Sort((a, b) => (a.width != b.width) ? a.width.CompareTo(b.width) : a.height.CompareTo(b.height));
-        }
-    }
-
-    public void LoadAndApplySavedSettings()
-    {
-        if (PlayerPrefs.HasKey(PREF_RES_WIDTH) && PlayerPrefs.HasKey(PREF_RES_HEIGHT))
-        {
-            int savedW = PlayerPrefs.GetInt(PREF_RES_WIDTH, 1920);
-            int savedH = PlayerPrefs.GetInt(PREF_RES_HEIGHT, 1080);
-            FullScreenMode savedMode = (FullScreenMode)PlayerPrefs.GetInt(PREF_WINDOW_MODE, (int)FullScreenMode.FullScreenWindow);
-
-            Screen.SetResolution(savedW, savedH, savedMode);
-            Debug.Log($"[MainMenuDemoUI] Załadowano zapisane ustawienia ekranu: {savedW}x{savedH}, tryb: {savedMode}");
-        }
-    }
 
     private void SetupSettingsModal()
     {
-        if (settingsModal == null)
+        if (settingsPanel != null)
         {
-            BuildRuntimeSettingsModal();
+            settingsPanel.CloseSettings();
         }
-
-        if (settingsModal != null)
+        else if (settingsModal != null)
         {
             settingsModal.SetActive(false);
         }
@@ -787,334 +716,38 @@ public class MainMenuDemoUI : MonoBehaviour
             CloseMetaGraph();
         }
 
-        if (settingsModal == null)
+        if (settingsPanel != null)
         {
-            BuildRuntimeSettingsModal();
+            settingsPanel.OpenSettings();
         }
-
-        if (settingsModal != null)
+        else if (settingsModal != null)
         {
             settingsModal.SetActive(true);
-            SyncSettingsUIValues();
         }
     }
 
     public void CloseSettings()
     {
-        RuntimeDropdownUI.CloseAllDropdowns();
-        if (settingsModal != null)
+        if (settingsPanel != null)
+        {
+            settingsPanel.CloseSettings();
+        }
+        else if (settingsModal != null)
         {
             settingsModal.SetActive(false);
         }
     }
 
-    private void SyncSettingsUIValues()
-    {
-        if (ddResolution != null)
-        {
-            ddResolution.SetValue(GetCurrentResolutionIndex(), notify: false);
-        }
-        if (ddWindowMode != null)
-        {
-            ddWindowMode.SetValue(GetCurrentWindowModeIndex(), notify: false);
-        }
-        if (ddLanguage != null)
-        {
-            int curLangIdx = LocalizationManager.CurrentLanguage == "en" ? 1 : 0;
-            ddLanguage.SetValue(curLangIdx, notify: false);
-        }
-        if (txtSettingsFeedback != null)
-        {
-            txtSettingsFeedback.text = LocalizationManager.Get("UI_SETTINGS_FEEDBACK_HINT", "Zmiany są natychmiast aplikowane i zapamiętywane w preferencjach gry.");
-            txtSettingsFeedback.color = new Color(0.60f, 0.65f, 0.70f, 1f);
-        }
-    }
-
-    private int GetCurrentResolutionIndex()
-    {
-        int curW = Screen.width;
-        int curH = Screen.height;
-
-        if (PlayerPrefs.HasKey(PREF_RES_WIDTH) && PlayerPrefs.HasKey(PREF_RES_HEIGHT))
-        {
-            curW = PlayerPrefs.GetInt(PREF_RES_WIDTH, curW);
-            curH = PlayerPrefs.GetInt(PREF_RES_HEIGHT, curH);
-        }
-
-        for (int i = 0; i < resolutionOptions.Count; i++)
-        {
-            if (resolutionOptions[i].width == curW && resolutionOptions[i].height == curH)
-            {
-                return i;
-            }
-        }
-        return Mathf.Clamp(resolutionOptions.Count - 1, 0, resolutionOptions.Count - 1);
-    }
-
-    private int GetCurrentWindowModeIndex()
-    {
-        FullScreenMode curMode = Screen.fullScreenMode;
-        if (PlayerPrefs.HasKey(PREF_WINDOW_MODE))
-        {
-            curMode = (FullScreenMode)PlayerPrefs.GetInt(PREF_WINDOW_MODE, (int)curMode);
-        }
-
-        for (int i = 0; i < windowModeOptions.Count; i++)
-        {
-            if (windowModeOptions[i].mode == curMode)
-            {
-                return i;
-            }
-        }
-        return 0;
-    }
-
-    private void OnResolutionSelected(int index)
-    {
-        ApplySettings();
-    }
-
-    private void OnWindowModeSelected(int index)
-    {
-        ApplySettings();
-    }
-
-    private void OnLanguageSelected(int index)
-    {
-        string lang = (index == 1) ? "en" : "pl";
-        LocalizationManager.SetLanguage(lang);
-    }
-
     public void ApplySettings()
     {
-        if (ddResolution == null || ddWindowMode == null) return;
-
-        int resIdx = ddResolution.Value;
-        int modeIdx = ddWindowMode.Value;
-
-        if (resIdx >= 0 && resIdx < resolutionOptions.Count && modeIdx >= 0 && modeIdx < windowModeOptions.Count)
+        if (settingsPanel != null)
         {
-            ResolutionOption res = resolutionOptions[resIdx];
-            WindowModeOption mode = windowModeOptions[modeIdx];
-
-            Screen.SetResolution(res.width, res.height, mode.mode);
-
-            PlayerPrefs.SetInt(PREF_RES_WIDTH, res.width);
-            PlayerPrefs.SetInt(PREF_RES_HEIGHT, res.height);
-            PlayerPrefs.SetInt(PREF_WINDOW_MODE, (int)mode.mode);
-            PlayerPrefs.Save();
-
-            if (txtSettingsFeedback != null)
-            {
-                txtSettingsFeedback.text = $"<color=#6FE48E>✓ Zastosowano i zapisano: {res.width}x{res.height}, {mode.label}</color>";
-            }
-            Debug.Log($"[MainMenuDemoUI] Zastosowano ustawienia ekranu: {res.width}x{res.height}, tryb: {mode.mode}");
+            settingsPanel.ApplySettings();
         }
     }
 
-    private void BuildRuntimeSettingsModal()
+    public void LoadAndApplySavedSettings()
     {
-        Canvas canvas = GetComponentInParent<Canvas>() ?? FindFirstObjectByType<Canvas>();
-        if (canvas == null) return;
-
-        // Pobierz czcionkę z istniejącego przycisku
-        TMP_FontAsset fontAsset = null;
-        if (btnStart != null)
-        {
-            TextMeshProUGUI startTmp = btnStart.GetComponentInChildren<TextMeshProUGUI>();
-            if (startTmp != null) fontAsset = startTmp.font;
-        }
-
-        // Główny kontener modalu (ciemny overlay)
-        GameObject modalObj = new GameObject("Pnl_SettingsModal", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        modalObj.transform.SetParent(canvas.transform, false);
-
-        RectTransform modalRect = modalObj.GetComponent<RectTransform>();
-        modalRect.anchorMin = Vector2.zero;
-        modalRect.anchorMax = Vector2.one;
-        modalRect.offsetMin = Vector2.zero;
-        modalRect.offsetMax = Vector2.zero;
-
-        Image overlayImg = modalObj.GetComponent<Image>();
-        overlayImg.color = new Color(0.04f, 0.05f, 0.07f, 0.88f); // ciemne tło
-
-        // Okno modalu
-        GameObject windowObj = new GameObject("Window", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        windowObj.transform.SetParent(modalObj.transform, false);
-
-        RectTransform windowRect = windowObj.GetComponent<RectTransform>();
-        windowRect.anchorMin = new Vector2(0.5f, 0.5f);
-        windowRect.anchorMax = new Vector2(0.5f, 0.5f);
-        windowRect.pivot = new Vector2(0.5f, 0.5f);
-        windowRect.sizeDelta = new Vector2(560f, 510f);
-
-        Image windowImg = windowObj.GetComponent<Image>();
-        windowImg.color = new Color(0.12f, 0.13f, 0.15f, 0.98f); // elegancki ciemny grafit
-
-        // Pasek Nagłówka (Header)
-        GameObject headerObj = new GameObject("Header", typeof(RectTransform));
-        headerObj.transform.SetParent(windowObj.transform, false);
-        RectTransform headerRect = headerObj.GetComponent<RectTransform>();
-        headerRect.anchorMin = new Vector2(0f, 1f);
-        headerRect.anchorMax = new Vector2(1f, 1f);
-        headerRect.pivot = new Vector2(0.5f, 1f);
-        headerRect.anchoredPosition = new Vector2(0f, -15f);
-        headerRect.sizeDelta = new Vector2(-40f, 44f);
-
-        GameObject titleTxtObj = new GameObject("Txt_Title", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        titleTxtObj.transform.SetParent(headerObj.transform, false);
-        RectTransform titleRect = titleTxtObj.GetComponent<RectTransform>();
-        titleRect.anchorMin = Vector2.zero;
-        titleRect.anchorMax = Vector2.one;
-        titleRect.offsetMin = Vector2.zero;
-        titleRect.offsetMax = new Vector2(-50f, 0f);
-
-        TextMeshProUGUI headerTitle = titleTxtObj.GetComponent<TextMeshProUGUI>();
-        if (fontAsset != null) headerTitle.font = fontAsset;
-        headerTitle.text = LocalizationManager.Get("UI_SETTINGS_HEADER_TITLE", "USTAWIENIA EKRANU");
-        headerTitle.fontSize = 20f; // GEMINI.md: 20 pt nagłówek
-        headerTitle.fontStyle = FontStyles.Bold;
-        headerTitle.color = new Color(0.95f, 0.85f, 0.45f); // złoty akcent Bastionu
-        headerTitle.alignment = TextAlignmentOptions.MidlineLeft;
-
-        // Przycisk Zamknij ("✕")
-        GameObject btnCloseObj = CreateSimpleButton(headerObj.transform, "Btn_Close", "✕", fontAsset, 16f, new Vector2(40f, 40f));
-        RectTransform closeRect = btnCloseObj.GetComponent<RectTransform>();
-        closeRect.anchorMin = new Vector2(1f, 0.5f);
-        closeRect.anchorMax = new Vector2(1f, 0.5f);
-        closeRect.pivot = new Vector2(1f, 0.5f);
-        closeRect.anchoredPosition = Vector2.zero;
-        btnCloseObj.GetComponent<Button>().onClick.AddListener(CloseSettings);
-
-        // Obszar Treści (Content)
-        GameObject contentBox = new GameObject("ContentBox", typeof(RectTransform), typeof(VerticalLayoutGroup));
-        contentBox.transform.SetParent(windowObj.transform, false);
-        RectTransform contentRect = contentBox.GetComponent<RectTransform>();
-        contentRect.anchorMin = new Vector2(0f, 0f);
-        contentRect.anchorMax = new Vector2(1f, 1f);
-        contentRect.offsetMin = new Vector2(30f, 75f);
-        contentRect.offsetMax = new Vector2(-30f, -68f);
-
-        VerticalLayoutGroup vLayout = contentBox.GetComponent<VerticalLayoutGroup>();
-        vLayout.spacing = 16f;
-        vLayout.childControlHeight = false;
-        vLayout.childControlWidth = true;
-        vLayout.childForceExpandHeight = false;
-        vLayout.childForceExpandWidth = true;
-
-        // Sekcja 1: Rozdzielczość (Lista rozwijana z predefiniowanymi rozdzielczościami)
-        GameObject resSection = new GameObject("Sec_Resolution", typeof(RectTransform), typeof(VerticalLayoutGroup));
-        resSection.transform.SetParent(contentBox.transform, false);
-        VerticalLayoutGroup resLayout = resSection.GetComponent<VerticalLayoutGroup>();
-        resLayout.spacing = 6f;
-        resLayout.childControlHeight = false;
-        resLayout.childControlWidth = true;
-
-        GameObject resLabelObj = new GameObject("Lbl_Resolution", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        resLabelObj.transform.SetParent(resSection.transform, false);
-        resLabelObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 24f);
-        TextMeshProUGUI resLabel = resLabelObj.GetComponent<TextMeshProUGUI>();
-        if (fontAsset != null) resLabel.font = fontAsset;
-        resLabel.text = LocalizationManager.Get("UI_SETTINGS_RESOLUTION_LABEL", "Rozdzielczość ekranu:");
-        resLabel.fontSize = 16f; // GEMINI.md: 16 pt sekcja
-        resLabel.fontStyle = FontStyles.Bold;
-        resLabel.color = new Color(0.85f, 0.90f, 0.96f, 1f);
-
-        ddResolution = RuntimeDropdownUI.Create(resSection.transform, windowObj.transform, "Dd_Resolution", new Vector2(500f, 38f), fontAsset);
-        List<string> resLabels = new List<string>();
-        for (int i = 0; i < resolutionOptions.Count; i++) resLabels.Add(resolutionOptions[i].label);
-        ddResolution.SetOptions(resLabels, GetCurrentResolutionIndex());
-        ddResolution.onValueChanged += OnResolutionSelected;
-
-        // Sekcja 2: Typ ramki (3 główne: Pełny ekran, Okno bez ramek, W oknie)
-        GameObject modeSection = new GameObject("Sec_WindowMode", typeof(RectTransform), typeof(VerticalLayoutGroup));
-        modeSection.transform.SetParent(contentBox.transform, false);
-        VerticalLayoutGroup modeLayout = modeSection.GetComponent<VerticalLayoutGroup>();
-        modeLayout.spacing = 6f;
-        modeLayout.childControlHeight = false;
-        modeLayout.childControlWidth = true;
-
-        GameObject modeLabelObj = new GameObject("Lbl_WindowMode", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        modeLabelObj.transform.SetParent(modeSection.transform, false);
-        modeLabelObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 24f);
-        TextMeshProUGUI modeLabel = modeLabelObj.GetComponent<TextMeshProUGUI>();
-        if (fontAsset != null) modeLabel.font = fontAsset;
-        modeLabel.text = LocalizationManager.Get("UI_SETTINGS_WINDOW_MODE_LABEL", "Typ ramki (Tryb okna):");
-        modeLabel.fontSize = 16f; // GEMINI.md: 16 pt sekcja
-        modeLabel.fontStyle = FontStyles.Bold;
-        modeLabel.color = new Color(0.85f, 0.90f, 0.96f, 1f);
-
-        ddWindowMode = RuntimeDropdownUI.Create(modeSection.transform, windowObj.transform, "Dd_WindowMode", new Vector2(500f, 38f), fontAsset);
-        List<string> modeLabels = new List<string>();
-        for (int i = 0; i < windowModeOptions.Count; i++) modeLabels.Add(windowModeOptions[i].label);
-        ddWindowMode.SetOptions(modeLabels, GetCurrentWindowModeIndex());
-        ddWindowMode.onValueChanged += OnWindowModeSelected;
-
-        // Sekcja Języka Gry (Language)
-        GameObject langSection = new GameObject("Sec_Language", typeof(RectTransform), typeof(VerticalLayoutGroup));
-        langSection.transform.SetParent(contentBox.transform, false);
-        VerticalLayoutGroup langLayout = langSection.GetComponent<VerticalLayoutGroup>();
-        langLayout.spacing = 6f;
-        langLayout.childControlHeight = false;
-        langLayout.childControlWidth = true;
-
-        GameObject langLabelObj = new GameObject("Lbl_Language", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        langLabelObj.transform.SetParent(langSection.transform, false);
-        langLabelObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 24f);
-        TextMeshProUGUI langLabel = langLabelObj.GetComponent<TextMeshProUGUI>();
-        if (fontAsset != null) langLabel.font = fontAsset;
-        langLabel.text = LocalizationManager.Get("UI_LABEL_LANGUAGE_SELECT", "Język gry (Language):");
-        langLabel.fontSize = 16f; // GEMINI.md: 16 pt sekcja
-        langLabel.fontStyle = FontStyles.Bold;
-        langLabel.color = new Color(0.85f, 0.90f, 0.96f, 1f);
-
-        ddLanguage = RuntimeDropdownUI.Create(langSection.transform, windowObj.transform, "Dd_Language", new Vector2(500f, 38f), fontAsset);
-        List<string> langLabels = new List<string> { "Polski", "English" };
-        int curLangIdx = LocalizationManager.CurrentLanguage == "en" ? 1 : 0;
-        ddLanguage.SetOptions(langLabels, curLangIdx);
-        ddLanguage.onValueChanged += OnLanguageSelected;
-
-        // Sekcja 3: Tekst pomocniczy / status
-        GameObject feedbackObj = new GameObject("Txt_Feedback", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        feedbackObj.transform.SetParent(contentBox.transform, false);
-        feedbackObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 22f);
-        txtSettingsFeedback = feedbackObj.GetComponent<TextMeshProUGUI>();
-        if (fontAsset != null) txtSettingsFeedback.font = fontAsset;
-        txtSettingsFeedback.text = LocalizationManager.Get("UI_SETTINGS_FEEDBACK_HINT", "Zmiany są natychmiast aplikowane i zapamiętywane w preferencjach gry.");
-        txtSettingsFeedback.fontSize = 10f; // GEMINI.md: 10 pt tekst pomocniczy
-        txtSettingsFeedback.color = new Color(0.60f, 0.65f, 0.70f, 1f);
-        txtSettingsFeedback.alignment = TextAlignmentOptions.MidlineLeft;
-
-        // Pasek Dolny (Footer) z przyciskami Zastosuj i Zamknij
-        GameObject footerObj = new GameObject("Footer", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-        footerObj.transform.SetParent(windowObj.transform, false);
-        RectTransform footerRect = footerObj.GetComponent<RectTransform>();
-        footerRect.anchorMin = new Vector2(0f, 0f);
-        footerRect.anchorMax = new Vector2(1f, 0f);
-        footerRect.pivot = new Vector2(0.5f, 0f);
-        footerRect.anchoredPosition = new Vector2(0f, 16f);
-        footerRect.sizeDelta = new Vector2(-60f, 40f);
-
-        HorizontalLayoutGroup footerLayout = footerObj.GetComponent<HorizontalLayoutGroup>();
-        footerLayout.spacing = 14f;
-        footerLayout.childAlignment = TextAnchor.MiddleRight;
-        footerLayout.childForceExpandWidth = false;
-        footerLayout.childForceExpandHeight = true;
-
-        GameObject btnApplyObj = CreateSimpleButton(footerObj.transform, "Btn_Apply", LocalizationManager.Get("UI_SETTINGS_BTN_APPLY", "Zastosuj"), fontAsset, 16f, new Vector2(140f, 38f));
-        Button btnApply = btnApplyObj.GetComponent<Button>();
-        Image btnApplyImg = btnApplyObj.GetComponent<Image>();
-        btnApplyImg.color = new Color(0.22f, 0.38f, 0.28f, 1f); // subtelny zielony akcent zatwierdzenia
-        ColorBlock cba = btnApply.colors;
-        cba.normalColor = new Color(0.22f, 0.38f, 0.28f, 1f);
-        cba.highlightedColor = new Color(0.28f, 0.48f, 0.35f, 1f);
-        cba.pressedColor = new Color(0.16f, 0.28f, 0.20f, 1f);
-        btnApply.colors = cba;
-        btnApply.onClick.AddListener(ApplySettings);
-
-        GameObject btnCloseFooterObj = CreateSimpleButton(footerObj.transform, "Btn_CloseFooter", LocalizationManager.Get("UI_GUIDE_BTN_CLOSE", "Zamknij"), fontAsset, 14f, new Vector2(120f, 38f));
-        btnCloseFooterObj.GetComponent<Button>().onClick.AddListener(CloseSettings);
-
-        settingsModal = modalObj;
+        SettingsPanelUI.LoadAndApplySavedSettings();
     }
 }
