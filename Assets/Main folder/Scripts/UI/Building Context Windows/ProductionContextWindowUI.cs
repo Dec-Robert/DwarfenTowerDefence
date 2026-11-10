@@ -312,7 +312,23 @@ public class ProductionContextWindowUI : MonoBehaviour
             };
         }
 
-        Transform raceParent = secWorkers.transform.Find("Pnl_RaceControllers");
+        Transform raceParent = secWorkers.transform.Find("Pnl_RaceControllers")
+            ?? secWorkers.transform.Find("Pnl_RaceControllers (1)");
+
+        if (raceParent == null)
+        {
+            for (int i = 0; i < secWorkers.transform.childCount; i++)
+            {
+                var child = secWorkers.transform.GetChild(i);
+                if (child.name.IndexOf("RaceController", StringComparison.OrdinalIgnoreCase) >= 0
+                    || child.name.IndexOf("Race", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    raceParent = child;
+                    break;
+                }
+            }
+        }
+
         if (raceParent == null) return;
 
         foreach (var rc in raceControls)
@@ -320,6 +336,19 @@ public class ProductionContextWindowUI : MonoBehaviour
             string boxNameUpper = "Pnl_Race_" + rc.race.ToString().ToUpper();
             string boxNameDefault = "Pnl_Race_" + rc.race;
             Transform box = raceParent.Find(boxNameUpper) ?? raceParent.Find(boxNameDefault);
+
+            if (box == null)
+            {
+                for (int i = 0; i < raceParent.childCount; i++)
+                {
+                    var child = raceParent.GetChild(i);
+                    if (child.name.IndexOf(rc.race.ToString(), StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        box = child;
+                        break;
+                    }
+                }
+            }
 
             if (box != null)
             {

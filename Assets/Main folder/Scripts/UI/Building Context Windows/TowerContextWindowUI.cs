@@ -28,6 +28,7 @@ public class TowerContextWindowUI : MonoBehaviour
     {
         public BattleStats statType;
         public GameObject rootObject;
+        public CombatStatItemUI itemUI;
         public Image imgIcon;
         public TextMeshProUGUI txtName;
         public TextMeshProUGUI txtBaseValue;
@@ -92,8 +93,15 @@ public class TowerContextWindowUI : MonoBehaviour
 
     // ── Sekcja Statystyk Bojowych ─────────────────────────────────────────────
     [Header("Statystyki Bojowe (8 pozycji)")]
+    [SerializeField] private GameObject secCombatStats;
+    [SerializeField] private TextMeshProUGUI txtCombatStatsTitle;
     [SerializeField] private Transform pnlCombatStatsGrid;
     [SerializeField] private List<CombatStatItemView> combatStatViews = new List<CombatStatItemView>();
+
+    public GameObject SecCombatStats => secCombatStats;
+    public TextMeshProUGUI TxtCombatStatsTitle => txtCombatStatsTitle;
+    public Transform PnlCombatStatsGrid => pnlCombatStatsGrid;
+    public List<CombatStatItemView> CombatStatViews => combatStatViews;
 
     // ── Sekcja Priorytetów Ostrzału ───────────────────────────────────────────
     [Header("Priorytety Ostrzału")]
@@ -189,6 +197,12 @@ public class TowerContextWindowUI : MonoBehaviour
         AutoBindThresholdSegments();
 
         // 7. Statystyki bojowe
+        if (secCombatStats == null)
+            secCombatStats = transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_CombatStats")?.gameObject;
+
+        if (txtCombatStatsTitle == null)
+            txtCombatStatsTitle = transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_CombatStats/Txt_CombatStatsTitle")?.GetComponent<TextMeshProUGUI>();
+
         if (pnlCombatStatsGrid == null)
             pnlCombatStatsGrid = transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_CombatStats/Pnl_CombatStatsGrid");
 
@@ -211,7 +225,27 @@ public class TowerContextWindowUI : MonoBehaviour
             };
         }
 
-        Transform raceParent = transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_Workers/Pnl_RaceControllers");
+        Transform raceParent = transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_Workers/Pnl_RaceControllers")
+            ?? transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_Workers/Pnl_RaceControllers (1)");
+
+        if (raceParent == null)
+        {
+            Transform secWorkers = transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_Workers");
+            if (secWorkers != null)
+            {
+                for (int i = 0; i < secWorkers.childCount; i++)
+                {
+                    var child = secWorkers.GetChild(i);
+                    if (child.name.IndexOf("RaceController", StringComparison.OrdinalIgnoreCase) >= 0
+                        || child.name.IndexOf("Race", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        raceParent = child;
+                        break;
+                    }
+                }
+            }
+        }
+
         if (raceParent == null) return;
 
         foreach (var rc in raceControls)
@@ -219,6 +253,19 @@ public class TowerContextWindowUI : MonoBehaviour
             string boxNameUpper = "Pnl_Race_" + rc.race.ToString().ToUpper();
             string boxNameDefault = "Pnl_Race_" + rc.race;
             Transform box = raceParent.Find(boxNameUpper) ?? raceParent.Find(boxNameDefault);
+
+            if (box == null)
+            {
+                for (int i = 0; i < raceParent.childCount; i++)
+                {
+                    var child = raceParent.GetChild(i);
+                    if (child.name.IndexOf(rc.race.ToString(), StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        box = child;
+                        break;
+                    }
+                }
+            }
 
             if (box != null)
             {
@@ -260,54 +307,119 @@ public class TowerContextWindowUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Zwraca zlokalizowaną nazwę danej statystyki bojowej.
+    /// </summary>
+    public static string GetLocalizedStatName(BattleStats stat)
+    {
+        return stat switch
+        {
+            BattleStats.Damage => LocalizationManager.Get("stat_damage", "Obrażenia"),
+            BattleStats.FireRate => LocalizationManager.Get("stat_firerate", "Szybkostrzelność"),
+            BattleStats.Range => LocalizationManager.Get("stat_range", "Zasięg"),
+            BattleStats.DamageType => LocalizationManager.Get("stat_damagetype", "Typ obrażeń"),
+            BattleStats.CriticalChancel => LocalizationManager.Get("stat_critchance", "Szansa na krytyk"),
+            BattleStats.CriticalMultiplier => LocalizationManager.Get("stat_critmultiplier", "Mnożnik krytyczny"),
+            BattleStats.ArmorPenetration => LocalizationManager.Get("stat_armorpen", "Przebicie pancerza"),
+            BattleStats.MagicPenetration => LocalizationManager.Get("stat_magicpen", "Przebicie magii"),
+            _ => stat.ToString()
+        };
+    }
+
     private void AutoBindCombatStats()
     {
         if (pnlCombatStatsGrid == null) return;
 
-        var statMapping = new (string childName, BattleStats type)[]
+        var statMapping = new (string childName, BattleStats type, string[] aliases)[]
         {
-            ("Pnl_CombatStatItem_Damage", BattleStats.Damage),
-            ("Pnl_CombatStatItem_AttackSpeed", BattleStats.FireRate),
-            ("Pnl_CombatStatItem_Range", BattleStats.Range),
-            ("Pnl_CombatStatItem_DmgType", BattleStats.DamageType),
-            ("Pnl_CombatStatItem_CritChance", BattleStats.CriticalChancel),
-            ("Pnl_CombatStatItem_CritDmg", BattleStats.CriticalMultiplier),
-            ("Pnl_CombatStatItem_ArmorPen", BattleStats.ArmorPenetration),
-            ("Pnl_CombatStatItem_MagicPen", BattleStats.MagicPenetration)
+            ("Pnl_CombatStatItem_Damage", BattleStats.Damage, new[] { "Damage", "Obrazenia", "Obrażenia", "Dmg" }),
+            ("Pnl_CombatStatItem_AttackSpeed", BattleStats.FireRate, new[] { "AttackSpeed", "FireRate", "Szybkostrzelnosc", "Szybkostrzelność" }),
+            ("Pnl_CombatStatItem_Range", BattleStats.Range, new[] { "Range", "Zasieg", "Zasięg" }),
+            ("Pnl_CombatStatItem_DmgType", BattleStats.DamageType, new[] { "DmgType", "DamageType", "Typ" }),
+            ("Pnl_CombatStatItem_CritChance", BattleStats.CriticalChancel, new[] { "CritChance", "CriticalChance", "Kryt" }),
+            ("Pnl_CombatStatItem_CritDmg", BattleStats.CriticalMultiplier, new[] { "CritDmg", "CriticalMultiplier", "CritMult", "Mnożnik", "Mnoznik" }),
+            ("Pnl_CombatStatItem_ArmorPen", BattleStats.ArmorPenetration, new[] { "ArmorPen", "ArmorPenetration", "Pancerz" }),
+            ("Pnl_CombatStatItem_MagicPen", BattleStats.MagicPenetration, new[] { "MagicPen", "MagicPenetration", "Magia" })
         };
 
         if (combatStatViews == null) combatStatViews = new List<CombatStatItemView>();
         combatStatViews.Clear();
 
-        foreach (var map in statMapping)
+        for (int mIndex = 0; mIndex < statMapping.Length; mIndex++)
         {
+            var map = statMapping[mIndex];
             Transform itemTr = pnlCombatStatsGrid.Find(map.childName);
             if (itemTr == null)
             {
-                // Fallback: wyszukanie po fragmencie nazwy
+                // Fallback 1: wyszukanie po tekście Txt_StatName lub aliasach w nazwie GameObjectu
                 for (int i = 0; i < pnlCombatStatsGrid.childCount; i++)
                 {
                     var child = pnlCombatStatsGrid.GetChild(i);
-                    if (child.name.IndexOf(map.type.ToString(), StringComparison.OrdinalIgnoreCase) >= 0)
+                    bool matched = false;
+
+                    var nameTxt = child.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>();
+                    if (nameTxt != null && !string.IsNullOrEmpty(nameTxt.text))
                     {
-                        itemTr = child;
-                        break;
+                        foreach (var alias in map.aliases)
+                        {
+                            if (nameTxt.text.IndexOf(alias, StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                itemTr = child;
+                                matched = true;
+                                break;
+                            }
+                        }
                     }
+
+                    if (!matched)
+                    {
+                        foreach (var alias in map.aliases)
+                        {
+                            if (child.name.IndexOf(alias, StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                itemTr = child;
+                                matched = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (matched) break;
                 }
+            }
+
+            // Fallback 2: wyszukanie po indeksie w siatce
+            if (itemTr == null && mIndex < pnlCombatStatsGrid.childCount)
+            {
+                itemTr = pnlCombatStatsGrid.GetChild(mIndex);
             }
 
             if (itemTr != null)
             {
+                CombatStatItemUI itemUI = itemTr.GetComponent<CombatStatItemUI>();
+                if (itemUI != null) itemUI.AutoFindReferences();
+
                 Transform valuesTr = itemTr.Find("Pnl_Values");
                 CombatStatItemView statView = new CombatStatItemView
                 {
                     statType = map.type,
                     rootObject = itemTr.gameObject,
-                    imgIcon = itemTr.Find("Img_StatIcon")?.GetComponent<Image>(),
-                    txtName = itemTr.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>(),
-                    txtBaseValue = valuesTr?.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>(),
-                    txtCurrentValue = valuesTr?.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>()
+                    itemUI = itemUI,
+                    imgIcon = itemUI != null && itemUI.ImgIcon != null ? itemUI.ImgIcon : itemTr.Find("Img_StatIcon")?.GetComponent<Image>(),
+                    txtName = itemUI != null && itemUI.TxtName != null ? itemUI.TxtName : itemTr.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>(),
+                    txtBaseValue = itemUI != null && itemUI.TxtBaseValue != null
+                        ? itemUI.TxtBaseValue
+                        : (valuesTr != null ? valuesTr.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>() : itemTr.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>()),
+                    txtCurrentValue = itemUI != null && itemUI.TxtCurrentValue != null
+                        ? itemUI.TxtCurrentValue
+                        : (valuesTr != null ? valuesTr.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>() : itemTr.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>())
                 };
+
+                if (statView.txtName != null)
+                {
+                    statView.txtName.text = GetLocalizedStatName(statView.statType);
+                }
+
                 combatStatViews.Add(statView);
             }
         }
@@ -712,19 +824,39 @@ public class TowerContextWindowUI : MonoBehaviour
             txtEfficiencyPercentage.text = LocalizationManager.GetFormat("UI_TOWER_EFFICIENCY_FMT", Mathf.RoundToInt(curEff * 100f));
         }
 
+        // Aktualizacja tytułu sekcji statystyk bojowych
+        if (txtCombatStatsTitle != null)
+        {
+            txtCombatStatsTitle.text = LocalizationManager.Get("UI_TOWER_COMBAT_STATS", "STATYSTYKI BOJOWE");
+        }
+
         // Odświeżenie 8 statystyk
         foreach (var statView in combatStatViews)
         {
             if (statView.rootObject == null) continue;
 
-            // Przypisanie ikony z bazy
-            if (statView.imgIcon != null && resourceVisualsSO != null)
+            // Aktualizacja zlokalizowanej nazwy statystyki
+            if (statView.txtName != null)
             {
-                Sprite icon = resourceVisualsSO.GetIcon(statView.statType);
-                if (icon != null)
+                statView.txtName.text = GetLocalizedStatName(statView.statType);
+            }
+
+            // Przypisanie ikony z bazy jeśli widok zawiera Image
+            if (statView.imgIcon != null)
+            {
+                if (resourceVisualsSO != null)
                 {
-                    statView.imgIcon.sprite = icon;
-                    statView.imgIcon.color = Color.white;
+                    Sprite icon = resourceVisualsSO.GetIcon(statView.statType);
+                    if (icon != null)
+                    {
+                        statView.imgIcon.gameObject.SetActive(true);
+                        statView.imgIcon.sprite = icon;
+                        statView.imgIcon.color = Color.white;
+                    }
+                    else
+                    {
+                        statView.imgIcon.gameObject.SetActive(false);
+                    }
                 }
             }
 

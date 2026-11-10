@@ -30,6 +30,7 @@ public class RuneForgeWindowUI : MonoBehaviour
     {
         public BattleStats statType;
         public GameObject rootObject;
+        public CombatStatItemUI itemUI;
         public Image imgIcon;
         public TextMeshProUGUI txtName;
         public TextMeshProUGUI txtBaseValue;
@@ -318,37 +319,82 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (combatStatViews == null) combatStatViews = new List<CombatStatItemView>();
         combatStatViews.Clear();
 
-        var canonicalStats = new (BattleStats stat, string label)[]
+        var canonicalStats = new (BattleStats stat, string label, string[] aliases)[]
         {
-            (BattleStats.Damage, LocalizationManager.Get("stat_damage", "Obrażenia")),
-            (BattleStats.FireRate, LocalizationManager.Get("stat_firerate", "Szybkostrzelność")),
-            (BattleStats.Range, LocalizationManager.Get("stat_range", "Zasięg")),
-            (BattleStats.DamageType, LocalizationManager.Get("stat_damagetype", "Typ obrażeń")),
-            (BattleStats.CriticalChancel, LocalizationManager.Get("stat_critchance", "Szansa na krytyk")),
-            (BattleStats.CriticalMultiplier, LocalizationManager.Get("stat_critmultiplier", "Mnożnik krytyczny")),
-            (BattleStats.ArmorPenetration, LocalizationManager.Get("stat_armorpen", "Przebicie pancerza")),
-            (BattleStats.MagicPenetration, LocalizationManager.Get("stat_magicpen", "Przebicie magii"))
+            (BattleStats.Damage, LocalizationManager.Get("stat_damage", "Obrażenia"), new[] { "Damage", "Obrazenia", "Obrażenia", "Dmg" }),
+            (BattleStats.FireRate, LocalizationManager.Get("stat_firerate", "Szybkostrzelność"), new[] { "AttackSpeed", "FireRate", "Szybkostrzelnosc", "Szybkostrzelność" }),
+            (BattleStats.Range, LocalizationManager.Get("stat_range", "Zasięg"), new[] { "Range", "Zasieg", "Zasięg" }),
+            (BattleStats.DamageType, LocalizationManager.Get("stat_damagetype", "Typ obrażeń"), new[] { "DmgType", "DamageType", "Typ" }),
+            (BattleStats.CriticalChancel, LocalizationManager.Get("stat_critchance", "Szansa na krytyk"), new[] { "CritChance", "CriticalChance", "Kryt" }),
+            (BattleStats.CriticalMultiplier, LocalizationManager.Get("stat_critmultiplier", "Mnożnik krytyczny"), new[] { "CritDmg", "CriticalMultiplier", "CritMult", "Mnożnik", "Mnoznik" }),
+            (BattleStats.ArmorPenetration, LocalizationManager.Get("stat_armorpen", "Przebicie pancerza"), new[] { "ArmorPen", "ArmorPenetration", "Pancerz" }),
+            (BattleStats.MagicPenetration, LocalizationManager.Get("stat_magicpen", "Przebicie magii"), new[] { "MagicPen", "MagicPenetration", "Magia" })
         };
 
-        for (int i = 0; i < pnlStatsGrid.childCount; i++)
+        for (int i = 0; i < canonicalStats.Length; i++)
         {
-            if (i >= canonicalStats.Length) break;
+            var (statType, defaultLabel, aliases) = canonicalStats[i];
+            Transform itemTr = null;
 
-            Transform itemTr = pnlStatsGrid.GetChild(i);
-            var (statType, defaultLabel) = canonicalStats[i];
+            // 1. Sprawdź po tekście Txt_StatName lub po aliasie w nazwie kafelka
+            for (int c = 0; c < pnlStatsGrid.childCount; c++)
+            {
+                var child = pnlStatsGrid.GetChild(c);
+                var nameTmp = child.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>();
+                if (nameTmp != null && !string.IsNullOrEmpty(nameTmp.text))
+                {
+                    foreach (var alias in aliases)
+                    {
+                        if (nameTmp.text.IndexOf(alias, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            itemTr = child;
+                            break;
+                        }
+                    }
+                }
+                if (itemTr != null) break;
+
+                foreach (var alias in aliases)
+                {
+                    if (child.name.IndexOf(alias, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        itemTr = child;
+                        break;
+                    }
+                }
+                if (itemTr != null) break;
+            }
+
+            // 2. Fallback: wyszukanie po indeksie w siatce
+            if (itemTr == null && i < pnlStatsGrid.childCount)
+            {
+                itemTr = pnlStatsGrid.GetChild(i);
+            }
+
+            if (itemTr == null) continue;
+
+            CombatStatItemUI itemUI = itemTr.GetComponent<CombatStatItemUI>();
+            if (itemUI != null) itemUI.AutoFindReferences();
 
             Transform valuesTr = itemTr.Find("Pnl_Values");
-            var nameTmp = itemTr.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>();
-            if (nameTmp != null) nameTmp.text = defaultLabel;
+            var statNameTmp = itemUI != null && itemUI.TxtName != null
+                ? itemUI.TxtName
+                : itemTr.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>();
+            if (statNameTmp != null) statNameTmp.text = defaultLabel;
 
             CombatStatItemView statView = new CombatStatItemView
             {
                 statType = statType,
                 rootObject = itemTr.gameObject,
-                imgIcon = itemTr.Find("Img_StatIcon")?.GetComponent<Image>(),
-                txtName = nameTmp,
-                txtBaseValue = valuesTr?.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>(),
-                txtCurrentValue = valuesTr?.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>()
+                itemUI = itemUI,
+                imgIcon = itemUI != null && itemUI.ImgIcon != null ? itemUI.ImgIcon : itemTr.Find("Img_StatIcon")?.GetComponent<Image>(),
+                txtName = statNameTmp,
+                txtBaseValue = itemUI != null && itemUI.TxtBaseValue != null
+                    ? itemUI.TxtBaseValue
+                    : (valuesTr != null ? valuesTr.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>() : itemTr.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>()),
+                txtCurrentValue = itemUI != null && itemUI.TxtCurrentValue != null
+                    ? itemUI.TxtCurrentValue
+                    : (valuesTr != null ? valuesTr.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>() : itemTr.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>())
             };
 
             combatStatViews.Add(statView);
@@ -380,6 +426,7 @@ public class RuneForgeWindowUI : MonoBehaviour
 
     private void SubscribeEvents()
     {
+        LocalizationManager.OnLanguageChanged += RefreshAll;
         if (RuneManager.Instance != null)
         {
             RuneManager.Instance.OnInventoryChanged += HandleInventoryChanged;
@@ -400,6 +447,7 @@ public class RuneForgeWindowUI : MonoBehaviour
 
     private void UnsubscribeEvents()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshAll;
         if (RuneManager.Instance != null)
         {
             RuneManager.Instance.OnInventoryChanged -= HandleInventoryChanged;
@@ -1254,6 +1302,11 @@ public class RuneForgeWindowUI : MonoBehaviour
         foreach (var view in combatStatViews)
         {
             if (view == null || view.rootObject == null) continue;
+
+            if (view.txtName != null)
+            {
+                view.txtName.text = TowerContextWindowUI.GetLocalizedStatName(view.statType);
+            }
 
             float baseVal = 0;
             float modVal = 0;

@@ -18,13 +18,17 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [FormerlySerializedAs("description")]
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private GameObject resourceSlotPrefab;
-    [SerializeField] private Transform costContainer;
     
     [Header("Panels")]
     [SerializeField] private GameObject battleStatsPanel;
     [SerializeField] private GameObject housingStatsPanel;
     [SerializeField] private GameObject productionStatsPanel;
     [SerializeField] private GameObject descriptionPanel;
+    [SerializeField] private GameObject costStatsPanel;
+    
+    [Header("Cost")]
+    [SerializeField] private TextMeshProUGUI costInfoText;
+    [SerializeField] private Transform costContainer;
     
     [Header("Tower")]
     [SerializeField] private TextMeshProUGUI dmgText;
@@ -57,8 +61,19 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private readonly List<CostSlotEntry> costEntries = new List<CostSlotEntry>();
     private bool isSubscribedToResource;
 
+    public BuildingData BuildingData => buildingData;
+    public GameObject BattleStatsPanel => battleStatsPanel;
+    public GameObject HousingStatsPanel => housingStatsPanel;
+    public GameObject ProductionStatsPanel => productionStatsPanel;
+    public GameObject DescriptionPanel => descriptionPanel;
+    public GameObject CostStatsPanel => costStatsPanel;
+    public Transform CostContainer => costContainer;
+    public TextMeshProUGUI CostInfoText => costInfoText;
+
     private void Awake()
     {
+        AutoBindFields();
+
         if (selectButton == null)
         {
             selectButton = GetComponent<Button>();
@@ -79,6 +94,122 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         }
     }
 
+    private void OnValidate()
+    {
+        AutoBindFields();
+    }
+
+    private void AutoBindFields()
+    {
+        // Name & Icon
+        if (buildingNameText == null)
+        {
+            var t = transform.Find("Pnl_NameIcon/Txt_Name");
+            if (t != null) buildingNameText = t.GetComponent<TextMeshProUGUI>();
+        }
+        if (icon == null)
+        {
+            var t = transform.Find("Pnl_NameIcon/Img_Icon");
+            if (t != null) icon = t.GetComponent<Image>();
+        }
+
+        // Description
+        if (descriptionPanel == null)
+        {
+            var t = transform.Find("Pnl_Description");
+            if (t != null) descriptionPanel = t.gameObject;
+        }
+        if (descriptionText == null && descriptionPanel != null)
+        {
+            descriptionText = descriptionPanel.GetComponentInChildren<TextMeshProUGUI>(true);
+        }
+
+        // Battle stats
+        if (battleStatsPanel == null)
+        {
+            var t = transform.Find("Pnl_BattleStats");
+            if (t != null) battleStatsPanel = t.gameObject;
+        }
+        if (battleStatsPanel != null)
+        {
+            if (dmgText == null)
+            {
+                var t = battleStatsPanel.transform.Find("Txt_BaseDmg");
+                if (t != null) dmgText = t.GetComponent<TextMeshProUGUI>();
+            }
+            if (attackSpeedText == null)
+            {
+                var t = battleStatsPanel.transform.Find("Txt_BaseAttackSpeed");
+                if (t != null) attackSpeedText = t.GetComponent<TextMeshProUGUI>();
+            }
+        }
+
+        // Housing stats
+        if (housingStatsPanel == null)
+        {
+            var t = transform.Find("Pnl_HousingStats");
+            if (t != null) housingStatsPanel = t.gameObject;
+        }
+        if (housingStatsPanel != null)
+        {
+            if (housingStartingState == null)
+            {
+                var t = housingStatsPanel.transform.Find("Txt_StartingPop");
+                if (t != null) housingStartingState = t.GetComponent<TextMeshProUGUI>();
+            }
+            if (cyclesToGrowth == null)
+            {
+                var t = housingStatsPanel.transform.Find("Txt_GrowthRate");
+                if (t != null) cyclesToGrowth = t.GetComponent<TextMeshProUGUI>();
+            }
+        }
+
+        // Production stats
+        if (productionStatsPanel == null)
+        {
+            var t = transform.Find("Pnl_ProductionStats");
+            if (t != null) productionStatsPanel = t.gameObject;
+        }
+        if (productionStatsPanel != null)
+        {
+            if (productionInfoPanel == null)
+            {
+                var t = productionStatsPanel.transform.Find("Txt_ProductionText");
+                if (t != null) productionInfoPanel = t.GetComponent<TextMeshProUGUI>();
+            }
+            if (productionResourcesContainer == null)
+            {
+                var t = productionStatsPanel.transform.Find("Pnl_Production");
+                if (t != null) productionResourcesContainer = t;
+            }
+        }
+
+        // Cost panel
+        if (costStatsPanel == null)
+        {
+            var t = transform.Find("Pnl_BuildingCost");
+            if (t != null) costStatsPanel = t.gameObject;
+        }
+        if (costStatsPanel != null)
+        {
+            if (costInfoText == null)
+            {
+                var t = costStatsPanel.transform.Find("Txt_ProductionText");
+                if (t != null) costInfoText = t.GetComponent<TextMeshProUGUI>();
+            }
+            // If costContainer is null or accidentally points to the cost panel itself, point to child Pnl_Production
+            if (costContainer == null || costContainer == costStatsPanel.transform)
+            {
+                var t = costStatsPanel.transform.Find("Pnl_Production");
+                if (t != null) costContainer = t;
+            }
+        }
+
+        // Interaction & CanvasGroup
+        if (selectButton == null) selectButton = GetComponent<Button>();
+        if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
+    }
+
     private void OnEnable()
     {
         SubscribeToResourceManager();
@@ -89,7 +220,14 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     private void HandleLanguageChanged()
     {
-        if (buildingData != null) SetUpPanel(buildingData);
+        if (buildingData != null)
+        {
+            SetUpPanel(buildingData);
+        }
+        else if (costInfoText != null)
+        {
+            costInfoText.text = LocalizationManager.Get("UI_TOOLTIP_COST", "Koszt budowy:");
+        }
     }
 
     private void Start()
@@ -261,10 +399,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (battleStatsPanel != null) battleStatsPanel.SetActive(false);
         if (housingStatsPanel != null) housingStatsPanel.SetActive(false);
         if (productionStatsPanel != null) productionStatsPanel.SetActive(false);
-        
-        
-        descriptionPanel.SetActive(false);
-        
+        if (descriptionPanel != null) descriptionPanel.SetActive(false);
 
         switch (buildingData.type)
         {
@@ -283,22 +418,40 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
                 SetUpHousing();
                 break;
             case BuildingType.Utility or BuildingType.Unique:
-                descriptionPanel.SetActive(true);
-                descriptionText.text = string.IsNullOrEmpty(buildingData.description) ? "" : buildingData.DisplayDescription;
+                if (descriptionPanel != null) descriptionPanel.SetActive(true);
+                if (descriptionText != null)
+                {
+                    descriptionText.text = string.IsNullOrEmpty(buildingData.description) ? "" : buildingData.DisplayDescription;
+                }
                 break;
         }
     }
 
     private void SetUpCosts()
     {
+        if (costInfoText != null)
+        {
+            costInfoText.text = LocalizationManager.Get("UI_TOOLTIP_COST", "Koszt budowy:");
+        }
+
+        bool hasCosts = buildingData.constructionCost != null && buildingData.constructionCost.Any(c => c.amount > 0);
+
+        if (costStatsPanel != null)
+        {
+            costStatsPanel.SetActive(hasCosts);
+        }
+
         if (costContainer == null) return;
 
         ClearContainer(costContainer);
         costEntries.Clear();
 
-        if (buildingData.constructionCost != null && resourceSlotPrefab != null)
+        if (hasCosts && resourceSlotPrefab != null)
         {
-            var sortedCosts = buildingData.constructionCost.OrderBy(c => ResourceCost.GetPriority(c.type));
+            var sortedCosts = buildingData.constructionCost
+                .Where(c => c.amount > 0)
+                .OrderBy(c => ResourceCost.GetPriority(c.type));
+
             foreach (var cost in sortedCosts)
             {
                 GameObject slot = Instantiate(resourceSlotPrefab, costContainer);
@@ -433,6 +586,10 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(costContainer as RectTransform);
         }
+        if (costStatsPanel != null && costStatsPanel.activeSelf)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(costStatsPanel.transform as RectTransform);
+        }
         if (productionResourcesContainer != null)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(productionResourcesContainer as RectTransform);
@@ -448,6 +605,10 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (housingStatsPanel != null && housingStatsPanel.activeSelf)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(housingStatsPanel.transform as RectTransform);
+        }
+        if (descriptionPanel != null && descriptionPanel.activeSelf)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(descriptionPanel.transform as RectTransform);
         }
         LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
     }
