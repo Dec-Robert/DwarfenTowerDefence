@@ -30,13 +30,18 @@ public class HousingContextWindowUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI txtPopulationCount;
     [SerializeField] private RectTransform imgCapacityFill;
 
-    // ── 3. Sekcja Utrzymania ────────────────────────────────────────────────
-    [Header("Sekcja Utrzymania")]
+    // ── 3. Sekcja Utrzymania Mieszkańców ────────────────────────────────────
+    [Header("Sekcja Utrzymania Mieszkańców")]
+    [SerializeField] private GameObject secResidentUpkeep;
+    [SerializeField] private TextMeshProUGUI txtUpkeepTitle;
+    [SerializeField] private Transform pnlResidentUpkeepTotal;
     [SerializeField] private GameObject secUpkeep;
     [SerializeField] private Transform pnlResidentUpkeepItems;
     [SerializeField] private TextMeshProUGUI txtResidentUpkeepTotal;
 
     [Header("Koszty Wzrostu")]
+    [SerializeField] private GameObject pnlGrowthUpkeep;
+    [SerializeField] private TextMeshProUGUI txtGrowthTitle;
     [SerializeField] private Button btnToggleGrowth;
     [SerializeField] private TextMeshProUGUI txtGrowthStatusLabel;
     [SerializeField] private Image imgGrowthStatusBackground;
@@ -45,9 +50,11 @@ public class HousingContextWindowUI : MonoBehaviour
     // ── 4. Sekcja Progresji Wzrostu ─────────────────────────────────────────
     [Header("Progresja Wzrostu")]
     [SerializeField] private GameObject secGrowthProgress;
-    [SerializeField] private TextMeshProUGUI txtCyclesRequired;
-    [SerializeField] private RectTransform imgGrowthProgressFill;
+    [SerializeField] private TextMeshProUGUI txtProgTitle;
     [SerializeField] private TextMeshProUGUI txtProgressStatus;
+    [SerializeField] private RectTransform imgGrowthProgressFill;
+    [SerializeField] private TextMeshProUGUI txtTimeToFullHouse;
+    [SerializeField] private TextMeshProUGUI txtCyclesRequired;
     [SerializeField] private TextMeshProUGUI txtProgressRate;
 
     // ── 5. Dolna Belka (Wyburzanie) ─────────────────────────────────────────
@@ -147,51 +154,77 @@ public class HousingContextWindowUI : MonoBehaviour
                 imgCapacityFill = secPopulation.transform.Find("Pnl_CapacityBar/Img_CapacityFill")?.GetComponent<RectTransform>();
         }
 
-        // 4. Sekcja Utrzymania
-        if (secUpkeep == null)
-            secUpkeep = transform.Find("Sec_Upkeep")?.gameObject;
+        // 4. Sekcja Utrzymania Mieszkańców
+        if (secResidentUpkeep == null)
+            secResidentUpkeep = transform.Find("Sec_ResidentUpkeep")?.gameObject
+                ?? transform.Find("Sec_Upkeep")?.gameObject;
 
-        if (secUpkeep != null)
+        if (secResidentUpkeep != null)
         {
-            if (pnlResidentUpkeepItems == null)
-                pnlResidentUpkeepItems = secUpkeep.transform.Find("Pnl_ResidentUpkeep/Pnl_ResidentUpkeepItems");
+            if (txtUpkeepTitle == null)
+                txtUpkeepTitle = secResidentUpkeep.transform.Find("Txt_UpkeepTitle")?.GetComponent<TextMeshProUGUI>();
+
+            if (pnlResidentUpkeepTotal == null)
+                pnlResidentUpkeepTotal = secResidentUpkeep.transform.Find("Pnl_ResidentUpkeepTotal")
+                    ?? secResidentUpkeep.transform.Find("Pnl_ResidentUpkeep/Pnl_ResidentUpkeepItems")
+                    ?? secResidentUpkeep.transform.Find("Pnl_ResidentUpkeepItems");
 
             if (txtResidentUpkeepTotal == null)
-                txtResidentUpkeepTotal = secUpkeep.transform.Find("Pnl_ResidentUpkeep/Txt_ResidentUpkeepTotal")?.GetComponent<TextMeshProUGUI>();
+                txtResidentUpkeepTotal = secResidentUpkeep.transform.Find("Txt_ResidentUpkeepTotal")?.GetComponent<TextMeshProUGUI>()
+                    ?? secResidentUpkeep.transform.Find("Pnl_ResidentUpkeep/Txt_ResidentUpkeepTotal")?.GetComponent<TextMeshProUGUI>();
+        }
+
+        // 5. Sekcja Kosztów Wzrostu
+        if (pnlGrowthUpkeep == null)
+            pnlGrowthUpkeep = transform.Find("Pnl_GrowthUpkeep")?.gameObject
+                ?? (secResidentUpkeep != null ? secResidentUpkeep.transform.Find("Pnl_GrowthUpkeep")?.gameObject : null);
+
+        if (pnlGrowthUpkeep != null)
+        {
+            if (txtGrowthTitle == null)
+                txtGrowthTitle = pnlGrowthUpkeep.transform.Find("Pnl_TopInfo/Txt_GrowthTitle")?.GetComponent<TextMeshProUGUI>()
+                    ?? pnlGrowthUpkeep.transform.Find("Txt_GrowthTitle")?.GetComponent<TextMeshProUGUI>();
 
             if (btnToggleGrowth == null)
-                btnToggleGrowth = secUpkeep.transform.Find("Pnl_GrowthUpkeep/Pnl_GrowthHeaderRow/Btn_ToggleGrowth")?.GetComponent<Button>();
+                btnToggleGrowth = pnlGrowthUpkeep.transform.Find("Pnl_TopInfo/Btn_ToggleGrowth")?.GetComponent<Button>()
+                    ?? pnlGrowthUpkeep.transform.Find("Btn_ToggleGrowth")?.GetComponent<Button>()
+                    ?? pnlGrowthUpkeep.transform.Find("Pnl_GrowthHeaderRow/Btn_ToggleGrowth")?.GetComponent<Button>();
 
             if (btnToggleGrowth != null)
             {
                 if (txtGrowthStatusLabel == null)
-                    txtGrowthStatusLabel = btnToggleGrowth.transform.Find("Txt_GrowthStatusLabel")?.GetComponent<TextMeshProUGUI>();
+                    txtGrowthStatusLabel = btnToggleGrowth.transform.Find("Txt_GrowthStatusLabel")?.GetComponent<TextMeshProUGUI>()
+                        ?? btnToggleGrowth.GetComponentInChildren<TextMeshProUGUI>();
 
                 if (imgGrowthStatusBackground == null)
                     imgGrowthStatusBackground = btnToggleGrowth.GetComponent<Image>();
             }
 
             if (pnlGrowthCostItems == null)
-                pnlGrowthCostItems = secUpkeep.transform.Find("Pnl_GrowthUpkeep/Pnl_GrowthCostItems");
+                pnlGrowthCostItems = pnlGrowthUpkeep.transform.Find("Pnl_GrowthCostItems");
         }
 
-        // 5. Sekcja Progresji Wzrostu
+        // 6. Sekcja Progresji Wzrostu
         if (secGrowthProgress == null)
             secGrowthProgress = transform.Find("Sec_GrowthProgress")?.gameObject;
 
         if (secGrowthProgress != null)
         {
-            if (txtCyclesRequired == null)
-                txtCyclesRequired = secGrowthProgress.transform.Find("Pnl_ProgHeaderRow/Txt_CyclesRequired")?.GetComponent<TextMeshProUGUI>();
+            if (txtProgTitle == null)
+                txtProgTitle = secGrowthProgress.transform.Find("Pnl_TopInfo/Txt_ProgTitle")?.GetComponent<TextMeshProUGUI>()
+                    ?? secGrowthProgress.transform.Find("Pnl_ProgHeaderRow/Txt_ProgTitle")?.GetComponent<TextMeshProUGUI>();
+
+            if (txtProgressStatus == null)
+                txtProgressStatus = secGrowthProgress.transform.Find("Pnl_TopInfo/Txt_ProgressStatus")?.GetComponent<TextMeshProUGUI>()
+                    ?? secGrowthProgress.transform.Find("Pnl_ProgHeaderRow/Txt_CyclesRequired")?.GetComponent<TextMeshProUGUI>()
+                    ?? secGrowthProgress.transform.Find("Pnl_ProgressLabels/Txt_ProgressStatus")?.GetComponent<TextMeshProUGUI>();
 
             if (imgGrowthProgressFill == null)
                 imgGrowthProgressFill = secGrowthProgress.transform.Find("Pnl_GrowthProgressBar/Img_GrowthProgressFill")?.GetComponent<RectTransform>();
 
-            if (txtProgressStatus == null)
-                txtProgressStatus = secGrowthProgress.transform.Find("Pnl_ProgressLabels/Txt_ProgressStatus")?.GetComponent<TextMeshProUGUI>();
-
-            if (txtProgressRate == null)
-                txtProgressRate = secGrowthProgress.transform.Find("Pnl_ProgressLabels/Txt_ProgressRate")?.GetComponent<TextMeshProUGUI>();
+            if (txtTimeToFullHouse == null)
+                txtTimeToFullHouse = secGrowthProgress.transform.Find("Pnl_ProgressLabels/Txt_TimeToFullHouse")?.GetComponent<TextMeshProUGUI>()
+                    ?? secGrowthProgress.transform.Find("Pnl_ProgressLabels/Txt_ProgressRate")?.GetComponent<TextMeshProUGUI>();
         }
 
         // 6. Dolna belka akcji
@@ -404,29 +437,34 @@ public class HousingContextWindowUI : MonoBehaviour
         var data = currentHousing.housingData;
         if (data == null) return;
 
-        int currentPop = currentHousing.residents != null ? currentHousing.residents.Count : 0;
-
-        // ── 1. Kafelki kosztów na osobę (Pnl_ResidentUpkeepItems) ───────────
-        if (pnlResidentUpkeepItems != null)
+        if (txtUpkeepTitle != null)
         {
-            var perCapitaList = data.upkeepPerResident ?? new List<HousingBuildingData.PerCapitaCost>();
+            txtUpkeepTitle.text = LocalizationManager.Get("UI_HOUSING_UPKEEP_RESIDENTS_TITLE", "UTRZYMANIE MIESZKAŃCÓW");
+        }
+
+        Transform targetUpkeepContainer = pnlResidentUpkeepTotal != null ? pnlResidentUpkeepTotal : pnlResidentUpkeepItems;
+
+        // ── 1. Kafelki łącznego utrzymania mieszkańców (Pnl_ResidentUpkeepTotal) ─
+        if (targetUpkeepContainer != null)
+        {
+            var survivalCosts = currentHousing.CalculateSurvivalCost();
             int activeItems = 0;
 
-            for (int i = 0; i < perCapitaList.Count; i++)
+            for (int i = 0; i < survivalCosts.Count; i++)
             {
-                var cost = perCapitaList[i];
+                var cost = survivalCosts[i];
                 Transform itemTr;
 
-                if (i < pnlResidentUpkeepItems.childCount)
+                if (i < targetUpkeepContainer.childCount)
                 {
-                    itemTr = pnlResidentUpkeepItems.GetChild(i);
+                    itemTr = targetUpkeepContainer.GetChild(i);
                     itemTr.gameObject.SetActive(true);
                 }
                 else
                 {
-                    if (pnlResidentUpkeepItems.childCount > 0)
+                    if (targetUpkeepContainer.childCount > 0)
                     {
-                        itemTr = Instantiate(pnlResidentUpkeepItems.GetChild(0), pnlResidentUpkeepItems, false);
+                        itemTr = Instantiate(targetUpkeepContainer.GetChild(0), targetUpkeepContainer, false);
                         itemTr.gameObject.SetActive(true);
                     }
                     else break;
@@ -440,23 +478,23 @@ public class HousingContextWindowUI : MonoBehaviour
                     iconImg.color = iconImg.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0.4f);
                 }
 
-                // Wartość (stawka per osoba)
+                // Wartość (stawka sumaryczna wszystkich mieszkańców)
                 TextMeshProUGUI amtTmp = itemTr.Find("Txt_Amount")?.GetComponent<TextMeshProUGUI>();
                 if (amtTmp != null)
                 {
-                    amtTmp.text = $"-{cost.amount:0.#} / os.";
+                    amtTmp.text = cost.amount > 0 ? $"-{cost.amount}" : "0";
                 }
 
                 activeItems++;
             }
 
-            for (int i = activeItems; i < pnlResidentUpkeepItems.childCount; i++)
+            for (int i = activeItems; i < targetUpkeepContainer.childCount; i++)
             {
-                pnlResidentUpkeepItems.GetChild(i).gameObject.SetActive(false);
+                targetUpkeepContainer.GetChild(i).gameObject.SetActive(false);
             }
         }
 
-        // ── 2. Etykieta sumaryczna łącznego kosztu domu ─────────────────────
+        // ── 2. Opcjonalna etykieta sumaryczna łącznego kosztu (backward-compat) ──
         if (txtResidentUpkeepTotal != null)
         {
             var summaryList = new List<string>();
@@ -483,7 +521,13 @@ public class HousingContextWindowUI : MonoBehaviour
         // ── 3. Przycisk przełącznika wzrostu ────────────────────────────────
         RefreshGrowthToggleState();
 
-        // ── 4. Kafelki kosztów wzrostu (Pnl_GrowthCostItems) ─────────────────
+        // ── 4. Tytuł kosztów wzrostu ────────────────────────────────────────
+        if (txtGrowthTitle != null)
+        {
+            txtGrowthTitle.text = LocalizationManager.Get("UI_HOUSING_GROWTH_COSTS_TITLE", "KOSZTY WZROSTU");
+        }
+
+        // ── 5. Kafelki kosztów wzrostu (Pnl_GrowthCostItems) ─────────────────
         if (pnlGrowthCostItems != null)
         {
             var growthCosts = data.growthSurplusCost ?? new List<ResourceCost>();
@@ -541,44 +585,39 @@ public class HousingContextWindowUI : MonoBehaviour
 
         if (currentPop >= maxPop)
         {
-            // Dom pełny - przycisk nieaktywny
-            btnToggleGrowth.interactable = false;
-            if (txtGrowthStatusLabel != null)
-            {
-                txtGrowthStatusLabel.text = LocalizationManager.Get("UI_HOUSING_GROWTH_FULL", "WZROST: PEŁNY");
-                txtGrowthStatusLabel.color = growthFullTxt;
-            }
-            if (imgGrowthStatusBackground != null)
-            {
-                imgGrowthStatusBackground.color = growthFullBg;
-            }
-        }
-        else if (currentHousing.stopGrowth)
-        {
-            // Gracz wstrzymał wzrost
-            btnToggleGrowth.interactable = true;
-            if (txtGrowthStatusLabel != null)
-            {
-                txtGrowthStatusLabel.text = LocalizationManager.Get("UI_HOUSING_GROWTH_PAUSED", "WZROST: WSTRZYMANY");
-                txtGrowthStatusLabel.color = growthPausedTxt;
-            }
-            if (imgGrowthStatusBackground != null)
-            {
-                imgGrowthStatusBackground.color = growthPausedBg;
-            }
+            // Dom pełny - przycisk zostaje całkowicie ukryty
+            btnToggleGrowth.gameObject.SetActive(false);
         }
         else
         {
-            // Wzrost aktywny
+            btnToggleGrowth.gameObject.SetActive(true);
             btnToggleGrowth.interactable = true;
-            if (txtGrowthStatusLabel != null)
+
+            if (currentHousing.stopGrowth)
             {
-                txtGrowthStatusLabel.text = LocalizationManager.Get("UI_HOUSING_GROWTH_ACTIVE", "WZROST: AKTYWNY");
-                txtGrowthStatusLabel.color = growthActiveTxt;
+                // Gracz wstrzymał wzrost / nieaktywny
+                if (txtGrowthStatusLabel != null)
+                {
+                    txtGrowthStatusLabel.text = LocalizationManager.Get("UI_HOUSING_GROWTH_INACTIVE", "WZROST: NIEAKTYWNY");
+                    txtGrowthStatusLabel.color = growthPausedTxt;
+                }
+                if (imgGrowthStatusBackground != null)
+                {
+                    imgGrowthStatusBackground.color = growthPausedBg;
+                }
             }
-            if (imgGrowthStatusBackground != null)
+            else
             {
-                imgGrowthStatusBackground.color = growthActiveBg;
+                // Wzrost aktywny
+                if (txtGrowthStatusLabel != null)
+                {
+                    txtGrowthStatusLabel.text = LocalizationManager.Get("UI_HOUSING_GROWTH_ACTIVE", "WZROST: AKTYWNY");
+                    txtGrowthStatusLabel.color = growthActiveTxt;
+                }
+                if (imgGrowthStatusBackground != null)
+                {
+                    imgGrowthStatusBackground.color = growthActiveBg;
+                }
             }
         }
     }
@@ -586,6 +625,11 @@ public class HousingContextWindowUI : MonoBehaviour
     private void RefreshGrowthProgressUI()
     {
         if (currentHousing == null) return;
+
+        if (txtProgTitle != null)
+        {
+            txtProgTitle.text = LocalizationManager.Get("UI_HOUSING_GROWTH_PROGRESS_TITLE", "POSTĘP WZROSTU POPULACJI");
+        }
 
         int currentPop = currentHousing.residents != null ? currentHousing.residents.Count : 0;
         int maxPop = currentHousing.GetEffectiveMaxResidents();
@@ -595,7 +639,7 @@ public class HousingContextWindowUI : MonoBehaviour
         int currentTicks = isFull ? requiredTicks : currentHousing.currentGrowthProgress;
         float progressRatio = isFull ? 1f : currentHousing.GetGrowthProgress();
 
-        // Liczba wymaganych cykli
+        // Liczba wymaganych cykli (backward-compat)
         if (txtCyclesRequired != null)
         {
             txtCyclesRequired.text = isFull ? LocalizationManager.Get("UI_HOUSING_REQ_FULL", "WYMAGANE: PEŁNY") : LocalizationManager.GetFormat("UI_HOUSING_REQ_CYCLES_FMT", requiredTicks);
@@ -610,49 +654,56 @@ public class HousingContextWindowUI : MonoBehaviour
             imgGrowthProgressFill.anchoredPosition = Vector2.zero;
         }
 
-        // Etykieta statusu postępu
+        // Etykieta statusu postępu (X / Y Cykli lub PEŁNY)
         if (txtProgressStatus != null)
         {
             if (isFull)
             {
-                txtProgressStatus.text = LocalizationManager.Get("UI_HOUSING_MAX_POP_REACHED", "Maksymalna populacja osiągnięta");
+                txtProgressStatus.text = LocalizationManager.Get("UI_HOUSING_STATUS_FULL", "PEŁNY");
                 txtProgressStatus.color = new Color(0.45f, 0.95f, 0.55f, 1f);
             }
             else
             {
-                int percentage = Mathf.RoundToInt(progressRatio * 100f);
-                string growthStatus = currentHousing.GetGrowthStatus();
-                string localizedStatus = growthStatus switch
-                {
-                    "GŁÓD (-1 CYKL)" => LocalizationManager.Get("UI_HOUSING_STATUS_STARVATION", "GŁÓD (-1 CYKL)"),
-                    "BRAK NADWYŻKI" => LocalizationManager.Get("UI_HOUSING_STATUS_NO_SURPLUS", "BRAK NADWYŻKI"),
-                    "WSTRZYMANY" => LocalizationManager.Get("UI_HOUSING_STATUS_PAUSED", "WSTRZYMANY"),
-                    "BRAK ZASOBÓW" => LocalizationManager.Get("UI_HOUSING_STATUS_NO_RESOURCES", "BRAK ZASOBÓW"),
-                    _ => growthStatus
-                };
+                txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_CYCLES_FMT", currentTicks, requiredTicks);
 
-                if (growthStatus == "GŁÓD (-1 CYKL)" || growthStatus == "BRAK ZASOBÓW")
+                string growthStatus = currentHousing.GetGrowthStatus();
+                if (currentHousing.stopGrowth)
                 {
-                    txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_PROGRESS_WITH_STATUS", currentTicks, requiredTicks, percentage, "FF6666", localizedStatus);
+                    txtProgressStatus.color = growthPausedTxt;
+                }
+                else if (growthStatus == "GŁÓD (-1 CYKL)" || growthStatus == "BRAK ZASOBÓW")
+                {
+                    txtProgressStatus.color = new Color(1f, 0.45f, 0.45f, 1f);
                 }
                 else if (growthStatus == "BRAK NADWYŻKI")
                 {
-                    txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_PROGRESS_WITH_STATUS", currentTicks, requiredTicks, percentage, "FF9944", localizedStatus);
-                }
-                else if (growthStatus == "WSTRZYMANY")
-                {
-                    txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_PROGRESS_WITH_STATUS", currentTicks, requiredTicks, percentage, "FFCC66", localizedStatus);
+                    txtProgressStatus.color = new Color(1f, 0.65f, 0.3f, 1f);
                 }
                 else
                 {
-                    txtProgressStatus.text = LocalizationManager.GetFormat("UI_HOUSING_PROGRESS_FMT", currentTicks, requiredTicks, percentage);
+                    txtProgressStatus.color = Color.white;
                 }
-                txtProgressStatus.color = Color.white;
             }
         }
 
-        // Etykieta tempa
-        if (txtProgressRate != null)
+        // Etykieta szacowanego czasu zapełnienia domu (Zapełnienie domu za X Dni)
+        if (txtTimeToFullHouse != null)
+        {
+            bool canShow = !isFull && !currentHousing.stopGrowth && currentHousing.GetGrowthStatus() != "GŁÓD (-1 CYKL)" && currentHousing.GetGrowthStatus() != "BRAK ZASOBÓW";
+            if (canShow)
+            {
+                int totalDays = currentHousing.CalculateTotalDaysToFullHouse();
+                txtTimeToFullHouse.gameObject.SetActive(true);
+                txtTimeToFullHouse.text = LocalizationManager.GetFormat("UI_HOUSING_TIME_TO_FULL_FMT", totalDays);
+            }
+            else
+            {
+                txtTimeToFullHouse.gameObject.SetActive(false);
+            }
+        }
+
+        // Etykieta tempa (backward-compat)
+        if (txtProgressRate != null && txtProgressRate != txtTimeToFullHouse)
         {
             txtProgressRate.text = LocalizationManager.Get("UI_HOUSING_RATE_HINT", "1 cykl / świt (gdy zapewnione zasoby)");
         }

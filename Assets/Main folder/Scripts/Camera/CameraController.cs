@@ -68,9 +68,15 @@ public class CameraController : MonoBehaviour
     public bool IsRotatingRMB => isRotatingRMB;
     public bool IsRmbHeld => isRotatingRMB || Input.GetMouseButton(1);
 
+    [Header("Skupienie na punkcie (Focus)")]
+    [Tooltip("Czas trwania szybkiego doskoku/szarpnięcia kamery do wskazanego punktu (w sekundach). Krótki czas (np. 0.18s) z krzywą Ease-Out eliminuje powolne dociąganie.")]
+    public float focusDuration = 0.18f;
+
     private Camera _cam;
     private float targetHeight;
     private Vector3 focusTarget;
+    private Vector3 focusStartPos;
+    private float focusTimer = 0f;
     private bool isFocusing = false;
 
     // Zmienne obrotu kamery
@@ -352,19 +358,29 @@ public class CameraController : MonoBehaviour
     {
         if (!isFocusing) return;
 
-        Vector3 currentPos = transform.position;
-        Vector3 targetXZ = new Vector3(focusTarget.x, currentPos.y, focusTarget.z);
-        transform.position = Vector3.Lerp(currentPos, targetXZ, smoothing * Time.unscaledDeltaTime);
+        focusTimer += Time.unscaledDeltaTime;
+        float dur = Mathf.Max(0.01f, focusDuration);
+        float t = Mathf.Clamp01(focusTimer / dur);
 
-        if (Vector2.Distance(new Vector2(transform.position.x, transform.position.z), new Vector2(focusTarget.x, focusTarget.z)) < 0.05f)
+        // Krzywa Ease-Out Cubic: natychmiastowe, energiczne szarpnięcie i płynne, natychmiastowe zatrzymanie bez monotonnego dociągania
+        float ease = 1f - Mathf.Pow(1f - t, 3f);
+
+        Vector3 currentPos = transform.position;
+        float targetX = Mathf.Lerp(focusStartPos.x, focusTarget.x, ease);
+        float targetZ = Mathf.Lerp(focusStartPos.z, focusTarget.z, ease);
+
+        transform.position = new Vector3(targetX, currentPos.y, targetZ);
+
+        if (t >= 1f)
         {
-            transform.position = targetXZ;
+            transform.position = new Vector3(focusTarget.x, currentPos.y, focusTarget.z);
             isFocusing = false;
         }
     }
 
     public void FocusOnPoint(Vector3 worldPoint)
     {
+        focusStartPos = transform.position;
         focusTarget = new Vector3(worldPoint.x, transform.position.y, worldPoint.z);
 
         Vector3 fwdFlat = transform.forward;
@@ -383,6 +399,14 @@ public class CameraController : MonoBehaviour
         focusTarget.x = Mathf.Clamp(focusTarget.x, -mapLimit.x, mapLimit.x);
         focusTarget.z = Mathf.Clamp(focusTarget.z, -mapLimit.y, mapLimit.y);
 
+        if (Vector2.Distance(new Vector2(focusStartPos.x, focusStartPos.z), new Vector2(focusTarget.x, focusTarget.z)) < 0.05f)
+        {
+            transform.position = new Vector3(focusTarget.x, transform.position.y, focusTarget.z);
+            isFocusing = false;
+            return;
+        }
+
+        focusTimer = 0f;
         isFocusing = true;
         isResettingRotation = false;
     }

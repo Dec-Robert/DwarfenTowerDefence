@@ -33,7 +33,9 @@ public class CombatStatItemUI : MonoBehaviour
     {
         if (imgIcon == null)
         {
-            imgIcon = transform.Find("Img_StatIcon")?.GetComponent<Image>();
+            imgIcon = transform.Find("Img_StatType")?.GetComponent<Image>()
+                   ?? transform.Find("Img_StatIcon")?.GetComponent<Image>()
+                   ?? transform.Find("Img_Icon")?.GetComponent<Image>();
         }
 
         if (txtName == null)

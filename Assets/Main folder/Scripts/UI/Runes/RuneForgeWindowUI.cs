@@ -317,8 +317,72 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (pnlStatsGrid == null) return;
 
         if (combatStatViews == null) combatStatViews = new List<CombatStatItemView>();
-        combatStatViews.Clear();
 
+        // 1. Jeśli w inspektorze / scenie są już skonfigurowane pozycje, uzupełnij ich brakujące referencje
+        if (combatStatViews.Count > 0)
+        {
+            foreach (var view in combatStatViews)
+            {
+                if (view == null || view.rootObject == null) continue;
+
+                if (view.itemUI == null)
+                    view.itemUI = view.rootObject.GetComponent<CombatStatItemUI>();
+
+                if (view.itemUI != null)
+                    view.itemUI.AutoFindReferences();
+
+                Transform valuesTr = view.rootObject.transform.Find("Pnl_Values");
+
+                if (view.txtName == null)
+                {
+                    view.txtName = view.itemUI != null && view.itemUI.TxtName != null
+                        ? view.itemUI.TxtName
+                        : view.rootObject.transform.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>();
+                }
+
+                if (view.imgIcon == null)
+                {
+                    view.imgIcon = view.itemUI != null && view.itemUI.ImgIcon != null
+                        ? view.itemUI.ImgIcon
+                        : (view.rootObject.transform.Find("Img_StatType")?.GetComponent<Image>()
+                        ?? view.rootObject.transform.Find("Img_StatIcon")?.GetComponent<Image>()
+                        ?? view.rootObject.transform.Find("Img_Icon")?.GetComponent<Image>());
+                }
+
+                if (view.txtBaseValue == null)
+                {
+                    view.txtBaseValue = view.itemUI != null && view.itemUI.TxtBaseValue != null
+                        ? view.itemUI.TxtBaseValue
+                        : (valuesTr != null ? valuesTr.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>() : view.rootObject.transform.Find("Txt_BaseValue")?.GetComponent<TextMeshProUGUI>());
+                }
+
+                if (view.txtCurrentValue == null)
+                {
+                    view.txtCurrentValue = view.itemUI != null && view.itemUI.TxtCurrentValue != null
+                        ? view.itemUI.TxtCurrentValue
+                        : (valuesTr != null ? valuesTr.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>() : view.rootObject.transform.Find("Txt_CurrentValue")?.GetComponent<TextMeshProUGUI>());
+                }
+
+                if (view.txtName != null)
+                {
+                    view.txtName.text = TowerContextWindowUI.GetLocalizedStatName(view.statType);
+                }
+
+                if (view.imgIcon != null && resourceVisualsDB != null)
+                {
+                    Sprite icon = resourceVisualsDB.GetIcon(view.statType);
+                    if (icon != null)
+                    {
+                        view.imgIcon.gameObject.SetActive(true);
+                        view.imgIcon.sprite = icon;
+                        view.imgIcon.color = Color.white;
+                    }
+                }
+            }
+            return;
+        }
+
+        // 2. Fallback: wyszukanie elementów z pnlStatsGrid, gdy lista była pusta
         var canonicalStats = new (BattleStats stat, string label, string[] aliases)[]
         {
             (BattleStats.Damage, LocalizationManager.Get("stat_damage", "Obrażenia"), new[] { "Damage", "Obrazenia", "Obrażenia", "Dmg" }),
@@ -336,7 +400,7 @@ public class RuneForgeWindowUI : MonoBehaviour
             var (statType, defaultLabel, aliases) = canonicalStats[i];
             Transform itemTr = null;
 
-            // 1. Sprawdź po tekście Txt_StatName lub po aliasie w nazwie kafelka
+            // Sprawdź po tekście Txt_StatName lub po aliasie w nazwie kafelka
             for (int c = 0; c < pnlStatsGrid.childCount; c++)
             {
                 var child = pnlStatsGrid.GetChild(c);
@@ -365,7 +429,7 @@ public class RuneForgeWindowUI : MonoBehaviour
                 if (itemTr != null) break;
             }
 
-            // 2. Fallback: wyszukanie po indeksie w siatce
+            // Fallback: wyszukanie po indeksie w siatce
             if (itemTr == null && i < pnlStatsGrid.childCount)
             {
                 itemTr = pnlStatsGrid.GetChild(i);
@@ -382,12 +446,29 @@ public class RuneForgeWindowUI : MonoBehaviour
                 : itemTr.Find("Txt_StatName")?.GetComponent<TextMeshProUGUI>();
             if (statNameTmp != null) statNameTmp.text = defaultLabel;
 
+            Image iconImg = itemUI != null && itemUI.ImgIcon != null
+                ? itemUI.ImgIcon
+                : (itemTr.Find("Img_StatType")?.GetComponent<Image>()
+                ?? itemTr.Find("Img_StatIcon")?.GetComponent<Image>()
+                ?? itemTr.Find("Img_Icon")?.GetComponent<Image>());
+
+            if (iconImg != null && resourceVisualsDB != null)
+            {
+                Sprite icon = resourceVisualsDB.GetIcon(statType);
+                if (icon != null)
+                {
+                    iconImg.gameObject.SetActive(true);
+                    iconImg.sprite = icon;
+                    iconImg.color = Color.white;
+                }
+            }
+
             CombatStatItemView statView = new CombatStatItemView
             {
                 statType = statType,
                 rootObject = itemTr.gameObject,
                 itemUI = itemUI,
-                imgIcon = itemUI != null && itemUI.ImgIcon != null ? itemUI.ImgIcon : itemTr.Find("Img_StatIcon")?.GetComponent<Image>(),
+                imgIcon = iconImg,
                 txtName = statNameTmp,
                 txtBaseValue = itemUI != null && itemUI.TxtBaseValue != null
                     ? itemUI.TxtBaseValue
@@ -1308,6 +1389,30 @@ public class RuneForgeWindowUI : MonoBehaviour
                 view.txtName.text = TowerContextWindowUI.GetLocalizedStatName(view.statType);
             }
 
+            if (view.imgIcon == null && view.rootObject != null)
+            {
+                view.imgIcon = view.itemUI != null && view.itemUI.ImgIcon != null
+                    ? view.itemUI.ImgIcon
+                    : (view.rootObject.transform.Find("Img_StatType")?.GetComponent<Image>()
+                    ?? view.rootObject.transform.Find("Img_StatIcon")?.GetComponent<Image>()
+                    ?? view.rootObject.transform.Find("Img_Icon")?.GetComponent<Image>());
+            }
+
+            if (view.imgIcon != null && resourceVisualsDB != null)
+            {
+                Sprite statIcon = resourceVisualsDB.GetIcon(view.statType);
+                if (statIcon != null)
+                {
+                    view.imgIcon.gameObject.SetActive(true);
+                    view.imgIcon.sprite = statIcon;
+                    view.imgIcon.color = Color.white;
+                }
+                else
+                {
+                    view.imgIcon.gameObject.SetActive(false);
+                }
+            }
+
             float baseVal = 0;
             float modVal = 0;
             string unit = "";
@@ -1338,8 +1443,29 @@ public class RuneForgeWindowUI : MonoBehaviour
                         DamageType.True => LocalizationManager.Get("damage_type_true", "Czyste"),
                         _ => tower.damageType.ToString()
                     };
-                    if (view.txtBaseValue != null) view.txtBaseValue.text = dmgTypeName;
-                    if (view.txtCurrentValue != null) view.txtCurrentValue.text = dmgTypeName;
+                    if (view.txtBaseValue != null)
+                    {
+                        view.txtBaseValue.gameObject.SetActive(false);
+                    }
+                    if (view.txtCurrentValue != null)
+                    {
+                        Color dmgColor = tower.damageType switch
+                        {
+                            DamageType.Physical => new Color32(255, 140, 52, 255), // #FF8C34 (Tooltip color)
+                            DamageType.Magic => new Color32(0, 176, 240, 255),     // #00B0F0
+                            DamageType.True => Color.white,
+                            _ => Color.white
+                        };
+                        string dmgHex = tower.damageType switch
+                        {
+                            DamageType.Physical => "#FF8C34",
+                            DamageType.Magic => "#00B0F0",
+                            DamageType.True => "#FFFFFF",
+                            _ => "#FFFFFF"
+                        };
+                        view.txtCurrentValue.color = dmgColor;
+                        view.txtCurrentValue.text = $"<color={dmgHex}>{dmgTypeName}</color>";
+                    }
                     continue;
 
                 case BattleStats.CriticalChancel:
@@ -1383,17 +1509,35 @@ public class RuneForgeWindowUI : MonoBehaviour
             }
 
             float diff = modVal - baseVal;
+            bool isModified = Mathf.Abs(diff) >= 0.01f;
 
             if (view.txtBaseValue != null)
             {
-                view.txtBaseValue.text = $"{baseVal:0.#}{unit}";
+                if (isModified)
+                {
+                    view.txtBaseValue.gameObject.SetActive(true);
+                    view.txtBaseValue.text = $"<s>{baseVal:0.#}{unit}</s>";
+                }
+                else
+                {
+                    view.txtBaseValue.gameObject.SetActive(false);
+                }
             }
 
             if (view.txtCurrentValue != null)
             {
-                string colorHex = Mathf.Abs(diff) < 0.01f ? "#FFFFFF" : (diff > 0 ? "#45F375" : "#FF5555");
-                string diffStr = Mathf.Abs(diff) >= 0.05f ? $" ({(diff > 0 ? "+" : "")}{diff:0.#})" : "";
-                view.txtCurrentValue.text = $"<color={colorHex}>{modVal:0.#}{unit}{diffStr}</color>";
+                if (isModified)
+                {
+                    string colorHex = diff > 0 ? "#45F375" : "#FF5555";
+                    string diffStr = Mathf.Abs(diff) >= 0.05f ? $" ({(diff > 0 ? "+" : "")}{diff:0.#})" : "";
+                    view.txtCurrentValue.color = Color.white;
+                    view.txtCurrentValue.text = $"<color={colorHex}>{modVal:0.#}{unit}{diffStr}</color>";
+                }
+                else
+                {
+                    view.txtCurrentValue.color = Color.white;
+                    view.txtCurrentValue.text = $"{baseVal:0.#}{unit}";
+                }
             }
         }
     }

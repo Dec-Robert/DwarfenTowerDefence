@@ -284,6 +284,28 @@ public class HousingEntity : BuildingEntity
         return Mathf.Max(0, CalculateRequiredGrowthTicks() - currentGrowthProgress);
     }
 
+    /// <summary>
+    /// Oblicza sumaryczną liczbę cykli/dni wymaganych do całkowitego zapełnienia domu (osiągnięcia maksymalnej liczby mieszkańców).
+    /// </summary>
+    public int CalculateTotalDaysToFullHouse()
+    {
+        if (housingData == null) return 0;
+        int currentPop = residents != null ? residents.Count : 0;
+        int maxPop = GetEffectiveMaxResidents();
+        if (currentPop >= maxPop) return 0;
+
+        int currentRequired = CalculateRequiredGrowthTicks();
+        int remainingForCurrent = Mathf.Max(0, currentRequired - currentGrowthProgress);
+        int totalDays = remainingForCurrent;
+
+        for (int p = currentPop + 1; p < maxPop; p++)
+        {
+            totalDays += housingData.GetGrowthCyclesRequired(p);
+        }
+
+        return totalDays;
+    }
+
     public int GetProjectedUpkeep()
     {
         int total = 0;

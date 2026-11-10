@@ -32,7 +32,8 @@ public class RuneCardItemUI : MonoBehaviour, IPointerClickHandler, IBeginDragHan
     private void EnsureReferences()
     {
         if (imgRuneIcon == null)
-            imgRuneIcon = transform.Find("Img_RuneIcon")?.GetComponent<Image>();
+            imgRuneIcon = transform.Find("Img_RuneIcon")?.GetComponent<Image>()
+                       ?? transform.Find("Img_IconFrame/Img_RuneIcon")?.GetComponent<Image>();
 
         if (imgCardBackground == null)
             imgCardBackground = GetComponent<Image>();
@@ -62,10 +63,13 @@ public class RuneCardItemUI : MonoBehaviour, IPointerClickHandler, IBeginDragHan
             imgRuneIcon.preserveAspect = true;
         }
 
-        // 2. Tło karty i subtelny akcent rzadkości
+        // 2. Tło karty (jeśli ma przypisany sprite, zachowuje pełny kolor z prefaba)
         if (imgCardBackground != null)
         {
-            imgCardBackground.color = new Color(0.14f, 0.16f, 0.2f, 0.95f);
+            if (imgCardBackground.sprite == null)
+                imgCardBackground.color = new Color(0.14f, 0.16f, 0.2f, 0.95f);
+            else
+                imgCardBackground.color = Color.white;
         }
 
         // 3. Wiersze statystyk (Pnl_StatInfo)
