@@ -193,8 +193,7 @@ public class ExtendedBuildingUI : MonoBehaviour
         {
             if (building == null) continue;
 
-            bool isUnlocked = building.isUnlocked || (debugUnlockAllTowers && building is TowerData);
-            if (!isUnlocked) continue;
+            if (!IsBuildingUnlocked(building, debugUnlockAllTowers)) continue;
 
             GameObject slotObj = Instantiate(buildingSlotPrefab, buildingsContainer);
             slotObj.SetActive(false);
@@ -287,8 +286,7 @@ public class ExtendedBuildingUI : MonoBehaviour
         {
             if (entry.gameObject == null || entry.data == null) continue;
 
-            bool isUnlocked = entry.data.isUnlocked || (debugUnlockAllTowers && entry.data is TowerData);
-            if (!isUnlocked)
+            if (!IsBuildingUnlocked(entry.data, debugUnlockAllTowers))
             {
                 entry.gameObject.SetActive(false);
                 continue;
@@ -310,6 +308,27 @@ public class ExtendedBuildingUI : MonoBehaviour
                 entry.slotUI.UpdateAffordability();
             }
         }
+    }
+
+    /// <summary>
+    /// Sprawdza, czy budynek jest dostępny do zbudowania (z uwzględnieniem blokady Trinity Force dla Kuźni Runicznej, Wieży Runicznej i Warsztatu Narzędziowego).
+    /// </summary>
+    private static bool IsBuildingUnlocked(BuildingData building, bool debugUnlockAllTowers)
+    {
+        if (building == null) return false;
+
+        bool requiresTrinityForce = building.prefab != null
+            && (building.prefab.GetComponent<RuneForgeEntity>() != null
+                || building.prefab.GetComponent<RuneTowerEntity>() != null
+                || building.prefab.GetComponent<ToolWorkshopEntity>() != null);
+
+        if (requiresTrinityForce)
+        {
+            return MetaUpgradeManager.Instance != null
+                && MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockTrinityForce);
+        }
+
+        return building.isUnlocked || (debugUnlockAllTowers && building is TowerData);
     }
 
     private void UpdateTabVisuals(BuildingType? activeCategory)

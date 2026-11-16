@@ -3,13 +3,15 @@ using UnityEngine.EventSystems;
 
 /// <summary>
 /// Zarządza widocznością i pozycją panelu Pnl_SpellMenu na HUD-zie:
-/// - całkowicie ukryty (CanvasGroup), gdy gracz nie ma aktywnego zaklęcia,
+/// - całkowicie ukryty i wyłączony (CanvasGroup + X = -220), gdy gracz nie ma aktywnego zaklęcia,
+/// - po zdobyciu pierwszego zaklęcia płynnie wjeżdża z -220 na pozycję docelową,
 /// - w dzień (Morning / Dusk) schowany na X = -190, a po najechaniu kursorem wyjeżdża na X = -96,
 /// - w nocy (Night) na stałe wysunięty na X = -96.
 /// </summary>
 public class SpellMenuUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Pozycje X panelu")]
+    [SerializeField] private float noSpellHiddenX = -220f;
     [SerializeField] private float dayHiddenX = -190f;
     [SerializeField] private float visibleX = -96f;
     [SerializeField] private float slideSpeed = 12f;
@@ -99,7 +101,7 @@ public class SpellMenuUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (!hasSpell)
         {
             isHovered = false;
-            SetAnchoredX(dayHiddenX);
+            SetAnchoredX(noSpellHiddenX);
             return;
         }
 
@@ -165,7 +167,7 @@ public class SpellMenuUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void HandleSpellStateChanged()
     {
-        RefreshState(snapPosition: !hasSpell);
+        RefreshState(snapPosition: false);
     }
 
     private void HandlePhaseChanged()

@@ -98,7 +98,6 @@ public static class EndGameScreenSceneBuilder
         headerVlg.childControlHeight = true;
 
         TextMeshProUGUI txtHeaderTitle = CreateText("Txt_HeaderTitle", headerGo.transform, "TWIERDZA UPADŁA", 20f, font, Color.white, TextAlignmentOptions.Center);
-        TextMeshProUGUI txtHeaderSubtitle = CreateText("Txt_HeaderSubtitle", headerGo.transform, "Brama została zniszczona podczas 1. nocy", 12f, font, new Color(0.92f, 0.86f, 0.8f, 1f), TextAlignmentOptions.Center);
         TextMeshProUGUI txtNightsSurvived = CreateText("Txt_NightsSurvived", headerGo.transform, "Przetrwano nocy: 0", 14f, font, new Color(0.95f, 0.85f, 0.6f, 1f), TextAlignmentOptions.Center);
 
         // 5. Górna Sekcja - Statystyki Runu (zamiast City Protection)
@@ -155,11 +154,37 @@ public static class EndGameScreenSceneBuilder
         cardsHlg.childForceExpandWidth = true;
         cardsHlg.childForceExpandHeight = true;
 
-        EndGameHopeCardUI[] cardSlots = new EndGameHopeCardUI[4];
-        for (int i = 0; i < 4; i++)
-        {
-            cardSlots[i] = CreateHopeCard($"Card_Hope_{i}", cardsContainer.transform, slotEmpty, panelPlain, font);
-        }
+        GameObject scrollGo = CreateUIObject("Scroll View", cardsContainer.transform);
+        AddLayoutElement(scrollGo, flexibleWidth: 1f, flexibleHeight: 1f);
+        ScrollRect scrollRect = scrollGo.AddComponent<ScrollRect>();
+        scrollRect.horizontal = true;
+        scrollRect.vertical = false;
+
+        GameObject viewportGo = CreateUIObject("Viewport", scrollGo.transform);
+        StretchFull(viewportGo.GetComponent<RectTransform>());
+        viewportGo.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.01f);
+        viewportGo.AddComponent<Mask>().showMaskGraphic = false;
+
+        GameObject contentGo = CreateUIObject("Content", viewportGo.transform);
+        RectTransform contentRt = contentGo.GetComponent<RectTransform>();
+        contentRt.anchorMin = new Vector2(0f, 0f);
+        contentRt.anchorMax = new Vector2(0f, 1f);
+        contentRt.pivot = new Vector2(0f, 0.5f);
+        HorizontalLayoutGroup contentHlg = contentGo.AddComponent<HorizontalLayoutGroup>();
+        contentHlg.spacing = 8f;
+        contentHlg.childAlignment = TextAnchor.MiddleLeft;
+        contentHlg.childControlWidth = false;
+        contentHlg.childControlHeight = false;
+        contentHlg.childForceExpandWidth = false;
+        contentHlg.childForceExpandHeight = false;
+        ContentSizeFitter contentFitter = contentGo.AddComponent<ContentSizeFitter>();
+        contentFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        contentFitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+        scrollRect.viewport = viewportGo.GetComponent<RectTransform>();
+        scrollRect.content = contentRt;
+
+        EndGameHopeCardUI cardTemplate = CreateHopeCard("Card_Hope", contentGo.transform, slotEmpty, panelPlain, font);
 
         GameObject emptyInfoGo = CreateUIObject("Txt_EmptyCardsInfo", cardsContainer.transform);
         AddLayoutElement(emptyInfoGo, ignoreLayout: true);
@@ -172,6 +197,7 @@ public static class EndGameScreenSceneBuilder
 
         TextMeshProUGUI txtPageIndicator = CreateText("Txt_PageIndicator", hopeCarouselSection.transform, "1 / 1", 10f, font, new Color(0.8f, 0.8f, 0.8f, 1f), TextAlignmentOptions.Center);
         AddLayoutElement(txtPageIndicator.gameObject, preferredHeight: 16f);
+        txtPageIndicator.gameObject.SetActive(false);
 
         // 6B. Prawy Panel Podsumowania Nadziei (Run + Total na koncie)
         GameObject summarySection = CreateSectionPanel("Pnl_HopeSummarySection", middleGo.transform, "PODSUMOWANIE", panelInset, font, 0f);
@@ -301,7 +327,6 @@ public static class EndGameScreenSceneBuilder
         so.FindProperty("canvasGroup").objectReferenceValue = canvasGroup;
         so.FindProperty("animatedWindow").objectReferenceValue = windowRt;
         so.FindProperty("txtHeaderTitle").objectReferenceValue = txtHeaderTitle;
-        so.FindProperty("txtHeaderSubtitle").objectReferenceValue = txtHeaderSubtitle;
         so.FindProperty("txtNightsSurvived").objectReferenceValue = txtNightsSurvived;
         so.FindProperty("imgHeaderBanner").objectReferenceValue = headerImg;
 
@@ -313,12 +338,9 @@ public static class EndGameScreenSceneBuilder
         so.FindProperty("txtRunesCrafted").objectReferenceValue = txtRunesCrafted;
         so.FindProperty("txtFinalPopulation").objectReferenceValue = txtFinalPop;
 
-        SerializedProperty slotsProp = so.FindProperty("cardSlots");
-        slotsProp.arraySize = cardSlots.Length;
-        for (int i = 0; i < cardSlots.Length; i++)
-        {
-            slotsProp.GetArrayElementAtIndex(i).objectReferenceValue = cardSlots[i];
-        }
+        so.FindProperty("scrollRect").objectReferenceValue = scrollRect;
+        so.FindProperty("cardsContent").objectReferenceValue = contentRt;
+        so.FindProperty("cardTemplate").objectReferenceValue = cardTemplate;
 
         so.FindProperty("btnPrevPage").objectReferenceValue = btnPrev;
         so.FindProperty("btnNextPage").objectReferenceValue = btnNext;
@@ -495,7 +517,6 @@ public static class EndGameScreenSceneBuilder
         SerializedObject cardSo = new SerializedObject(cardUI);
         cardSo.FindProperty("txtTitle").objectReferenceValue = txtTitle;
         cardSo.FindProperty("txtAmount").objectReferenceValue = txtAmount;
-        cardSo.FindProperty("imgCategoryIcon").objectReferenceValue = iconImg;
         cardSo.FindProperty("imgRarityGem").objectReferenceValue = gemImg;
         cardSo.FindProperty("canvasGroup").objectReferenceValue = cardCg;
         cardSo.ApplyModifiedPropertiesWithoutUndo();

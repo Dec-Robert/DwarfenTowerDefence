@@ -3009,6 +3009,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
             MetaEffectType.RuneDropChance_Legendary             => $"+{v * 100:F0}% szansy run (Legendary)",
             MetaEffectType.RuneDropChance_Cursed                => $"+{v * 100:F0}% szansy run (Cursed)",
             MetaEffectType.RuneTowerLimit                       => $"+{v} limit wież runicznych",
+            MetaEffectType.UnlockTrinityForce                   => "Odblokowuje Kuźnię Runiczną i Warsztat Narzędziowy",
             _                                                   => upgrade.effectType.ToString()
         };
     }

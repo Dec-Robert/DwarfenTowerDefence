@@ -10,18 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
-  m_Name: Elfy 1
+  m_Name: "Moc tr\xF3jcy"
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
-  id: elfy_1
-  upgradeName: Elfy 1
-  description: Odblokowywuje Centrum zwiadowcze
+  id: trinity_force
+  upgradeName: "Moc tr\xF3jcy"
+  description: "Odblokowywuje dost\u0119p od ku\u017Anie runiczje i \nwarsztatu narz\u0119dziowego"
   icon: {fileID: 0}
-  cost: 10
-  nodePosition: {x: 1880, y: 3160}
+  cost: 100
+  nodePosition: {x: 0, y: 0}
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: d5b82056eb2ec564296df8ef5bab883a, type: 2}
-  effectType: 0
+  effectType: 131
   effectValue: 0
   effectValue2: 0
   targetBuilding: {fileID: 0}
+  hasVariants: 0
+  isVariantOption: 0
+  variantA: {fileID: 0}
+  variantB: {fileID: 0}

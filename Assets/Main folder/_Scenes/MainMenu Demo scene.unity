@@ -4333,6 +4333,8 @@ MonoBehaviour:
     upgradeInvestments: []
     unlockedTowerIDs: []
     isTutorialCompleted: 0
+    bestNightsSurvived: 0
+    totalVictories: 0
   allTowers: []
   unlockAllTowersForDebug: 1
 --- !u!4 &634605880
@@ -7061,7 +7063,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   graphRoot: {fileID: 970530142}
-  txtGraphTitle: {fileID: 1847421198}
+  txtGraphTitle: {fileID: 0}
   txtHopeCurrency: {fileID: 911515113}
   btnClose: {fileID: 869354768}
   tabTown: {fileID: 0}
@@ -14352,7 +14354,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allUpgrades:
-  - {fileID: 11400000, guid: ea7423933a905a7479ef7fc92c1b2fa6, type: 2}
   - {fileID: 11400000, guid: 89f3c990e5e31c54f8642da44ef68090, type: 2}
   - {fileID: 11400000, guid: 39b6cb2c8bdbd23448062211fe91b352, type: 2}
   - {fileID: 11400000, guid: 1e7f16c1f416b1c408546261b44f9f42, type: 2}
@@ -14372,7 +14373,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 84a1636c58a56e046aa384e90801f97c, type: 2}
   - {fileID: 11400000, guid: a1c24289cb8a5304682395941dfb8a68, type: 2}
   - {fileID: 11400000, guid: 4345d88ea426faf479951d66b912f542, type: 2}
-  - {fileID: 11400000, guid: d4cc19db4ac871e46895c4fb5b6aec37, type: 2}
   - {fileID: 11400000, guid: e5da765f6db25504397ce62b03da2fb8, type: 2}
   - {fileID: 11400000, guid: 47c7d7558ba6d8a4898d50a72954aff0, type: 2}
   - {fileID: 11400000, guid: 000414945c301534d95f8e914d0f67c1, type: 2}
@@ -14444,6 +14444,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 76896ee59ec70724997046419d5ac03d, type: 2}
   - {fileID: 11400000, guid: 5e21edda5161fb944a93ce8406a07d0b, type: 2}
   - {fileID: 11400000, guid: a5b654a5b099a0e4b8822d6060a6e7de, type: 2}
+  - {fileID: 11400000, guid: d293ea409cccef44986a8534662a171a, type: 2}
   allTowers: []
   gameSceneName: Game scene
 --- !u!4 &2042010942

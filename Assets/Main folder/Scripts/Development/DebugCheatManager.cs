@@ -514,6 +514,9 @@ public class DebugCheatManager : MonoBehaviour
                 case "meta_reset":
                     LogInfo("<b>meta reset [all|0]</b> | <b>meta_reset</b> - Blokuje wszystkie ulepszenia, przywraca wieże startowe i resetuje save. Z opcją 'all' zeruje też Hope.");
                     break;
+                case "hope":
+                    LogInfo("<b>hope &lt;ilość&gt;</b> | <b>res hope &lt;ilość&gt;</b> - Dodaje punkty nadziei (w menu bezpośrednio do konta w save, podczas gry do bieżącej sesji).");
+                    break;
                 default:
                     LogInfo($"Brak szczegółowego opisu dla '{sub}'.");
                     break;
@@ -531,19 +534,13 @@ public class DebugCheatManager : MonoBehaviour
         LogInfo("• <b>map reveal</b> | <b>map settleall</b> | <b>map scoutall</b> - Zarządzanie mapą i mgłą");
         LogInfo("• <b>rune_random &lt;ilość&gt;</b> | <b>rune_random &lt;rarity&gt; &lt;ilość&gt;</b> - Generowanie run");
         LogInfo("• <b>rune_stat &lt;rarity&gt; &lt;stat&gt;</b> | <b>rune clear</b> - Konkretne runy / czyszczenie");
-        LogInfo("• <b>hope &lt;ilość&gt;</b> - Dodaje punkty nadziei do sesji");
+        LogInfo("• <b>hope &lt;ilość&gt;</b> | <b>res hope &lt;ilość&gt;</b> - Dodaje punkty nadziei (do konta w menu lub sesji w grze)");
         LogInfo("• <b>meta reset [all]</b> | <b>meta all</b> - Pełny reset lub odblokowanie meta-progresji");
         LogInfo("• <b>clear</b> - Czyszczenie logów konsoli | <b>help &lt;komenda&gt;</b> - Szczegóły komendy");
     }
 
     private void HandleResources(string[] parts)
     {
-        if (ResourceManager.Instance == null)
-        {
-            LogError("ResourceManager.Instance nie istnieje na scenie.");
-            return;
-        }
-
         if (parts.Length < 2)
         {
             LogError("Użycie: res <typ> <ilość> | res all <ilość> | res clear");
@@ -551,6 +548,25 @@ public class DebugCheatManager : MonoBehaviour
         }
 
         string sub = parts[1].ToLowerInvariant();
+
+        // Hope nie wymaga ResourceManagera (np. w menu głównym zapisuje się bezpośrednio do SaveManager).
+        if (sub == "hope" || sub == "nadzieja")
+        {
+            if (parts.Length < 3 || !int.TryParse(parts[2], out int hopeAmount))
+            {
+                LogError("Użycie: res hope <ilość>");
+                return;
+            }
+
+            AddHope(hopeAmount);
+            return;
+        }
+
+        if (ResourceManager.Instance == null)
+        {
+            LogError("ResourceManager.Instance nie istnieje na scenie.");
+            return;
+        }
 
         if (sub == "clear")
         {
@@ -896,20 +912,53 @@ public class DebugCheatManager : MonoBehaviour
 
     private void HandleHope(string[] parts)
     {
-        if (HopeSessionManager.Instance == null)
-        {
-            LogError("HopeSessionManager.Instance nie istnieje na scenie.");
-            return;
-        }
-
         if (parts.Length < 2 || !int.TryParse(parts[1], out int amount))
         {
             LogError("Użycie: hope <ilość>");
             return;
         }
 
-        HopeSessionManager.Instance.AddRawHope(amount);
-        LogSuccess($"Dodano +{amount} punktów nadziei do sesji.");
+        AddHope(amount);
+    }
+
+    private void AddHope(int amount)
+    {
+        string sign = amount >= 0 ? "+" : "";
+
+        // Dodajemy do sesji tylko podczas aktywnej rozgrywki (w menu głównym obiekt HopeSessionManager też może istnieć na scenie).
+        bool isActiveGameSession = HopeSessionManager.Instance != null &&
+                                   GameManager.Instance != null &&
+                                   !HopeSessionManager.Instance.isSessionEnded;
+
+        if (isActiveGameSession)
+        {
+            HopeSessionManager.Instance.AddRawHope(amount);
+            LogSuccess($"Dodano {sign}{amount} punktów nadziei do sesji.");
+            return;
+        }
+
+        if (SaveManager.Instance != null)
+        {
+            if (SaveManager.Instance.currentSaveData == null)
+            {
+                SaveManager.Instance.currentSaveData = new SaveData();
+            }
+
+            int updatedHope = Mathf.Max(0, SaveManager.Instance.currentSaveData.totalHope + amount);
+            SaveManager.Instance.currentSaveData.totalHope = updatedHope;
+            SaveManager.Instance.SaveGame();
+
+            if (MetaGraphControllerUI.Instance != null)
+            {
+                MetaGraphControllerUI.Instance.UpdateHopeCurrency();
+                MetaGraphControllerUI.Instance.RefreshGraph();
+            }
+
+            LogSuccess($"Dodano {sign}{amount} Nadziei do konta. Aktualnie: {updatedHope}");
+            return;
+        }
+
+        LogError("Nie można dodać Nadziei: brak HopeSessionManager.Instance oraz SaveManager.Instance.");
     }
 
     private List<MetaUpgradeSO> GetAllMetaUpgradeAssets()

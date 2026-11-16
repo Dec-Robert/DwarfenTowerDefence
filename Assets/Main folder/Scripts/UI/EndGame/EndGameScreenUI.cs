@@ -11,18 +11,11 @@ using UnityEngine.UI;
 /// <summary>
 /// Główny kontroler ekranu końcowego gry (Zwycięstwo / Porażka) inspirowanego The Last Spell.
 /// Subskrybuje HopeSessionManager.OnSessionEnded, pauzuje grę i prezentuje statystyki runu,
-/// karuzelę zgrupowanych kart Nadziei z sekwencyjną animacją i tooltipami,
-/// płynnie naliczany stan konta oraz przyciski MENU i POWTÓRZ OBRONĘ.
+/// poziomy Scroll View z dynamicznie generowanymi kartami Nadziei i sekwencyjną animacją,
+/// tooltipami, płynnie naliczanym stanem konta oraz przyciskami MENU i POWTÓRZ OBRONĘ.
 /// </summary>
 public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 {
-    [Serializable]
-    public struct MilestoneIconMapping
-    {
-        public MilestoneType type;
-        public Sprite icon;
-    }
-
     [Header("Panel i Animacja Wejścia")]
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private CanvasGroup canvasGroup;
@@ -34,7 +27,6 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
     [Header("Nagłówek Wyniku")]
     [SerializeField] private TextMeshProUGUI txtHeaderTitle;
-    [SerializeField] private TextMeshProUGUI txtHeaderSubtitle;
     [SerializeField] private TextMeshProUGUI txtNightsSurvived;
     [SerializeField] private Image imgHeaderBanner;
     [SerializeField] private Color victoryHeaderColor = new Color(0.95f, 0.78f, 0.25f, 1f);
@@ -49,12 +41,16 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private TextMeshProUGUI txtRunesCrafted;
     [SerializeField] private TextMeshProUGUI txtFinalPopulation;
 
-    [Header("Środkowa Sekcja - Karuzela Kart Nadziei")]
-    [SerializeField] private EndGameHopeCardUI[] cardSlots;
+    [Header("Środkowa Sekcja - Scroll View Kart Nadziei")]
+    [SerializeField] private ScrollRect scrollRect;
+    [SerializeField] private RectTransform cardsContent;
+    [SerializeField] private EndGameHopeCardUI cardTemplate;
     [SerializeField] private Button btnPrevPage;
     [SerializeField] private Button btnNextPage;
     [SerializeField] private TextMeshProUGUI txtPageIndicator;
     [SerializeField] private GameObject objEmptyCardsInfo;
+    [SerializeField] private float scrollViewportFraction = 0.75f;
+    [SerializeField] private float scrollSmoothSpeed = 10f;
 
     [Header("Tooltip Karty Nadziei")]
     [SerializeField] private RectTransform pnlCardTooltip;
@@ -62,16 +58,14 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private TextMeshProUGUI txtTooltipRarity;
     [SerializeField] private TextMeshProUGUI txtTooltipBreakdown;
 
-    [Header("Ikony Kategorii i Rzadkości (4 poziomy)")]
-    [SerializeField] private Sprite defaultCategoryIcon;
-    [SerializeField] private List<MilestoneIconMapping> milestoneIcons = new List<MilestoneIconMapping>();
+    [Header("Rzadkość Kart (4 poziomy)")]
     [SerializeField] private Sprite[] rarityTierSprites = new Sprite[4];
     [SerializeField] private Color[] rarityFallbackColors = new Color[]
     {
-        new Color(0.85f, 0.85f, 0.85f, 1f), // Tier 0 - Zwykła
-        new Color(0.30f, 0.85f, 0.40f, 1f), // Tier 1 - Rzadka
-        new Color(0.90f, 0.25f, 0.25f, 1f), // Tier 2 - Epicka
-        new Color(0.70f, 0.30f, 0.95f, 1f)  // Tier 3 - Legendarna
+        new Color(0.85f, 0.85f, 0.85f, 1f), // Tier 0 - Common (szary)
+        new Color(0.35f, 0.85f, 0.45f, 1f), // Tier 1 - Uncommon (zielony)
+        new Color(0.30f, 0.65f, 0.95f, 1f), // Tier 2 - Rare (niebieski)
+        new Color(0.96f, 0.78f, 0.28f, 1f)  // Tier 3 - Legendary (złoty)
     };
 
     [Header("Środkowa Sekcja (Prawa) - Podsumowanie Nadziei")]
@@ -91,18 +85,29 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
     private static readonly string[] RarityLabels = { "Ranga: Zwykła", "Ranga: Rzadka", "Ranga: Epicka", "Ranga: Legendarna" };
 
     private readonly List<HopeSessionManager.GroupedHopeCardData> groupedCards = new List<HopeSessionManager.GroupedHopeCardData>();
-    private int currentPage = 0;
+    private readonly List<EndGameHopeCardUI> spawnedCards = new List<EndGameHopeCardUI>();
     private Coroutine presentationCoroutine;
     private bool isSubscribed = false;
     private bool isPresenting = false;
+    private bool isSmoothScrolling = false;
+    private bool isApplyingSmoothScroll = false;
+    private bool isScrollListenerBound = false;
+    private float targetNormalizedX = 0f;
     private HopeSessionManager.HopeSessionSummary currentSummary;
 
     private void Awake()
     {
+        AutoBindScrollReferences();
+
         if (btnPrevPage != null) btnPrevPage.onClick.AddListener(PrevPage);
         if (btnNextPage != null) btnNextPage.onClick.AddListener(NextPage);
         if (btnMenu != null) btnMenu.onClick.AddListener(OnMenuClicked);
         if (btnRetry != null) btnRetry.onClick.AddListener(OnRetryClicked);
+
+        if (txtPageIndicator != null)
+        {
+            txtPageIndicator.gameObject.SetActive(false);
+        }
 
         if (pnlCardTooltip != null)
         {
@@ -133,11 +138,34 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         {
             SkipPresentation();
         }
+
+        if (isSmoothScrolling && scrollRect != null)
+        {
+            float current = scrollRect.horizontalNormalizedPosition;
+            float next = Mathf.MoveTowards(current, targetNormalizedX, scrollSmoothSpeed * Time.unscaledDeltaTime);
+            isApplyingSmoothScroll = true;
+            scrollRect.horizontalNormalizedPosition = next;
+            isApplyingSmoothScroll = false;
+
+            if (Mathf.Abs(next - targetNormalizedX) <= 0.001f)
+            {
+                isApplyingSmoothScroll = true;
+                scrollRect.horizontalNormalizedPosition = targetNormalizedX;
+                isApplyingSmoothScroll = false;
+                isSmoothScrolling = false;
+            }
+            UpdateScrollButtonsInteractable();
+        }
     }
 
     private void OnDestroy()
     {
         Unsubscribe();
+        if (isScrollListenerBound && scrollRect != null)
+        {
+            scrollRect.onValueChanged.RemoveListener(OnScrollRectValueChanged);
+            isScrollListenerBound = false;
+        }
     }
 
     private void TrySubscribe()
@@ -192,6 +220,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
             panelRoot.SetActive(true);
         }
 
+        AutoBindScrollReferences();
         HideCardTooltip();
         PopulateHeader(summary);
         PopulateStats(summary);
@@ -200,7 +229,6 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
         groupedCards.Clear();
         groupedCards.AddRange(HopeSessionManager.BuildGroupedHopeCards(summary.records));
-        currentPage = 0;
 
         if (presentationCoroutine != null)
         {
@@ -210,13 +238,13 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
         if (Application.isPlaying && gameObject.activeInHierarchy)
         {
-            RefreshCarousel(prepareForReveal: true);
+            PopulateCards(prepareForReveal: true);
             SetHopeCounters(0, Mathf.Max(0, summary.totalAccountHope - summary.finalTotalHope), summary.multiplier);
             presentationCoroutine = StartCoroutine(PlayPresentationRoutine(summary));
         }
         else
         {
-            RefreshCarousel(prepareForReveal: false);
+            PopulateCards(prepareForReveal: false);
             SetHopeCounters(summary.finalTotalHope, summary.totalAccountHope, summary.multiplier);
             if (canvasGroup != null) canvasGroup.alpha = 1f;
             if (animatedWindow != null) animatedWindow.localScale = Vector3.one;
@@ -237,14 +265,11 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         if (canvasGroup != null) canvasGroup.alpha = 1f;
         if (animatedWindow != null) animatedWindow.localScale = Vector3.one;
 
-        if (cardSlots != null)
+        for (int i = 0; i < spawnedCards.Count; i++)
         {
-            for (int i = 0; i < cardSlots.Length; i++)
+            if (spawnedCards[i] != null && spawnedCards[i].gameObject.activeSelf)
             {
-                if (cardSlots[i] != null && cardSlots[i].gameObject.activeSelf)
-                {
-                    cardSlots[i].SnapToRevealed();
-                }
+                spawnedCards[i].SnapToRevealed();
             }
         }
 
@@ -260,6 +285,11 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
         if (canvasGroup != null) canvasGroup.alpha = 0f;
         if (animatedWindow != null) animatedWindow.localScale = Vector3.one * 0.94f;
+
+        // Odczekanie jednej klatki pozwala Canvasowi przeliczyć szerokość Viewportu i Contentu w ScrollRect
+        yield return null;
+        RebuildCardsLayout();
+        UpdateScrollButtonsState();
 
         float fadeDur = Mathf.Max(0.01f, fadeDuration);
         float elapsed = 0f;
@@ -277,16 +307,13 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         if (canvasGroup != null) canvasGroup.alpha = 1f;
         if (animatedWindow != null) animatedWindow.localScale = Vector3.one;
 
-        // Sekwencyjne odkrywanie kart na bieżącej stronie
-        if (cardSlots != null)
+        // Sekwencyjne odkrywanie wszystkich wygenerowanych kart w Scroll View
+        for (int i = 0; i < spawnedCards.Count; i++)
         {
-            for (int i = 0; i < cardSlots.Length; i++)
+            if (spawnedCards[i] != null && spawnedCards[i].gameObject.activeSelf)
             {
-                if (cardSlots[i] != null && cardSlots[i].gameObject.activeSelf)
-                {
-                    cardSlots[i].PlayReveal(0.22f);
-                    yield return new WaitForSecondsRealtime(cardRevealDelay);
-                }
+                spawnedCards[i].PlayReveal(0.22f);
+                yield return new WaitForSecondsRealtime(cardRevealDelay);
             }
         }
 
@@ -320,14 +347,6 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         {
             txtHeaderTitle.text = summary.isVictory ? "ZWYCIĘSTWO!" : "TWIERDZA UPADŁA";
             txtHeaderTitle.color = headerColor;
-        }
-
-        if (txtHeaderSubtitle != null)
-        {
-            int nightContext = summary.currentNight > 0 ? summary.currentNight : Mathf.Max(1, summary.nightsSurvived + 1);
-            txtHeaderSubtitle.text = summary.isVictory
-                ? "Twierdza przetrwała wszystkie fale!"
-                : $"Brama została zniszczona podczas {nightContext}. nocy";
         }
 
         if (imgHeaderBanner != null)
@@ -448,63 +467,104 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
     public void PrevPage()
     {
-        if (currentPage <= 0) return;
-        currentPage--;
-        HideCardTooltip();
-        RefreshCarousel(prepareForReveal: false);
+        ScrollBy(-1);
     }
 
     public void NextPage()
     {
-        int totalPages = GetTotalPages();
-        if (currentPage >= totalPages - 1) return;
-        currentPage++;
+        ScrollBy(1);
+    }
+
+    private void ScrollBy(int direction)
+    {
+        if (scrollRect == null || cardsContent == null || !HasHorizontalOverflow()) return;
+
         HideCardTooltip();
-        RefreshCarousel(prepareForReveal: false);
+
+        RectTransform viewport = scrollRect.viewport != null ? scrollRect.viewport : scrollRect.GetComponent<RectTransform>();
+        float viewportWidth = viewport != null ? viewport.rect.width : 0f;
+        float scrollableWidth = Mathf.Max(1f, cardsContent.rect.width - viewportWidth);
+        float stepNormalized = viewportWidth > 0f
+            ? Mathf.Clamp01((viewportWidth * Mathf.Clamp01(scrollViewportFraction)) / scrollableWidth)
+            : 0.25f;
+
+        float basePos = isSmoothScrolling ? targetNormalizedX : scrollRect.horizontalNormalizedPosition;
+        targetNormalizedX = Mathf.Clamp01(basePos + direction * stepNormalized);
+        isSmoothScrolling = true;
     }
 
-    private int GetCardsPerPage()
+    private void AutoBindScrollReferences()
     {
-        return cardSlots != null && cardSlots.Length > 0 ? cardSlots.Length : 4;
-    }
+        Transform searchRoot = panelRoot != null ? panelRoot.transform : transform;
 
-    private int GetTotalPages()
-    {
-        if (groupedCards.Count == 0) return 1;
-        return Mathf.CeilToInt((float)groupedCards.Count / GetCardsPerPage());
-    }
-
-    private void RefreshCarousel(bool prepareForReveal)
-    {
-        int perPage = GetCardsPerPage();
-        int totalPages = GetTotalPages();
-        currentPage = Mathf.Clamp(currentPage, 0, totalPages - 1);
-
-        int startIndex = currentPage * perPage;
-
-        if (cardSlots != null)
+        if (scrollRect == null && searchRoot != null)
         {
-            for (int i = 0; i < cardSlots.Length; i++)
-            {
-                if (cardSlots[i] == null) continue;
+            scrollRect = searchRoot.GetComponentInChildren<ScrollRect>(true);
+        }
 
-                int dataIndex = startIndex + i;
-                if (dataIndex < groupedCards.Count)
+        if (cardsContent == null && scrollRect != null)
+        {
+            cardsContent = scrollRect.content;
+        }
+
+        if (cardTemplate == null && cardsContent != null)
+        {
+            cardTemplate = cardsContent.GetComponentInChildren<EndGameHopeCardUI>(true);
+        }
+
+        if (cardsContent != null)
+        {
+            cardsContent.anchorMin = new Vector2(0f, 0f);
+            cardsContent.anchorMax = new Vector2(0f, 1f);
+            cardsContent.pivot = new Vector2(0f, 0.5f);
+
+            var fitter = cardsContent.GetComponent<ContentSizeFitter>();
+            if (fitter != null)
+            {
+                fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            }
+        }
+
+        if (!isScrollListenerBound && scrollRect != null)
+        {
+            scrollRect.onValueChanged.AddListener(OnScrollRectValueChanged);
+            isScrollListenerBound = true;
+        }
+    }
+
+    private void OnScrollRectValueChanged(Vector2 _)
+    {
+        if (!isApplyingSmoothScroll)
+        {
+            isSmoothScrolling = false;
+        }
+        UpdateScrollButtonsInteractable();
+    }
+
+    private void PopulateCards(bool prepareForReveal)
+    {
+        ClearSpawnedCards();
+
+        if (txtPageIndicator != null)
+        {
+            txtPageIndicator.gameObject.SetActive(false);
+        }
+
+        if (cardTemplate != null && cardsContent != null)
+        {
+            for (int i = 0; i < groupedCards.Count; i++)
+            {
+                var cardData = groupedCards[i];
+                EndGameHopeCardUI card = Instantiate(cardTemplate, cardsContent);
+                card.name = $"Card_Hope_{i}";
+                Sprite raritySprite = GetRaritySprite(cardData.rarityTier);
+                Color fallbackColor = GetRarityFallbackColor(cardData.rarityTier);
+                card.Setup(cardData, raritySprite, fallbackColor, ShowCardTooltip, HideCardTooltip);
+                if (prepareForReveal)
                 {
-                    var cardData = groupedCards[dataIndex];
-                    Sprite icon = GetCategoryIcon(cardData.milestoneType);
-                    Sprite raritySprite = GetRaritySprite(cardData.rarityTier);
-                    Color fallbackColor = GetRarityFallbackColor(cardData.rarityTier);
-                    cardSlots[i].Setup(cardData, icon, raritySprite, fallbackColor, ShowCardTooltip, HideCardTooltip);
-                    if (prepareForReveal)
-                    {
-                        cardSlots[i].PrepareForReveal();
-                    }
+                    card.PrepareForReveal();
                 }
-                else
-                {
-                    cardSlots[i].Hide();
-                }
+                spawnedCards.Add(card);
             }
         }
 
@@ -513,19 +573,107 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
             objEmptyCardsInfo.SetActive(groupedCards.Count == 0);
         }
 
+        RebuildCardsLayout();
+
+        if (scrollRect != null)
+        {
+            isSmoothScrolling = false;
+            targetNormalizedX = 0f;
+            isApplyingSmoothScroll = true;
+            scrollRect.horizontalNormalizedPosition = 0f;
+            isApplyingSmoothScroll = false;
+        }
+
+        UpdateScrollButtonsState();
+    }
+
+    private void ClearSpawnedCards()
+    {
+        for (int i = 0; i < spawnedCards.Count; i++)
+        {
+            if (spawnedCards[i] != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(spawnedCards[i].gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(spawnedCards[i].gameObject);
+                }
+            }
+        }
+        spawnedCards.Clear();
+
+        if (cardTemplate != null && cardTemplate.gameObject.scene.IsValid())
+        {
+            cardTemplate.gameObject.SetActive(false);
+        }
+
+        // Ukrywa przykładowe karty pozostawione w Content na scenie (np. Card_Hope (1))
+        if (cardsContent != null)
+        {
+            for (int i = 0; i < cardsContent.childCount; i++)
+            {
+                cardsContent.GetChild(i).gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void RebuildCardsLayout()
+    {
+        Canvas.ForceUpdateCanvases();
+        if (cardsContent != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(cardsContent);
+        }
+        if (scrollRect != null)
+        {
+            RectTransform viewport = scrollRect.viewport != null ? scrollRect.viewport : scrollRect.GetComponent<RectTransform>();
+            if (viewport != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(viewport);
+            }
+        }
+    }
+
+    private bool HasHorizontalOverflow()
+    {
+        if (scrollRect == null || cardsContent == null || groupedCards.Count == 0) return false;
+        RectTransform viewport = scrollRect.viewport != null ? scrollRect.viewport : scrollRect.GetComponent<RectTransform>();
+        if (viewport == null) return false;
+        return cardsContent.rect.width > viewport.rect.width + 1f;
+    }
+
+    private void UpdateScrollButtonsState()
+    {
+        bool hasOverflow = HasHorizontalOverflow();
+
         if (btnPrevPage != null)
         {
-            btnPrevPage.interactable = currentPage > 0;
+            btnPrevPage.gameObject.SetActive(hasOverflow);
         }
 
         if (btnNextPage != null)
         {
-            btnNextPage.interactable = currentPage < totalPages - 1;
+            btnNextPage.gameObject.SetActive(hasOverflow);
         }
 
-        if (txtPageIndicator != null)
+        UpdateScrollButtonsInteractable();
+    }
+
+    private void UpdateScrollButtonsInteractable()
+    {
+        if (scrollRect == null) return;
+
+        float pos = scrollRect.horizontalNormalizedPosition;
+        if (btnPrevPage != null && btnPrevPage.gameObject.activeSelf)
         {
-            txtPageIndicator.text = groupedCards.Count > 0 ? $"{currentPage + 1} / {totalPages}" : "0 / 0";
+            btnPrevPage.interactable = pos > 0.005f;
+        }
+        if (btnNextPage != null && btnNextPage.gameObject.activeSelf)
+        {
+            btnNextPage.interactable = pos < 0.995f;
         }
     }
 
@@ -586,21 +734,6 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         {
             pnlCardTooltip.gameObject.SetActive(false);
         }
-    }
-
-    private Sprite GetCategoryIcon(MilestoneType? type)
-    {
-        if (type.HasValue && milestoneIcons != null)
-        {
-            for (int i = 0; i < milestoneIcons.Count; i++)
-            {
-                if (milestoneIcons[i].type == type.Value && milestoneIcons[i].icon != null)
-                {
-                    return milestoneIcons[i].icon;
-                }
-            }
-        }
-        return defaultCategoryIcon;
     }
 
     private Sprite GetRaritySprite(int tier)

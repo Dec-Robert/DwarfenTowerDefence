@@ -239,7 +239,7 @@ public class MetaUpgradeManager : MonoBehaviour
             case MetaEffectType.SpecificBuildingUpgradeCostReduction:
             case MetaEffectType.SpecificBuildingProductionBonus:
             case MetaEffectType.UnlockDruidTower:
-            case MetaEffectType.UnlockToolWorkshop:
+            case MetaEffectType.UnlockTrinityForce:
                 // Obsługiwane przez odpytywanie IsUnlocked() / GetBuildingValue()
                 break;
 

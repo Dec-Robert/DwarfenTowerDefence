@@ -56,4 +56,4 @@ MonoBehaviour:
     penaltyPerExtraBuilding: 0
     searchRadius: 0
   baseMaxWorkers: 1
-  isUnlocked: 1
+  isUnlocked: 0

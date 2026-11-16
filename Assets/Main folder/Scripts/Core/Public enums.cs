@@ -273,8 +273,8 @@ public enum MetaEffectType
     // ── System Zaklęć i Wieża Szalonego Druida ────────────────────────────────
     UnlockDruidTower = 130,
 
-    // ── Warsztat Narzędziowy i Globalne Ulepszenia ─────────────────────────────
-    UnlockToolWorkshop = 131
+    // ── Odblokowanie kuźnie runicznej i ToolWorkshopu 
+    UnlockTrinityForce = 131
 }
 
 public enum SpellCastLimitMode

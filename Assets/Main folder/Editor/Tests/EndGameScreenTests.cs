@@ -56,27 +56,47 @@ public class EndGameScreenTests
     }
 
     [Test]
-    public void EndGameScreenUI_ShowAndPagination_PausesAndDisplaysGroupedCards()
+    public void EndGameScreenUI_ShowAndScroll_PausesSpawnsCardsAndHandlesOverflow()
     {
         testGo = new GameObject("Test_EndGameScreenUI");
-        var root = new GameObject("Root");
+        var root = new GameObject("Root", typeof(RectTransform));
         root.transform.SetParent(testGo.transform);
 
-        var slots = new EndGameHopeCardUI[2];
-        for (int i = 0; i < 2; i++)
-        {
-            var cardGo = new GameObject($"Card_{i}");
-            cardGo.transform.SetParent(root.transform);
-            var txtTitle = new GameObject("Title").AddComponent<TextMeshProUGUI>();
-            txtTitle.transform.SetParent(cardGo.transform);
-            var txtAmount = new GameObject("Amount").AddComponent<TextMeshProUGUI>();
-            txtAmount.transform.SetParent(cardGo.transform);
+        var scrollGo = new GameObject("Scroll View", typeof(RectTransform), typeof(ScrollRect));
+        scrollGo.transform.SetParent(root.transform);
+        var viewportRt = new GameObject("Viewport", typeof(RectTransform)).GetComponent<RectTransform>();
+        viewportRt.SetParent(scrollGo.transform);
+        viewportRt.sizeDelta = new Vector2(200f, 100f);
 
-            var card = cardGo.AddComponent<EndGameHopeCardUI>();
-            SetPrivateField(card, "txtTitle", txtTitle);
-            SetPrivateField(card, "txtAmount", txtAmount);
-            slots[i] = card;
-        }
+        var contentGo = new GameObject("Content", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
+        var contentRt = contentGo.GetComponent<RectTransform>();
+        contentRt.SetParent(viewportRt);
+        contentRt.anchorMin = new Vector2(0f, 0f);
+        contentRt.anchorMax = new Vector2(0f, 1f);
+        contentRt.pivot = new Vector2(0f, 0.5f);
+        var hlg = contentGo.GetComponent<HorizontalLayoutGroup>();
+        hlg.spacing = 10f;
+        hlg.childControlWidth = false;
+        hlg.childForceExpandWidth = false;
+
+        var scrollRect = scrollGo.GetComponent<ScrollRect>();
+        scrollRect.viewport = viewportRt;
+        scrollRect.content = contentRt;
+        scrollRect.horizontal = true;
+        scrollRect.vertical = false;
+
+        var cardTemplateGo = new GameObject("Card_Hope", typeof(RectTransform), typeof(LayoutElement));
+        cardTemplateGo.transform.SetParent(contentRt);
+        cardTemplateGo.GetComponent<RectTransform>().sizeDelta = new Vector2(120f, 92f);
+        cardTemplateGo.GetComponent<LayoutElement>().preferredWidth = 120f;
+        var txtTitle = new GameObject("Title").AddComponent<TextMeshProUGUI>();
+        txtTitle.transform.SetParent(cardTemplateGo.transform);
+        var txtAmount = new GameObject("Amount").AddComponent<TextMeshProUGUI>();
+        txtAmount.transform.SetParent(cardTemplateGo.transform);
+
+        var cardTemplate = cardTemplateGo.AddComponent<EndGameHopeCardUI>();
+        SetPrivateField(cardTemplate, "txtTitle", txtTitle);
+        SetPrivateField(cardTemplate, "txtAmount", txtAmount);
 
         var btnPrev = new GameObject("Prev").AddComponent<Button>();
         btnPrev.transform.SetParent(root.transform);
@@ -87,7 +107,9 @@ public class EndGameScreenTests
 
         var ui = testGo.AddComponent<EndGameScreenUI>();
         SetPrivateField(ui, "panelRoot", root);
-        SetPrivateField(ui, "cardSlots", slots);
+        SetPrivateField(ui, "scrollRect", scrollRect);
+        SetPrivateField(ui, "cardsContent", contentRt);
+        SetPrivateField(ui, "cardTemplate", cardTemplate);
         SetPrivateField(ui, "btnPrevPage", btnPrev);
         SetPrivateField(ui, "btnNextPage", btnNext);
         SetPrivateField(ui, "txtPageIndicator", txtPage);
@@ -110,17 +132,17 @@ public class EndGameScreenTests
 
         Assert.AreEqual(0f, Time.timeScale, 0.001f, "Ekran końcowy powinien zapauzować grę.");
         Assert.IsTrue(root.activeSelf);
-        Assert.AreEqual("1 / 2", txtPage.text);
-        Assert.IsFalse(btnPrev.interactable);
-        Assert.IsTrue(btnNext.interactable);
+        Assert.IsFalse(txtPage.gameObject.activeSelf, "Txt_PageIndicator powinien być ukryty.");
+        Assert.IsFalse(cardTemplate.gameObject.activeSelf, "Szablon karty powinien pozostać ukryty.");
 
-        ui.NextPage();
-
-        Assert.AreEqual("2 / 2", txtPage.text);
-        Assert.IsTrue(btnPrev.interactable);
-        Assert.IsFalse(btnNext.interactable);
-        Assert.IsTrue(slots[0].gameObject.activeSelf);
-        Assert.IsFalse(slots[1].gameObject.activeSelf);
+        var spawnedCards = (List<EndGameHopeCardUI>)typeof(EndGameScreenUI)
+            .GetField("spawnedCards", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(ui);
+        Assert.AreEqual(3, spawnedCards.Count, "Powinny zostać wygenerowane 3 karty Nadziei.");
+        Assert.AreEqual(ContentSizeFitter.FitMode.PreferredSize, contentGo.GetComponent<ContentSizeFitter>().horizontalFit);
+        Assert.IsTrue(btnPrev.gameObject.activeSelf && btnNext.gameObject.activeSelf, "Przy overflow przyciski przewijania powinny być widoczne.");
+        Assert.IsFalse(btnPrev.interactable, "Na początku scrolla przycisk w lewo powinien być nieaktywny.");
+        Assert.IsTrue(btnNext.interactable, "Na początku scrolla przy overflow przycisk w prawo powinien być aktywny.");
     }
 
     private static void SetPrivateField(object target, string fieldName, object value)

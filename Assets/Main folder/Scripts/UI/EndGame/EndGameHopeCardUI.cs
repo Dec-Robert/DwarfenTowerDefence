@@ -6,8 +6,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// Pojedyncza karta zdobytej Nadziei w karuzeli na ekranie końcowym gry.
-/// Wyświetla zgrupowany tytuł, zsumowaną liczbę punktów, ikonę kategorii, klejnot rzadkości
+/// Pojedyncza karta zdobytej Nadziei w panelu Scroll View na ekranie końcowym gry.
+/// Wyświetla zgrupowany tytuł, zsumowaną liczbę punktów, klejnot rzadkości
 /// oraz obsługuje animację pojawienia się i tooltip po najechaniu kursorem.
 /// </summary>
 public class EndGameHopeCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
@@ -15,7 +15,6 @@ public class EndGameHopeCardUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
     [Header("Referencje UI")]
     [SerializeField] private TextMeshProUGUI txtTitle;
     [SerializeField] private TextMeshProUGUI txtAmount;
-    [SerializeField] private Image imgCategoryIcon;
     [SerializeField] private Image imgRarityGem;
     [SerializeField] private CanvasGroup canvasGroup;
 
@@ -41,7 +40,6 @@ public class EndGameHopeCardUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
     /// </summary>
     public void Setup(
         HopeSessionManager.GroupedHopeCardData data,
-        Sprite categoryIcon,
         Sprite raritySprite,
         Color rarityFallbackColor,
         Action<HopeSessionManager.GroupedHopeCardData, RectTransform> hoverEnterCallback = null,
@@ -63,12 +61,6 @@ public class EndGameHopeCardUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (txtAmount != null)
         {
             txtAmount.text = $"+{data.totalAmount}";
-        }
-
-        if (imgCategoryIcon != null)
-        {
-            imgCategoryIcon.sprite = categoryIcon;
-            imgCategoryIcon.enabled = categoryIcon != null;
         }
 
         if (imgRarityGem != null)

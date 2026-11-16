@@ -110,7 +110,7 @@ public class ToolWorkshopResearchManager : MonoBehaviour
     public static bool IsWorkshopUnlockedInMeta()
     {
         if (MetaUpgradeManager.Instance == null) return true;
-        return MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockToolWorkshop);
+        return MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockTrinityForce);
     }
 
     // =========================================================================
