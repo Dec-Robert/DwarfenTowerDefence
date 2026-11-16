@@ -93,9 +93,13 @@ public class FogOfWarManager : MonoBehaviour
             borderlandsFogMaterial.renderQueue = 2990;
             borderlandsFogMaterial.SetFloat("_Cull", 0f);
         }
+        if (surveyingDepthMaterial != null)
+        {
+            surveyingDepthMaterial.renderQueue = 3105;
+        }
         if (surveyingFogMaterial != null)
         {
-            surveyingFogMaterial.renderQueue = 3000;
+            surveyingFogMaterial.renderQueue = 3106;
         }
     }
     [Header("Referencje")]
@@ -242,10 +246,16 @@ public class FogOfWarManager : MonoBehaviour
     [Tooltip("Margines wokół granic mapy (w jednostkach promienia chunka)")]
     public float worldMarginMultiplier = 3.0f;
 
+    [Header("Efekty Mgły na Przeciwnikach")]
+    [Tooltip("Mnożnik prędkości przeciwników poruszających się po chunku w trakcie eksploracji (Surveying). 1.5 = +50%.")]
+    public float surveyingEnemySpeedMultiplier = 1.5f;
+
     public event Action<Vector2Int> OnChunkRevealed;
+    public event Action<Vector2Int> OnChunkSurveyingStarted;
     public event Action<Vector2Int> OnBorderlandsClicked;
 
     private readonly Dictionary<Vector2Int, GameObject> activeFogChunks = new Dictionary<Vector2Int, GameObject>();
+    private readonly HashSet<Vector2Int> activeSurveyingChunks = new HashSet<Vector2Int>();
     private int chunkRadius;
     private float hexSize;
     private float padding;
@@ -542,6 +552,14 @@ public class FogOfWarManager : MonoBehaviour
         }
 
         chunkFogStates[coord] = state;
+        if (state == ChunkState.Surveying)
+        {
+            activeSurveyingChunks.Add(coord);
+        }
+        else
+        {
+            activeSurveyingChunks.Remove(coord);
+        }
 
         bool canAnimate = animate && Application.isPlaying && gameObject.activeInHierarchy && hadPrev;
 
@@ -577,6 +595,7 @@ public class FogOfWarManager : MonoBehaviour
                     SetFogFull(coord, surveyMat, surveyingDepthMaterial);
                     SetTerrainVisible(coord, true);
                 }
+                OnChunkSurveyingStarted?.Invoke(coord);
                 break;
 
             case ChunkState.Outskirts:
@@ -625,6 +644,82 @@ public class FogOfWarManager : MonoBehaviour
             return state == ChunkState.Outskirts || state == ChunkState.Settled;
         }
         return !activeFogChunks.ContainsKey(coord);
+    }
+
+    /// <summary>
+    /// Zwraca true, jeśli chunk jest otwarty dla wyznaczania punktu spawnu
+    /// (faktyczna eksploracja Surveying, Pogranicze Outskirts lub Osada Settled).
+    /// Zwiad taktyczny (Recon) nie zmienia stanu chunka i pozostaje zamknięty.
+    /// </summary>
+    public bool IsChunkOpenForSpawn(Vector2Int coord)
+    {
+        if (expansionManager != null)
+        {
+            var state = expansionManager.GetEffectiveState(coord);
+            return state == ChunkState.Surveying || state == ChunkState.Outskirts || state == ChunkState.Settled;
+        }
+        if (chunkFogStates.TryGetValue(coord, out var fogState))
+        {
+            return fogState == ChunkState.Surveying || fogState == ChunkState.Outskirts || fogState == ChunkState.Settled;
+        }
+        return !activeFogChunks.ContainsKey(coord);
+    }
+
+    /// <summary>
+    /// Zwraca true, jeśli dany chunk znajduje się obecnie w stanie aktywnej eksploracji (Surveying).
+    /// </summary>
+    public bool IsChunkSurveying(Vector2Int coord)
+    {
+        if (activeSurveyingChunks.Contains(coord))
+        {
+            return true;
+        }
+        if (expansionManager != null)
+        {
+            return expansionManager.GetEffectiveState(coord) == ChunkState.Surveying;
+        }
+        return chunkFogStates.TryGetValue(coord, out var fogState) && fogState == ChunkState.Surveying;
+    }
+
+    /// <summary>
+    /// Szybkie (O(1)) sprawdzenie, czy podana pozycja świata leży na chunku w stanie Surveying.
+    /// </summary>
+    public bool IsWorldPositionInSurveyingFog(Vector3 worldPos)
+    {
+        if (activeSurveyingChunks.Count == 0)
+        {
+            return false;
+        }
+
+        EnsureGridMetrics();
+        if (hexSize <= 0f)
+        {
+            return false;
+        }
+
+        Vector2Int globalHex = HexGridMath.WorldToAxial(worldPos.x, worldPos.z, hexSize, padding);
+        HexGridMath.GlobalToChunkAndLocal(globalHex, chunkRadius, out Vector2Int chunkCoord, out _);
+        return activeSurveyingChunks.Contains(chunkCoord);
+    }
+
+    private void EnsureGridMetrics()
+    {
+        if (hexSize > 0f && chunkRadius > 0) return;
+
+        if (mapGenerator == null)
+        {
+            mapGenerator = HexMapGenerator.Instance ?? FindFirstObjectByType<HexMapGenerator>();
+        }
+
+        if (mapGenerator != null)
+        {
+            if (chunkRadius <= 0) chunkRadius = mapGenerator.chunkRadius;
+            if (hexSize <= 0f) hexSize = mapGenerator.hexSize;
+            if (padding <= 0f) padding = mapGenerator.padding;
+        }
+
+        if (chunkRadius <= 0) chunkRadius = 3;
+        if (hexSize <= 0f) hexSize = 1f;
     }
 
     private void SetFogFull(Vector2Int coord, Material mat, Material depthPrepassMat = null)
@@ -1136,6 +1231,7 @@ public class FogOfWarManager : MonoBehaviour
         isMistHeightCached = false;
         StopAllTransitionCoroutines();
         chunkFogStates.Clear();
+        activeSurveyingChunks.Clear();
         foreach (var coroutine in activeFadeCoroutines.Values)
         {
             if (coroutine != null) StopCoroutine(coroutine);

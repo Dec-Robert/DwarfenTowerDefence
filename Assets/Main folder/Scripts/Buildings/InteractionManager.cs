@@ -267,6 +267,9 @@ public class InteractionManager : MonoBehaviour
 
     private void HandleClick()
     {
+        if (SpellCastManager.Instance != null && SpellCastManager.Instance.IsTargeting)
+            return;
+
         if (isSelectingHexTarget)
         {
             HandleHexTargetSelectionClick();
@@ -370,6 +373,12 @@ public class InteractionManager : MonoBehaviour
             lastSelectedTower = null;
         }
         else if (building is ExpeditionCenterEntity)
+        {
+            CenterInfoPanelControllerUI.Instance?.Setup(building);
+            lastSelectedTower?.ShowRangeIndicator(false);
+            lastSelectedTower = null;
+        }
+        else if (building is DruidTowerEntity)
         {
             CenterInfoPanelControllerUI.Instance?.Setup(building);
             lastSelectedTower?.ShowRangeIndicator(false);

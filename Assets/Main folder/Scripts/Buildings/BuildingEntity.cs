@@ -148,6 +148,7 @@ public class BuildingEntity : MonoBehaviour
     public virtual bool TryAddWorker(Race race)
     {
         if (!isBuildingActive || Workers == null) return false;
+        if (TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night) return false;
 
         var success = Workers.TryAddWorker(race);
         if (success)
@@ -192,6 +193,59 @@ public class BuildingEntity : MonoBehaviour
     {
         if (Production == null) return new Dictionary<ResourceType, float>();
         return Production.GetCurrentProduction();
+    }
+
+    /// <summary>
+    /// Zwraca efektywny dzienny koszt utrzymania budynku z uwzględnieniem globalnych ulepszeń Warsztatu.
+    /// </summary>
+    public List<ResourceCost> GetEffectiveUpkeep()
+    {
+        var result = new List<ResourceCost>();
+        if (data == null) return result;
+
+        var totals = new Dictionary<ResourceType, float>();
+
+        if (data.upkeepPerCycle != null)
+        {
+            for (int i = 0; i < data.upkeepPerCycle.Count; i++)
+            {
+                var c = data.upkeepPerCycle[i];
+                totals[c.type] = (totals.TryGetValue(c.type, out float cur) ? cur : 0f) + c.amount;
+            }
+        }
+
+        if (Upgrades != null)
+        {
+            var increases = Upgrades.GetAllUpkeepIncreases();
+            foreach (var kvp in increases)
+            {
+                totals[kvp.Key] = (totals.TryGetValue(kvp.Key, out float cur) ? cur : 0f) + kvp.Value;
+            }
+
+            var reductions = Upgrades.GetAllUpkeepReductions();
+            foreach (var kvp in reductions)
+            {
+                totals[kvp.Key] = (totals.TryGetValue(kvp.Key, out float cur) ? cur : 0f) - kvp.Value;
+            }
+
+            float mult = Upgrades.GetGlobalUpkeepMultiplier();
+            var keys = new List<ResourceType>(totals.Keys);
+            for (int i = 0; i < keys.Count; i++)
+            {
+                totals[keys[i]] *= mult;
+            }
+        }
+
+        foreach (var kvp in totals)
+        {
+            int finalAmt = Mathf.RoundToInt(kvp.Value);
+            if (finalAmt > 0)
+            {
+                result.Add(new ResourceCost { type = kvp.Key, amount = finalAmt });
+            }
+        }
+
+        return result;
     }
 
     /// <summary>

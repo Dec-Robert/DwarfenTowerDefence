@@ -237,10 +237,19 @@ public class HousingEntity : BuildingEntity
             }
         }
 
+        float foodMultiplier = ToolWorkshopResearchManager.Instance != null
+            ? ToolWorkshopResearchManager.Instance.GetHousingFoodSurvivalMultiplier()
+            : 1f;
+
         var resultList = new List<ResourceCost>();
         foreach (var kvp in totalDict)
         {
-            resultList.Add(new ResourceCost { type = kvp.Key, amount = kvp.Value });
+            int finalAmount = kvp.Value;
+            if (kvp.Key == ResourceType.Food && finalAmount > 0 && foodMultiplier < 0.999f)
+            {
+                finalAmount = Mathf.Max(1, Mathf.RoundToInt(finalAmount * foodMultiplier));
+            }
+            resultList.Add(new ResourceCost { type = kvp.Key, amount = finalAmount });
         }
         
         return resultList;
@@ -256,10 +265,19 @@ public class HousingEntity : BuildingEntity
             AddToDict(totalDict, c.type, Mathf.FloorToInt(c.amount));
         }
 
+        float foodMultiplier = ToolWorkshopResearchManager.Instance != null
+            ? ToolWorkshopResearchManager.Instance.GetHousingFoodSurvivalMultiplier()
+            : 1f;
+
         var resultList = new List<ResourceCost>();
         foreach (var kvp in totalDict)
         {
-            resultList.Add(new ResourceCost { type = kvp.Key, amount = kvp.Value });
+            int finalAmount = kvp.Value;
+            if (kvp.Key == ResourceType.Food && finalAmount > 0 && foodMultiplier < 0.999f)
+            {
+                finalAmount = Mathf.Max(1, Mathf.RoundToInt(finalAmount * foodMultiplier));
+            }
+            resultList.Add(new ResourceCost { type = kvp.Key, amount = finalAmount });
         }
         
         return resultList;

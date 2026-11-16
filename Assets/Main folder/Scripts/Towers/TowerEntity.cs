@@ -18,12 +18,34 @@ public class TowerEntity : BuildingEntity
         RecalculateStats();
     }
 
+
     protected override void HandleDayReset()
     {
         base.HandleDayReset();
         hasSupplies = true;
         RecalculateStats();
     }
+
+    public static List<ResourceCost> GetEffectiveTowerUpkeep(BuildingData data)
+    {
+        if (data == null || data.upkeepPerCycle == null || data.upkeepPerCycle.Count == 0)
+            return new List<ResourceCost>();
+
+        float mult = ToolWorkshopResearchManager.Instance != null
+            ? ToolWorkshopResearchManager.Instance.GetTowerNightUpkeepMultiplier()
+            : 1f;
+
+        var result = new List<ResourceCost>(data.upkeepPerCycle.Count);
+        foreach (var cost in data.upkeepPerCycle)
+        {
+            int amt = cost.amount > 0 && mult < 0.999f
+                ? Mathf.Max(1, Mathf.RoundToInt(cost.amount * mult))
+                : cost.amount;
+            result.Add(new ResourceCost { type = cost.type, amount = amt });
+        }
+        return result;
+    }
+
 
     public override void ProcessUpkeep()
     {
@@ -39,9 +61,10 @@ public class TowerEntity : BuildingEntity
 
         Workers?.LockWorkers();
 
-        if (data != null && data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0)
+        var effectiveUpkeep = GetEffectiveTowerUpkeep(data);
+        if (effectiveUpkeep != null && effectiveUpkeep.Count > 0)
         {
-            hasSupplies = ResourceManager.Instance != null && ResourceManager.Instance.SpendResources(data.upkeepPerCycle);
+            hasSupplies = ResourceManager.Instance != null && ResourceManager.Instance.SpendResources(effectiveUpkeep);
         }
         else
         {
@@ -50,6 +73,7 @@ public class TowerEntity : BuildingEntity
 
         RecalculateStats();
     }
+
 
     public float GetCurrentEfficiency()
     {
@@ -156,8 +180,12 @@ public class TowerEntity : BuildingEntity
             normFlatMagicPen += normGlobalMagicPen;
         }
 
+        float workshopTowerDamageBonus = ToolWorkshopResearchManager.Instance != null
+            ? ToolWorkshopResearchManager.Instance.GetGlobalTowerDamageBonusFromMines()
+            : 0f;
+
         finalEfficiency += metaEfficiencyBonus;
-        damageMulti += metaDamageMulti;
+        damageMulti += metaDamageMulti + workshopTowerDamageBonus;
         rangeMulti += metaRangeMulti;
         normFlatCrit += metaCritChance;
         normFlatArmorPen += metaArmorPen;
@@ -183,13 +211,14 @@ public class TowerEntity : BuildingEntity
 
     public override bool TryAddWorker(Race race)
     {
+        if (TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night)
+        {
+            return false;
+        }
+
         bool success = base.TryAddWorker(race);
         if (success)
         {
-            if (TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night)
-            {
-                Workers?.LockWorkers();
-            }
             RecalculateStats();
         }
         return success;
@@ -201,11 +230,13 @@ public class TowerEntity : BuildingEntity
         RecalculateStats();
     }
 
+
     public override void HandleWorkerLost(Citizen citizen)
     {
         base.HandleWorkerLost(citizen);
         RecalculateStats();
     }
+
 
     public override int GetGlobalWorkerBonus() => CityStatsManager.Instance?.globalBonusTowerCrewSlots ?? 0;
 

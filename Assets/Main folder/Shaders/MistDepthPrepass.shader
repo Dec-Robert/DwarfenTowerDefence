@@ -19,7 +19,7 @@ Shader "Custom/MistDepthPrepass"
         {
             "RenderPipeline" = "UniversalPipeline"
             "RenderType" = "Transparent"
-            "Queue" = "Transparent-1"
+            "Queue" = "Transparent+105"
             "IgnoreProjector" = "True"
         }
 

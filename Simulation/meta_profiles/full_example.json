@@ -1,0 +1,18 @@
+{
+  "name": "full_example",
+  "unlocked_upgrades": "all",
+  "variants": {
+    "ulepszenie_wiez_1": "B",
+    "ulepszenie_wiez_2": "B",
+    "ulepszenie_wiez_3": "B",
+    "ulepszenie_wiez_4": "B"
+  },
+  "drafted_towers": [
+    "2. Thunderbuss",
+    "3. Steam Repeater",
+    "4. Crucible of Conflagrations",
+    "5. Shadow Spire",
+    "7. Soul Monolith"
+  ],
+  "ignore_building_target_bug": false
+}

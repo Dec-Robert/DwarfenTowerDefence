@@ -90,6 +90,15 @@ public class MapExpansionManager : MonoBehaviour
         {
             fogManager.OnBorderlandsClicked += HandleBorderlandsClicked;
         }
+
+        if (DruidTowerSpawner.Instance == null && FindFirstObjectByType<DruidTowerSpawner>() == null)
+        {
+            gameObject.AddComponent<DruidTowerSpawner>();
+        }
+        if (SpellCastManager.Instance == null && FindFirstObjectByType<SpellCastManager>() == null)
+        {
+            gameObject.AddComponent<SpellCastManager>();
+        }
     }
 
     private void OnDestroy()

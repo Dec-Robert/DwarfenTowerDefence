@@ -238,7 +238,9 @@ public class MetaUpgradeManager : MonoBehaviour
             case MetaEffectType.BuildingTerrainBonusMultiplier:
             case MetaEffectType.SpecificBuildingUpgradeCostReduction:
             case MetaEffectType.SpecificBuildingProductionBonus:
-                // Obsługiwane przez buildingSpecificValues, odpytywane przez GetBuildingValue()
+            case MetaEffectType.UnlockDruidTower:
+            case MetaEffectType.UnlockToolWorkshop:
+                // Obsługiwane przez odpytywanie IsUnlocked() / GetBuildingValue()
                 break;
 
             default:

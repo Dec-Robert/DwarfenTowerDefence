@@ -78,9 +78,10 @@ public static class PhaseResourceForecastManager
             if (crewEfficiency <= 0f) continue;
 
             // 1. Koszty utrzymania (Upkeep)
-            if (building.data.upkeepPerCycle != null)
+            var effectiveUpkeep = building.GetEffectiveUpkeep();
+            if (effectiveUpkeep != null)
             {
-                foreach (var cost in building.data.upkeepPerCycle)
+                foreach (var cost in effectiveUpkeep)
                 {
                     deltas[cost.type] -= cost.amount;
                 }
@@ -125,9 +126,10 @@ public static class PhaseResourceForecastManager
                 if (tower.GetTotalWorkerCount() <= 0) continue;
             }
 
-            if (defense.data.upkeepPerCycle != null)
+            var towerUpkeep = TowerEntity.GetEffectiveTowerUpkeep(defense.data);
+            if (towerUpkeep != null)
             {
-                foreach (var cost in defense.data.upkeepPerCycle)
+                foreach (var cost in towerUpkeep)
                 {
                     deltas[cost.type] -= cost.amount;
                 }

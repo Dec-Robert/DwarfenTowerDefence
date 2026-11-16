@@ -1,0 +1,21 @@
+seed,victory,defeat,day,city_hp,max_city_hp,peak_population,hope_total,hope_unlocked,runes_dropped,combat_ether,unpaid_days,starved_days,defeat_reason
+1000,False,True,10,0,20,6,45,2,1,26,2,0,"CityHP reached 0 on Night 10 (leaks: N=3, E=0)"
+1001,False,True,15,0,20,7,75,4,5,63,5,0,Boss leaked on Night 15
+1002,False,True,15,0,20,7,75,4,7,60,5,0,Boss leaked on Night 15
+1003,False,True,7,0,20,5,25,1,0,12,1,0,"CityHP reached 0 on Night 7 (leaks: N=3, E=0)"
+1004,False,True,10,0,20,6,45,2,2,26,2,0,"CityHP reached 0 on Night 10 (leaks: N=4, E=0)"
+1005,False,True,8,0,20,5,25,1,0,17,1,0,"CityHP reached 0 on Night 8 (leaks: N=2, E=0)"
+1006,False,True,15,0,20,7,75,4,10,64,5,0,Boss leaked on Night 15
+1007,False,True,15,0,20,6,75,4,8,58,4,0,Boss leaked on Night 15
+1008,False,True,7,0,20,5,25,1,3,11,1,0,"CityHP reached 0 on Night 7 (leaks: N=4, E=0)"
+1009,False,True,15,0,20,6,75,4,8,57,4,0,Boss leaked on Night 15
+1010,False,True,6,0,20,5,0,0,3,8,1,0,"CityHP reached 0 on Night 6 (leaks: N=4, E=0)"
+1011,False,True,15,0,20,7,75,4,7,60,5,0,Boss leaked on Night 15
+1012,False,True,15,0,20,7,75,4,10,64,5,0,Boss leaked on Night 15
+1013,False,True,10,0,20,6,45,2,4,25,2,0,"CityHP reached 0 on Night 10 (leaks: N=5, E=0)"
+1014,False,True,7,0,20,5,25,1,1,10,1,0,"CityHP reached 0 on Night 7 (leaks: N=2, E=0)"
+1015,False,True,8,0,20,5,25,1,0,17,1,0,"CityHP reached 0 on Night 8 (leaks: N=2, E=0)"
+1016,False,True,10,0,20,6,45,2,1,25,2,0,"CityHP reached 0 on Night 10 (leaks: N=8, E=0)"
+1017,False,True,7,0,20,5,25,1,1,12,1,0,"CityHP reached 0 on Night 7 (leaks: N=3, E=0)"
+1018,False,True,7,0,20,5,25,1,0,13,1,0,"CityHP reached 0 on Night 7 (leaks: N=3, E=0)"
+1019,False,True,15,0,20,7,75,4,5,63,5,0,Boss leaked on Night 15

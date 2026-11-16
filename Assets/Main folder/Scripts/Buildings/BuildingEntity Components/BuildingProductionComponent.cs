@@ -44,9 +44,10 @@ public class BuildingProductionComponent
         if (crewEfficiency <= 0f) return;
 
         bool hasUpkeep = true;
-        if (data != null && data.upkeepPerCycle != null && data.upkeepPerCycle.Count > 0 && ResourceManager.Instance != null)
+        var effectiveUpkeep = owner != null ? owner.GetEffectiveUpkeep() : (data != null ? data.upkeepPerCycle : null);
+        if (effectiveUpkeep != null && effectiveUpkeep.Count > 0 && ResourceManager.Instance != null)
         {
-            hasUpkeep = ResourceManager.Instance.SpendResources(data.upkeepPerCycle);
+            hasUpkeep = ResourceManager.Instance.SpendResources(effectiveUpkeep);
         }
 
         float upkeepPenalty = hasUpkeep ? 0f : 0.5f;
@@ -98,6 +99,27 @@ public class BuildingProductionComponent
     {
         int workerCount = workerComponent != null ? workerComponent.GetActiveWorkers().Count : 0;
         float baseEff = data != null ? data.GetEffectiveEfficiencyForWorkers(workerCount) : 0f;
+
+        if (upgradeComponent != null)
+        {
+            if (workerCount == 0)
+            {
+                baseEff += upgradeComponent.GetPassiveNoWorkerEfficiency();
+            }
+            else
+            {
+                baseEff += upgradeComponent.GetFirstWorkerBonus();
+            }
+
+            if (workerCount > 0 && workerComponent != null && upgradeComponent.HasSpecialEffect("MINES_DWARF_EFFICIENCY_BONUS"))
+            {
+                int dwarfCount = workerComponent.GetWorkerCount(Race.Dwarves);
+                if (dwarfCount > 0)
+                {
+                    baseEff += 0.10f * dwarfCount;
+                }
+            }
+        }
 
         if (workerCount > 0 && workerComponent != null && MetaUpgradeManager.Instance != null)
         {

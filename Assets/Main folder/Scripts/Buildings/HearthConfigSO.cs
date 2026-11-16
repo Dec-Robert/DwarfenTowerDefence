@@ -108,9 +108,9 @@ public class HearthConfigSO : ScriptableObject
             levels[0] = new HearthLevelData
             {
                 levelIndex = 1,
-                title = "Wygasły Popiół",
+                title = "Tlejący żar",
                 tagText = "RYZYKO / ŁUPY",
-                accentColor = new Color(0.58f, 0.36f, 0.82f, 1f),
+                accentColor = new Color(0.141f, 0.063f, 0.200f, 1f),
                 coalCostMultiplier = 0,
                 coalCost = 0,
                 towerDamageBonus = 0f,
@@ -130,9 +130,9 @@ public class HearthConfigSO : ScriptableObject
             levels[1] = new HearthLevelData
             {
                 levelIndex = 2,
-                title = "Tlący się Żar",
+                title = "Przygaszony płomień",
                 tagText = "OSZCZĘDNOŚĆ",
-                accentColor = new Color(0.75f, 0.42f, 0.32f, 1f),
+                accentColor = new Color(0.431f, 0.118f, 0.349f, 1f),
                 coalCostMultiplier = 1,
                 coalCost = 5,
                 towerDamageBonus = 0f,
@@ -152,9 +152,9 @@ public class HearthConfigSO : ScriptableObject
             levels[2] = new HearthLevelData
             {
                 levelIndex = 3,
-                title = "Zrównoważony Płomień",
+                title = "Równy ogień",
                 tagText = "NEUTRALNY",
-                accentColor = new Color(0.28f, 0.56f, 0.78f, 1f),
+                accentColor = new Color(0.710f, 0.169f, 0.263f, 1f),
                 coalCostMultiplier = 2,
                 coalCost = 10,
                 towerDamageBonus = 0f,
@@ -174,9 +174,9 @@ public class HearthConfigSO : ScriptableObject
             levels[3] = new HearthLevelData
             {
                 levelIndex = 4,
-                title = "Jasny Ogień",
+                title = "Huczący płomień",
                 tagText = "WZMOCNIENIE",
-                accentColor = new Color(0.85f, 0.62f, 0.18f, 1f),
+                accentColor = new Color(0.890f, 0.278f, 0.141f, 1f),
                 coalCostMultiplier = 3,
                 coalCost = 15,
                 towerDamageBonus = 0f,
@@ -196,9 +196,9 @@ public class HearthConfigSO : ScriptableObject
             levels[4] = new HearthLevelData
             {
                 levelIndex = 5,
-                title = "Palenisko Magmy",
+                title = "Rozszalały ogień",
                 tagText = "MAKS. MOC",
-                accentColor = new Color(0.95f, 0.36f, 0.12f, 1f),
+                accentColor = new Color(1.000f, 0.478f, 0.000f, 1f),
                 coalCostMultiplier = 4,
                 coalCost = 20,
                 towerDamageBonus = 0f,

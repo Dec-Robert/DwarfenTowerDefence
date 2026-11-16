@@ -493,6 +493,12 @@ public class RuneForgeWindowUI : MonoBehaviour
 
         currentForge = forge;
         gameObject.SetActive(true);
+        transform.SetAsLastSibling();
+
+        var backdrop = GetComponent<Image>();
+        if (backdrop == null) backdrop = gameObject.AddComponent<Image>();
+        backdrop.color = new Color(0.03f, 0.04f, 0.06f, 0.94f);
+        backdrop.raycastTarget = true;
 
         if (currentForge == null) return;
 
@@ -523,6 +529,8 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (TimePhaseManager.Instance != null)
         {
             TimePhaseManager.Instance.OnMorningStarted += HandleMorningStarted;
+            TimePhaseManager.Instance.OnDuskStarted += HandlePhaseChanged;
+            TimePhaseManager.Instance.OnNightStarted += HandlePhaseChanged;
         }
     }
 
@@ -544,6 +552,8 @@ public class RuneForgeWindowUI : MonoBehaviour
         if (TimePhaseManager.Instance != null)
         {
             TimePhaseManager.Instance.OnMorningStarted -= HandleMorningStarted;
+            TimePhaseManager.Instance.OnDuskStarted -= HandlePhaseChanged;
+            TimePhaseManager.Instance.OnNightStarted -= HandlePhaseChanged;
         }
     }
 
@@ -684,6 +694,11 @@ public class RuneForgeWindowUI : MonoBehaviour
         RefreshAll();
     }
 
+    private void HandlePhaseChanged()
+    {
+        RefreshAll();
+    }
+
     // =========================================================================
     // NAWIGACJA ZAKŁADEK
     // =========================================================================
@@ -783,13 +798,22 @@ public class RuneForgeWindowUI : MonoBehaviour
         bool fusionUnlocked = MetaUpgradeManager.Instance == null || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockRuneFusion);
         bool transmuteUnlocked = MetaUpgradeManager.Instance == null || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockRuneTransmutation);
 
+        if (btnTabSocketing != null)
+        {
+            var txt = btnTabSocketing.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+            if (txt != null)
+            {
+                txt.text = LocalizationManager.Get("UI_RUNE_TAB_SOCKETING", "1. Osadzanie Run");
+            }
+        }
+
         if (btnTabFusion != null)
         {
             btnTabFusion.interactable = fusionUnlocked;
             var txt = btnTabFusion.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (txt != null)
             {
-                txt.text = fusionUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_FUSION", "Fuzja Run") : LocalizationManager.Get("UI_RUNE_TAB_FUSION_LOCKED", "Fuzja (Zablokowana)");
+                txt.text = fusionUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_FUSION", "2. Fuzja Run") : LocalizationManager.Get("UI_RUNE_TAB_FUSION_LOCKED", "2. Fuzja (Zablokowana)");
             }
         }
 
@@ -799,7 +823,7 @@ public class RuneForgeWindowUI : MonoBehaviour
             var txt = btnTabTransmutation.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (txt != null)
             {
-                txt.text = transmuteUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE", "Transmutacja Run") : LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE_LOCKED", "Transmutacja (Zablokowana)");
+                txt.text = transmuteUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE", "3. Transmutacja Run") : LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE_LOCKED", "3. Transmutacja (Zablokowana)");
             }
         }
     }
@@ -818,6 +842,20 @@ public class RuneForgeWindowUI : MonoBehaviour
         {
             imgTowerHeaderIcon.sprite = tower != null ? tower.icon : null;
             imgTowerHeaderIcon.color = tower != null && tower.icon != null ? Color.white : new Color(0.96f, 0.78f, 0.28f, 0.8f);
+        }
+
+        // Ukryj pustą żółtą ikonkę w Pnl_TipBar, jeśli nie ma przypisanego sprite'a
+        Transform tipBar = viewSocketing.transform.Find("Pnl_TipBar");
+        if (tipBar != null)
+        {
+            for (int i = 0; i < tipBar.childCount; i++)
+            {
+                var tipImg = tipBar.GetChild(i).GetComponent<Image>();
+                if (tipImg != null && tipImg.sprite == null)
+                {
+                    tipImg.gameObject.SetActive(false);
+                }
+            }
         }
 
         // Sloty na runy (Card_RunesmithSlot)
@@ -845,6 +883,7 @@ public class RuneForgeWindowUI : MonoBehaviour
                              ?? socketIconRoot?.GetComponentInChildren<Image>(true)
                              ?? socketIconRoot?.GetComponent<Image>()
                              ?? slotTr.Find("Img_Icon")?.GetComponent<Image>();
+                TextMeshProUGUI plusTmp = GetOrCreateSlotPlusLabel(socketIconRoot, slotTr);
                 TextMeshProUGUI lblTmp = slotTr.Find("Txt_SlotLabel")?.GetComponent<TextMeshProUGUI>();
 
                 // Komponent interaktywny Drag & Drop + Click
@@ -858,8 +897,10 @@ public class RuneForgeWindowUI : MonoBehaviour
                     if (lockObj != null) lockObj.gameObject.SetActive(true);
                     if (badgeMissingSmith != null) badgeMissingSmith.gameObject.SetActive(false);
                     if (iconImg != null) iconImg.gameObject.SetActive(false);
+                    if (plusTmp != null) plusTmp.gameObject.SetActive(false);
                     if (lblTmp != null)
                     {
+                        lblTmp.gameObject.SetActive(true);
                         lblTmp.text = LocalizationManager.GetFormat("UI_RUNE_SLOT_REQUIRES_TOWER_FMT", slotIndex + 1);
                     }
                 }
@@ -873,6 +914,7 @@ public class RuneForgeWindowUI : MonoBehaviour
                         var badgeTxt = badgeMissingSmith.GetComponentInChildren<TextMeshProUGUI>();
                         if (badgeTxt != null) badgeTxt.text = LocalizationManager.Get("UI_RUNE_NO_SMITH", "BRAK KOWALA");
                     }
+                    if (plusTmp != null) plusTmp.gameObject.SetActive(currentRune == null);
                     if (iconImg != null)
                     {
                         if (currentRune != null)
@@ -884,13 +926,12 @@ public class RuneForgeWindowUI : MonoBehaviour
                         }
                         else
                         {
-                            iconImg.gameObject.SetActive(true);
-                            iconImg.sprite = null;
-                            iconImg.color = new Color(0.96f, 0.78f, 0.28f, 0.35f);
+                            iconImg.gameObject.SetActive(false);
                         }
                     }
                     if (lblTmp != null)
                     {
+                        lblTmp.gameObject.SetActive(true);
                         lblTmp.text = LocalizationManager.GetFormat("UI_RUNE_SLOT_REQUIRES_SMITH_FMT", slotIndex + 1);
                     }
                 }
@@ -902,7 +943,8 @@ public class RuneForgeWindowUI : MonoBehaviour
 
                     if (currentRune != null)
                     {
-                        // Runa osadzona - żółta ikonka zamienia się w ikonkę osadzonej runy
+                        // Runa osadzona - ikona osadzonej runy
+                        if (plusTmp != null) plusTmp.gameObject.SetActive(false);
                         if (iconImg != null)
                         {
                             iconImg.gameObject.SetActive(true);
@@ -913,6 +955,7 @@ public class RuneForgeWindowUI : MonoBehaviour
 
                         if (lblTmp != null)
                         {
+                            lblTmp.gameObject.SetActive(true);
                             string runeDisplayName = currentRune.definition != null ? currentRune.definition.DisplayName : "Runa";
                             string labelText = $"<b>{runeDisplayName}</b>\n<size=10>{currentRune.GetPrimaryText()}</size>";
                             if (currentRune.hasPenalty)
@@ -924,21 +967,49 @@ public class RuneForgeWindowUI : MonoBehaviour
                     }
                     else
                     {
-                        // Wolny slot - domyślna żółta ikonka pustego slotu
+                        // Wolny slot - ujednolicony ze slotami Fuzji/Transmutacji (znak '+' bez żółtego kwadratu)
                         if (iconImg != null)
                         {
-                            iconImg.gameObject.SetActive(true);
-                            iconImg.sprite = null;
-                            iconImg.color = new Color(0.96f, 0.78f, 0.28f, 0.8f);
+                            iconImg.gameObject.SetActive(false);
+                        }
+                        if (plusTmp != null)
+                        {
+                            plusTmp.gameObject.SetActive(true);
                         }
                         if (lblTmp != null)
                         {
+                            lblTmp.gameObject.SetActive(true);
                             lblTmp.text = LocalizationManager.GetFormat("UI_RUNE_SLOT_FREE_FMT", slotIndex + 1);
                         }
                     }
                 }
             }
         }
+    }
+
+    private TextMeshProUGUI GetOrCreateSlotPlusLabel(Transform socketIconRoot, Transform slotTr)
+    {
+        Transform existing = socketIconRoot != null ? socketIconRoot.Find("Txt_Plus") : null;
+        if (existing == null) existing = slotTr.Find("Txt_Plus");
+        if (existing != null) return existing.GetComponent<TextMeshProUGUI>();
+
+        Transform parent = socketIconRoot != null ? socketIconRoot : slotTr;
+        var plusGo = new GameObject("Txt_Plus", typeof(RectTransform));
+        plusGo.transform.SetParent(parent, false);
+
+        var rt = plusGo.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+
+        var tmp = plusGo.AddComponent<TextMeshProUGUI>();
+        tmp.text = "+";
+        tmp.fontSize = 20f;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.color = new Color(0.55f, 0.58f, 0.65f, 0.85f);
+        tmp.raycastTarget = false;
+        return tmp;
     }
 
     // =========================================================================
@@ -1387,6 +1458,10 @@ public class RuneForgeWindowUI : MonoBehaviour
             if (view.txtName != null)
             {
                 view.txtName.text = TowerContextWindowUI.GetLocalizedStatName(view.statType);
+                view.txtName.textWrappingMode = TextWrappingModes.NoWrap;
+                view.txtName.enableAutoSizing = true;
+                view.txtName.fontSizeMin = 10f;
+                view.txtName.fontSizeMax = 12f;
             }
 
             if (view.imgIcon == null && view.rootObject != null)
@@ -1599,8 +1674,10 @@ public class RuneForgeWindowUI : MonoBehaviour
             txtDwarfCount.text = $"{assigned} / {maxSmiths}";
         }
 
+        bool isNight = TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night;
+
         if (btnDwarfMinus != null) btnDwarfMinus.interactable = assigned > 0;
-        if (btnDwarfPlus != null) btnDwarfPlus.interactable = assigned < maxSmiths && freeDwarves > 0;
+        if (btnDwarfPlus != null) btnDwarfPlus.interactable = !isNight && assigned < maxSmiths && freeDwarves > 0;
     }
 
     private void HandleAddSmith()

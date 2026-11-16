@@ -416,6 +416,8 @@ public class ProductionContextWindowUI : MonoBehaviour
         if (TimePhaseManager.Instance != null)
         {
             TimePhaseManager.Instance.OnMorningStarted += OnMorningReset;
+            TimePhaseManager.Instance.OnDuskStarted += OnTimePhaseChanged;
+            TimePhaseManager.Instance.OnNightStarted += OnTimePhaseChanged;
         }
 
         // Podpięcie przycisku zamknięcia
@@ -456,6 +458,8 @@ public class ProductionContextWindowUI : MonoBehaviour
         if (TimePhaseManager.Instance != null)
         {
             TimePhaseManager.Instance.OnMorningStarted -= OnMorningReset;
+            TimePhaseManager.Instance.OnDuskStarted -= OnTimePhaseChanged;
+            TimePhaseManager.Instance.OnNightStarted -= OnTimePhaseChanged;
         }
     }
 
@@ -468,6 +472,11 @@ public class ProductionContextWindowUI : MonoBehaviour
     private void OnMorningReset()
     {
         RefreshAll();
+    }
+
+    private void OnTimePhaseChanged()
+    {
+        RefreshWorkersUI();
     }
 
     private void SetupRaceButtonListeners()
@@ -651,18 +660,23 @@ public class ProductionContextWindowUI : MonoBehaviour
             txtEfficiencyPercentage.text = $"{Mathf.RoundToInt(crewEff * 100f)}%";
         }
 
+        bool isNight = TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night;
+
         // Kafelki 3 ras
         foreach (var rc in raceControls)
         {
             int assignedCount = currentBuilding.GetWorkerCount(rc.race);
             int freeCount = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(rc.race) : 0;
+            bool hasRemovableWorker = currentBuilding.Workers != null
+                ? currentBuilding.Workers.HasRemovableWorker(rc.race)
+                : assignedCount > 0;
 
             if (rc.txtCount != null) rc.txtCount.text = assignedCount.ToString();
             if (rc.txtFree != null) rc.txtFree.text = LocalizationManager.GetFormat("UI_PROD_FREE_WORKERS_FMT", freeCount);
 
             // Gdy budynek jest wstrzymany, przyciski są zablokowane
-            if (rc.btnMinus != null) rc.btnMinus.interactable = isBuildingActive && (assignedCount > 0);
-            if (rc.btnPlus != null) rc.btnPlus.interactable = isBuildingActive && (totalWorkers < maxWorkers) && (freeCount > 0);
+            if (rc.btnMinus != null) rc.btnMinus.interactable = isBuildingActive && hasRemovableWorker;
+            if (rc.btnPlus != null) rc.btnPlus.interactable = !isNight && isBuildingActive && (totalWorkers < maxWorkers) && (freeCount > 0);
         }
 
         // Progi wydajności

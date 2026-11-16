@@ -35,6 +35,8 @@ public class BuildingWorkerComponent
     /// <summary>Próbuje przypisać nowego pracownika danej rasy do budynku.</summary>
     public bool TryAddWorker(Race race)
     {
+        if (TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night) return false;
+
         var maxWorkers = data.baseMaxWorkers + upgradeComponent.LocalBonusWorkers + (getGlobalBonusWorkers?.Invoke() ?? 0);
         if (assignedCitizens.Count >= maxWorkers) return false;
         if (WorkforceManager.Instance == null) return false;
@@ -98,6 +100,11 @@ public class BuildingWorkerComponent
     public int GetWorkerCount(Race race)
     {
         return assignedCitizens.FindAll(c => c.race == race).Count;
+    }
+
+    public bool HasRemovableWorker(Race race)
+    {
+        return assignedCitizens.Exists(c => c.race == race && c.workState != WorkState.Locked);
     }
     
     public void RemoveSpecificWorker(Citizen worker)

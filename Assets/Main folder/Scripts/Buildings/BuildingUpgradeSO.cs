@@ -33,6 +33,7 @@ public class BuildingUpgradeSO : ScriptableObject
     public List<ResourceCost> productionBonus;
 
     public List<ResourceCost> upkeepIncrease;
+    public List<ResourceCost> upkeepReduction;
 
     [Tooltip(
         "Globalny mnożnik dodawany do CAŁEJ produkcji budynku (baza + teren). Np. 0.2 to +20% ogólnej wydajności.")]
@@ -42,6 +43,9 @@ public class BuildingUpgradeSO : ScriptableObject
     public float globalUpkeepMultiplierBonus;
 
     [Header("Modyfikatory Terenu")]
+    [Tooltip("Dodatkowy zasięg skanowania zasobów/wzniesień wokół budynku.")]
+    public int extraSearchRadius;
+
     [Tooltip("Płaski bonus DODAWANY do wartości każdego sąsiadującego heksa (np. +1.5 drewna za las)")]
     public float terrainFlatBonus;
 
@@ -49,9 +53,16 @@ public class BuildingUpgradeSO : ScriptableObject
     public float terrainPercentBonus;
 
     // Dodaj te pola do klasy BuildingUpgradeSO:
-    [Header("Bonusy do Miejsc Pracy")] public int extraShifts; // Np. +1 Zmiana
+    [Header("Bonusy do Miejsc Pracy i Wydajności Załogi")]
+    public int extraShifts; // Np. +1 Zmiana
 
     public int extraWorkersPerShift; // Np. +1 Pracownik na zmianę
+
+    [Tooltip("Dodatkowy mnożnik wydajności dla pierwszego pracownika (np. 0.3 = +30% wydajności załogi przy 1+ pracownikach).")]
+    public float firstWorkerBonusMultiplier;
+
+    [Tooltip("Pasywna wydajność budynku przy 0 pracownikach (np. 0.5 = 50% wydajności bez załogi).")]
+    public float passiveNoWorkerEfficiency;
 
     [Header("Logika Specjalna")]
     // Np. "AUTO_REPLANT" - ID dla skryptu, żeby wiedział co robić

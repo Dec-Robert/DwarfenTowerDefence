@@ -40,9 +40,24 @@ public class GateEntity : MonoBehaviour
     [HideInInspector] public Vector2Int chunkA;
     [HideInInspector] public Vector2Int chunkB;
 
+    private float workshopBonusMaxHp = 0f;
+
     public bool IsDestroyed { get; private set; }
     public float CurrentHP { get; private set; }
     public float MaxHP => maxHP;
+
+    public void ApplyWorkshopReinforcement(float hpGain, float maxBonusCap)
+    {
+        if (hpGain <= 0f || maxBonusCap <= 0f) return;
+        float remainingCap = Mathf.Max(0f, maxBonusCap - workshopBonusMaxHp);
+        float delta = Mathf.Min(hpGain, remainingCap);
+        if (delta <= 0f) return;
+
+        workshopBonusMaxHp += delta;
+        maxHP += delta;
+        CurrentHP = Mathf.Min(maxHP, CurrentHP + delta);
+        RefreshVisuals();
+    }
 
     public event Action<GateEntity> OnGateDestroyed;
     public event Action<GateEntity> OnGateRebuilt;

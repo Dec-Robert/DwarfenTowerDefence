@@ -542,6 +542,51 @@ public class HexMapVisualizer : MonoBehaviour
         ApplyVisualsToHex(cell.gameObject, cellData, chunkBaseMat, globalCoord);
     }
 
+    /// <summary>
+    /// Nadpisuje pole na płaski Grassland (feature = None, elevation = 0) i odświeża heks oraz sąsiednie ściany.
+    /// </summary>
+    public void FlattenHexToGrassland(Vector2Int chunkCoord, Vector2Int localCoord, HexCellData cellData)
+    {
+        if (cellData == null) return;
+
+        cellData.feature = HexFeatureType.None;
+        cellData.featureLevel = 0;
+        cellData.elevation = 0;
+
+        int chunkRadius = cachedChunkRadius > 0 ? cachedChunkRadius : 3;
+        Vector2Int centerAxial = HexGridMath.GetChunkCenterAxial(chunkCoord, chunkRadius);
+        Vector2Int globalCoord = centerAxial + localCoord;
+
+        if (globalHeightsMap != null)
+        {
+            globalHeightsMap[globalCoord] = 0f;
+        }
+
+        RedrawSingleHex(chunkCoord, localCoord, cellData);
+
+        // Odśwież sąsiadów niebędących drogami, aby ich boczne ściany dopasowały się do nowej wysokości 0
+        for (int k = 0; k < 6; k++)
+        {
+            Vector2Int neighborGlobal = globalCoord + HexTerrainMeshBuilder.Directions[k];
+            foreach (var chunkKvp in visualHexGrid)
+            {
+                Vector2Int cCenter = HexGridMath.GetChunkCenterAxial(chunkKvp.Key, chunkRadius);
+                Vector2Int nLocal = neighborGlobal - cCenter;
+                if (chunkKvp.Value.TryGetValue(nLocal, out HexCell nCell) && nCell != null && nCell.Data != null)
+                {
+                    if (!nCell.Data.isRoad && !nCell.Data.isPath)
+                    {
+                        float nHeight = GetTerrainHeight(nCell.Data);
+                        float nHill01 = GetHillHeight01(nCell.Data);
+                        float radius = cachedHexRadius > 0f ? cachedHexRadius : 1f;
+                        ApplyTerrainMesh(nCell.gameObject, neighborGlobal, nHeight, globalHeightsMap, radius, false, nHill01);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
     // =========================================================================
     // Geometria terenu: wysokosci, boczne sciany, materialy
     // =========================================================================

@@ -42,6 +42,7 @@ public class HopeMilestoneConfigSO : ScriptableObject
         public int hopeReward;
 
         [Header("Parametry opcjonalne (zależne od typu)")]
+        public string groupTitle;         // Opcjonalna nazwa grupy na ekranie końcowym (np. "Survivor")
         public Race targetRace;           // Jeśli type = SpecificRacePopulation
         public TowerData targetTower;     // Jeśli type = SpecificTower
     }

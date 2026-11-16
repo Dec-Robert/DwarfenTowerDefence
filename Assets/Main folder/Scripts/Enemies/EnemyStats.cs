@@ -14,7 +14,7 @@ public class EnemyStats : MonoBehaviour
     public float CurrentArmor => currentArmor;
     public float CurrentMagicResist => currentMagicResist;
     public float CurrentDodge => currentDodge;
-    public float CurrentMoveSpeed => Walker != null ? Walker.speed : (data != null ? data.GetTier(tier).moveSpeed : 0f);
+    public float CurrentMoveSpeed => Walker != null ? Walker.EffectiveSpeed : (data != null ? data.GetTier(tier).moveSpeed : 0f);
     public Sprite CurrentSprite => (data != null) ? data.GetSpriteForTier(tier) : null;
 
     [SerializeField] private float currentHealth;
@@ -26,6 +26,7 @@ public class EnemyStats : MonoBehaviour
 
     private List<EnemySkill> skills = new List<EnemySkill>();
     private bool isDead = false;
+    public bool IsDead => isDead;
 
     [Header("Visuals")]
     public Renderer meshRenderer;
@@ -75,7 +76,11 @@ public class EnemyStats : MonoBehaviour
         for (int i = 0; i < all.Length; i++)
         {
             Renderer r = all[i];
-            if (r != null && r.GetComponent<EnemyHealthBar>() == null && r.GetComponentInParent<EnemyHealthBar>() == null)
+            if (r != null &&
+                !(r is ParticleSystemRenderer) &&
+                !(r is TrailRenderer) &&
+                r.GetComponent<EnemyHealthBar>() == null &&
+                r.GetComponentInParent<EnemyHealthBar>() == null)
             {
                 bodyRenderers.Add(r);
             }

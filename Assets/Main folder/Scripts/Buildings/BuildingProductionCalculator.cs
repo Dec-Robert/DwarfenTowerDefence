@@ -88,6 +88,7 @@ public static class BuildingProductionCalculator
         var neighborPenalties = new Dictionary<ResourceType, float>();
 
         var rules = data.GetEffectiveBonusRules();
+        var mods = CollectWorkshopModifiers(data);
 
         // 1. Bonusy On-Top (cecha terenu na własnym heksie)
         if (rules != null && rules.Count > 0 && chunkData != null && chunkData.TryGetValue(cell.localCoord, out var myHexData))
@@ -113,10 +114,14 @@ public static class BuildingProductionCalculator
         {
             ownElevation = ownHexData.elevation;
         }
+        if (mods.quarryFlatlandMinElev2)
+        {
+            ownElevation = Mathf.Max(2, ownElevation);
+        }
 
         if (data.elevationBonus.enabled && ownElevation > 0)
         {
-            int existingUsers = BuildingProductionRegistry.GetUsageCount(cell);
+            int existingUsers = mods.quarryIgnoreElevationPenalty ? 0 : BuildingProductionRegistry.GetUsageCount(cell);
             float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
             float effectiveLevel = Mathf.Max(0f, ownElevation - penalty * existingUsers);
             float onTopYield = effectiveLevel * data.elevationBonus.onTopBonusPerLevel;
@@ -135,7 +140,7 @@ public static class BuildingProductionCalculator
             {
                 if (rule.requiredFeature == HexFeatureType.None || rule.resourceYields == null) continue;
 
-                int radius = rule.searchRadius <= 0 ? 1 : rule.searchRadius;
+                int radius = (rule.searchRadius <= 0 ? 1 : rule.searchRadius) + mods.extraSearchRadius;
                 var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(cell.chunkCoord, cell.localCoord, radius, chunkRadius);
 
                 foreach (var nInfo in hexesToScan)
@@ -169,7 +174,7 @@ public static class BuildingProductionCalculator
                         }
 
                         if (isCellOccupied) continue;
-                        existingUsers = BuildingProductionRegistry.GetUsageCount(neighborCell);
+                        existingUsers = mods.ignoreOccupiedPenalty ? 0 : BuildingProductionRegistry.GetUsageCount(neighborCell);
                     }
                     else if (neighborData.occupyingBuilding != null)
                     {
@@ -178,9 +183,9 @@ public static class BuildingProductionCalculator
 
                     foreach (var yield in rule.resourceYields)
                     {
-                        float grossYield = yield.baseBonusPerHex;
+                        float grossYield = yield.baseBonusPerHex + mods.terrainFlatBonus;
                         float penalty = yield.penaltyPerUser * existingUsers;
-                        float netYield = Mathf.Max(yield.minBonus, grossYield - penalty);
+                        float netYield = Mathf.Max(yield.minBonus, yield.baseBonusPerHex - penalty) + mods.terrainFlatBonus;
 
                         if (netYield > 0f)
                         {
@@ -197,10 +202,40 @@ public static class BuildingProductionCalculator
             }
         }
 
+        // 3b. Specjalna synergia Retorty z Lasami
+        if (mods.retortForestCoalSynergy && mapGen != null && mapGen.worldData != null)
+        {
+            foreach (var nInfo in HexGridMath.GetNeighborsCrossChunk(cell.chunkCoord, cell.localCoord, chunkRadius))
+            {
+                if (nInfo.chunkCoord != cell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+                if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var targetChunkData)) continue;
+                if (!targetChunkData.TryGetValue(nInfo.localCoord, out var neighborData) || neighborData == null) continue;
+                if (neighborData.feature != HexFeatureType.Forest) continue;
+
+                var neighborCell = !ReferenceEquals(visualizer, null)
+                    ? visualizer.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
+                    : null;
+                if (!ReferenceEquals(neighborCell, null))
+                {
+                    bool isOccupied = neighborCell.OccupyingBuilding != null
+                        || (neighborCell.Data != null && neighborCell.Data.occupyingBuilding != null)
+                        || neighborCell.HasBuilding();
+                    if (isOccupied) continue;
+                }
+                else if (neighborData.occupyingBuilding != null)
+                {
+                    continue;
+                }
+
+                AddAmount(adjacentNetBonuses, ResourceType.Coal, 2f);
+                AddAmount(adjacentGrossBonuses, ResourceType.Coal, 2f);
+            }
+        }
+
         // 4. Bonusy z sąsiednich wzgórz (np. Kamieniołom)
         if (data.elevationBonus.enabled && mapGen != null && mapGen.worldData != null)
         {
-            int radius = data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius;
+            int radius = (data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius) + mods.extraSearchRadius;
             var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(cell.chunkCoord, cell.localCoord, radius, chunkRadius);
 
             foreach (var nInfo in hexesToScan)
@@ -220,10 +255,16 @@ public static class BuildingProductionCalculator
                 {
                     elevation = neighborCell.Elevation;
                 }
+                if (mods.quarryFlatlandMinElev2)
+                {
+                    elevation = Mathf.Max(2, elevation);
+                }
 
                 if (elevation <= 0) continue;
 
-                int existingUsers = !ReferenceEquals(neighborCell, null) ? BuildingProductionRegistry.GetUsageCount(neighborCell) : 0;
+                int existingUsers = (!mods.quarryIgnoreElevationPenalty && !ReferenceEquals(neighborCell, null))
+                    ? BuildingProductionRegistry.GetUsageCount(neighborCell)
+                    : 0;
                 float penaltyPerBuilding = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
                 float effectiveLevel = Mathf.Max(0f, elevation - penaltyPerBuilding * existingUsers);
                 float netYield = effectiveLevel * data.elevationBonus.adjacentBonusPerLevel;
@@ -253,9 +294,9 @@ public static class BuildingProductionCalculator
             metaProdBonus = MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingProductionBonus, data);
         }
 
-        float terrainMultiplier = Mathf.Max(0.1f, 1f + metaTerrainBonus);
+        float terrainMultiplier = Mathf.Max(0.1f, 1f + metaTerrainBonus + mods.terrainPercentBonus);
         float hearthBonus = BeaconEntity.GetActiveDayProductionBonus();
-        float globalMultiplier = Mathf.Max(0.1f, 1f + metaProdBonus + hearthBonus);
+        float globalMultiplier = Mathf.Max(0.1f, 1f + metaProdBonus + hearthBonus + mods.globalMultiplierBonus);
 
         // 6. Zestawienie wszystkich produkowanych surowców
         var allResources = new HashSet<ResourceType>();
@@ -266,12 +307,13 @@ public static class BuildingProductionCalculator
                 allResources.Add(cost.type);
             }
         }
+        foreach (var r in mods.flatProduction.Keys) allResources.Add(r);
         foreach (var r in onTopBonuses.Keys) allResources.Add(r);
         foreach (var r in adjacentNetBonuses.Keys) allResources.Add(r);
 
         foreach (var rType in allResources)
         {
-            float baseAmt = 0f;
+            float baseAmt = mods.flatProduction.TryGetValue(rType, out float flatBonus) ? flatBonus : 0f;
             if (data.productionPerCycle != null)
             {
                 foreach (var cost in data.productionPerCycle)
@@ -339,6 +381,7 @@ public static class BuildingProductionCalculator
 
         int chunkRadius = mapGen != null ? mapGen.chunkRadius : 3;
         var rules = data.GetEffectiveBonusRules();
+        var mods = CollectWorkshopModifiers(data);
 
         if (rules != null && rules.Count > 0)
         {
@@ -346,7 +389,7 @@ public static class BuildingProductionCalculator
             {
                 if (rule.requiredFeature == HexFeatureType.None || rule.resourceYields == null) continue;
 
-                int radius = rule.searchRadius <= 0 ? 1 : rule.searchRadius;
+                int radius = (rule.searchRadius <= 0 ? 1 : rule.searchRadius) + mods.extraSearchRadius;
                 var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(cell.chunkCoord, cell.localCoord, radius, chunkRadius);
 
                 foreach (var nInfo in hexesToScan)
@@ -371,7 +414,7 @@ public static class BuildingProductionCalculator
 
         if (data.elevationBonus.enabled)
         {
-            int radius = data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius;
+            int radius = (data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius) + mods.extraSearchRadius;
             var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(cell.chunkCoord, cell.localCoord, radius, chunkRadius);
 
             foreach (var nInfo in hexesToScan)
@@ -517,6 +560,64 @@ public static class BuildingProductionCalculator
         }
 
         return results;
+    }
+
+    private struct WorkshopModifiers
+    {
+        public int extraSearchRadius;
+        public bool ignoreOccupiedPenalty;
+        public bool quarryIgnoreElevationPenalty;
+        public bool quarryFlatlandMinElev2;
+        public bool retortForestCoalSynergy;
+        public float terrainFlatBonus;
+        public float terrainPercentBonus;
+        public float globalMultiplierBonus;
+        public Dictionary<ResourceType, float> flatProduction;
+    }
+
+    private static WorkshopModifiers CollectWorkshopModifiers(BuildingData data)
+    {
+        var mods = new WorkshopModifiers
+        {
+            flatProduction = new Dictionary<ResourceType, float>()
+        };
+
+        var unlockedUpgrades = ToolWorkshopResearchManager.Instance != null
+            ? ToolWorkshopResearchManager.Instance.GetUnlockedUpgrades(data)
+            : null;
+
+        if (unlockedUpgrades == null) return mods;
+
+        foreach (var upg in unlockedUpgrades)
+        {
+            if (upg == null) continue;
+            mods.extraSearchRadius += upg.extraSearchRadius;
+            mods.terrainFlatBonus += upg.terrainFlatBonus;
+            mods.terrainPercentBonus += upg.terrainPercentBonus;
+            mods.globalMultiplierBonus += upg.globalProductionMultiplierBonus;
+
+            if (upg.productionBonus != null)
+            {
+                foreach (var p in upg.productionBonus)
+                {
+                    AddAmount(mods.flatProduction, p.type, p.amount);
+                }
+            }
+
+            if (upg.specialEffectIDs != null)
+            {
+                foreach (var id in upg.specialEffectIDs)
+                {
+                    if (id == "INCREASE_RANGE_1" || id == "INCREASE_RANGE_2") mods.extraSearchRadius += 1;
+                    else if (id == "IGNORE_OCCUPIED_PENALTY") mods.ignoreOccupiedPenalty = true;
+                    else if (id == "QUARRY_IGNORE_ELEVATION_PENALTY") mods.quarryIgnoreElevationPenalty = true;
+                    else if (id == "QUARRY_FLATLAND_MIN_ELEVATION_2") mods.quarryFlatlandMinElev2 = true;
+                    else if (id == "RETORT_FOREST_COAL_SYNERGY") mods.retortForestCoalSynergy = true;
+                }
+            }
+        }
+
+        return mods;
     }
 
     private static void AddAmount(Dictionary<ResourceType, float> dict, ResourceType type, float amount)

@@ -34,9 +34,13 @@ public class CameraController : MonoBehaviour
     [Tooltip("Odwrócenie kierunku scrolla (domyślnie: w przód = przybliżenie/w dół, w tył = oddalenie/w górę)")]
     public bool invertScroll = false;
 
+    [Header("Przeciąganie kamery (PPM)")]
+    [Tooltip("Włącza przesuwanie kamery względem mapy przez przytrzymanie prawego przycisku myszy (PPM)")]
+    public bool enableRMBDragPan = true;
+
     [Header("Obrót kamery (PPM)")]
     [Tooltip("Włącza obracanie kamery prawym przyciskiem myszy (PPM)")]
-    public bool enableRMBRotation = true;
+    public bool enableRMBRotation = false;
     [Tooltip("Czułość obrotu kamery myszą")]
     public float rotationSpeed = 3f;
     [Tooltip("Minimalne nachylenie kamery (pitch w stopniach)")]
@@ -50,7 +54,7 @@ public class CameraController : MonoBehaviour
 
     [Header("Przesuwanie myszą")]
     [Tooltip("Włącza przesuwanie kamery po najechaniu kursorem na krawędzie ekranu")]
-    public bool enableEdgePan = true;
+    public bool enableEdgePan = false;
     [Tooltip("Szerokość strefy aktywacji przy krawędzi ekranu w pikselach")]
     public float edgePanBorderThickness = 15f;
     [Tooltip("Opcjonalna prędkość przesuwania przy krawędzi (jeśli 0, używa moveSpeed)")]
@@ -66,7 +70,8 @@ public class CameraController : MonoBehaviour
     // Flaga blokady (np. gdy otwarte jest menu budowania)
     [HideInInspector] public bool isInputLocked = false;
     public bool IsRotatingRMB => isRotatingRMB;
-    public bool IsRmbHeld => isRotatingRMB || Input.GetMouseButton(1);
+    public bool IsPanningRMB => isPanningRMB;
+    public bool IsRmbHeld => isRotatingRMB || isPanningRMB || Input.GetMouseButton(1);
 
     [Header("Skupienie na punkcie (Focus)")]
     [Tooltip("Czas trwania szybkiego doskoku/szarpnięcia kamery do wskazanego punktu (w sekundach). Krótki czas (np. 0.18s) z krzywą Ease-Out eliminuje powolne dociąganie.")]
@@ -88,6 +93,8 @@ public class CameraController : MonoBehaviour
     private Vector3 currentPivot;
     private Vector3 resetPivot;
     private bool isRotatingRMB = false;
+    private bool isPanningRMB = false;
+    private Vector3 dragOriginWorld;
     private bool isResettingRotation = false;
     private Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
 
@@ -119,17 +126,89 @@ public class CameraController : MonoBehaviour
     {
         if (!isInputLocked)
         {
-            HandleRotationInput();
+            if (enableRMBDragPan)
+            {
+                isRotatingRMB = false;
+                HandleRMBDragPanInput();
+            }
+            else if (enableRMBRotation)
+            {
+                isPanningRMB = false;
+                HandleRotationInput();
+            }
+            else
+            {
+                isPanningRMB = false;
+                isRotatingRMB = false;
+            }
+
             HandleMovementInput();
         }
         else
         {
+            isPanningRMB = false;
             isRotatingRMB = false;
             isResettingRotation = false;
         }
 
         HandleHeightSmoothing();
         HandleFocusMovement();
+    }
+
+    /// <summary>
+    /// Przeciąganie kamery względem płaszczyzny mapy za pomocą prawego przycisku myszy (PPM).
+    /// </summary>
+    void HandleRMBDragPanInput()
+    {
+        if (_cam == null) return;
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            if (!(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
+            {
+                Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
+                if (groundPlane.Raycast(ray, out float enter) && enter > 0f)
+                {
+                    dragOriginWorld = ray.GetPoint(enter);
+                    dragOriginWorld.y = 0f;
+                    isPanningRMB = true;
+                    isFocusing = false;
+                    isResettingRotation = false;
+                }
+            }
+        }
+
+        if (Input.GetMouseButton(1) && isPanningRMB)
+        {
+            Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
+            if (groundPlane.Raycast(ray, out float enter) && enter > 0f)
+            {
+                Vector3 currentPoint = ray.GetPoint(enter);
+                currentPoint.y = 0f;
+
+                Vector3 difference = dragOriginWorld - currentPoint;
+                if (difference.sqrMagnitude > 0.000001f)
+                {
+                    isFocusing = false;
+                    isResettingRotation = false;
+
+                    Vector3 prevPos = transform.position;
+                    Vector3 targetPos = prevPos + difference;
+                    targetPos.x = Mathf.Clamp(targetPos.x, -mapLimit.x, mapLimit.x);
+                    targetPos.z = Mathf.Clamp(targetPos.z, -mapLimit.y, mapLimit.y);
+                    transform.position = targetPos;
+
+                    Vector3 actualDelta = targetPos - prevPos;
+                    actualDelta.y = 0f;
+                    dragOriginWorld = currentPoint + actualDelta;
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            isPanningRMB = false;
+        }
     }
 
     void HandleRotationInput()
@@ -249,14 +328,14 @@ public class CameraController : MonoBehaviour
 
     void HandleMovementInput()
     {
-        bool isRmbHeld = isRotatingRMB || Input.GetMouseButton(1);
+        bool isRmbHeld = IsRmbHeld;
 
         float xInput = 0f;
         float zInput = 0f;
         float keyboardX = 0f;
         float keyboardZ = 0f;
 
-        // Gdy PPM jest kliknięty/trzymany (zmiana kąta/obrót), całkowicie blokujemy klawiaturę oraz przesuwanie przy krawędziach
+        // Gdy PPM jest kliknięty/trzymany, całkowicie blokujemy klawiaturę oraz opcjonalne przesuwanie przy krawędziach
         if (!isRmbHeld)
         {
             keyboardX = Input.GetAxisRaw("Horizontal"); // A / D
@@ -264,19 +343,9 @@ public class CameraController : MonoBehaviour
             xInput = keyboardX;
             zInput = keyboardZ;
 
-            // Obsługa najechania na krawędzie ekranu (Edge Pan)
             if (enableEdgePan)
             {
-                Vector3 mousePos = Input.mousePosition;
-                // Sprawdzamy czy kursor znajduje się wewnątrz okna gry
-                if (mousePos.x >= 0 && mousePos.x <= Screen.width &&
-                    mousePos.y >= 0 && mousePos.y <= Screen.height)
-                {
-                    if (mousePos.x <= edgePanBorderThickness) xInput -= 1f;
-                    if (mousePos.x >= Screen.width - edgePanBorderThickness) xInput += 1f;
-                    if (mousePos.y <= edgePanBorderThickness) zInput -= 1f;
-                    if (mousePos.y >= Screen.height - edgePanBorderThickness) zInput += 1f;
-                }
+                ApplyEdgePanInput(ref xInput, ref zInput);
             }
         }
 
@@ -336,6 +405,22 @@ public class CameraController : MonoBehaviour
                 targetHeight += scrollInput * scrollSpeed * dir;
                 targetHeight = Mathf.Clamp(targetHeight, minHeight, maxHeight);
             }
+        }
+    }
+
+    /// <summary>
+    /// Obsługa przesuwania kamery po najechaniu kursorem na krawędzie ekranu (Edge Pan).
+    /// </summary>
+    void ApplyEdgePanInput(ref float xInput, ref float zInput)
+    {
+        Vector3 mousePos = Input.mousePosition;
+        if (mousePos.x >= 0 && mousePos.x <= Screen.width &&
+            mousePos.y >= 0 && mousePos.y <= Screen.height)
+        {
+            if (mousePos.x <= edgePanBorderThickness) xInput -= 1f;
+            if (mousePos.x >= Screen.width - edgePanBorderThickness) xInput += 1f;
+            if (mousePos.y <= edgePanBorderThickness) zInput -= 1f;
+            if (mousePos.y >= Screen.height - edgePanBorderThickness) zInput += 1f;
         }
     }
 

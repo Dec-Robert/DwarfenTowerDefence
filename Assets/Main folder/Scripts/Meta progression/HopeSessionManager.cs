@@ -27,6 +27,20 @@ public class HopeSessionManager : MonoBehaviour
         public string reason;
         public int amount;
         public MilestoneType? milestoneType;
+        public string groupKey;
+        public string groupTitle;
+    }
+
+    [System.Serializable]
+    public struct GroupedHopeCardData
+    {
+        public string groupKey;
+        public string title;
+        public int totalAmount;
+        public int count;
+        public int rarityTier; // 0..3 (4 poziomy rzadkości)
+        public MilestoneType? milestoneType;
+        public List<string> breakdownLines;
     }
 
     [System.Serializable]
@@ -34,11 +48,23 @@ public class HopeSessionManager : MonoBehaviour
     {
         public bool isVictory;
         public int nightsSurvived;
+        public int currentNight;
         public int wavePoints;
         public int milestonePoints;
         public float multiplier;
         public int rawTotalHope;
         public int finalTotalHope;
+        public int totalAccountHope;
+        public float runDurationSeconds;
+        public int bestNightsSurvived;
+        public bool isNewRecord;
+        public int enemiesKilled;
+        public int bossesKilled;
+        public int towersBuilt;
+        public int productionBuildingsBuilt;
+        public int expeditionsCompleted;
+        public int runesCrafted;
+        public int finalPopulation;
         public List<HopeRecord> records = new List<HopeRecord>();
     }
 
@@ -57,6 +83,7 @@ public class HopeSessionManager : MonoBehaviour
     public int wavePointsEarned { get; private set; } = 0;
     public int milestonePointsEarned { get; private set; } = 0;
     private int debugRawHope = 0;
+    private float runStartUnscaledTime = 0f;
 
     public bool isSessionEnded { get; private set; } = false;
     public HopeSessionSummary lastSummary { get; private set; }
@@ -79,6 +106,7 @@ public class HopeSessionManager : MonoBehaviour
 
     private void Start()
     {
+        runStartUnscaledTime = Time.unscaledTime;
         if (milestoneConfig == null)
         {
             milestoneConfig = Resources.Load<HopeMilestoneConfigSO>("HopeMilestonesConfig");
@@ -160,7 +188,7 @@ public class HopeSessionManager : MonoBehaviour
                 int wavePoints = GetPointsForWave(nightsSurvived);
                 wavePointsEarned += wavePoints;
 
-                AddRecord($"Przetrwano noc {nightsSurvived}", wavePoints, MilestoneType.NightsSurvived);
+                AddRecord($"Przetrwano noc {nightsSurvived}", wavePoints, MilestoneType.NightsSurvived, "NightsSurvived", "Survivor");
                 EvaluateMilestones(MilestoneType.NightsSurvived, nightsSurvived);
             }
         }
@@ -341,16 +369,20 @@ public class HopeSessionManager : MonoBehaviour
         if (milestone == null) return;
         milestonePointsEarned += milestone.hopeReward;
         string label = !string.IsNullOrEmpty(milestone.DisplayDescription) ? milestone.DisplayDescription : milestone.description;
-        AddRecord(label, milestone.hopeReward, milestone.type);
+        string groupKey = GetMilestoneGroupKey(milestone);
+        string groupTitle = !string.IsNullOrEmpty(milestone.groupTitle) ? milestone.groupTitle : label;
+        AddRecord(label, milestone.hopeReward, milestone.type, groupKey, groupTitle);
     }
 
-    private void AddRecord(string reason, int amount, MilestoneType? type)
+    private void AddRecord(string reason, int amount, MilestoneType? type, string groupKey = null, string groupTitle = null)
     {
         var record = new HopeRecord
         {
             reason = reason,
             amount = amount,
-            milestoneType = type
+            milestoneType = type,
+            groupKey = groupKey,
+            groupTitle = groupTitle
         };
         earnedHopeList.Add(record);
 
@@ -360,6 +392,15 @@ public class HopeSessionManager : MonoBehaviour
         }
 
         OnHopeRecordAdded?.Invoke(record);
+    }
+
+    private string GetMilestoneGroupKey(HopeMilestoneConfigSO.MilestoneGoal milestone)
+    {
+        if (milestone.type == MilestoneType.SpecificTower && milestone.targetTower != null)
+            return $"{milestone.type}_{milestone.targetTower.name}";
+        if (milestone.type == MilestoneType.SpecificRacePopulation)
+            return $"{milestone.type}_{milestone.targetRace}";
+        return milestone.type.ToString();
     }
 
     private string GetMilestoneKey(HopeMilestoneConfigSO.MilestoneGoal milestone)
@@ -388,37 +429,131 @@ public class HopeSessionManager : MonoBehaviour
         }
 
         // Końcowa weryfikacja populacji
+        int finalPopulation = 0;
         if (PopLifeCycleManager.Instance != null && PopLifeCycleManager.Instance.Citizens != null)
         {
-            EvaluateMilestones(MilestoneType.TotalPopulation, PopLifeCycleManager.Instance.Citizens.Count);
+            finalPopulation = PopLifeCycleManager.Instance.Citizens.Count;
+            EvaluateMilestones(MilestoneType.TotalPopulation, finalPopulation);
         }
 
         int rawTotal = wavePointsEarned + milestonePointsEarned + debugRawHope;
         int finalTotal = Mathf.Max(0, Mathf.RoundToInt(rawTotal * currentMultiplier));
+        float runDuration = Mathf.Max(0f, Time.unscaledTime - runStartUnscaledTime);
+
+        int bestNights = nightsSurvived;
+        bool isNewRecord = false;
+        int totalAccountHope = finalTotal;
 
         // Trwały zapis w SaveData
         if (SaveManager.Instance != null && SaveManager.Instance.currentSaveData != null)
         {
-            SaveManager.Instance.currentSaveData.totalHope += finalTotal;
+            var save = SaveManager.Instance.currentSaveData;
+            save.totalHope += finalTotal;
+            totalAccountHope = save.totalHope;
+
+            if (nightsSurvived > save.bestNightsSurvived)
+            {
+                save.bestNightsSurvived = nightsSurvived;
+                isNewRecord = true;
+            }
+            bestNights = save.bestNightsSurvived;
+
+            if (isVictory)
+            {
+                save.totalVictories++;
+            }
+
             SaveManager.Instance.SaveGame();
-            Debug.Log($"<color=cyan>[HopeSessionManager] Run zakończony ({ (isVictory ? "VICTORY" : "GAME OVER") }). Przyznano: {finalTotal} Nadziei. Stan konta: {SaveManager.Instance.currentSaveData.totalHope}</color>");
+            Debug.Log($"<color=cyan>[HopeSessionManager] Run zakończony ({ (isVictory ? "VICTORY" : "GAME OVER") }). Przyznano: {finalTotal} Nadziei. Stan konta: {save.totalHope}</color>");
         }
+
+        int currentNight = TimePhaseManager.Instance != null ? TimePhaseManager.Instance.CurrentDay : Mathf.Max(1, nightsSurvived + (isVictory ? 0 : 1));
 
         lastSummary = new HopeSessionSummary
         {
             isVictory = isVictory,
             nightsSurvived = nightsSurvived,
+            currentNight = currentNight,
             wavePoints = wavePointsEarned,
             milestonePoints = milestonePointsEarned,
             multiplier = currentMultiplier,
             rawTotalHope = rawTotal,
             finalTotalHope = finalTotal,
+            totalAccountHope = totalAccountHope,
+            runDurationSeconds = runDuration,
+            bestNightsSurvived = bestNights,
+            isNewRecord = isNewRecord,
+            enemiesKilled = enemiesKilled,
+            bossesKilled = bossesKilled,
+            towersBuilt = towersBuilt,
+            productionBuildingsBuilt = productionBuildingsBuilt,
+            expeditionsCompleted = expeditionsCompleted,
+            runesCrafted = runesCrafted,
+            finalPopulation = finalPopulation,
             records = new List<HopeRecord>(earnedHopeList)
         };
 
         isSessionEnded = true;
         OnSessionEnded?.Invoke(lastSummary);
         return lastSummary;
+    }
+
+    /// <summary>
+    /// Grupuje rekordy Nadziei według klucza kategorii (lub typu kamienia milowego),
+    /// sumuje zdobyte punkty oraz wylicza poziom rzadkości (0..3) na podstawie liczby wystąpień w grupie.
+    /// </summary>
+    public static List<GroupedHopeCardData> BuildGroupedHopeCards(IReadOnlyList<HopeRecord> records)
+    {
+        var result = new List<GroupedHopeCardData>();
+        if (records == null || records.Count == 0) return result;
+
+        var indexByKey = new Dictionary<string, int>();
+
+        for (int i = 0; i < records.Count; i++)
+        {
+            var rec = records[i];
+            if (rec.amount <= 0) continue;
+
+            string key = !string.IsNullOrEmpty(rec.groupKey)
+                ? rec.groupKey
+                : (rec.milestoneType.HasValue ? rec.milestoneType.Value.ToString() : rec.reason);
+
+            if (string.IsNullOrEmpty(key)) key = $"Record_{i}";
+
+            string title = !string.IsNullOrEmpty(rec.groupTitle) ? rec.groupTitle : rec.reason;
+
+            string lineText = $"{(!string.IsNullOrEmpty(rec.reason) ? rec.reason : title)} (+{rec.amount})";
+
+            if (indexByKey.TryGetValue(key, out int existingIndex))
+            {
+                var card = result[existingIndex];
+                card.totalAmount += rec.amount;
+                card.count += 1;
+                card.rarityTier = Mathf.Clamp(card.count - 1, 0, 3);
+                if (!string.IsNullOrEmpty(rec.groupTitle))
+                {
+                    card.title = rec.groupTitle;
+                }
+                card.breakdownLines.Add(lineText);
+                result[existingIndex] = card;
+            }
+            else
+            {
+                indexByKey[key] = result.Count;
+                result.Add(new GroupedHopeCardData
+                {
+                    groupKey = key,
+                    title = title,
+                    totalAmount = rec.amount,
+                    count = 1,
+                    rarityTier = 0,
+                    milestoneType = rec.milestoneType,
+                    breakdownLines = new List<string> { lineText }
+                });
+            }
+        }
+
+        return result;
     }
 
     /// <summary>

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f7d6f71ad45a34f93b99b379a6ba1a, type: 3}
+  m_Name: Mines_T2_A
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingUpgradeSO
+  upgradeName: Wzmocnione stemple
+  icon: {fileID: 0}
+  description: Zmniejsza dzienny koszt utrzymania Kopalni o -7 Drewna i -2 Kamienia.
+  cost: []
+  productionBonus: []
+  upkeepIncrease: []
+  upkeepReduction:
+  - type: 1
+    amount: 7
+  - type: 2
+    amount: 2
+  globalProductionMultiplierBonus: 0
+  globalUpkeepMultiplierBonus: 0
+  extraSearchRadius: 0
+  terrainFlatBonus: 0
+  terrainPercentBonus: 0
+  extraShifts: 0
+  extraWorkersPerShift: 0
+  firstWorkerBonusMultiplier: 0
+  passiveNoWorkerEfficiency: 0
+  specialEffectIDs: []
+  nextTierOptions: []

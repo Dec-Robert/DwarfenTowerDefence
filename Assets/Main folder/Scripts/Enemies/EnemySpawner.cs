@@ -75,7 +75,12 @@ public class EnemySpawner : MonoBehaviour
     void Start()
     {
         EnsureEtherDropManager();
-        if (fogManager != null) fogManager.OnChunkRevealed += OnChunkRevealedHandler;
+        if (fogManager == null) fogManager = FogOfWarManager.Instance ?? FindFirstObjectByType<FogOfWarManager>();
+        if (fogManager != null)
+        {
+            fogManager.OnChunkRevealed += OnChunkRevealedHandler;
+            fogManager.OnChunkSurveyingStarted += OnChunkRevealedHandler;
+        }
         if (TimePhaseManager.Instance != null) TimePhaseManager.Instance.OnNightStarted += HandleNightPhase;
 
         StartCoroutine(WaitForMapAndInitRoutes());
@@ -83,7 +88,11 @@ public class EnemySpawner : MonoBehaviour
 
     void OnDestroy()
     {
-        if (fogManager != null) fogManager.OnChunkRevealed -= OnChunkRevealedHandler;
+        if (fogManager != null)
+        {
+            fogManager.OnChunkRevealed -= OnChunkRevealedHandler;
+            fogManager.OnChunkSurveyingStarted -= OnChunkRevealedHandler;
+        }
         if (TimePhaseManager.Instance != null) TimePhaseManager.Instance.OnNightStarted -= HandleNightPhase;
     }
 
@@ -648,13 +657,13 @@ public class EnemySpawner : MonoBehaviour
             for (int i = route.fullPath.Count - 1; i >= 0; i--)
             {
                 var chunk = mapGenerator.GetChunkCoordFromWorldPosition(route.fullPath[i]);
-                if (fogManager.IsChunkRevealed(chunk))
+                if (fogManager.IsChunkOpenForSpawn(chunk))
                 {
                     activeSpawnIndex = i;
                 }
                 else
                 {
-                    // Natrafiono na mgłę – ostatni ujawniony punkt jest aktywnym spawnerem na granicy mgły
+                    // Natrafiono na nieeksplorowaną mgłę – ostatni otwarty punkt jest aktywnym spawnerem na granicy mgły
                     break;
                 }
             }

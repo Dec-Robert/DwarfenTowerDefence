@@ -1,0 +1,37 @@
+{
+  "name": "mid_example",
+  "unlocked_upgrades": [
+    "start",
+    "elfy_1",
+    "elfy_2",
+    "elfy_3",
+    "elfy_expedition_center_1",
+    "elfy_expedition_center_3",
+    "elfy_expedition_profit_1",
+    "elfy_speed_expedition_1",
+    "krasnoludy_1",
+    "krasnoludy_2",
+    "krasnoludy_3",
+    "krasnoludy_4",
+    "krasnoludy_wieza_1",
+    "krasnoludy_kuznia_1",
+    "krasnoludy_run_1",
+    "nowa_wieza_1",
+    "nowa_wieza_2",
+    "ulepszenie_wiez_1",
+    "narzedzie_ludu",
+    "zaawansowany_trening_1",
+    "mury_miejsce_1",
+    "mury_miejsce_2",
+    "potencjal_ziemi_1",
+    "zapomnine_rowniny_1"
+  ],
+  "variants": {
+    "ulepszenie_wiez_1": "A"
+  },
+  "drafted_towers": [
+    "4. Crucible of Conflagrations",
+    "2. Thunderbuss"
+  ],
+  "ignore_building_target_bug": false
+}

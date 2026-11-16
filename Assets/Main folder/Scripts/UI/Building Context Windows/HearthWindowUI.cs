@@ -70,6 +70,12 @@ public class HearthWindowUI : MonoBehaviour
     private bool isPreviewOnly;
     private bool listenersBound;
 
+    private GameObject idleWorkersModalRoot;
+    private TextMeshProUGUI txtIdleModalTitle;
+    private TextMeshProUGUI txtIdleModalMessage;
+    private TextMeshProUGUI txtIdleModalCancel;
+    private TextMeshProUGUI txtIdleModalConfirm;
+
     private static readonly Color ColorCardNormalBg = new Color(0.16f, 0.14f, 0.12f, 0.98f);
     private static readonly Color ColorCardSelectedBg = new Color(0.24f, 0.19f, 0.13f, 1.00f);
     private static readonly Color ColorBorderSubtle = new Color(0.32f, 0.27f, 0.22f, 0.70f);
@@ -108,6 +114,8 @@ public class HearthWindowUI : MonoBehaviour
         BeaconEntity.OnHearthStateChanged -= RefreshAllUI;
         BeaconEntity.OnHearthStateChanged += RefreshAllUI;
 
+        ApplyBackdropAndOrder();
+        HideEmptyPlaceholderIcons();
         RefreshAllUI();
     }
 
@@ -134,8 +142,52 @@ public class HearthWindowUI : MonoBehaviour
         isPreviewOnly = previewOnly;
         currentSelectedLevel = Mathf.Clamp(BeaconEntity.SelectedDraftLevel, 1, 5);
 
+        if (idleWorkersModalRoot != null) idleWorkersModalRoot.SetActive(false);
+        ApplyBackdropAndOrder();
+        HideEmptyPlaceholderIcons();
         RefreshAllUI();
         ForceRebuildImmediate();
+    }
+
+    private void ApplyBackdropAndOrder()
+    {
+        transform.SetAsLastSibling();
+        if (backgroundBlockButton != null)
+        {
+            var bgImg = backgroundBlockButton.GetComponent<Image>();
+            if (bgImg != null)
+            {
+                bgImg.color = new Color(0.03f, 0.04f, 0.06f, 0.94f);
+            }
+        }
+    }
+
+    private void HideEmptyPlaceholderIcons()
+    {
+        var pnlHearth = transform.Find("Pnl_Hearth");
+        if (pnlHearth == null) return;
+
+        HideEmptyChildIcons(pnlHearth.Find("Pnl_EffectsColumnsRow/Sec_NightEffects/Pnl_Header"));
+        HideEmptyChildIcons(pnlHearth.Find("Pnl_EffectsColumnsRow/Sec_DayEffects/Pnl_Header"));
+        if (btnIgniteAndStart != null)
+        {
+            HideEmptyChildIcons(btnIgniteAndStart.transform);
+        }
+    }
+
+    private static void HideEmptyChildIcons(Transform parent)
+    {
+        if (parent == null) return;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            var child = parent.GetChild(i);
+            if (child.GetComponent<Button>() != null) continue;
+            var img = child.GetComponent<Image>();
+            if (img != null && img.sprite == null && img != parent.GetComponent<Image>())
+            {
+                img.gameObject.SetActive(false);
+            }
+        }
     }
 
     public void ForceRebuildImmediate()
@@ -213,6 +265,20 @@ public class HearthWindowUI : MonoBehaviour
             return;
         }
 
+        int idleWorkers = GetTotalIdleWorkers();
+        if (idleWorkers > 0)
+        {
+            ShowIdleWorkersModal(idleWorkers);
+            return;
+        }
+
+        ExecuteIgniteAndStartNight();
+    }
+
+    private void ExecuteIgniteAndStartNight()
+    {
+        if (idleWorkersModalRoot != null) idleWorkersModalRoot.SetActive(false);
+
         if (BeaconEntity.TryIgniteAndStartNight(currentSelectedLevel))
         {
             CloseWindow();
@@ -221,6 +287,19 @@ public class HearthWindowUI : MonoBehaviour
         {
             RefreshAllUI();
         }
+    }
+
+    private int GetTotalIdleWorkers()
+    {
+        int totalIdleWorkers = 0;
+        if (WorkforceManager.Instance != null)
+        {
+            foreach (Race race in Enum.GetValues(typeof(Race)))
+            {
+                totalIdleWorkers += WorkforceManager.Instance.GetIdleCount(race);
+            }
+        }
+        return totalIdleWorkers;
     }
 
     public void CloseWindow()
@@ -324,14 +403,11 @@ public class HearthWindowUI : MonoBehaviour
             bool isSelected = (data.levelIndex == currentSelectedLevel);
             bool canAfford = currentCoal >= coalCost;
 
-            if (card.background != null)
-            {
-                card.background.color = isSelected ? ColorCardSelectedBg : ColorCardNormalBg;
-            }
-
             if (card.outline != null)
             {
-                card.outline.effectColor = isSelected ? ColorGoldHighlight : ColorBorderSubtle;
+                Color levelOutlineColor = GetLevelOutlineColor(data.levelIndex);
+                levelOutlineColor.a = isSelected ? 1f : 0.55f;
+                card.outline.effectColor = levelOutlineColor;
                 card.outline.effectDistance = isSelected ? new Vector2(2f, -2f) : new Vector2(1f, -1f);
             }
 
@@ -351,32 +427,34 @@ public class HearthWindowUI : MonoBehaviour
                 card.txtLevelIndex.color = isSelected ? ColorGoldHighlight : new Color(0.68f, 0.65f, 0.60f, 1f);
             }
 
-            bool isFree = coalCost <= 0;
-            if (card.coalCostObject != null) card.coalCostObject.SetActive(!isFree);
-            if (card.badgeFreeObject != null) card.badgeFreeObject.SetActive(isFree);
+            if (card.coalCostObject != null) card.coalCostObject.SetActive(true);
+            if (card.badgeFreeObject != null) card.badgeFreeObject.SetActive(false);
 
-            if (!isFree)
+            if (card.coalCostSingleUI != null)
             {
-                if (card.coalCostSingleUI != null)
-                {
-                    card.coalCostSingleUI.Setup(ResourceType.Coal, coalCost);
-                }
-
-                if (card.txtCoalCostAmount != null)
-                {
-                    card.txtCoalCostAmount.text = coalCost.ToString();
-                    card.txtCoalCostAmount.color = canAfford ? Color.white : ColorNegative;
-                }
+                card.coalCostSingleUI.Setup(ResourceType.Coal, coalCost);
             }
 
+            if (card.txtCoalCostAmount != null)
+            {
+                card.txtCoalCostAmount.text = coalCost.ToString();
+                card.txtCoalCostAmount.color = canAfford ? Color.white : ColorNegative;
+            }
+
+            bool hasIcon = data.levelIcon != null || (card.imgLevelIcon != null && card.imgLevelIcon.sprite != null);
             if (card.imgIconBg != null)
             {
-                card.imgIconBg.color = new Color(data.accentColor.r * 0.35f, data.accentColor.g * 0.35f, data.accentColor.b * 0.35f, 0.95f);
+                card.imgIconBg.gameObject.SetActive(hasIcon);
+                if (hasIcon)
+                {
+                    card.imgIconBg.color = new Color(data.accentColor.r * 0.35f, data.accentColor.g * 0.35f, data.accentColor.b * 0.35f, 0.95f);
+                }
             }
 
             if (card.imgLevelIcon != null)
             {
                 if (data.levelIcon != null) card.imgLevelIcon.sprite = data.levelIcon;
+                card.imgLevelIcon.gameObject.SetActive(hasIcon);
                 card.imgLevelIcon.color = data.accentColor;
             }
 
@@ -387,15 +465,27 @@ public class HearthWindowUI : MonoBehaviour
 
             if (card.badgeTagImage != null)
             {
-                card.badgeTagImage.color = new Color(data.accentColor.r * 0.28f, data.accentColor.g * 0.28f, data.accentColor.b * 0.28f, 0.95f);
+                card.badgeTagImage.gameObject.SetActive(false);
             }
 
             if (card.txtTag != null)
             {
-                card.txtTag.text = data.DisplayTagText;
-                card.txtTag.color = data.accentColor;
+                card.txtTag.gameObject.SetActive(false);
             }
         }
+    }
+
+    private static Color GetLevelOutlineColor(int levelIndex)
+    {
+        return levelIndex switch
+        {
+            1 => new Color(0.141f, 0.063f, 0.200f, 1f), // #241033
+            2 => new Color(0.431f, 0.118f, 0.349f, 1f), // #6E1E59
+            3 => new Color(0.710f, 0.169f, 0.263f, 1f), // #B52B43
+            4 => new Color(0.890f, 0.278f, 0.141f, 1f), // #E34724
+            5 => new Color(1.000f, 0.478f, 0.000f, 1f), // #FF7A00
+            _ => new Color(0.710f, 0.169f, 0.263f, 1f)
+        };
     }
 
     private void RefreshPreviewBoxUI(HearthLevelData selectedData)
@@ -406,6 +496,7 @@ public class HearthWindowUI : MonoBehaviour
             {
                 imgHearthPreview.sprite = selectedData.levelIcon;
             }
+            imgHearthPreview.gameObject.SetActive(imgHearthPreview.sprite != null);
             imgHearthPreview.color = selectedData.accentColor;
         }
 
@@ -450,7 +541,7 @@ public class HearthWindowUI : MonoBehaviour
         bool hasEnemyStats = !Mathf.Approximately(selectedData.enemyStatsBonus, 0f);
         UpdateEffectItem(
             GetNightEffect(2),
-            LocalizationManager.Get("UI_HEARTH_EFF_ENEMY_STATS", "Siła i prędkość wrogów w nocy"),
+            LocalizationManager.Get("UI_HEARTH_EFF_ENEMY_STATS", "Zdrowie i prędkość wrogów w nocy"),
             FormatPercentDelta(selectedData.enemyStatsBonus),
             GetPlayerBeneficialColor(-selectedData.enemyStatsBonus),
             GetEnemyStatsDescription(selectedData.enemyStatsBonus),
@@ -468,28 +559,42 @@ public class HearthWindowUI : MonoBehaviour
             hasRuneDrop
         );
 
-        // 5. Szanse na drop Etheru (Ether Wave Pool & Guarantee) - zawsze widoczne
+        // 5. Szanse na drop Etheru (opisowa etykieta bez wartości %) - zawsze widoczne
         Color etherColor = GetEtherTierColor(selectedData.guaranteedEtherPercent);
         string etherLabel = string.IsNullOrEmpty(selectedData.etherChanceTierLabel) ? LocalizationManager.Get("hearth_ether_tier_średnie", "ŚREDNIE") : selectedData.DisplayEtherTierLabel.ToUpperInvariant();
         UpdateEffectItem(
             GetNightEffect(4),
-            LocalizationManager.Get("UI_HEARTH_EFF_ETHER_DROP", "Szanse na drop Etheru"),
+            LocalizationManager.Get("UI_HEARTH_EFF_ETHER_DROP", "Szanse na kryształy etheru"),
             etherLabel,
             etherColor,
             string.Empty,
             true
         );
 
-        // Dzień 1: Produkcja wszystkich budynków następnego dnia - ukryj jeśli 0%
+        // Dzień 1: Produkcja wszystkich budynków następnego dnia
         bool hasDayProduction = !Mathf.Approximately(selectedData.nextDayProductionBonus, 0f);
-        UpdateEffectItem(
-            GetDayEffect(0),
-            LocalizationManager.Get("UI_HEARTH_EFF_PRODUCTION", "Produkcja wszystkich budynków"),
-            FormatPercentDelta(selectedData.nextDayProductionBonus),
-            GetPlayerBeneficialColor(selectedData.nextDayProductionBonus),
-            GetDayProductionDescription(selectedData.nextDayProductionBonus),
-            hasDayProduction
-        );
+        if (hasDayProduction)
+        {
+            UpdateEffectItem(
+                GetDayEffect(0),
+                LocalizationManager.Get("UI_HEARTH_EFF_PRODUCTION", "Produkcja wszystkich budynków"),
+                FormatPercentDelta(selectedData.nextDayProductionBonus),
+                GetPlayerBeneficialColor(selectedData.nextDayProductionBonus),
+                GetDayProductionDescription(selectedData.nextDayProductionBonus),
+                true
+            );
+        }
+        else
+        {
+            UpdateEffectItem(
+                GetDayEffect(0),
+                LocalizationManager.Get("UI_HEARTH_NO_EFFECTS", "Brak dodatkowych efektów"),
+                string.Empty,
+                ColorNeutral,
+                string.Empty,
+                true
+            );
+        }
 
         // Dzień 2: Zużycie węgla tej nocy - usunięte z UI na życzenie użytkownika (pokazane przy poziomie)
         var dayCoalItem = GetDayEffect(1);
@@ -574,10 +679,137 @@ public class HearthWindowUI : MonoBehaviour
                 }
                 else
                 {
-                    txtIgniteLabel.text = LocalizationManager.Get("UI_HEARTH_IGNITE_BTN", "ROZPAL PALENISKO I ROZPOCZNIJ NOC");
+                    txtIgniteLabel.text = LocalizationManager.Get("UI_HEARTH_IGNITE_BTN", "Rozpocznij noc");
                 }
             }
         }
+    }
+
+    private void ShowIdleWorkersModal(int idleCount)
+    {
+        EnsureIdleWorkersModal();
+        if (idleWorkersModalRoot == null)
+        {
+            ExecuteIgniteAndStartNight();
+            return;
+        }
+
+        if (txtIdleModalTitle != null)
+            txtIdleModalTitle.text = LocalizationManager.Get("UI_HEARTH_IDLE_WORKERS_MODAL_TITLE", "Wolni mieszkańcy");
+        if (txtIdleModalMessage != null)
+            txtIdleModalMessage.text = LocalizationManager.GetFormat("UI_HEARTH_IDLE_WORKERS_MODAL_MSG", idleCount);
+        if (txtIdleModalCancel != null)
+            txtIdleModalCancel.text = LocalizationManager.Get("UI_HEARTH_IDLE_WORKERS_CANCEL", "Wróć i przydziel");
+        if (txtIdleModalConfirm != null)
+            txtIdleModalConfirm.text = LocalizationManager.Get("UI_HEARTH_IDLE_WORKERS_CONFIRM", "Rozpocznij noc");
+
+        idleWorkersModalRoot.SetActive(true);
+        idleWorkersModalRoot.transform.SetAsLastSibling();
+    }
+
+    private void EnsureIdleWorkersModal()
+    {
+        if (idleWorkersModalRoot != null) return;
+
+        var overlayGo = new GameObject("Pnl_IdleWorkersModal", typeof(RectTransform), typeof(Image), typeof(Button));
+        overlayGo.transform.SetParent(transform, false);
+        var overlayRt = overlayGo.GetComponent<RectTransform>();
+        overlayRt.anchorMin = Vector2.zero;
+        overlayRt.anchorMax = Vector2.one;
+        overlayRt.offsetMin = Vector2.zero;
+        overlayRt.offsetMax = Vector2.zero;
+
+        var overlayImg = overlayGo.GetComponent<Image>();
+        overlayImg.color = new Color(0f, 0f, 0f, 0.72f);
+        var overlayBtn = overlayGo.GetComponent<Button>();
+        overlayBtn.transition = Selectable.Transition.None;
+        overlayBtn.onClick.AddListener(() => overlayGo.SetActive(false));
+
+        var boxGo = new GameObject("Pnl_ModalBox", typeof(RectTransform), typeof(Image), typeof(Outline), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        boxGo.transform.SetParent(overlayGo.transform, false);
+        var boxRt = boxGo.GetComponent<RectTransform>();
+        boxRt.anchorMin = new Vector2(0.5f, 0.5f);
+        boxRt.anchorMax = new Vector2(0.5f, 0.5f);
+        boxRt.sizeDelta = new Vector2(460f, 0f);
+
+        boxGo.GetComponent<Image>().color = new Color(0.11f, 0.12f, 0.16f, 0.98f);
+        var outline = boxGo.GetComponent<Outline>();
+        outline.effectColor = ColorAmberGold;
+        outline.effectDistance = new Vector2(1.5f, -1.5f);
+
+        var vlg = boxGo.GetComponent<VerticalLayoutGroup>();
+        vlg.padding = new RectOffset(24, 24, 20, 20);
+        vlg.spacing = 14f;
+        vlg.childControlWidth = true;
+        vlg.childControlHeight = true;
+        vlg.childForceExpandWidth = true;
+        vlg.childForceExpandHeight = false;
+
+        var csf = boxGo.GetComponent<ContentSizeFitter>();
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        txtIdleModalTitle = CreateModalText(boxGo.transform, "Txt_Title", 20f, FontStyles.Bold, ColorAmberGold, TextAlignmentOptions.Center);
+        txtIdleModalMessage = CreateModalText(boxGo.transform, "Txt_Message", 14f, FontStyles.Normal, Color.white, TextAlignmentOptions.Center);
+
+        var btnRow = new GameObject("Pnl_Buttons", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        btnRow.transform.SetParent(boxGo.transform, false);
+        var hlg = btnRow.GetComponent<HorizontalLayoutGroup>();
+        hlg.spacing = 12f;
+        hlg.childControlWidth = true;
+        hlg.childControlHeight = true;
+        hlg.childForceExpandWidth = true;
+        hlg.childForceExpandHeight = false;
+
+        txtIdleModalCancel = CreateModalButton(btnRow.transform, "Btn_Cancel", new Color(0.22f, 0.24f, 0.30f, 1f), () =>
+        {
+            overlayGo.SetActive(false);
+            CloseWindow();
+        });
+
+        txtIdleModalConfirm = CreateModalButton(btnRow.transform, "Btn_Confirm", ColorIgniteActive, ExecuteIgniteAndStartNight);
+
+        idleWorkersModalRoot = overlayGo;
+        idleWorkersModalRoot.SetActive(false);
+    }
+
+    private static TextMeshProUGUI CreateModalText(Transform parent, string name, float fontSize, FontStyles style, Color color, TextAlignmentOptions align)
+    {
+        var go = new GameObject(name, typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        tmp.fontSize = fontSize;
+        tmp.fontStyle = style;
+        tmp.color = color;
+        tmp.alignment = align;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
+        return tmp;
+    }
+
+    private static TextMeshProUGUI CreateModalButton(Transform parent, string name, Color bgColor, UnityEngine.Events.UnityAction onClick)
+    {
+        var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
+        go.transform.SetParent(parent, false);
+        go.GetComponent<Image>().color = bgColor;
+        var le = go.GetComponent<LayoutElement>();
+        le.preferredHeight = 40f;
+
+        var btn = go.GetComponent<Button>();
+        btn.onClick.AddListener(onClick);
+
+        var lblGo = new GameObject("Txt_Label", typeof(RectTransform));
+        lblGo.transform.SetParent(go.transform, false);
+        var lblRt = lblGo.GetComponent<RectTransform>();
+        lblRt.anchorMin = Vector2.zero;
+        lblRt.anchorMax = Vector2.one;
+        lblRt.offsetMin = new Vector2(8f, 4f);
+        lblRt.offsetMax = new Vector2(-8f, -4f);
+
+        var tmp = lblGo.AddComponent<TextMeshProUGUI>();
+        tmp.fontSize = 14f;
+        tmp.fontStyle = FontStyles.Bold;
+        tmp.color = Color.white;
+        tmp.alignment = TextAlignmentOptions.Center;
+        return tmp;
     }
 
     private HearthEffectItemRefs GetNightEffect(int index)
@@ -603,9 +835,15 @@ public class HearthWindowUI : MonoBehaviour
         }
         if (!isVisible) return;
 
+        if (item.imgEffectIcon != null)
+        {
+            item.imgEffectIcon.gameObject.SetActive(item.imgEffectIcon.sprite != null);
+        }
         if (item.txtEffectTitle != null) item.txtEffectTitle.text = title;
         if (item.txtEffectValue != null)
         {
+            bool hasValue = !string.IsNullOrEmpty(valueText);
+            item.txtEffectValue.gameObject.SetActive(hasValue);
             item.txtEffectValue.text = valueText;
             item.txtEffectValue.color = valueColor;
         }

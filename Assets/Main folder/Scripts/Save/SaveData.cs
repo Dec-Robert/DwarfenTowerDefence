@@ -26,6 +26,9 @@ public class SaveData
     public List<string> unlockedTowerIDs = new List<string>();
     // Flaga ukończenia pierwszej rozgrywki / gry tutorialowej
     public bool isTutorialCompleted = false;
+    // Najlepszy wynik przetrwanych nocy oraz łączna liczba zwycięstw
+    public int bestNightsSurvived = 0;
+    public int totalVictories = 0;
 
     public int GetInvestedHope(string id)
     {

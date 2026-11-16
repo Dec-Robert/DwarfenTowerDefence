@@ -109,6 +109,16 @@ public class ResourceManager : MonoBehaviour
         return resourceBank.ContainsKey(type) && resourceBank[type] >= amount;
     }
 
+    public bool CanAfford(List<ResourceCost> resources)
+    {
+        if (resources == null || resources.Count == 0) return true;
+        foreach (var resource in resources)
+        {
+            if (!CanAfford(resource.type, resource.amount)) return false;
+        }
+        return true;
+    }
+
     public void UpdateAllUI()
     {
         foreach (var kvp in resourceBank)

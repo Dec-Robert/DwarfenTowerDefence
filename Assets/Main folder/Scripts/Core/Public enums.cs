@@ -268,7 +268,38 @@ public enum MetaEffectType
     UnlockRuneRarity_Cursed = 118,
     UnlockRuneFusion = 119,
     UnlockRuneTransmutation = 120,
-    UnlockCursedCrafting = 121
+    UnlockCursedCrafting = 121,
+
+    // ── System Zaklęć i Wieża Szalonego Druida ────────────────────────────────
+    UnlockDruidTower = 130,
+
+    // ── Warsztat Narzędziowy i Globalne Ulepszenia ─────────────────────────────
+    UnlockToolWorkshop = 131
+}
+
+public enum SpellCastLimitMode
+{
+    LimitedUsesPerNight,
+    RechargeableCharges,
+    CooldownOnly
+}
+
+public enum SpellEffectType
+{
+    AreaDamage,
+    AreaSlow,
+    BurningGround,
+    FrostGround
+}
+
+public enum SpellUpgradeStatType
+{
+    DamageFlat,
+    DamageMultiplier,
+    RadiusFlat,
+    CooldownReduction,
+    BonusCharges,
+    SpecialEffect
 }
 
 [Serializable]

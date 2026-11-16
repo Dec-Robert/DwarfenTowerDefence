@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HearthConfigSO
   levels:
   - levelIndex: 1
-    title: "Wygas\u0142y Popi\xF3\u0142"
+    title: "Tlej\u0105cy \u017Car"
     tagText: "RYZYKO / \u0141UPY"
-    accentColor: {r: 0.58, g: 0.36, b: 0.82, a: 1}
+    accentColor: {r: 0.141, g: 0.063, b: 0.2, a: 1}
     levelIcon: {fileID: 0}
     coalCost: 0
     towerDamageBonus: 0
@@ -29,9 +29,9 @@ MonoBehaviour:
     naturalEtherDropChance: 0.05
     nextDayProductionBonus: 0
   - levelIndex: 2
-    title: "Tl\u0105cy si\u0119 \u017Bar"
+    title: "Przygaszony p\u0142omie\u0144"
     tagText: "OSZCZ\u0118DNO\u015A\u0106"
-    accentColor: {r: 0.75, g: 0.42, b: 0.32, a: 1}
+    accentColor: {r: 0.431, g: 0.118, b: 0.349, a: 1}
     levelIcon: {fileID: 0}
     coalCost: 15
     towerDamageBonus: 0
@@ -44,9 +44,9 @@ MonoBehaviour:
     naturalEtherDropChance: 0.05
     nextDayProductionBonus: 0
   - levelIndex: 3
-    title: "Zr\xF3wnowa\u017Cony P\u0142omie\u0144"
+    title: "R\xF3wny ogie\u0144"
     tagText: NEUTRALNY
-    accentColor: {r: 0.28, g: 0.56, b: 0.78, a: 1}
+    accentColor: {r: 0.71, g: 0.169, b: 0.263, a: 1}
     levelIcon: {fileID: 0}
     coalCost: 30
     towerDamageBonus: 0
@@ -59,9 +59,9 @@ MonoBehaviour:
     naturalEtherDropChance: 0.05
     nextDayProductionBonus: 0
   - levelIndex: 4
-    title: "Jasny Ogie\u0144"
+    title: "Hucz\u0105cy p\u0142omie\u0144"
     tagText: WZMOCNIENIE
-    accentColor: {r: 0.85, g: 0.62, b: 0.18, a: 1}
+    accentColor: {r: 0.89, g: 0.278, b: 0.141, a: 1}
     levelIcon: {fileID: 0}
     coalCost: 45
     towerDamageBonus: 0
@@ -74,9 +74,9 @@ MonoBehaviour:
     naturalEtherDropChance: 0.05
     nextDayProductionBonus: 0
   - levelIndex: 5
-    title: Palenisko Magmy
+    title: "Rozszala\u0142y ogie\u0144"
     tagText: MAKS. MOC
-    accentColor: {r: 0.95, g: 0.36, b: 0.12, a: 1}
+    accentColor: {r: 1, g: 0.478, b: 0, a: 1}
     levelIcon: {fileID: 0}
     coalCost: 60
     towerDamageBonus: 0

@@ -26,6 +26,8 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
     public GameObject hearthWindowPanel;
     public GameObject expeditionCenterPanel;
     public GameObject chunkExpeditionModal;
+    public GameObject druidTowerPanel;
+    public GameObject toolWorkshopPanel;
     
     void Awake()
     {
@@ -77,6 +79,18 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             var pnl = transform.Find("Pnl_ChunkExpeditionModal");
             if (pnl != null) chunkExpeditionModal = pnl.gameObject;
+        }
+
+        if (druidTowerPanel == null)
+        {
+            var pnl = transform.Find("Pnl_DruidCave");
+            if (pnl != null) druidTowerPanel = pnl.gameObject;
+        }
+
+        if (toolWorkshopPanel == null)
+        {
+            var pnl = transform.Find("Pnl_ToolWorkshopWindow");
+            if (pnl != null) toolWorkshopPanel = pnl.gameObject;
         }
 
         HideAll();
@@ -253,6 +267,66 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         {
             OpenExpeditionCenter(expeditionCenter);
         }
+
+        if (buildingEntity is DruidTowerEntity druidTower)
+        {
+            OpenDruidTowerWindow(druidTower);
+        }
+
+        if (buildingEntity is ToolWorkshopEntity toolWorkshop)
+        {
+            OpenToolWorkshopWindow(toolWorkshop);
+        }
+    }
+
+    public bool OpenToolWorkshopWindow(ToolWorkshopEntity workshop)
+    {
+        if (toolWorkshopPanel == null)
+        {
+            var pnl = transform.Find("Pnl_ToolWorkshopWindow");
+            if (pnl != null) toolWorkshopPanel = pnl.gameObject;
+        }
+
+        if (toolWorkshopPanel == null)
+        {
+            Debug.LogWarning("[CenterInfoPanelControllerUI] Nie znaleziono panelu Pnl_ToolWorkshopWindow pod Canvas_ContextWindows!");
+            return false;
+        }
+
+        HideAll();
+        toolWorkshopPanel.SetActive(true);
+        var ui = toolWorkshopPanel.GetComponent<ToolWorkshopWindowUI>();
+        if (ui == null) ui = toolWorkshopPanel.AddComponent<ToolWorkshopWindowUI>();
+        ui.Setup(workshop);
+        return true;
+    }
+
+    public bool OpenDruidTowerWindow(DruidTowerEntity druidTower)
+    {
+        if (druidTowerPanel == null)
+        {
+            var pnl = transform.Find("Pnl_DruidCave");
+            if (pnl != null) druidTowerPanel = pnl.gameObject;
+        }
+
+        if (toolWorkshopPanel == null)
+        {
+            var pnl = transform.Find("Pnl_ToolWorkshopWindow");
+            if (pnl != null) toolWorkshopPanel = pnl.gameObject;
+        }
+
+        if (druidTowerPanel == null)
+        {
+            Debug.LogWarning("[CenterInfoPanelControllerUI] Nie znaleziono panelu Pnl_DruidCave pod Canvas_ContextWindows!");
+            return false;
+        }
+
+        HideAll();
+        druidTowerPanel.SetActive(true);
+        var ui = druidTowerPanel.GetComponent<DruidTowerWindowUI>();
+        if (ui == null) ui = druidTowerPanel.AddComponent<DruidTowerWindowUI>();
+        ui.Setup(druidTower);
+        return true;
     }
 
     public bool OpenExpeditionCenter(ExpeditionCenterEntity center = null, Vector2Int? highlightChunk = null)
@@ -358,5 +432,7 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
         if (hearthWindowPanel != null) hearthWindowPanel.SetActive(false);
         if (expeditionCenterPanel != null) expeditionCenterPanel.SetActive(false);
         if (chunkExpeditionModal != null) chunkExpeditionModal.SetActive(false);
+        if (druidTowerPanel != null) druidTowerPanel.SetActive(false);
+        if (toolWorkshopPanel != null) toolWorkshopPanel.SetActive(false);
     }
 }

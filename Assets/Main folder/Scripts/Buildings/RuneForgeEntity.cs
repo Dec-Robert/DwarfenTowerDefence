@@ -120,6 +120,7 @@ public class RuneForgeEntity : BuildingEntity
 
     public bool TryAddRunesmith()
     {
+        if (TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night) return false;
         if (assignedDwarves.Count >= GetMaxRunesmiths()) return false;
         if (WorkforceManager.Instance == null) return false;
 

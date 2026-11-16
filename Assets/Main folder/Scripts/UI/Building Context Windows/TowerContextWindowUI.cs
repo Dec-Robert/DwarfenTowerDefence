@@ -551,6 +551,13 @@ public class TowerContextWindowUI : MonoBehaviour
             WorkforceManager.Instance.OnWorkforceStatsChanged += OnWorkforceChanged;
         }
 
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnMorningStarted += OnTimePhaseChanged;
+            TimePhaseManager.Instance.OnDuskStarted += OnTimePhaseChanged;
+            TimePhaseManager.Instance.OnNightStarted += OnTimePhaseChanged;
+        }
+
         // Podpięcie przycisku zamknięcia
         if (btnClose != null)
         {
@@ -584,6 +591,18 @@ public class TowerContextWindowUI : MonoBehaviour
         {
             WorkforceManager.Instance.OnWorkforceStatsChanged -= OnWorkforceChanged;
         }
+
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnMorningStarted -= OnTimePhaseChanged;
+            TimePhaseManager.Instance.OnDuskStarted -= OnTimePhaseChanged;
+            TimePhaseManager.Instance.OnNightStarted -= OnTimePhaseChanged;
+        }
+    }
+
+    private void OnTimePhaseChanged()
+    {
+        RefreshWorkersUI();
     }
 
     private void OnTowerStatsChanged()
@@ -699,17 +718,22 @@ public class TowerContextWindowUI : MonoBehaviour
             txtWorkerCount.text = LocalizationManager.GetFormat("UI_PROD_WORKERS_FMT", totalWorkers, maxWorkers);
         }
 
+        bool isNight = TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night;
+
         // Kafelki 3 ras
         foreach (var rc in raceControls)
         {
             int assignedCount = currentTower.GetWorkerCount(rc.race);
             int freeCount = WorkforceManager.Instance != null ? WorkforceManager.Instance.GetIdleCount(rc.race) : 0;
+            bool hasRemovableWorker = currentTower.Workers != null
+                ? currentTower.Workers.HasRemovableWorker(rc.race)
+                : assignedCount > 0;
 
             if (rc.txtCount != null) rc.txtCount.text = assignedCount.ToString();
             if (rc.txtFree != null) rc.txtFree.text = LocalizationManager.GetFormat("UI_PROD_FREE_WORKERS_FMT", freeCount);
 
-            if (rc.btnMinus != null) rc.btnMinus.interactable = assignedCount > 0;
-            if (rc.btnPlus != null) rc.btnPlus.interactable = (totalWorkers < maxWorkers) && (freeCount > 0);
+            if (rc.btnMinus != null) rc.btnMinus.interactable = hasRemovableWorker;
+            if (rc.btnPlus != null) rc.btnPlus.interactable = !isNight && (totalWorkers < maxWorkers) && (freeCount > 0);
         }
 
         // Dynamiczne progi wydajności

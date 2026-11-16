@@ -80,6 +80,7 @@ public class BuildingTerrainComponent
                     {
                         if (upgrades.HasSpecialEffect("INCREASE_RANGE_1")) radius += 1;
                         if (upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 1;
+                        radius += upgrades.GetExtraSearchRadius();
                     }
 
                     var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(myCell.chunkCoord, myCell.localCoord, radius, chunkRadius);
@@ -110,13 +111,19 @@ public class BuildingTerrainComponent
         // 2. Bonus wysokosciowy (np. Kamieniolom)
         if (data != null && data.elevationBonus.enabled)
         {
-            if (myCell.Elevation > 0)
+            if (GetEffectiveElevation(myCell) > 0)
             {
                 BuildingProductionRegistry.RegisterUsage(myCell);
                 registeredOwnCell = myCell;
             }
 
             int radius = data.elevationBonus.searchRadius <= 0 ? 1 : data.elevationBonus.searchRadius;
+            if (upgrades != null)
+            {
+                if (upgrades.HasSpecialEffect("INCREASE_RANGE_1")) radius += 1;
+                if (upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 1;
+                radius += upgrades.GetExtraSearchRadius();
+            }
             var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(myCell.chunkCoord, myCell.localCoord, radius, chunkRadius);
 
             foreach (var nInfo in hexesToScan)
@@ -132,7 +139,7 @@ public class BuildingTerrainComponent
                     : null;
                 if (neighborCell == null) continue;
 
-                if (neighborCell.Elevation > 0)
+                if (GetEffectiveElevation(neighborCell) > 0)
                 {
                     if (!adjacentElevationHexes.Contains(neighborCell))
                     {
@@ -144,14 +151,41 @@ public class BuildingTerrainComponent
         }
     }
 
+    private int GetEffectiveElevation(HexCell cell)
+    {
+        if (cell == null) return 0;
+        if (upgrades != null && upgrades.HasSpecialEffect("QUARRY_FLATLAND_MIN_ELEVATION_2"))
+        {
+            return Mathf.Max(2, cell.Elevation);
+        }
+        return cell.Elevation;
+    }
+
+    private float GetElevationEffectiveLevel(HexCell cell, HashSet<HexCell> simulatedExtraClaimedCells = null)
+    {
+        int elevation = GetEffectiveElevation(cell);
+        if (elevation <= 0) return 0f;
+
+        if (upgrades != null && upgrades.HasSpecialEffect("QUARRY_IGNORE_ELEVATION_PENALTY"))
+        {
+            return elevation;
+        }
+
+        int usersCount = BuildingProductionRegistry.GetUsageCount(cell);
+        if (simulatedExtraClaimedCells != null && simulatedExtraClaimedCells.Contains(cell))
+        {
+            usersCount += 1;
+        }
+        float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
+        return Mathf.Max(0f, elevation - penalty * Mathf.Max(0, usersCount - 1));
+    }
+
     public float GetOnTopBonus(ResourceType type)
     {
         float bonus = cachedOnTopBonuses.TryGetValue(type, out float val) ? val : 0f;
-        if (data != null && data.elevationBonus.enabled && data.elevationBonus.resourceType == type && registeredOwnCell != null && registeredOwnCell.Elevation > 0)
+        if (data != null && data.elevationBonus.enabled && data.elevationBonus.resourceType == type && registeredOwnCell != null && GetEffectiveElevation(registeredOwnCell) > 0)
         {
-            int usersCount = BuildingProductionRegistry.GetUsageCount(registeredOwnCell);
-            float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
-            float effectiveLevel = Mathf.Max(0f, registeredOwnCell.Elevation - penalty * (usersCount - 1));
+            float effectiveLevel = GetElevationEffectiveLevel(registeredOwnCell);
             bonus += effectiveLevel * data.elevationBonus.onTopBonusPerLevel;
         }
         return bonus;
@@ -228,9 +262,7 @@ public class BuildingTerrainComponent
             foreach (var cell in adjacentElevationHexes)
             {
                 if (cell == null) continue;
-                int usersCount = BuildingProductionRegistry.GetUsageCount(cell);
-                float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
-                float effectiveLevel = Mathf.Max(0f, cell.Elevation - penalty * (usersCount - 1));
+                float effectiveLevel = GetElevationEffectiveLevel(cell);
                 float hexYield = effectiveLevel * data.elevationBonus.adjacentBonusPerLevel;
 
                 if (hexYield > 0f)
@@ -241,7 +273,50 @@ public class BuildingTerrainComponent
             }
         }
 
+        float forestCoalBonus = CalculateRetortForestCoalBonus(null);
+        if (forestCoalBonus > 0f)
+        {
+            result[ResourceType.Coal] = (result.TryGetValue(ResourceType.Coal, out float cur) ? cur : 0f) + forestCoalBonus;
+        }
+
         return result;
+    }
+
+    private float CalculateRetortForestCoalBonus(HexCell simulatedOccupiedCell)
+    {
+        if (upgrades == null || !upgrades.HasSpecialEffect("RETORT_FOREST_COAL_SYNERGY")) return 0f;
+        if (buildingTransform == null) return 0f;
+
+        var myCell = buildingTransform.GetComponentInParent<HexCell>();
+        if (myCell == null) return 0f;
+
+        var mapGen = Object.FindFirstObjectByType<HexMapGenerator>();
+        if (mapGen == null || mapGen.worldData == null) return 0f;
+
+        int chunkRadius = mapGen.chunkRadius;
+        float bonus = 0f;
+
+        foreach (var nInfo in HexGridMath.GetNeighborsCrossChunk(myCell.chunkCoord, myCell.localCoord, chunkRadius))
+        {
+            if (nInfo.chunkCoord != myCell.chunkCoord && !HexGridMath.IsChunkRevealed(nInfo.chunkCoord)) continue;
+            if (!mapGen.worldData.TryGetValue(nInfo.chunkCoord, out var chunkData)) continue;
+            if (!chunkData.TryGetValue(nInfo.localCoord, out var neighborData) || neighborData == null) continue;
+
+            if (neighborData.feature != HexFeatureType.Forest) continue;
+
+            var neighborCell = HexMapVisualizer.Instance != null
+                ? HexMapVisualizer.Instance.GetHexCell(nInfo.chunkCoord, nInfo.localCoord)
+                : null;
+            if (neighborCell == null) continue;
+            bool isCellOccupied = neighborCell.OccupyingBuilding != null
+                || (neighborCell.Data != null && neighborCell.Data.occupyingBuilding != null)
+                || neighborCell.HasBuilding();
+            if (isCellOccupied || (simulatedOccupiedCell != null && neighborCell == simulatedOccupiedCell)) continue;
+
+            bonus += 2f;
+        }
+
+        return bonus;
     }
 
     public float GetAdjacentBonus(ResourceType type)
@@ -289,15 +364,9 @@ public class BuildingTerrainComponent
 
         var onTopDict = new Dictionary<ResourceType, float>(cachedOnTopBonuses);
 
-        if (data.elevationBonus.enabled && registeredOwnCell != null && registeredOwnCell.Elevation > 0)
+        if (data.elevationBonus.enabled && registeredOwnCell != null && GetEffectiveElevation(registeredOwnCell) > 0)
         {
-            int usersCount = BuildingProductionRegistry.GetUsageCount(registeredOwnCell);
-            if (simulatedExtraClaimedCells != null && simulatedExtraClaimedCells.Contains(registeredOwnCell))
-            {
-                usersCount += 1;
-            }
-            float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
-            float effectiveLevel = Mathf.Max(0f, registeredOwnCell.Elevation - penalty * (usersCount - 1));
+            float effectiveLevel = GetElevationEffectiveLevel(registeredOwnCell, simulatedExtraClaimedCells);
             float onTopYield = effectiveLevel * data.elevationBonus.onTopBonusPerLevel;
 
             if (onTopYield > 0f)
@@ -384,13 +453,7 @@ public class BuildingTerrainComponent
             foreach (var cell in adjacentElevationHexes)
             {
                 if (cell == null) continue;
-                int usersCount = BuildingProductionRegistry.GetUsageCount(cell);
-                if (simulatedExtraClaimedCells != null && simulatedExtraClaimedCells.Contains(cell))
-                {
-                    usersCount += 1;
-                }
-                float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
-                float effectiveLevel = Mathf.Max(0f, cell.Elevation - penalty * (usersCount - 1));
+                float effectiveLevel = GetElevationEffectiveLevel(cell, simulatedExtraClaimedCells);
                 float hexYield = effectiveLevel * data.elevationBonus.adjacentBonusPerLevel;
 
                 if (hexYield > 0f)
@@ -399,6 +462,12 @@ public class BuildingTerrainComponent
                         (result.TryGetValue(data.elevationBonus.resourceType, out float cur) ? cur : 0f) + hexYield;
                 }
             }
+        }
+
+        float forestCoalBonus = CalculateRetortForestCoalBonus(simulatedOccupiedCell);
+        if (forestCoalBonus > 0f)
+        {
+            result[ResourceType.Coal] = (result.TryGetValue(ResourceType.Coal, out float cur) ? cur : 0f) + forestCoalBonus;
         }
 
         return result;
@@ -416,11 +485,9 @@ public class BuildingTerrainComponent
         var onTopDict = new Dictionary<ResourceType, float>(cachedOnTopBonuses);
 
         // 2. Dodanie dynamicznego on-top ze wzniesienia (Kamieniolom)
-        if (data.elevationBonus.enabled && registeredOwnCell != null && registeredOwnCell.Elevation > 0)
+        if (data.elevationBonus.enabled && registeredOwnCell != null && GetEffectiveElevation(registeredOwnCell) > 0)
         {
-            int usersCount = BuildingProductionRegistry.GetUsageCount(registeredOwnCell);
-            float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
-            float effectiveLevel = Mathf.Max(0f, registeredOwnCell.Elevation - penalty * (usersCount - 1));
+            float effectiveLevel = GetElevationEffectiveLevel(registeredOwnCell);
             float onTopYield = effectiveLevel * data.elevationBonus.onTopBonusPerLevel;
 
             if (onTopYield > 0f)
@@ -553,7 +620,7 @@ public class BuildingTerrainComponent
     {
         if (upgrades == null) return;
 
-        if (upgrades.HasSpecialEffect("FORESTER_PLANT_TREE"))
+        if (upgrades.HasSpecialEffect("FORESTER_PLANT_TREE") || upgrades.HasSpecialEffect("SAWMILL_PLANT_FOREST"))
         {
             daysSinceLastPlant++;
             if (daysSinceLastPlant >= 3)
@@ -604,6 +671,7 @@ public class BuildingTerrainComponent
         {
             if (upgrades.HasSpecialEffect("INCREASE_RANGE_1")) radius += 1;
             if (upgrades.HasSpecialEffect("INCREASE_RANGE_2")) radius += 1;
+            radius += upgrades.GetExtraSearchRadius();
         }
 
         var hexesToScan = HexGridMath.GetHexesInRadiusCrossChunk(myCell.chunkCoord, myCell.localCoord, radius, chunkRadius);

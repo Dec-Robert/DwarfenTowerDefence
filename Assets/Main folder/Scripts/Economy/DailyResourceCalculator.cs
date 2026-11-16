@@ -99,9 +99,10 @@ public static class DailyResourceCalculator
                 }
 
                 // Upkeep budynku produkcyjnego
-                if (b.data.upkeepPerCycle != null)
+                var effectiveUpkeep = b.GetEffectiveUpkeep();
+                if (effectiveUpkeep != null)
                 {
-                    foreach (var cost in b.data.upkeepPerCycle)
+                    foreach (var cost in effectiveUpkeep)
                     {
                         if (cost.type == targetResource && cost.amount > 0)
                         {
@@ -126,10 +127,11 @@ public static class DailyResourceCalculator
                     if (tower.GetTotalWorkerCount() <= 0) continue;
                 }
 
-                if (b.data.upkeepPerCycle != null)
+                var towerUpkeep = TowerEntity.GetEffectiveTowerUpkeep(b.data);
+                if (towerUpkeep != null)
                 {
                     string towerName = GetBuildingDisplayName(b.data);
-                    foreach (var cost in b.data.upkeepPerCycle)
+                    foreach (var cost in towerUpkeep)
                     {
                         if (cost.type == targetResource && cost.amount > 0)
                         {
@@ -253,6 +255,11 @@ public static class DailyResourceCalculator
 
     public static string GetResourceDisplayName(ResourceType type)
     {
-        return LocalizationManager.Get($"RES_{type.ToString().ToUpperInvariant()}", type.ToString());
+        string key = type switch
+        {
+            ResourceType.Ether => "RES_ETHER",
+            _ => $"RES_{type.ToString().ToUpperInvariant()}"
+        };
+        return LocalizationManager.Get(key, type.ToString());
     }
 }
