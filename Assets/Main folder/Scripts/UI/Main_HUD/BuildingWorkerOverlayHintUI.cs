@@ -88,7 +88,7 @@ public class BuildingWorkerOverlayHintUI : MonoBehaviour
         rect.anchorMin = new Vector2(0f, 0f);
         rect.anchorMax = new Vector2(0f, 0f);
         rect.pivot = new Vector2(0f, 0f);
-        rect.anchoredPosition = new Vector2(24f, 20f);
+        rect.anchoredPosition = new Vector2(24f, 224f);
 
         // Tło
         var bgImage = hintObj.AddComponent<Image>();

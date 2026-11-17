@@ -39,6 +39,7 @@ public class ExtendedBuildingUI : MonoBehaviour
     [Header("Stylizacja Zakładek")]
     [SerializeField] private Color activeTabColor = new Color(0.95f, 0.72f, 0.22f, 1.0f); // Złotawy kolor
     [SerializeField] private Color inactiveTabColor = new Color(0.7f, 0.7f, 0.7f, 0.8f);
+    [SerializeField] private float lockedTabAlpha = 0.4f;
 
     [Header("Debug")]
     [Tooltip("Gdy włączone, wszystkie wieże są widoczne i dostępne niezależnie od stanu odblokowania.")]
@@ -68,6 +69,7 @@ public class ExtendedBuildingUI : MonoBehaviour
     private BuildingType currentCategory = BuildingType.Defense;
     private bool isOpen = false;
     private float targetY = -184f;
+    private bool subscribedToTimeManager = false;
 
     public bool IsOpen => isOpen;
     public BuildingType CurrentCategory => currentCategory;
@@ -82,6 +84,17 @@ public class ExtendedBuildingUI : MonoBehaviour
 
         RegisterTabButtons();
         RegisterHudButtons();
+    }
+
+    private void OnEnable()
+    {
+        TrySubscribeToTimeManager();
+        HandleTimePhaseChanged();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeFromTimeManager();
     }
 
     private void Start()
@@ -101,7 +114,40 @@ public class ExtendedBuildingUI : MonoBehaviour
 
         targetY = hiddenY;
         isOpen = false;
-        UpdateTabVisuals(null);
+        TrySubscribeToTimeManager();
+        HandleTimePhaseChanged();
+    }
+
+    private void TrySubscribeToTimeManager()
+    {
+        if (subscribedToTimeManager || TimePhaseManager.Instance == null) return;
+        TimePhaseManager.Instance.OnMorningStarted += HandleTimePhaseChanged;
+        TimePhaseManager.Instance.OnDuskStarted += HandleTimePhaseChanged;
+        TimePhaseManager.Instance.OnNightStarted += HandleTimePhaseChanged;
+        subscribedToTimeManager = true;
+    }
+
+    private void UnsubscribeFromTimeManager()
+    {
+        if (!subscribedToTimeManager) return;
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnMorningStarted -= HandleTimePhaseChanged;
+            TimePhaseManager.Instance.OnDuskStarted -= HandleTimePhaseChanged;
+            TimePhaseManager.Instance.OnNightStarted -= HandleTimePhaseChanged;
+        }
+        subscribedToTimeManager = false;
+    }
+
+    private void HandleTimePhaseChanged()
+    {
+        if (isOpen && !BuildingPlacer.IsCategoryAllowedInCurrentPhase(currentCategory))
+        {
+            OpenCategory(BuildingType.Defense);
+            return;
+        }
+
+        UpdateTabVisuals(isOpen ? currentCategory : (BuildingType?)null);
     }
 
     public void EnsureAllTowersInDatabase()
@@ -156,6 +202,14 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     private void Update()
     {
+        if (!subscribedToTimeManager)
+        {
+            TrySubscribeToTimeManager();
+            if (subscribedToTimeManager)
+            {
+                HandleTimePhaseChanged();
+            }
+        }
         // Płynna animacja wysuwania / chowania panelu
         if (panelRect != null && Mathf.Abs(panelRect.anchoredPosition.y - targetY) > 0.05f)
         {
@@ -175,6 +229,7 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        UnsubscribeFromTimeManager();
         UnregisterButtons();
     }
 
@@ -221,6 +276,8 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     public void OpenCategory(BuildingType category)
     {
+        if (!BuildingPlacer.IsCategoryAllowedInCurrentPhase(category)) return;
+
         currentCategory = category;
         isOpen = true;
         targetY = shownY;
@@ -232,6 +289,8 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     public void OnCategoryTabClicked(BuildingType category)
     {
+        if (!BuildingPlacer.IsCategoryAllowedInCurrentPhase(category)) return;
+
         // Kliknięcie w aktualnie wybraną kategorię chowa menu
         if (isOpen && currentCategory == category)
         {
@@ -336,21 +395,33 @@ public class ExtendedBuildingUI : MonoBehaviour
         bool hasActive = activeCategory.HasValue && isOpen;
         BuildingType cat = activeCategory.GetValueOrDefault();
 
-        SetTabVisual(btnTabTowers, hasActive && cat == BuildingType.Defense);
-        SetTabVisual(btnTabProduction, hasActive && cat == BuildingType.Economic);
-        SetTabVisual(btnTabHousing, hasActive && cat == BuildingType.Housing);
-        SetTabVisual(btnTabSpecial, hasActive && (cat is BuildingType.Unique or BuildingType.Utility));
-
-        SetTabVisual(btnHudTower, hasActive && cat == BuildingType.Defense);
-        SetTabVisual(btnHudProduction, hasActive && cat == BuildingType.Economic);
-        SetTabVisual(btnHudHousing, hasActive && cat == BuildingType.Housing);
-        SetTabVisual(btnHudSpecial, hasActive && (cat is BuildingType.Unique or BuildingType.Utility));
+        ApplyCategoryTabVisual(btnTabTowers, btnHudTower, BuildingType.Defense, hasActive && cat == BuildingType.Defense);
+        ApplyCategoryTabVisual(btnTabProduction, btnHudProduction, BuildingType.Economic, hasActive && cat == BuildingType.Economic);
+        ApplyCategoryTabVisual(btnTabHousing, btnHudHousing, BuildingType.Housing, hasActive && cat == BuildingType.Housing);
+        ApplyCategoryTabVisual(btnTabSpecial, btnHudSpecial, BuildingType.Unique, hasActive && (cat is BuildingType.Unique or BuildingType.Utility));
     }
 
-    private void SetTabVisual(Button btn, bool isActive)
+    private void ApplyCategoryTabVisual(Button tabBtn, Button hudBtn, BuildingType category, bool isActive)
+    {
+        bool isAllowed = BuildingPlacer.IsCategoryAllowedInCurrentPhase(category);
+        SetTabVisual(tabBtn, isActive, isAllowed);
+        SetTabVisual(hudBtn, isActive, isAllowed);
+    }
+
+    private void SetTabVisual(Button btn, bool isActive, bool isAllowed)
     {
         if (btn == null) return;
-        Color targetColor = isActive ? activeTabColor : inactiveTabColor;
+
+        btn.interactable = isAllowed;
+
+        CanvasGroup cg = btn.GetComponent<CanvasGroup>();
+        if (cg == null)
+        {
+            cg = btn.gameObject.AddComponent<CanvasGroup>();
+        }
+        cg.alpha = isAllowed ? 1f : lockedTabAlpha;
+
+        Color targetColor = (isAllowed && isActive) ? activeTabColor : inactiveTabColor;
 
         Image img = (btn.targetGraphic as Image) ?? btn.GetComponent<Image>();
         if (img != null)

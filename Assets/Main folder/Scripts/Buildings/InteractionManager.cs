@@ -43,6 +43,7 @@ public class InteractionManager : MonoBehaviour
     private HexCell hoveredTargetHex;
 
     public BuildingData SelectedBuilding { get; private set; }
+    private bool subscribedToTimeManager;
     
 
     private void Awake()
@@ -68,10 +69,57 @@ public class InteractionManager : MonoBehaviour
         ghost = new BuildingGhostController(ghostValidMat, ghostInvalidMat, rangeVisualizerPrefab, resourceVisualsSO);
         placer = new BuildingPlacer(mapGenerator);
         highlighter = new HexHighlighter(mapGenerator, ghostValidMat != null ? ghostValidMat : resourceHighlightMat);
+        TrySubscribeToTimeManager();
+    }
+
+    private void OnEnable()
+    {
+        TrySubscribeToTimeManager();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeFromTimeManager();
+    }
+
+    private void OnDestroy()
+    {
+        UnsubscribeFromTimeManager();
+    }
+
+    private void TrySubscribeToTimeManager()
+    {
+        if (subscribedToTimeManager || TimePhaseManager.Instance == null) return;
+        TimePhaseManager.Instance.OnDuskStarted += HandleNonMorningPhaseStarted;
+        TimePhaseManager.Instance.OnNightStarted += HandleNonMorningPhaseStarted;
+        subscribedToTimeManager = true;
+    }
+
+    private void UnsubscribeFromTimeManager()
+    {
+        if (!subscribedToTimeManager) return;
+        if (TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnDuskStarted -= HandleNonMorningPhaseStarted;
+            TimePhaseManager.Instance.OnNightStarted -= HandleNonMorningPhaseStarted;
+        }
+        subscribedToTimeManager = false;
+    }
+
+    private void HandleNonMorningPhaseStarted()
+    {
+        if (SelectedBuilding != null && !BuildingPlacer.IsCategoryAllowedInCurrentPhase(SelectedBuilding.type))
+        {
+            CancelBuilding();
+        }
     }
 
     private void Update()
     {
+        if (!subscribedToTimeManager)
+        {
+            TrySubscribeToTimeManager();
+        }
         // PPM – anuluj budowanie lub wybór celu heksa
         if (Input.GetMouseButtonDown(1))
         {
@@ -107,6 +155,12 @@ public class InteractionManager : MonoBehaviour
 
     public void SelectBuildingToBuild(BuildingData data)
     {
+        if (data == null || !BuildingPlacer.IsCategoryAllowedInCurrentPhase(data.type))
+        {
+            Debug.Log($"[Interaction] Budynek '{data?.buildingName}' zablokowany w obecnej fazie (dozwolone wyłącznie wieże).");
+            return;
+        }
+
         ghost.Clear();
         SelectedBuilding = data;
         ghost.CreateGhost(data);
@@ -116,8 +170,8 @@ public class InteractionManager : MonoBehaviour
     public void CancelBuilding()
     {
         SelectedBuilding = null;
-        ghost.Clear();
-        highlighter.Clear();
+        ghost?.Clear();
+        highlighter?.Clear();
         Debug.Log("[Interaction] Anulowano budowanie.");
     }
 

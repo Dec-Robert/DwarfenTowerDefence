@@ -11,9 +11,21 @@ public class BuildingPlacer
         this.mapGenerator = mapGenerator;
     }
 
+    /// <summary>
+    /// Sprawdza, czy dana kategoria budynków jest dostępna do budowy w bieżącej fazie dnia.
+    /// Podczas Dusk i Night dozwolone są wyłącznie wieże (BuildingType.Defense).
+    /// </summary>
+    public static bool IsCategoryAllowedInCurrentPhase(BuildingType category)
+    {
+        if (category == BuildingType.Defense) return true;
+        if (TimePhaseManager.Instance == null) return true;
+        return TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Morning;
+    }
+
     public bool IsPlacementValid(HexCell cell, BuildingData data)
     {
         if (data == null || cell == null) return false;
+        if (!IsCategoryAllowedInCurrentPhase(data.type)) return false;
         if (mapGenerator == null || mapGenerator.worldData == null || !mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return false;
 
         var chunkDataMap = mapGenerator.worldData[cell.chunkCoord];
@@ -105,6 +117,11 @@ public class BuildingPlacer
         if (!IsPlacementValid(cell, data))
         {
             if (cell == null || data == null) return false;
+            if (!IsCategoryAllowedInCurrentPhase(data.type))
+            {
+                Debug.Log("<color=orange>Poza fazą poranka można budować wyłącznie wieże!</color>");
+                return false;
+            }
 
             bool isOutpost = data.isOutpost || (data.prefab != null && data.prefab.GetComponent<OutpostEntity>() != null);
             if (isOutpost)
