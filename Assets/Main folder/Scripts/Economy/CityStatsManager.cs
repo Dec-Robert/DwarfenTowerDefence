@@ -18,6 +18,18 @@ public class CityStatsManager : MonoBehaviour
         else Instance = this;
     }
 
+    private void Start()
+    {
+        // Fallback przy uruchomieniu bezposrednio z Game scene (bez MetaUpgradeManager z MainMenu)
+        if (DemoBuildConfig.IsDemoV2Active && MetaUpgradeManager.Instance == null)
+        {
+            if (globalBonusProductionWorkers < DemoBuildConfig.DemoBonusProductionWorkers)
+                globalBonusProductionWorkers = DemoBuildConfig.DemoBonusProductionWorkers;
+            if (globalBonusTowerCrewSlots < DemoBuildConfig.DemoBonusTowerCrewSlots)
+                globalBonusTowerCrewSlots = DemoBuildConfig.DemoBonusTowerCrewSlots;
+        }
+    }
+
     // Metody do modyfikacji przez Meta Progresj�
     public void AddGlobalShift(int amount) => globalBonusShifts += amount;
     public void AddGlobalWorkerSlot(int amount) => globalBonusWorkersPerShift += amount;

@@ -30,7 +30,18 @@ public class HopeMilestoneConfigSO : ScriptableObject
             get
             {
                 if (string.IsNullOrEmpty(description)) return string.Empty;
-                return LocalizationManager.Instance != null ? LocalizationManager.Get("milestone_" + description.Replace(" ", "_").ToLowerInvariant(), description) : description;
+                return LocalizationManager.Get("milestone_" + description.Replace(" ", "_").ToLowerInvariant(), description);
+            }
+        }
+        public string DisplayGroupTitle
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(groupTitle))
+                {
+                    return LocalizationManager.Get("milestone_group_" + groupTitle.Replace(" ", "_").ToLowerInvariant(), groupTitle);
+                }
+                return DisplayDescription;
             }
         }
         public MilestoneType type;

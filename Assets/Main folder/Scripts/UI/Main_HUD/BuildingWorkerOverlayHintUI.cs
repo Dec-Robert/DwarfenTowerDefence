@@ -49,21 +49,11 @@ public class BuildingWorkerOverlayHintUI : MonoBehaviour
             return;
         }
 
-        // 1. Szukamy Canvas_HUD
+        // 1. Szukamy Canvas_HUD (nie doczepiamy do Canvasow z innych scen, np. MainMenu)
         var canvasHud = GameObject.Find("Canvas_HUD");
-        Transform parentTransform = null;
+        if (canvasHud == null) return;
 
-        if (canvasHud != null)
-        {
-            parentTransform = canvasHud.transform;
-        }
-        else
-        {
-            var anyCanvas = FindFirstObjectByType<Canvas>();
-            if (anyCanvas != null) parentTransform = anyCanvas.transform;
-        }
-
-        if (parentTransform == null) return;
+        Transform parentTransform = canvasHud.transform;
 
         // Sprawdzamy czy już istnieje
         var existing = parentTransform.Find("Pnl_WorkerOverlayHint");

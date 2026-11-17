@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: CityBaseConfig
   m_EditorClassIdentifier: 
   startEther: 8
-  startWood: 45
-  startStone: 20
+  startWood: 55
+  startStone: 30
   startIron: 0
-  startCoal: 30
-  startFood: 45
-  baseCityHP: 20
+  startCoal: 60
+  startFood: 55
+  baseCityHP: 30
   overrideHousingData: 0
   humanStartPop: 1
   humanMaxPop: 4

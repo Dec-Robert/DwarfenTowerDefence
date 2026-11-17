@@ -62,6 +62,15 @@ public class HearthWindowUI : MonoBehaviour
     public HearthEffectItemRefs[] nightEffectItems = new HearthEffectItemRefs[5];
     public HearthEffectItemRefs[] dayEffectItems = new HearthEffectItemRefs[2];
 
+    [Header("Etykiety Nagłówków i Sekcji")]
+    public TextMeshProUGUI txtWindowTitle;
+    public TextMeshProUGUI txtIntroDesc;
+    public TextMeshProUGUI txtFreeWorkersLabel;
+    public TextMeshProUGUI txtCoalLabel;
+    public TextMeshProUGUI txtNightEffectsHeader;
+    public TextMeshProUGUI txtDayEffectsHeader;
+    public TextMeshProUGUI txtCancelLabel;
+
     [Header("Stopka Podsumowania (Footer)")]
     public TextMeshProUGUI txtSummaryHeader;
     public TextMeshProUGUI txtSummaryDetails;
@@ -335,6 +344,7 @@ public class HearthWindowUI : MonoBehaviour
         int currentCoal = GetCurrentCoalAmount();
         HearthLevelData selectedData = config.GetLevelData(currentSelectedLevel);
 
+        RefreshStaticLabelsLocalization();
         RefreshFreeWorkersUI();
         RefreshCoalStockUI(currentCoal);
         RefreshLevelCardsUI(config, currentCoal);
@@ -350,6 +360,24 @@ public class HearthWindowUI : MonoBehaviour
             return ResourceManager.Instance.GetResourceAmount(ResourceType.Coal);
         }
         return 0;
+    }
+
+    private void RefreshStaticLabelsLocalization()
+    {
+        if (txtWindowTitle != null)
+            txtWindowTitle.text = LocalizationManager.Get("UI_HEARTH_WINDOW_TITLE", "BEACON OF HOPE");
+        if (txtIntroDesc != null)
+            txtIntroDesc.text = LocalizationManager.Get("UI_HEARTH_INTRO_DESC", "The day is coming to an end.");
+        if (txtFreeWorkersLabel != null)
+            txtFreeWorkersLabel.text = LocalizationManager.Get("UI_HEARTH_FREE_WORKERS_LABEL", "FREE WORKERS:");
+        if (txtCoalLabel != null)
+            txtCoalLabel.text = LocalizationManager.Get("UI_HEARTH_COAL_STOCK_LABEL", "COAL RESERVE:");
+        if (txtNightEffectsHeader != null)
+            txtNightEffectsHeader.text = LocalizationManager.Get("UI_HEARTH_NIGHT_EFFECTS_HEADER", "TONIGHT'S EFFECTS (DEFENSE & LOOT)");
+        if (txtDayEffectsHeader != null)
+            txtDayEffectsHeader.text = LocalizationManager.Get("UI_HEARTH_DAY_EFFECTS_HEADER", "NEXT DAY EFFECTS (PRODUCTION)");
+        if (txtCancelLabel != null)
+            txtCancelLabel.text = LocalizationManager.Get("UI_HEARTH_CANCEL_BTN", "CANCEL");
     }
 
     private void RefreshFreeWorkersUI()
@@ -958,6 +986,13 @@ public class HearthWindowUI : MonoBehaviour
         var btnCloseTr = pnlHearth.Find("Pnl_TopBar/Btn_Close");
         if (btnCloseTr != null) btnClose = btnCloseTr.GetComponent<Button>();
 
+        var topBarTr = pnlHearth.Find("Pnl_TopBar");
+        if (topBarTr != null)
+        {
+            if (txtWindowTitle == null) txtWindowTitle = FindChildTMP(topBarTr, "Txt_WindowTitle");
+        }
+        if (txtIntroDesc == null) txtIntroDesc = FindChildTMP(pnlHearth, "Txt_IntroDesc");
+
         var badgeMenuTr = pnlHearth.Find("Pnl_TopBar/Pnl_TitleColumn/Badge_Menu") ?? pnlHearth.Find("Pnl_TopBar/Badge_Menu");
         if (badgeMenuTr != null)
         {
@@ -965,6 +1000,14 @@ public class HearthWindowUI : MonoBehaviour
         }
 
         // 2. InfoAndCoalBar
+        var freeWorkersLabelTr = pnlHearth.Find("Pnl_InfoAndCoalBar/Pnl_FreeWorkers/Txt_FreeWorkersLabel");
+        if (freeWorkersLabelTr != null && txtFreeWorkersLabel == null)
+            txtFreeWorkersLabel = freeWorkersLabelTr.GetComponent<TextMeshProUGUI>();
+
+        var coalLabelTr = pnlHearth.Find("Pnl_InfoAndCoalBar/Pnl_CoalStock/Txt_CoalLabel");
+        if (coalLabelTr != null && txtCoalLabel == null)
+            txtCoalLabel = coalLabelTr.GetComponent<TextMeshProUGUI>();
+
         var badgeFreeWorkersTr = pnlHearth.Find("Pnl_InfoAndCoalBar/Pnl_FreeWorkers/Badge_FreeWorkers");
         if (badgeFreeWorkersTr != null)
         {
@@ -1037,6 +1080,11 @@ public class HearthWindowUI : MonoBehaviour
         }
 
         // 5. EffectsColumnsRow
+        if (txtNightEffectsHeader == null)
+            txtNightEffectsHeader = pnlHearth.Find("Pnl_EffectsColumnsRow/Sec_NightEffects/Pnl_Header/Txt_SectionTitle")?.GetComponent<TextMeshProUGUI>();
+        if (txtDayEffectsHeader == null)
+            txtDayEffectsHeader = pnlHearth.Find("Pnl_EffectsColumnsRow/Sec_DayEffects/Pnl_Header/Txt_SectionTitle")?.GetComponent<TextMeshProUGUI>();
+
         var nightListTr = pnlHearth.Find("Pnl_EffectsColumnsRow/Sec_NightEffects/Pnl_EffectsList");
         if (nightListTr != null)
         {
@@ -1103,7 +1151,11 @@ public class HearthWindowUI : MonoBehaviour
             if (sumDetails != null) txtSummaryDetails = sumDetails.GetComponent<TextMeshProUGUI>();
 
             var cancelTr = footerTr.Find("Btn_Cancel");
-            if (cancelTr != null) btnCancel = cancelTr.GetComponent<Button>();
+            if (cancelTr != null)
+            {
+                btnCancel = cancelTr.GetComponent<Button>();
+                if (txtCancelLabel == null) txtCancelLabel = cancelTr.GetComponentInChildren<TextMeshProUGUI>(true);
+            }
 
             var igniteTr = footerTr.Find("Btn_IgniteAndStart");
             if (igniteTr != null)
@@ -1198,5 +1250,22 @@ public class HearthWindowUI : MonoBehaviour
         }
 
         return refs;
+    }
+
+    private static TextMeshProUGUI FindChildTMP(Transform root, string childName)
+    {
+        if (root == null) return null;
+        for (int i = 0; i < root.childCount; i++)
+        {
+            var child = root.GetChild(i);
+            if (child.name == childName)
+            {
+                var tmp = child.GetComponent<TextMeshProUGUI>();
+                if (tmp != null) return tmp;
+            }
+            var found = FindChildTMP(child, childName);
+            if (found != null) return found;
+        }
+        return null;
     }
 }

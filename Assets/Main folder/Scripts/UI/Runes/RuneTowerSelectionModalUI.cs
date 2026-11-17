@@ -23,6 +23,10 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
     [SerializeField] private Button btnConfirmChoice;
     [SerializeField] private Button btnCancelChoice;
 
+    private TextMeshProUGUI txtIntroDescription;
+    private TextMeshProUGUI txtConfirmChoiceLabel;
+    private TextMeshProUGUI txtCancelChoiceLabel;
+
     [Header("Baza Dostępnych Wież")]
     [SerializeField] private List<TowerData> allTowersDatabase = new List<TowerData>();
 
@@ -54,6 +58,10 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
             txtTitle = transform.Find("Pnl_ModalWindow/Pnl_ModalTopBar/Txt_Title")?.GetComponent<TextMeshProUGUI>()
                     ?? transform.Find("Pnl_ModalTopBar/Txt_Title")?.GetComponent<TextMeshProUGUI>();
 
+        if (txtIntroDescription == null)
+            txtIntroDescription = transform.Find("Pnl_ModalWindow/Pnl_IntroBox/Txt_IntroDescription")?.GetComponent<TextMeshProUGUI>()
+                               ?? transform.Find("Pnl_IntroBox/Txt_IntroDescription")?.GetComponent<TextMeshProUGUI>();
+
         if (btnClose == null)
             btnClose = transform.Find("Pnl_ModalWindow/Pnl_ModalTopBar/Btn_Close")?.GetComponent<Button>()
                     ?? transform.Find("Pnl_ModalTopBar/Btn_Close")?.GetComponent<Button>();
@@ -82,6 +90,14 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
 
             if (btnCancelChoice == null)
                 btnCancelChoice = pnlConfirmWarningDialog.transform.Find("Pnl_DialogBox/Pnl_ButtonRow/Btn_CancelChoice")?.GetComponent<Button>();
+
+            if (txtConfirmChoiceLabel == null && btnConfirmChoice != null)
+                txtConfirmChoiceLabel = btnConfirmChoice.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                                     ?? btnConfirmChoice.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            if (txtCancelChoiceLabel == null && btnCancelChoice != null)
+                txtCancelChoiceLabel = btnCancelChoice.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                                    ?? btnCancelChoice.GetComponentInChildren<TextMeshProUGUI>(true);
         }
 
         InitializeTowersDatabase();
@@ -170,7 +186,26 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
             btnCancelChoice.onClick.AddListener(OnCancelSelection);
         }
 
+        RefreshStaticLocalization();
         RefreshTowersList();
+    }
+
+    private void RefreshStaticLocalization()
+    {
+        if (txtTitle != null)
+            txtTitle.text = LocalizationManager.Get("UI_RUNE_SELECT_MODAL_TITLE", "WYBÓR WIEŻY DLA KUŹNI RUNICZNEJ");
+
+        if (txtIntroDescription != null)
+            txtIntroDescription.text = LocalizationManager.Get("UI_RUNE_SELECT_MODAL_INTRO", "Mistrz Runiczny musi poświęcić swój kowalski warsztat <b>jednemu konkretnemu typowi machiny obronnej</b>.\nWszystkie osadzone i wykute tu runy będą nasycać wyłącznie wybraną konstrukcję w całej twierdzy!");
+
+        if (txtWarningTitle != null)
+            txtWarningTitle.text = LocalizationManager.Get("UI_RUNE_WARNING_TITLE", "OSTRZEŻENIE: WIĄZANIE PERMANENTNE");
+
+        if (txtConfirmChoiceLabel != null)
+            txtConfirmChoiceLabel.text = LocalizationManager.Get("UI_RUNE_CONFIRM_CHOICE", "POTWIERDŹ WYBÓR");
+
+        if (txtCancelChoiceLabel != null)
+            txtCancelChoiceLabel.text = LocalizationManager.Get("UI_BTN_CANCEL", "ANULUJ");
     }
 
     public void Close()
@@ -206,14 +241,13 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
             }
         }
 
-        // 2. Filtrujemy tylko wolne wieże
+        // 2. Filtrujemy tylko wolne wieże (w Demo v2 tylko dozwolone wieże)
         List<TowerData> freeTowers = new List<TowerData>();
         foreach (var tower in allTowersDatabase)
         {
-            if (tower != null && !occupiedTowers.Contains(tower))
-            {
-                freeTowers.Add(tower);
-            }
+            if (tower == null || occupiedTowers.Contains(tower)) continue;
+            if (DemoBuildConfig.IsDemoV2Active && !DemoBuildConfig.IsTowerAllowedInDemo(tower)) continue;
+            freeTowers.Add(tower);
         }
 
         // 3. Renderuj karty wież

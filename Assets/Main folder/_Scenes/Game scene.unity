@@ -123036,6 +123036,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ExtendedBuildingUI
   allBuildingsDatabase:
   - {fileID: 11400000, guid: 5fb03fe780dcc3d4994601942664b8f2, type: 2}
+  - {fileID: 11400000, guid: da0e7ad02644f7a4da50a82712216565, type: 2}
+  - {fileID: 11400000, guid: 7736ae92b813e9d41b65f53700c76301, type: 2}
+  - {fileID: 11400000, guid: f1e80ed22bc5fa24e8d91ef708c48645, type: 2}
   - {fileID: 11400000, guid: b372bd894687d324ab06de8a0733652f, type: 2}
   - {fileID: 11400000, guid: 305ea702f61030e4184fd8704c128bcf, type: 2}
   - {fileID: 11400000, guid: 369f426513641834ba565adcaee3b114, type: 2}
@@ -123049,7 +123052,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 82e502e9607d316468154719516f9983, type: 2}
   - {fileID: 11400000, guid: ba508e2a7df4dd24bb9ab0c521dea4c8, type: 2}
   - {fileID: 11400000, guid: 0c9c752673ac15c45ae68bf730811379, type: 2}
-  - {fileID: 0}
   buildingSlotPrefab: {fileID: 7117176731283285249, guid: 14466e12fdec8104784cb8cfd01df681, type: 3}
   buildingsContainer: {fileID: 420190651}
   btnTabTowers: {fileID: 6612147953767439451}

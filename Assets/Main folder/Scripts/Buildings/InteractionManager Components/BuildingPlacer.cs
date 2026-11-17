@@ -25,6 +25,8 @@ public class BuildingPlacer
     public bool IsPlacementValid(HexCell cell, BuildingData data)
     {
         if (data == null || cell == null) return false;
+        if (DemoBuildConfig.IsDemoV2Active && data.prefab != null && data.prefab.GetComponent<ToolWorkshopEntity>() != null)
+            return false;
         if (!IsCategoryAllowedInCurrentPhase(data.type)) return false;
         if (mapGenerator == null || mapGenerator.worldData == null || !mapGenerator.worldData.ContainsKey(cell.chunkCoord)) return false;
 
@@ -86,7 +88,7 @@ public class BuildingPlacer
                 : 0;
             int maxAllowed = MetaUpgradeManager.Instance != null
                 ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit))
-                : 0;
+                : (DemoBuildConfig.IsDemoV2Active ? DemoBuildConfig.DemoRuneTowerLimit : 0);
 
             if (currentCount >= maxAllowed) return false;
 
@@ -163,7 +165,7 @@ public class BuildingPlacer
                     : 0;
                 int maxAllowed = MetaUpgradeManager.Instance != null
                     ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.RuneTowerLimit))
-                    : 0;
+                    : (DemoBuildConfig.IsDemoV2Active ? DemoBuildConfig.DemoRuneTowerLimit : 0);
 
                 if (currentCount >= maxAllowed)
                     Debug.Log("[Info] <color=orange>Osiągnięto limit Wież Runicznych! Zwiększ go w Meta-Progresji.</color>");

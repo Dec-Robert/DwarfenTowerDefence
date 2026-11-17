@@ -18,6 +18,7 @@ MonoBehaviour:
     type: 5
     targetValue: 1
     hopeReward: 50
+    groupTitle: Giant Slayer
     targetRace: 0
     targetTower: {fileID: 0}
   - id: boss_2
@@ -25,6 +26,7 @@ MonoBehaviour:
     type: 5
     targetValue: 2
     hopeReward: 200
+    groupTitle: Giant Slayer
     targetRace: 0
     targetTower: {fileID: 0}
   - id: boss_3
@@ -32,6 +34,7 @@ MonoBehaviour:
     type: 5
     targetValue: 3
     hopeReward: 500
+    groupTitle: Giant Slayer
     targetRace: 0
     targetTower: {fileID: 0}
   - id: boss_4
@@ -39,6 +42,7 @@ MonoBehaviour:
     type: 5
     targetValue: 4
     hopeReward: 600
+    groupTitle: Giant Slayer
     targetRace: 0
     targetTower: {fileID: 0}
   - id: victory_endgame
@@ -46,6 +50,7 @@ MonoBehaviour:
     type: 10
     targetValue: 1
     hopeReward: 1500
+    groupTitle: Victory
     targetRace: 0
     targetTower: {fileID: 0}
   - id: exp_2
@@ -53,6 +58,7 @@ MonoBehaviour:
     type: 11
     targetValue: 2
     hopeReward: 25
+    groupTitle: Scout
     targetRace: 0
     targetTower: {fileID: 0}
   - id: exp_5
@@ -60,6 +66,7 @@ MonoBehaviour:
     type: 11
     targetValue: 5
     hopeReward: 80
+    groupTitle: Scout
     targetRace: 0
     targetTower: {fileID: 0}
   - id: exp_10
@@ -67,6 +74,7 @@ MonoBehaviour:
     type: 11
     targetValue: 10
     hopeReward: 200
+    groupTitle: Scout
     targetRace: 0
     targetTower: {fileID: 0}
   - id: exp_15
@@ -74,6 +82,7 @@ MonoBehaviour:
     type: 11
     targetValue: 15
     hopeReward: 350
+    groupTitle: Scout
     targetRace: 0
     targetTower: {fileID: 0}
   - id: kills_100
@@ -81,6 +90,7 @@ MonoBehaviour:
     type: 6
     targetValue: 100
     hopeReward: 20
+    groupTitle: Killer
     targetRace: 0
     targetTower: {fileID: 0}
   - id: kills_500
@@ -88,6 +98,7 @@ MonoBehaviour:
     type: 6
     targetValue: 500
     hopeReward: 60
+    groupTitle: Killer
     targetRace: 0
     targetTower: {fileID: 0}
   - id: kills_1500
@@ -95,6 +106,7 @@ MonoBehaviour:
     type: 6
     targetValue: 1500
     hopeReward: 150
+    groupTitle: Killer
     targetRace: 0
     targetTower: {fileID: 0}
   - id: kills_3000
@@ -102,6 +114,7 @@ MonoBehaviour:
     type: 6
     targetValue: 3000
     hopeReward: 250
+    groupTitle: Killer
     targetRace: 0
     targetTower: {fileID: 0}
   - id: pop_15
@@ -109,6 +122,7 @@ MonoBehaviour:
     type: 0
     targetValue: 15
     hopeReward: 20
+    groupTitle: Kingdom
     targetRace: 0
     targetTower: {fileID: 0}
   - id: pop_30
@@ -116,6 +130,7 @@ MonoBehaviour:
     type: 0
     targetValue: 30
     hopeReward: 60
+    groupTitle: Kingdom
     targetRace: 0
     targetTower: {fileID: 0}
   - id: pop_60
@@ -123,6 +138,7 @@ MonoBehaviour:
     type: 0
     targetValue: 60
     hopeReward: 150
+    groupTitle: Kingdom
     targetRace: 0
     targetTower: {fileID: 0}
   - id: pop_100
@@ -130,6 +146,7 @@ MonoBehaviour:
     type: 0
     targetValue: 100
     hopeReward: 250
+    groupTitle: Kingdom
     targetRace: 0
     targetTower: {fileID: 0}
   - id: towers_5
@@ -137,6 +154,7 @@ MonoBehaviour:
     type: 2
     targetValue: 5
     hopeReward: 15
+    groupTitle: Defender
     targetRace: 0
     targetTower: {fileID: 0}
   - id: towers_12
@@ -144,6 +162,7 @@ MonoBehaviour:
     type: 2
     targetValue: 12
     hopeReward: 50
+    groupTitle: Defender
     targetRace: 0
     targetTower: {fileID: 0}
   - id: towers_25
@@ -151,6 +170,7 @@ MonoBehaviour:
     type: 2
     targetValue: 25
     hopeReward: 120
+    groupTitle: Defender
     targetRace: 0
     targetTower: {fileID: 0}
   - id: towers_40
@@ -158,6 +178,7 @@ MonoBehaviour:
     type: 2
     targetValue: 40
     hopeReward: 250
+    groupTitle: Defender
     targetRace: 0
     targetTower: {fileID: 0}
   - id: prod_4
@@ -165,6 +186,7 @@ MonoBehaviour:
     type: 7
     targetValue: 4
     hopeReward: 15
+    groupTitle: Product
     targetRace: 0
     targetTower: {fileID: 0}
   - id: prod_8
@@ -172,6 +194,7 @@ MonoBehaviour:
     type: 7
     targetValue: 8
     hopeReward: 50
+    groupTitle: Product
     targetRace: 0
     targetTower: {fileID: 0}
   - id: prod_15
@@ -179,6 +202,7 @@ MonoBehaviour:
     type: 7
     targetValue: 15
     hopeReward: 120
+    groupTitle: Product
     targetRace: 0
     targetTower: {fileID: 0}
   - id: rune_craft_1
@@ -186,6 +210,7 @@ MonoBehaviour:
     type: 9
     targetValue: 1
     hopeReward: 20
+    groupTitle: Rune Smith
     targetRace: 0
     targetTower: {fileID: 0}
   - id: rune_craft_5
@@ -193,6 +218,7 @@ MonoBehaviour:
     type: 9
     targetValue: 5
     hopeReward: 60
+    groupTitle: Rune Smith
     targetRace: 0
     targetTower: {fileID: 0}
   - id: rune_craft_15
@@ -200,6 +226,7 @@ MonoBehaviour:
     type: 9
     targetValue: 15
     hopeReward: 150
+    groupTitle: Rune Smith
     targetRace: 0
     targetTower: {fileID: 0}
   - id: rune_rare_1
@@ -207,6 +234,7 @@ MonoBehaviour:
     type: 8
     targetValue: 1
     hopeReward: 60
+    groupTitle: Forgotten Knowledge
     targetRace: 0
     targetTower: {fileID: 0}
   - id: rune_legendary_1
@@ -214,5 +242,6 @@ MonoBehaviour:
     type: 8
     targetValue: 2
     hopeReward: 200
+    groupTitle: Forgotten Knowledge
     targetRace: 0
     targetTower: {fileID: 0}

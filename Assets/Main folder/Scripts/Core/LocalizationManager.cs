@@ -12,8 +12,9 @@ using UnityEngine;
 public class LocalizationManager : MonoBehaviour
 {
     public const string PREFS_KEY = "Game_SelectedLanguage";
-    public const string DEFAULT_LANGUAGE = "pl";
+    public const string DEFAULT_LANGUAGE = "en";
     public const string ENGLISH_LANGUAGE = "en";
+    public const string POLISH_LANGUAGE = "pl";
 
     public static LocalizationManager Instance { get; private set; }
 
@@ -35,6 +36,20 @@ public class LocalizationManager : MonoBehaviour
         if (!isInitialized)
         {
             Initialize();
+        }
+
+        if (Instance == null && Application.isPlaying)
+        {
+            var existing = FindFirstObjectByType<LocalizationManager>();
+            if (existing != null)
+            {
+                Instance = existing;
+            }
+            else
+            {
+                var go = new GameObject("[LocalizationManager]");
+                go.AddComponent<LocalizationManager>();
+            }
         }
     }
 
@@ -64,7 +79,7 @@ public class LocalizationManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(savedLang))
         {
-            savedLang = Application.systemLanguage == SystemLanguage.Polish ? DEFAULT_LANGUAGE : ENGLISH_LANGUAGE;
+            savedLang = DEFAULT_LANGUAGE;
         }
 
         LoadLanguage(savedLang, false);

@@ -49,6 +49,22 @@ public class RuneForgeWindowUI : MonoBehaviour
     [SerializeField] private Button btnTabTransmutation;
     [SerializeField] private TextMeshProUGUI txtRuneTowersDesc;
 
+    private TextMeshProUGUI txtNavTitle;
+    private TextMeshProUGUI txtRuneTowersTitle;
+    private TextMeshProUGUI txtSocketTipText;
+    private TextMeshProUGUI txtFusionTitle;
+    private TextMeshProUGUI txtFusionBackLabel;
+    private TextMeshProUGUI txtFusionReqDesc;
+    private TextMeshProUGUI txtCraftFusionLabel;
+    private TextMeshProUGUI txtFusionHint;
+    private TextMeshProUGUI txtTransmuteTitle;
+    private TextMeshProUGUI txtTransmuteBackLabel;
+    private TextMeshProUGUI txtTransmuteReqDesc;
+    private TextMeshProUGUI txtCraftTransmuteLabel;
+    private TextMeshProUGUI txtTransmuteHint;
+    private TextMeshProUGUI txtBottomStatsTitle;
+    private TextMeshProUGUI txtBottomSmithsTitle;
+
     // ── 3. Środkowe Widoki ──────────────────────────────────────────────────
     [Header("Środkowe Widoki")]
     [SerializeField] private GameObject viewSocketing;
@@ -157,6 +173,9 @@ public class RuneForgeWindowUI : MonoBehaviour
             btnClose = forgeRoot.Find("Pnl_TopBar/Btn_Close")?.GetComponent<Button>();
 
         // 2. Lewy Panel
+        if (txtNavTitle == null)
+            txtNavTitle = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Txt_NavTitle")?.GetComponent<TextMeshProUGUI>();
+
         if (btnTabSocketing == null)
             btnTabSocketing = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Btn_TabSocketing")?.GetComponent<Button>();
 
@@ -165,6 +184,9 @@ public class RuneForgeWindowUI : MonoBehaviour
 
         if (btnTabTransmutation == null)
             btnTabTransmutation = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Btn_TabTransmutation")?.GetComponent<Button>();
+
+        if (txtRuneTowersTitle == null)
+            txtRuneTowersTitle = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Pnl_RuneTowersStatus/Txt_InfoTitle")?.GetComponent<TextMeshProUGUI>();
 
         if (txtRuneTowersDesc == null)
             txtRuneTowersDesc = forgeRoot.Find("Pnl_BodyRow/Pnl_LeftNav/Pnl_RuneTowersStatus/Txt_InfoDesc")?.GetComponent<TextMeshProUGUI>();
@@ -191,13 +213,23 @@ public class RuneForgeWindowUI : MonoBehaviour
 
             if (pnlSlotsRow == null)
                 pnlSlotsRow = viewSocketing.transform.Find("Pnl_SlotsRow");
+
+            if (txtSocketTipText == null)
+                txtSocketTipText = viewSocketing.transform.Find("Pnl_TipBar/Txt_TipText")?.GetComponent<TextMeshProUGUI>();
         }
 
         // Widok 2: Fuzja
         if (viewFusion != null)
         {
+            if (txtFusionTitle == null)
+                txtFusionTitle = viewFusion.transform.Find("Pnl_FusionTopBar/Txt_FusionTitle")?.GetComponent<TextMeshProUGUI>();
+
             if (btnFusionBackToTower == null)
                 btnFusionBackToTower = viewFusion.transform.Find("Pnl_FusionTopBar/Btn_BackToTower")?.GetComponent<Button>();
+
+            if (txtFusionBackLabel == null && btnFusionBackToTower != null)
+                txtFusionBackLabel = btnFusionBackToTower.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                                  ?? btnFusionBackToTower.GetComponentInChildren<TextMeshProUGUI>(true);
 
             if (slotFusion1 == null)
                 slotFusion1 = viewFusion.transform.Find("Pnl_AnvilFusion/Pnl_InputSlots/Slot_Fusion_1");
@@ -211,16 +243,34 @@ public class RuneForgeWindowUI : MonoBehaviour
             if (txtFusionReqHeader == null)
                 txtFusionReqHeader = viewFusion.transform.Find("Pnl_FusionReqs/Txt_ReqHeader")?.GetComponent<TextMeshProUGUI>();
 
+            if (txtFusionReqDesc == null)
+                txtFusionReqDesc = viewFusion.transform.Find("Pnl_FusionReqs/Txt_ReqDesc")?.GetComponent<TextMeshProUGUI>();
+
             if (btnCraftFusion == null)
                 btnCraftFusion = viewFusion.transform.Find("Btn_CraftFusion")?.GetComponent<Button>();
+
+            if (txtCraftFusionLabel == null && btnCraftFusion != null)
+                txtCraftFusionLabel = btnCraftFusion.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                                   ?? btnCraftFusion.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            if (txtFusionHint == null)
+                txtFusionHint = viewFusion.transform.Find("Txt_Hint")?.GetComponent<TextMeshProUGUI>();
         }
 
         // Widok 3: Transmutacja
         if (viewTransmutation != null)
         {
+            if (txtTransmuteTitle == null)
+                txtTransmuteTitle = viewTransmutation.transform.Find("Pnl_TransmutationTopBar/Txt_FusionTitle")?.GetComponent<TextMeshProUGUI>()
+                                 ?? viewTransmutation.transform.Find("Pnl_TransmuteTopBar/Txt_TransmuteTitle")?.GetComponent<TextMeshProUGUI>();
+
             if (btnTransmuteBackToTower == null)
                 btnTransmuteBackToTower = viewTransmutation.transform.Find("Pnl_TransmutationTopBar/Btn_BackToTower")?.GetComponent<Button>()
                                        ?? viewTransmutation.transform.Find("Pnl_TransmuteTopBar/Btn_BackToTower")?.GetComponent<Button>();
+
+            if (txtTransmuteBackLabel == null && btnTransmuteBackToTower != null)
+                txtTransmuteBackLabel = btnTransmuteBackToTower.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                                      ?? btnTransmuteBackToTower.GetComponentInChildren<TextMeshProUGUI>(true);
 
             if (slotTransmute1 == null)
                 slotTransmute1 = viewTransmutation.transform.Find("Pnl_AnvilFusion/Pnl_InputSlots/Slot_Transmutation_1")
@@ -242,9 +292,20 @@ public class RuneForgeWindowUI : MonoBehaviour
                 txtTransmuteReqHeader = viewTransmutation.transform.Find("Pnl_FusionReqs/Txt_ReqHeader")?.GetComponent<TextMeshProUGUI>()
                                      ?? viewTransmutation.transform.Find("Pnl_TransmuteReqs/Txt_ReqHeader")?.GetComponent<TextMeshProUGUI>();
 
+            if (txtTransmuteReqDesc == null)
+                txtTransmuteReqDesc = viewTransmutation.transform.Find("Pnl_FusionReqs/Txt_ReqDesc")?.GetComponent<TextMeshProUGUI>()
+                                   ?? viewTransmutation.transform.Find("Pnl_TransmuteReqs/Txt_ReqDesc")?.GetComponent<TextMeshProUGUI>();
+
             if (btnCraftTransmute == null)
                 btnCraftTransmute = viewTransmutation.transform.Find("Btn_CraftTransmutation")?.GetComponent<Button>()
                                  ?? viewTransmutation.transform.Find("Btn_CraftTransmute")?.GetComponent<Button>();
+
+            if (txtCraftTransmuteLabel == null && btnCraftTransmute != null)
+                txtCraftTransmuteLabel = btnCraftTransmute.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                                      ?? btnCraftTransmute.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            if (txtTransmuteHint == null)
+                txtTransmuteHint = viewTransmutation.transform.Find("Txt_Hint")?.GetComponent<TextMeshProUGUI>();
         }
 
         // 4. Ekwipunek
@@ -269,6 +330,13 @@ public class RuneForgeWindowUI : MonoBehaviour
 #endif
 
         // 5. Dolny Panel: Statystyki
+        if (txtBottomStatsTitle == null)
+            txtBottomStatsTitle = forgeRoot.Find("Pnl_BottomPanel/Sec_TowerStats/Txt_StatsTitle")?.GetComponent<TextMeshProUGUI>();
+
+        if (txtBottomSmithsTitle == null)
+            txtBottomSmithsTitle = forgeRoot.Find("Pnl_BottomPanel/Sec_RuneSmith/Txt_StatsTitle")?.GetComponent<TextMeshProUGUI>()
+                                ?? forgeRoot.Find("Pnl_BottomPanel/Sec_Runesmiths/Txt_StatsTitle")?.GetComponent<TextMeshProUGUI>();
+
         if (pnlStatsGrid == null)
             pnlStatsGrid = forgeRoot.Find("Pnl_BottomPanel/Sec_TowerStats/Pnl_StatsGrid");
 
@@ -768,6 +836,7 @@ public class RuneForgeWindowUI : MonoBehaviour
     {
         if (currentForge == null) return;
 
+        RefreshStaticLocalization();
         RefreshTopBar();
         RefreshLeftNav();
         RefreshSocketingView();
@@ -775,6 +844,31 @@ public class RuneForgeWindowUI : MonoBehaviour
         RefreshInventoryView();
         RefreshBottomStats();
         RefreshRunesmiths();
+    }
+
+    private void RefreshStaticLocalization()
+    {
+        if (txtNavTitle != null) txtNavTitle.text = LocalizationManager.Get("UI_RUNE_NAV_TITLE", "AKCJE RUNICZNE");
+        if (txtRuneTowersTitle != null) txtRuneTowersTitle.text = LocalizationManager.Get("UI_RUNE_TOWERS_TITLE", "WIEŻE RUNICZNE WOKÓŁ:");
+        if (txtSocketTipText != null) txtSocketTipText.text = LocalizationManager.Get("UI_RUNE_SOCKET_TIP", "Przeciągnij runę z ekwipunku na odblokowany slot, aby ją osadzić. Nowa runa podmienia starą!");
+
+        string backText = LocalizationManager.Get("UI_RUNE_BACK_TO_TOWER", "← POWRÓT DO WIEŻY");
+        string anvilHint = LocalizationManager.Get("UI_RUNE_ANVIL_HINT", "Przeciągnij lub kliknij runy z ekwipunku po prawej, aby umieścić je na kowadle.");
+
+        if (txtFusionTitle != null) txtFusionTitle.text = LocalizationManager.Get("UI_RUNE_FUSION_TITLE", "FUZJA RUNICZNA");
+        if (txtFusionBackLabel != null) txtFusionBackLabel.text = backText;
+        if (txtFusionReqDesc != null) txtFusionReqDesc.text = LocalizationManager.Get("UI_RUNE_FUSION_REQ_DESC", "Fuzja łączy 2 runy tego samego poziomu w 1 runę o szczebel wyższą (100% szans).");
+        if (txtCraftFusionLabel != null) txtCraftFusionLabel.text = LocalizationManager.Get("UI_RUNE_BTN_FUSE", "PRZEKUJ FUZJĘ");
+        if (txtFusionHint != null) txtFusionHint.text = anvilHint;
+
+        if (txtTransmuteTitle != null) txtTransmuteTitle.text = LocalizationManager.Get("UI_RUNE_TRANSMUTE_TITLE", "TRANSMUTACJA");
+        if (txtTransmuteBackLabel != null) txtTransmuteBackLabel.text = backText;
+        if (txtTransmuteReqDesc != null) txtTransmuteReqDesc.text = LocalizationManager.Get("UI_RUNE_TRANSMUTE_REQ_DESC", "Transmutacja łączy 3 różne runy o podobnej mocy w jedną losową, silniejszą runę wyższego poziomu.");
+        if (txtCraftTransmuteLabel != null) txtCraftTransmuteLabel.text = LocalizationManager.Get("UI_RUNE_BTN_TRANSMUTE", "TRANSMUTACJA");
+        if (txtTransmuteHint != null) txtTransmuteHint.text = anvilHint;
+
+        if (txtBottomStatsTitle != null) txtBottomStatsTitle.text = LocalizationManager.Get("UI_RUNE_MODIFIED_STATS_TITLE", "ZMODYFIKOWANE STATYSTYKI WIEŻY");
+        if (txtBottomSmithsTitle != null) txtBottomSmithsTitle.text = LocalizationManager.Get("UI_RUNE_ASSIGNED_SMITHS_TITLE", "PRZYDZIELENI KOWALE RUN");
     }
 
     private void RefreshTopBar()
@@ -803,7 +897,7 @@ public class RuneForgeWindowUI : MonoBehaviour
             var txt = btnTabSocketing.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (txt != null)
             {
-                txt.text = LocalizationManager.Get("UI_RUNE_TAB_SOCKETING", "1. Osadzanie Run");
+                txt.text = LocalizationManager.Get("UI_RUNE_TAB_SOCKETING", "Osadzanie Run");
             }
         }
 
@@ -813,7 +907,7 @@ public class RuneForgeWindowUI : MonoBehaviour
             var txt = btnTabFusion.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (txt != null)
             {
-                txt.text = fusionUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_FUSION", "2. Fuzja Run") : LocalizationManager.Get("UI_RUNE_TAB_FUSION_LOCKED", "2. Fuzja (Zablokowana)");
+                txt.text = fusionUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_FUSION", "Fuzja Run") : LocalizationManager.Get("UI_RUNE_TAB_FUSION_LOCKED", "Fuzja (Zablokowana)");
             }
         }
 
@@ -823,7 +917,7 @@ public class RuneForgeWindowUI : MonoBehaviour
             var txt = btnTabTransmutation.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
             if (txt != null)
             {
-                txt.text = transmuteUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE", "3. Transmutacja Run") : LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE_LOCKED", "3. Transmutacja (Zablokowana)");
+                txt.text = transmuteUnlocked ? LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE", "Transmutacja Run") : LocalizationManager.Get("UI_RUNE_TAB_TRANSMUTE_LOCKED", "Transmutacja (Zablokowana)");
             }
         }
     }

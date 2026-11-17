@@ -52,6 +52,11 @@ public class SaveManager : MonoBehaviour
             DontDestroyOnLoad(gameObject); // SaveManager żyje mi?dzy scenami
         }
 
+        if (DemoBuildConfig.IsDemoV2Active)
+        {
+            unlockAllTowersForDebug = false;
+        }
+
         if (string.IsNullOrEmpty(savePath))
         {
             savePath = Path.Combine(Application.persistentDataPath, "player_progress.json");
@@ -85,6 +90,11 @@ public class SaveManager : MonoBehaviour
         // 1. Przygotuj dane do zapisu (np. zaktualizuj list? ID z SO)
         // (Wi?kszo?? danych aktualizujemy w locie w currentSaveData)
 
+        if (DemoBuildConfig.IsDemoV2Active)
+        {
+            unlockAllTowersForDebug = false;
+        }
+
         if (string.IsNullOrEmpty(savePath))
         {
             savePath = Path.Combine(Application.persistentDataPath, "player_progress.json");
@@ -114,6 +124,11 @@ public class SaveManager : MonoBehaviour
 
     public void LoadGame()
     {
+        if (DemoBuildConfig.IsDemoV2Active)
+        {
+            unlockAllTowersForDebug = false;
+        }
+
         if (string.IsNullOrEmpty(savePath))
         {
             savePath = Path.Combine(Application.persistentDataPath, "player_progress.json");
@@ -169,7 +184,18 @@ public class SaveManager : MonoBehaviour
     // Pomocnicza metoda do synchronizacji SO z zapisanymi danymi
     public void SyncUpgradesWithSave(List<MetaUpgradeSO> allUpgrades)
     {
-        if (currentSaveData == null || allUpgrades == null) return;
+        if (allUpgrades == null) return;
+
+        if (DemoBuildConfig.IsDemoV2Active)
+        {
+            foreach (var upgrade in allUpgrades)
+            {
+                if (upgrade != null) upgrade.isUnlocked = false;
+            }
+            return;
+        }
+
+        if (currentSaveData == null) return;
         if (currentSaveData.unlockedUpgradeIDs == null)
         {
             currentSaveData.unlockedUpgradeIDs = new System.Collections.Generic.List<string>();
@@ -201,6 +227,7 @@ public class SaveManager : MonoBehaviour
     /// </summary>
     public void SwitchUpgradeVariant(MetaUpgradeSO baseUpgrade, string targetVariant)
     {
+        if (DemoBuildConfig.IsDemoV2Active) return;
         if (baseUpgrade == null || !baseUpgrade.hasVariants || currentSaveData == null) return;
         if (currentSaveData.unlockedUpgradeIDs == null)
         {
@@ -246,6 +273,7 @@ public class SaveManager : MonoBehaviour
 
     public void SetInvestedHope(string upgradeId, int amount, bool autoSave = true)
     {
+        if (DemoBuildConfig.IsDemoV2Active) return;
         if (currentSaveData == null) return;
         currentSaveData.SetInvestedHope(upgradeId, amount);
         if (autoSave) SaveGame();
@@ -256,6 +284,7 @@ public class SaveManager : MonoBehaviour
     /// </summary>
     public void UnlockUpgrade(string upgradeId, bool autoSave = true)
     {
+        if (DemoBuildConfig.IsDemoV2Active) return;
         if (string.IsNullOrEmpty(upgradeId) || currentSaveData == null) return;
         if (currentSaveData.unlockedUpgradeIDs == null)
         {
@@ -275,6 +304,7 @@ public class SaveManager : MonoBehaviour
     /// </summary>
     public void UnlockUpgrade(MetaUpgradeSO upgrade, bool autoSave = true)
     {
+        if (DemoBuildConfig.IsDemoV2Active) return;
         if (upgrade == null) return;
         upgrade.isUnlocked = true;
         UnlockUpgrade(upgrade.id, autoSave);
@@ -289,7 +319,19 @@ public class SaveManager : MonoBehaviour
         }
 
         var listToSync = (towers != null && towers.Count > 0) ? towers : allTowers;
-        if (listToSync == null || currentSaveData == null) return;
+        if (listToSync == null) return;
+
+        if (DemoBuildConfig.IsDemoV2Active)
+        {
+            foreach (var tower in listToSync)
+            {
+                if (ReferenceEquals(tower, null)) continue;
+                tower.isUnlocked = DemoBuildConfig.IsTowerAllowedInDemo(tower);
+            }
+            return;
+        }
+
+        if (currentSaveData == null) return;
 
         if (currentSaveData.unlockedTowerIDs == null)
         {

@@ -12,15 +12,15 @@ public class HearthLevelData
     public Color accentColor = new Color(0.28f, 0.56f, 0.78f, 1f);
     public Sprite levelIcon;
 
-    public string DisplayTitle => LocalizationManager.Instance != null ? LocalizationManager.Get($"hearth_lvl_{levelIndex}_title", title) : title;
-    public string DisplayTagText => LocalizationManager.Instance != null ? LocalizationManager.Get($"hearth_lvl_{levelIndex}_tag", tagText) : tagText;
+    public string DisplayTitle => LocalizationManager.Get($"hearth_lvl_{levelIndex}_title", title);
+    public string DisplayTagText => LocalizationManager.Get($"hearth_lvl_{levelIndex}_tag", tagText);
     public string DisplayEtherTierLabel
     {
         get
         {
             if (string.IsNullOrEmpty(etherChanceTierLabel)) return string.Empty;
             string key = $"hearth_ether_tier_{etherChanceTierLabel.Trim().ToLowerInvariant()}";
-            return LocalizationManager.Instance != null ? LocalizationManager.Get(key, etherChanceTierLabel) : etherChanceTierLabel;
+            return LocalizationManager.Get(key, etherChanceTierLabel);
         }
     }
 

@@ -220,6 +220,7 @@ public class SettingsPanelUI : MonoBehaviour
     {
         if (ddResolution != null)
         {
+            EnsureDropdownItemText(ddResolution);
             ddResolution.ClearOptions();
             List<string> options = new List<string>();
             foreach (var opt in resolutionOptions)
@@ -227,16 +228,41 @@ public class SettingsPanelUI : MonoBehaviour
                 options.Add(opt.label);
             }
             ddResolution.AddOptions(options);
+            ddResolution.RefreshShownValue();
         }
 
         PopulateWindowModeDropdown();
         PopulateLanguageDropdown();
     }
 
+    private static void EnsureDropdownItemText(TMP_Dropdown dd)
+    {
+        if (dd == null || dd.template == null) return;
+
+        // Upewnij sie, ze lista otwiera sie bezposrednio pod swoim dropdownem
+        dd.template.anchorMin = new Vector2(0f, 0f);
+        dd.template.anchorMax = new Vector2(1f, 0f);
+        dd.template.pivot = new Vector2(0.5f, 1f);
+        dd.template.anchoredPosition = new Vector2(0f, 2f);
+
+        if (dd.itemText != null) return;
+
+        Transform labelTr = dd.template.Find("Viewport/Content/Item/Item Label");
+        TextMeshProUGUI label = labelTr != null
+            ? labelTr.GetComponent<TextMeshProUGUI>()
+            : dd.template.GetComponentInChildren<TextMeshProUGUI>(true);
+
+        if (label != null)
+        {
+            dd.itemText = label;
+        }
+    }
+
     private void PopulateWindowModeDropdown()
     {
         if (ddWindowMode != null)
         {
+            EnsureDropdownItemText(ddWindowMode);
             int curVal = ddWindowMode.value;
             ddWindowMode.ClearOptions();
             List<string> options = new List<string>();
@@ -250,6 +276,7 @@ public class SettingsPanelUI : MonoBehaviour
             {
                 ddWindowMode.SetValueWithoutNotify(curVal);
             }
+            ddWindowMode.RefreshShownValue();
         }
     }
 
@@ -257,11 +284,13 @@ public class SettingsPanelUI : MonoBehaviour
     {
         if (ddLanguage != null)
         {
+            EnsureDropdownItemText(ddLanguage);
             ddLanguage.ClearOptions();
             List<string> options = new List<string> { "Polski", "English" };
             ddLanguage.AddOptions(options);
             int curIdx = (LocalizationManager.CurrentLanguage == "en") ? 1 : 0;
             ddLanguage.SetValueWithoutNotify(curIdx);
+            ddLanguage.RefreshShownValue();
         }
     }
 

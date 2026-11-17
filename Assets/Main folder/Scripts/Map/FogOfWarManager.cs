@@ -234,7 +234,22 @@ public class FogOfWarManager : MonoBehaviour
                 }
             }
         }
+
+        if (voidMistBackdrop != null)
+        {
+            Vector3 bgPos = voidMistBackdrop.transform.position;
+            bgPos.y = cachedMistWorldHeight;
+            voidMistBackdrop.transform.position = bgPos;
+        }
     }
+
+    [Header("Wypełnienie Pustki Wokół Mapy (Void Mist)")]
+    [Tooltip("Wypełnia pustkę poza granicami mapy jednolitą mgłą na wysokości MistWorldHeight.")]
+    public bool fillOuterVoidWithMist = true;
+    [Tooltip("Zasięg zewnętrznej mgły od środka mapy (w jednostkach świata, powinien przekraczać CameraController.mapLimit).")]
+    public float voidMistExtent = 700f;
+    [Tooltip("Liczba dodatkowych pierścieni heksów wypełniających nieregularną krawędź mapy przed przejściem w płaszczyznę horyzontu.")]
+    public int voidMistHexPadding = 4;
 
     [Header("Maska Globalna Mgły")]
     [Tooltip("Rozdzielczość generowanej tekstury maski mgły (np. 128, 256)")]
@@ -256,6 +271,8 @@ public class FogOfWarManager : MonoBehaviour
 
     private readonly Dictionary<Vector2Int, GameObject> activeFogChunks = new Dictionary<Vector2Int, GameObject>();
     private readonly HashSet<Vector2Int> activeSurveyingChunks = new HashSet<Vector2Int>();
+    private GameObject voidMistBackdrop;
+    private Mesh voidMistMesh;
     private int chunkRadius;
     private float hexSize;
     private float padding;
@@ -314,6 +331,7 @@ public class FogOfWarManager : MonoBehaviour
         }
 
         StopAllTransitionCoroutines();
+        DestroyVoidMistBackdrop();
         DestroyMaskTexture();
     }
 
@@ -380,6 +398,11 @@ public class FogOfWarManager : MonoBehaviour
                 continue;
             }
             SpawnFogObject(coord);
+        }
+
+        if (fillOuterVoidWithMist)
+        {
+            BuildVoidMistBackdrop(allChunks);
         }
 
         UpdateAllFogVisuals();
@@ -1226,6 +1249,298 @@ public class FogOfWarManager : MonoBehaviour
         }
     }
 
+    private void DestroyVoidMistBackdrop()
+    {
+        if (voidMistBackdrop != null)
+        {
+            if (Application.isPlaying) Destroy(voidMistBackdrop);
+            else DestroyImmediate(voidMistBackdrop);
+            voidMistBackdrop = null;
+        }
+
+        if (voidMistMesh != null)
+        {
+            if (Application.isPlaying) Destroy(voidMistMesh);
+            else DestroyImmediate(voidMistMesh);
+            voidMistMesh = null;
+        }
+    }
+
+    private void BuildVoidMistBackdrop(HashSet<Vector2Int> allChunks)
+    {
+        DestroyVoidMistBackdrop();
+        if (allChunks == null || allChunks.Count == 0) return;
+
+        EnsureMaterials();
+        Material mistMat = defaultFogMaterial != null ? defaultFogMaterial : borderlandsFogMaterial;
+        if (mistMat == null) return;
+
+        int effChunkRadius = chunkRadius > 0 ? chunkRadius : 3;
+        float effHexSize = hexSize > 0f ? hexSize : 1f;
+        float effPadding = padding;
+        float totalSize = effHexSize + effPadding;
+        if (totalSize <= 0.0001f) totalSize = 1f;
+
+        // 1. Zbierz wszystkie globalne heksy nalezace do mapy oraz wyznacz obwiednie swiata
+        var occupiedHexes = new HashSet<Vector2Int>();
+        float minX = float.MaxValue;
+        float maxX = float.MinValue;
+        float minZ = float.MaxValue;
+        float maxZ = float.MinValue;
+
+        foreach (var chunkCoord in allChunks)
+        {
+            if (mapGenerator != null && mapGenerator.worldData != null &&
+                mapGenerator.worldData.TryGetValue(chunkCoord, out var chunkCells) &&
+                chunkCells != null && chunkCells.Count > 0)
+            {
+                foreach (var localCoord in chunkCells.Keys)
+                {
+                    AddOccupiedHex(HexGridMath.LocalToGlobal(chunkCoord, localCoord, effChunkRadius),
+                        effHexSize, effPadding, occupiedHexes, ref minX, ref maxX, ref minZ, ref maxZ);
+                }
+            }
+            else
+            {
+                for (int q = -effChunkRadius; q <= effChunkRadius; q++)
+                {
+                    int r1 = Mathf.Max(-effChunkRadius, -q - effChunkRadius);
+                    int r2 = Mathf.Min(effChunkRadius, -q + effChunkRadius);
+                    for (int r = r1; r <= r2; r++)
+                    {
+                        AddOccupiedHex(HexGridMath.LocalToGlobal(chunkCoord, new Vector2Int(q, r), effChunkRadius),
+                            effHexSize, effPadding, occupiedHexes, ref minX, ref maxX, ref minZ, ref maxZ);
+                    }
+                }
+            }
+        }
+
+        if (occupiedHexes.Count == 0) return;
+
+        float hexPadWorld = Mathf.Max(2, voidMistHexPadding) * totalSize;
+        float innerMinX = minX - hexPadWorld;
+        float innerMaxX = maxX + hexPadWorld;
+        float innerMinZ = minZ - hexPadWorld;
+        float innerMaxZ = maxZ + hexPadWorld;
+
+        var verts = new List<Vector3>(4096);
+        var normals = new List<Vector3>(4096);
+        var tris = new List<int>(8192);
+
+        // 2. Wypelnienie heksagonalne wokol nieregularnej krawedzi mapy (z bocznymi sciankami przy styku z mapa)
+        float sqrt3 = Mathf.Sqrt(3f);
+        float s3Half = 0.86602540378f * totalSize;
+        Vector3[] corners = new Vector3[]
+        {
+            new Vector3(0f, 0f, totalSize),
+            new Vector3(s3Half, 0f, 0.5f * totalSize),
+            new Vector3(s3Half, 0f, -0.5f * totalSize),
+            new Vector3(0f, 0f, -totalSize),
+            new Vector3(-s3Half, 0f, -0.5f * totalSize),
+            new Vector3(-s3Half, 0f, 0.5f * totalSize)
+        };
+        Vector2Int[] edgeNeighbors = new Vector2Int[]
+        {
+            new Vector2Int(0, 1),
+            new Vector2Int(1, 0),
+            new Vector2Int(1, -1),
+            new Vector2Int(0, -1),
+            new Vector2Int(-1, 0),
+            new Vector2Int(-1, 1)
+        };
+        Vector3[] edgeNormals = new Vector3[]
+        {
+            new Vector3(0.5f, 0f, 0.8660254f),
+            new Vector3(1f, 0f, 0f),
+            new Vector3(0.5f, 0f, -0.8660254f),
+            new Vector3(-0.5f, 0f, -0.8660254f),
+            new Vector3(-1f, 0f, 0f),
+            new Vector3(-0.5f, 0f, 0.8660254f)
+        };
+
+        float hexBoundMargin = 2f * totalSize;
+        float hexZoneMinX = innerMinX - hexBoundMargin;
+        float hexZoneMaxX = innerMaxX + hexBoundMargin;
+        float hexZoneMinZ = innerMinZ - hexBoundMargin;
+        float hexZoneMaxZ = innerMaxZ + hexBoundMargin;
+
+        int rMin = Mathf.FloorToInt(hexZoneMinZ / (1.5f * totalSize)) - 2;
+        int rMax = Mathf.CeilToInt(hexZoneMaxZ / (1.5f * totalSize)) + 2;
+        float qStep = sqrt3 * totalSize;
+
+        for (int r = rMin; r <= rMax; r++)
+        {
+            int qMin = Mathf.FloorToInt(hexZoneMinX / qStep - r * 0.5f) - 2;
+            int qMax = Mathf.CeilToInt(hexZoneMaxX / qStep - r * 0.5f) + 2;
+
+            for (int q = qMin; q <= qMax; q++)
+            {
+                var g = new Vector2Int(q, r);
+                if (occupiedHexes.Contains(g)) continue;
+
+                Vector3 center = HexGridMath.AxialToWorld(q, r, effHexSize, effPadding);
+                if (center.x < hexZoneMinX || center.x > hexZoneMaxX ||
+                    center.z < hexZoneMinZ || center.z > hexZoneMaxZ)
+                {
+                    continue;
+                }
+
+                // Gorna tafla heksa (y = 0)
+                int centerIdx = verts.Count;
+                verts.Add(center);
+                normals.Add(Vector3.up);
+                for (int i = 0; i < 6; i++)
+                {
+                    verts.Add(center + corners[i]);
+                    normals.Add(Vector3.up);
+                }
+                for (int i = 0; i < 6; i++)
+                {
+                    int next = (i + 1) % 6;
+                    tris.Add(centerIdx);
+                    tris.Add(centerIdx + 1 + i);
+                    tris.Add(centerIdx + 1 + next);
+                }
+
+                // Scianka boczna przy styku z heksem mapy (Mist.shader obniza y = -0.4 o _MistSideDrop)
+                for (int i = 0; i < 6; i++)
+                {
+                    if (!occupiedHexes.Contains(g + edgeNeighbors[i])) continue;
+
+                    Vector3 topA = center + corners[i];
+                    Vector3 topB = center + corners[(i + 1) % 6];
+                    Vector3 botA = new Vector3(topA.x, -0.4f, topA.z);
+                    Vector3 botB = new Vector3(topB.x, -0.4f, topB.z);
+                    Vector3 n = edgeNormals[i];
+
+                    int baseIdx = verts.Count;
+                    verts.Add(topA);
+                    verts.Add(botA);
+                    verts.Add(botB);
+                    verts.Add(topB);
+                    normals.Add(n);
+                    normals.Add(n);
+                    normals.Add(n);
+                    normals.Add(n);
+
+                    tris.Add(baseIdx);
+                    tris.Add(baseIdx + 1);
+                    tris.Add(baseIdx + 2);
+                    tris.Add(baseIdx);
+                    tris.Add(baseIdx + 2);
+                    tris.Add(baseIdx + 3);
+                }
+            }
+        }
+
+        // 3. Cztery duze pasy zewnetrznej mgly az poza zasieg kamery (2mm nizej, by uniknac Z-fightingu na styku z heksami)
+        float mapCenterX = (minX + maxX) * 0.5f;
+        float mapCenterZ = (minZ + maxZ) * 0.5f;
+        float extent = Mathf.Max(200f, voidMistExtent);
+        float outerMinX = Mathf.Min(innerMinX - 50f, mapCenterX - extent);
+        float outerMaxX = Mathf.Max(innerMaxX + 50f, mapCenterX + extent);
+        float outerMinZ = Mathf.Min(innerMinZ - 50f, mapCenterZ - extent);
+        float outerMaxZ = Mathf.Max(innerMaxZ + 50f, mapCenterZ + extent);
+
+        const float outerPlaneY = -0.002f;
+        const int stripSubdivisions = 8;
+        AddSubdividedQuadStrip(verts, normals, tris, outerMinX, outerMaxX, innerMaxZ, outerMaxZ, outerPlaneY, stripSubdivisions);
+        AddSubdividedQuadStrip(verts, normals, tris, outerMinX, outerMaxX, outerMinZ, innerMinZ, outerPlaneY, stripSubdivisions);
+        AddSubdividedQuadStrip(verts, normals, tris, outerMinX, innerMinX, innerMinZ, innerMaxZ, outerPlaneY, stripSubdivisions);
+        AddSubdividedQuadStrip(verts, normals, tris, innerMaxX, outerMaxX, innerMinZ, innerMaxZ, outerPlaneY, stripSubdivisions);
+
+        voidMistMesh = new Mesh { name = "VoidMistBackdropMesh" };
+        if (verts.Count > 65000)
+        {
+            voidMistMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        }
+        voidMistMesh.SetVertices(verts);
+        voidMistMesh.SetNormals(normals);
+        voidMistMesh.SetTriangles(tris, 0);
+        voidMistMesh.RecalculateBounds();
+
+        voidMistBackdrop = new GameObject("VoidMistBackdrop");
+        voidMistBackdrop.layer = 7;
+        voidMistBackdrop.transform.SetParent(transform, false);
+        voidMistBackdrop.transform.position = new Vector3(0f, MistWorldHeight, 0f);
+        voidMistBackdrop.transform.rotation = Quaternion.identity;
+        voidMistBackdrop.transform.localScale = new Vector3(1f, fogHeightScale, 1f);
+
+        var mf = voidMistBackdrop.AddComponent<MeshFilter>();
+        mf.sharedMesh = voidMistMesh;
+
+        var mr = voidMistBackdrop.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = mistMat;
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        mr.receiveShadows = false;
+    }
+
+    private static void AddOccupiedHex(
+        Vector2Int globalCoord,
+        float hexSize,
+        float padding,
+        HashSet<Vector2Int> occupiedHexes,
+        ref float minX,
+        ref float maxX,
+        ref float minZ,
+        ref float maxZ)
+    {
+        if (!occupiedHexes.Add(globalCoord)) return;
+        Vector3 worldPos = HexGridMath.AxialToWorld(globalCoord.x, globalCoord.y, hexSize, padding);
+        if (worldPos.x < minX) minX = worldPos.x;
+        if (worldPos.x > maxX) maxX = worldPos.x;
+        if (worldPos.z < minZ) minZ = worldPos.z;
+        if (worldPos.z > maxZ) maxZ = worldPos.z;
+    }
+
+    private static void AddSubdividedQuadStrip(
+        List<Vector3> verts,
+        List<Vector3> normals,
+        List<int> tris,
+        float x0,
+        float x1,
+        float z0,
+        float z1,
+        float y,
+        int subdivisions)
+    {
+        if (x1 <= x0 || z1 <= z0) return;
+
+        int baseIdx = verts.Count;
+        int stride = subdivisions + 1;
+
+        for (int iz = 0; iz <= subdivisions; iz++)
+        {
+            float tz = iz / (float)subdivisions;
+            float z = Mathf.Lerp(z0, z1, tz);
+            for (int ix = 0; ix <= subdivisions; ix++)
+            {
+                float tx = ix / (float)subdivisions;
+                float x = Mathf.Lerp(x0, x1, tx);
+                verts.Add(new Vector3(x, y, z));
+                normals.Add(Vector3.up);
+            }
+        }
+
+        for (int iz = 0; iz < subdivisions; iz++)
+        {
+            for (int ix = 0; ix < subdivisions; ix++)
+            {
+                int i00 = baseIdx + iz * stride + ix;
+                int i01 = baseIdx + (iz + 1) * stride + ix;
+                int i11 = baseIdx + (iz + 1) * stride + (ix + 1);
+                int i10 = baseIdx + iz * stride + (ix + 1);
+
+                tris.Add(i00);
+                tris.Add(i01);
+                tris.Add(i11);
+                tris.Add(i00);
+                tris.Add(i11);
+                tris.Add(i10);
+            }
+        }
+    }
+
     private void ClearFog()
     {
         isMistHeightCached = false;
@@ -1251,6 +1566,7 @@ public class FogOfWarManager : MonoBehaviour
             DestroyImmediate(transform.GetChild(i).gameObject);
         }
 
+        DestroyVoidMistBackdrop();
         DestroyMaskTexture();
     }
 }

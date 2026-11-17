@@ -82,6 +82,24 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Button btnRetry;
     [SerializeField] private string mainMenuSceneName = "MainMenu Demo scene";
 
+    private TextMeshProUGUI txtStatsSectionTitle;
+    private TextMeshProUGUI txtHopeSectionTitle;
+    private TextMeshProUGUI txtSummarySectionTitle;
+    private TextMeshProUGUI txtLblEnemiesKilled;
+    private TextMeshProUGUI txtLblBossesKilled;
+    private TextMeshProUGUI txtLblTowersBuilt;
+    private TextMeshProUGUI txtLblProductionBuilt;
+    private TextMeshProUGUI txtLblExpeditionsCompleted;
+    private TextMeshProUGUI txtLblRunesCrafted;
+    private TextMeshProUGUI txtLblFinalPopulation;
+    private TextMeshProUGUI txtEmptyCardsInfo;
+    private TextMeshProUGUI txtLblRunHope;
+    private TextMeshProUGUI txtLblAccountHope;
+    private TextMeshProUGUI txtNewRecordBadge;
+    private TextMeshProUGUI txtMenuBtn;
+    private TextMeshProUGUI txtMetaUpgradeBadge;
+    private TextMeshProUGUI txtRetryBtn;
+
     private static readonly string[] RarityLabels = { "Ranga: Zwykła", "Ranga: Rzadka", "Ranga: Epicka", "Ranga: Legendarna" };
 
     private readonly List<HopeSessionManager.GroupedHopeCardData> groupedCards = new List<HopeSessionManager.GroupedHopeCardData>();
@@ -98,6 +116,8 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         AutoBindScrollReferences();
+        AutoBindStaticLabels();
+        RefreshStaticLocalization();
 
         if (btnPrevPage != null) btnPrevPage.onClick.AddListener(PrevPage);
         if (btnNextPage != null) btnNextPage.onClick.AddListener(NextPage);
@@ -221,6 +241,8 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         }
 
         AutoBindScrollReferences();
+        AutoBindStaticLabels();
+        RefreshStaticLocalization();
         HideCardTooltip();
         PopulateHeader(summary);
         PopulateStats(summary);
@@ -345,8 +367,10 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
         if (txtHeaderTitle != null)
         {
-            txtHeaderTitle.text = summary.isVictory ? "ZWYCIĘSTWO!" : "TWIERDZA UPADŁA";
-            txtHeaderTitle.color = headerColor;
+            txtHeaderTitle.text = summary.isVictory
+                ? LocalizationManager.Get("UI_ENDGAME_VICTORY", "ZWYCIĘSTWO!")
+                : LocalizationManager.Get("UI_ENDGAME_DEFEAT", "TWIERDZA UPADŁA");
+            txtHeaderTitle.color = Color.black;
         }
 
         if (imgHeaderBanner != null)
@@ -356,7 +380,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
         if (txtNightsSurvived != null)
         {
-            txtNightsSurvived.text = $"Przetrwano nocy: {summary.nightsSurvived}";
+            txtNightsSurvived.text = LocalizationManager.GetFormat("UI_ENDGAME_NIGHTS_SURVIVED_FMT", summary.nightsSurvived);
         }
     }
 
@@ -384,7 +408,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
             txtMultiplierInfo.gameObject.SetActive(showMult);
             if (showMult)
             {
-                txtMultiplierInfo.text = $"Mnożnik: x{multiplier:0.##}";
+                txtMultiplierInfo.text = LocalizationManager.GetFormat("UI_ENDGAME_MULTIPLIER_FMT", $"{multiplier:0.##}");
             }
         }
 
@@ -401,12 +425,12 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
             int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(summary.runDurationSeconds));
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            txtRunDuration.text = $"Czas gry: {minutes:00}:{seconds:00}";
+            txtRunDuration.text = LocalizationManager.GetFormat("UI_ENDGAME_DURATION_FMT", $"{minutes:00}:{seconds:00}");
         }
 
         if (txtBestRecord != null)
         {
-            txtBestRecord.text = $"Rekord: {summary.bestNightsSurvived} nocy";
+            txtBestRecord.text = LocalizationManager.GetFormat("UI_ENDGAME_RECORD_FMT", summary.bestNightsSurvived);
         }
 
         if (objNewRecordBadge != null)
@@ -418,6 +442,11 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
     private void UpdateMetaUpgradeHint(int totalAccountHope)
     {
         if (objMetaUpgradeBadge == null) return;
+        if (DemoBuildConfig.IsDemoV2Active)
+        {
+            objMetaUpgradeBadge.SetActive(false);
+            return;
+        }
         bool canAfford = HasAffordableMetaUpgrade(totalAccountHope);
         objMetaUpgradeBadge.SetActive(canAfford);
     }
@@ -529,6 +558,74 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         {
             scrollRect.onValueChanged.AddListener(OnScrollRectValueChanged);
             isScrollListenerBound = true;
+        }
+    }
+
+    private void AutoBindStaticLabels()
+    {
+        Transform searchRoot = panelRoot != null ? panelRoot.transform : transform;
+        if (searchRoot == null) return;
+
+        if (txtStatsSectionTitle == null) txtStatsSectionTitle = FindLabel(searchRoot, "Pnl_Window/Pnl_RunStatsSection/Txt_SectionTitle");
+        if (txtLblEnemiesKilled == null) txtLblEnemiesKilled = FindLabel(searchRoot, "Pnl_Window/Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Enemies/Lbl");
+        if (txtLblBossesKilled == null) txtLblBossesKilled = FindLabel(searchRoot, "Pnl_Window/Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Bosses/Lbl");
+        if (txtLblTowersBuilt == null) txtLblTowersBuilt = FindLabel(searchRoot, "Pnl_Window/Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Towers/Lbl");
+        if (txtLblProductionBuilt == null) txtLblProductionBuilt = FindLabel(searchRoot, "Pnl_Window/Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Production/Lbl");
+        if (txtLblExpeditionsCompleted == null) txtLblExpeditionsCompleted = FindLabel(searchRoot, "Pnl_Window/Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Expeditions/Lbl");
+        if (txtLblRunesCrafted == null) txtLblRunesCrafted = FindLabel(searchRoot, "Pnl_Window/Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Runes/Lbl");
+        if (txtLblFinalPopulation == null) txtLblFinalPopulation = FindLabel(searchRoot, "Pnl_Window/Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Population/Lbl");
+
+        if (txtHopeSectionTitle == null) txtHopeSectionTitle = FindLabel(searchRoot, "Pnl_Window/Pnl_Middle/Pnl_HopeCarouselSection/Txt_SectionTitle");
+        if (txtSummarySectionTitle == null) txtSummarySectionTitle = FindLabel(searchRoot, "Pnl_Window/Pnl_Middle/Pnl_HopeSummarySection/Txt_SectionTitle");
+        if (txtLblRunHope == null) txtLblRunHope = FindLabel(searchRoot, "Pnl_Window/Pnl_Middle/Pnl_HopeSummarySection/Pnl_SummaryContent/Lbl_RunHope");
+        if (txtLblAccountHope == null) txtLblAccountHope = FindLabel(searchRoot, "Pnl_Window/Pnl_Middle/Pnl_HopeSummarySection/Pnl_SummaryContent/Pnl_TotalAccountHope/Lbl_AccountHope");
+
+        if (txtEmptyCardsInfo == null && objEmptyCardsInfo != null)
+            txtEmptyCardsInfo = objEmptyCardsInfo.GetComponent<TextMeshProUGUI>() ?? objEmptyCardsInfo.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (txtNewRecordBadge == null && objNewRecordBadge != null)
+            txtNewRecordBadge = objNewRecordBadge.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (txtMenuBtn == null && btnMenu != null)
+            txtMenuBtn = btnMenu.transform.Find("Txt")?.GetComponent<TextMeshProUGUI>() ?? btnMenu.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (txtMetaUpgradeBadge == null && objMetaUpgradeBadge != null)
+            txtMetaUpgradeBadge = objMetaUpgradeBadge.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (txtRetryBtn == null && btnRetry != null)
+            txtRetryBtn = btnRetry.transform.Find("Txt")?.GetComponent<TextMeshProUGUI>() ?? btnRetry.GetComponentInChildren<TextMeshProUGUI>(true);
+    }
+
+    private void RefreshStaticLocalization()
+    {
+        SetLocalizedLabel(txtStatsSectionTitle, "UI_ENDGAME_SECTION_STATS", "STATYSTYKI OBRONY");
+        SetLocalizedLabel(txtLblEnemiesKilled, "UI_ENDGAME_STAT_ENEMIES", "Zabici wrogowie");
+        SetLocalizedLabel(txtLblBossesKilled, "UI_ENDGAME_STAT_BOSSES", "Zabici bossowie");
+        SetLocalizedLabel(txtLblTowersBuilt, "UI_ENDGAME_STAT_TOWERS", "Zbudowane wieże");
+        SetLocalizedLabel(txtLblProductionBuilt, "UI_ENDGAME_STAT_PRODUCTION", "Budynki prod.");
+        SetLocalizedLabel(txtLblExpeditionsCompleted, "UI_ENDGAME_STAT_EXPEDITIONS", "Ekspedycje");
+        SetLocalizedLabel(txtLblRunesCrafted, "UI_ENDGAME_STAT_RUNES", "Wytworzone runy");
+        SetLocalizedLabel(txtLblFinalPopulation, "UI_ENDGAME_STAT_POPULATION", "Populacja");
+
+        SetLocalizedLabel(txtHopeSectionTitle, "UI_ENDGAME_SECTION_HOPE", "ZDOBYTA NADZIEJA");
+        SetLocalizedLabel(txtEmptyCardsInfo, "UI_ENDGAME_EMPTY_CARDS", "Brak zdobytych osiągnięć w tym runie");
+        SetLocalizedLabel(txtSummarySectionTitle, "UI_ENDGAME_SECTION_SUMMARY", "PODSUMOWANIE");
+        SetLocalizedLabel(txtLblRunHope, "UI_ENDGAME_SUMMARY_RUN", "Z tego runu:");
+        SetLocalizedLabel(txtLblAccountHope, "UI_ENDGAME_SUMMARY_TOTAL", "Łączna Nadzieja");
+
+        SetLocalizedLabel(txtNewRecordBadge, "UI_ENDGAME_NEW_RECORD", "NOWY REKORD!");
+        SetLocalizedLabel(txtMenuBtn, "UI_ENDGAME_MENU_BTN", "MENU");
+        SetLocalizedLabel(txtMetaUpgradeBadge, "UI_ENDGAME_META_BADGE", "ULEPSZENIA!");
+        SetLocalizedLabel(txtRetryBtn, "UI_ENDGAME_RETRY_BTN", "POWTÓRZ OBRONĘ");
+    }
+
+    private static TextMeshProUGUI FindLabel(Transform root, string relativePath)
+    {
+        Transform t = root.Find(relativePath);
+        return t != null ? t.GetComponent<TextMeshProUGUI>() : null;
+    }
+
+    private static void SetLocalizedLabel(TextMeshProUGUI target, string key, string fallback)
+    {
+        if (target != null)
+        {
+            target.text = LocalizationManager.Get(key, fallback);
         }
     }
 
@@ -691,7 +788,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         if (txtTooltipRarity != null)
         {
             int tier = Mathf.Clamp(data.rarityTier, 0, RarityLabels.Length - 1);
-            txtTooltipRarity.text = RarityLabels[tier];
+            txtTooltipRarity.text = LocalizationManager.Get($"UI_ENDGAME_RARITY_{tier}", RarityLabels[tier]);
             txtTooltipRarity.color = GetRarityFallbackColor(tier);
         }
 
@@ -708,7 +805,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
                 }
                 if (data.breakdownLines.Count > maxLines)
                 {
-                    sb.Append($"\n... (+{data.breakdownLines.Count - maxLines} więcej)");
+                    sb.Append(LocalizationManager.GetFormat("UI_ENDGAME_TOOLTIP_MORE_FMT", data.breakdownLines.Count - maxLines));
                 }
                 txtTooltipBreakdown.text = sb.ToString();
             }

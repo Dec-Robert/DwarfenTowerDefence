@@ -376,15 +376,30 @@ public class ExtendedBuildingUI : MonoBehaviour
     {
         if (building == null) return false;
 
-        bool requiresTrinityForce = building.prefab != null
-            && (building.prefab.GetComponent<RuneForgeEntity>() != null
-                || building.prefab.GetComponent<RuneTowerEntity>() != null
-                || building.prefab.GetComponent<ToolWorkshopEntity>() != null);
+        bool isToolWorkshop = building.prefab != null && building.prefab.GetComponent<ToolWorkshopEntity>() != null;
+        if (DemoBuildConfig.IsDemoV2Active && isToolWorkshop)
+        {
+            return false;
+        }
 
-        if (requiresTrinityForce)
+        bool isRuneBuilding = building.prefab != null
+            && (building.prefab.GetComponent<RuneForgeEntity>() != null
+                || building.prefab.GetComponent<RuneTowerEntity>() != null);
+
+        if (DemoBuildConfig.IsDemoV2Active && isRuneBuilding)
+        {
+            return true;
+        }
+
+        if (isRuneBuilding || isToolWorkshop)
         {
             return MetaUpgradeManager.Instance != null
                 && MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockTrinityForce);
+        }
+
+        if (DemoBuildConfig.IsDemoV2Active && building is TowerData demoTower)
+        {
+            return DemoBuildConfig.IsTowerAllowedInDemo(demoTower);
         }
 
         return building.isUnlocked || (debugUnlockAllTowers && building is TowerData);

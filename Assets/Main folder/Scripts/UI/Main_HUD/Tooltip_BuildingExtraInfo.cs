@@ -21,19 +21,23 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
     [Header("Building Cost Section")]
     [SerializeField] private GameObject pnlBuildingCost;
     [SerializeField] private Transform costContainer;
+    [SerializeField] private TextMeshProUGUI txtBuildingCostHeader;
 
     [Header("Upkeep Section")]
     [SerializeField] private GameObject pnlUpkeep;
     [SerializeField] private Transform upkeepContainer;
+    [SerializeField] private TextMeshProUGUI txtUpkeepHeader;
 
     [Header("Towers / Combat Section")]
     [SerializeField] private GameObject pnlTowers;
     [SerializeField] private Transform statsContainer;
+    [SerializeField] private TextMeshProUGUI txtStatsHeader;
 
     [Header("Production Section")]
     [SerializeField] private GameObject pnlProduction;
     [SerializeField] private GameObject pnlBonuses;
     [SerializeField] private Transform productionContainer;
+    [SerializeField] private TextMeshProUGUI txtProductionHeader;
     [SerializeField] private TextMeshProUGUI txtBonusForPlacing;
     [SerializeField] private TextMeshProUGUI txtBonusForSurround;
 
@@ -110,19 +114,36 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         }
 
         if (pnlBuildingCost == null) pnlBuildingCost = transform.Find("Pnl_BuildingCost")?.gameObject;
-        if (costContainer == null && pnlBuildingCost != null) costContainer = pnlBuildingCost.transform.Find("Pnl_BuildingRequired");
+        if (pnlBuildingCost != null)
+        {
+            if (costContainer == null) costContainer = pnlBuildingCost.transform.Find("Pnl_BuildingRequired");
+            if (txtBuildingCostHeader == null) txtBuildingCostHeader = pnlBuildingCost.transform.Find("Txt_BuildingCosts")?.GetComponent<TextMeshProUGUI>();
+        }
 
         if (pnlUpkeep == null) pnlUpkeep = transform.Find("Pnl_Upkeep")?.gameObject;
-        if (upkeepContainer == null && pnlUpkeep != null) upkeepContainer = pnlUpkeep.transform.Find("Pnl_RequiredUpkeep");
+        if (pnlUpkeep != null)
+        {
+            if (upkeepContainer == null) upkeepContainer = pnlUpkeep.transform.Find("Pnl_RequiredUpkeep");
+            if (txtUpkeepHeader == null) txtUpkeepHeader = pnlUpkeep.transform.Find("Txt_Upkeep")?.GetComponent<TextMeshProUGUI>();
+        }
 
         if (pnlTowers == null) pnlTowers = transform.Find("Pnl_Towers")?.gameObject;
-        if (statsContainer == null && pnlTowers != null) statsContainer = pnlTowers.transform.Find("Pnl_Stats");
+        if (pnlTowers != null)
+        {
+            if (statsContainer == null) statsContainer = pnlTowers.transform.Find("Pnl_Stats");
+            if (txtStatsHeader == null) txtStatsHeader = pnlTowers.transform.Find("Txt_Stats")?.GetComponent<TextMeshProUGUI>();
+        }
 
         if (pnlProduction == null) pnlProduction = transform.Find("Pnl_Production")?.gameObject;
         if (pnlProduction != null)
         {
             Transform baseProd = pnlProduction.transform.Find("Pnl_BaseProduction");
-            if (productionContainer == null && baseProd != null) productionContainer = baseProd.Find("Pnl_BaseProduced");
+            if (baseProd != null)
+            {
+                if (productionContainer == null) productionContainer = baseProd.Find("Pnl_BaseProduced");
+                if (txtProductionHeader == null) txtProductionHeader = baseProd.Find("Txt_ProductionHeader")?.GetComponent<TextMeshProUGUI>();
+            }
+            if (txtProductionHeader == null) txtProductionHeader = pnlProduction.transform.Find("Txt_ProductionHeader")?.GetComponent<TextMeshProUGUI>();
 
             Transform bonuses = pnlProduction.transform.Find("Pnl_Bonuses");
             if (bonuses != null)
@@ -249,6 +270,8 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         if (tooltipRoot != null) tooltipRoot.SetActive(true);
         isVisible = true;
 
+        RefreshSectionHeadersLocalization();
+
         // Shared Info
         if (txtName != null) txtName.text = data.DisplayName;
         if (txtDescription != null) txtDescription.text = string.IsNullOrEmpty(data.description) ? "" : data.DisplayDescription;
@@ -286,6 +309,20 @@ public class Tooltip_BuildingExtraInfo : MonoBehaviour
         // Refresh Layout and Position
         RefreshLayoutImmediately();
         UpdateTooltipPosition();
+    }
+
+    private void RefreshSectionHeadersLocalization()
+    {
+        if (txtBuildingCostHeader != null)
+            txtBuildingCostHeader.text = LocalizationManager.Get("UI_TOOLTIP_BUILD_COST", "Koszt budowy");
+        if (txtUpkeepHeader != null)
+            txtUpkeepHeader.text = LocalizationManager.Get("UI_TOOLTIP_UPKEEP_HEADER", "UTRZYMANIE");
+        if (txtStatsHeader != null)
+            txtStatsHeader.text = LocalizationManager.Get("UI_TOOLTIP_STATS_HEADER", "STATYSTYKI");
+        if (txtProductionHeader != null)
+            txtProductionHeader.text = LocalizationManager.Get("UI_TOOLTIP_PRODUCTION", "PRODUKCJA");
+        if (txtSpecial != null)
+            txtSpecial.text = LocalizationManager.Get("UI_TOOLTIP_SPECIAL_HEADER", "UMIEJĘTNOŚĆ SPECJALNA");
     }
 
     public void HideTooltip()

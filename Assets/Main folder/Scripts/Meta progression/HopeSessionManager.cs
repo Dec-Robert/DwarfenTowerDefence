@@ -188,7 +188,12 @@ public class HopeSessionManager : MonoBehaviour
                 int wavePoints = GetPointsForWave(nightsSurvived);
                 wavePointsEarned += wavePoints;
 
-                AddRecord($"Przetrwano noc {nightsSurvived}", wavePoints, MilestoneType.NightsSurvived, "NightsSurvived", "Survivor");
+                AddRecord(
+                    LocalizationManager.GetFormat("UI_ENDGAME_SURVIVED_NIGHT_FMT", nightsSurvived),
+                    wavePoints,
+                    MilestoneType.NightsSurvived,
+                    "NightsSurvived",
+                    LocalizationManager.Get("UI_ENDGAME_CARD_SURVIVOR", "Survivor"));
                 EvaluateMilestones(MilestoneType.NightsSurvived, nightsSurvived);
             }
         }
@@ -370,7 +375,7 @@ public class HopeSessionManager : MonoBehaviour
         milestonePointsEarned += milestone.hopeReward;
         string label = !string.IsNullOrEmpty(milestone.DisplayDescription) ? milestone.DisplayDescription : milestone.description;
         string groupKey = GetMilestoneGroupKey(milestone);
-        string groupTitle = !string.IsNullOrEmpty(milestone.groupTitle) ? milestone.groupTitle : label;
+        string groupTitle = !string.IsNullOrEmpty(milestone.DisplayGroupTitle) ? milestone.DisplayGroupTitle : label;
         AddRecord(label, milestone.hopeReward, milestone.type, groupKey, groupTitle);
     }
 

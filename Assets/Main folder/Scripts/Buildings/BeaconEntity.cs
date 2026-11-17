@@ -332,7 +332,7 @@ public class BeaconEntity : BuildingEntity
         }
 
         string key = $"hearth_ether_tier_{raw.Trim().ToLowerInvariant()}";
-        return LocalizationManager.Instance != null ? LocalizationManager.Get(key, raw) : raw;
+        return LocalizationManager.Get(key, raw);
     }
 
     /// <summary>

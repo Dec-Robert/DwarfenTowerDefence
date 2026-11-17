@@ -119,6 +119,13 @@ public class MetaUpgradeManager : MonoBehaviour
         appliedValues.Clear();
         buildingSpecificValues.Clear();
 
+        if (DemoBuildConfig.IsDemoV2Active)
+        {
+            ApplyDemoV2PresetValues();
+            Debug.Log("[MetaUpgradeManager] Tryb Demo v2 aktywny: zaladowano staly zestaw efektow dema (meta-progresja z save zignorowana).");
+            return;
+        }
+
         foreach (var upgrade in allUpgrades)
         {
             if (upgrade == null || !upgrade.isUnlocked) continue;
@@ -149,6 +156,21 @@ public class MetaUpgradeManager : MonoBehaviour
         }
 
         Debug.Log($"[MetaUpgradeManager] Zebrano zsumowane efekty. Globalne: {appliedValues.Count}, Specyficzne dla budynków: {buildingSpecificValues.Count}.");
+    }
+
+    private void ApplyDemoV2PresetValues()
+    {
+        appliedValues[MetaEffectType.BonusProductionWorkers] = DemoBuildConfig.DemoBonusProductionWorkers;
+        appliedValues[MetaEffectType.BonusTowerCrewSlots] = DemoBuildConfig.DemoBonusTowerCrewSlots;
+        appliedValues[MetaEffectType.RuneTowerLimit] = DemoBuildConfig.DemoRuneTowerLimit;
+        appliedValues[MetaEffectType.UnlockTrinityForce] = 1f;
+        appliedValues[MetaEffectType.UnlockRuneRarity_Uncommon] = 1f;
+        appliedValues[MetaEffectType.UnlockRuneRarity_Rare] = 1f;
+        appliedValues[MetaEffectType.UnlockRuneRarity_Legendary] = 1f;
+        appliedValues[MetaEffectType.UnlockRuneRarity_Cursed] = 1f;
+        appliedValues[MetaEffectType.UnlockRuneFusion] = 1f;
+        appliedValues[MetaEffectType.UnlockRuneTransmutation] = 1f;
+        appliedValues[MetaEffectType.UnlockCursedCrafting] = 1f;
     }
 
     // =========================================================================
@@ -240,7 +262,15 @@ public class MetaUpgradeManager : MonoBehaviour
             case MetaEffectType.SpecificBuildingProductionBonus:
             case MetaEffectType.UnlockDruidTower:
             case MetaEffectType.UnlockTrinityForce:
-                // Obsługiwane przez odpytywanie IsUnlocked() / GetBuildingValue()
+            case MetaEffectType.RuneTowerLimit:
+            case MetaEffectType.UnlockRuneRarity_Uncommon:
+            case MetaEffectType.UnlockRuneRarity_Rare:
+            case MetaEffectType.UnlockRuneRarity_Legendary:
+            case MetaEffectType.UnlockRuneRarity_Cursed:
+            case MetaEffectType.UnlockRuneFusion:
+            case MetaEffectType.UnlockRuneTransmutation:
+            case MetaEffectType.UnlockCursedCrafting:
+                // Obsługiwane przez odpytywanie IsUnlocked() / GetValue() / GetBuildingValue()
                 break;
 
             default:
@@ -314,6 +344,7 @@ public class MetaUpgradeManager : MonoBehaviour
     /// </summary>
     public void OnNodePurchased(MetaUpgradeSO node)
     {
+        if (DemoBuildConfig.IsDemoV2Active) return;
         if (ReferenceEquals(node, null)) return;
 
         if (!node.isUnlocked)

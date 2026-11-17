@@ -42,6 +42,9 @@ public class TopBonusInfoUI : MonoBehaviour
     [Header("Formatowanie")]
     [SerializeField] private float fontSize = 12f; // Zgodnie z wytycznymi interfejsu w GEMINI.md
 
+    [Header("Widoczność")]
+    [SerializeField] private bool disablePhaseForecastCapsules = true;
+
     private float pollTimer = 0f;
     private const float PollInterval = 0.5f;
 
@@ -332,6 +335,12 @@ public class TopBonusInfoUI : MonoBehaviour
     {
         try
         {
+            if (disablePhaseForecastCapsules || DemoBuildConfig.IsDemoV2Active)
+            {
+                HideAllSlots();
+                return;
+            }
+
             if (TimePhaseManager.Instance == null)
             {
                 HideAllSlots();

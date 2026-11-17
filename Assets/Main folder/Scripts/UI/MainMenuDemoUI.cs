@@ -21,10 +21,12 @@ public class MainMenuDemoUI : MonoBehaviour
     [SerializeField] private Button btnHowToPlay;
     [SerializeField] private Button btnMetaGraph;
     [SerializeField] private Button btnSettings;
+    [SerializeField] private Button btnFeedback;
     [SerializeField] private Button btnExit;
 
     [Header("Konfiguracja Sceny")]
     [SerializeField] private string gameSceneName = "Game scene";
+    [SerializeField] private string feedbackUrl = DemoBuildConfig.FeedbackSurveyUrl;
 
     [Header("Modal Jak Grać (opcjonalny prefab / obiekt)")]
     [SerializeField] private GameObject howToPlayModal;
@@ -47,40 +49,43 @@ public class MainMenuDemoUI : MonoBehaviour
         new GuideCard
         {
             tabTitle = "Cykl Dnia",
-            cardTitle = "Cykl Dnia i Nocy w Bastionie",
+            cardTitle = "Cykl Dnia i Nocy",
             content = "Rozgrywka toczy się w stałym, dobowym rytmie podzielonym na kluczowe fazy:\n\n" +
-                      "• ŚWIT / PORANEK: Czas wytchnienia po nocnej walce. Otrzymujesz podsumowanie strat, raport produkcji i przydział zasobów.\n\n" +
-                      "• ZMIERZCH: Ostateczne przygotowania przed zapadnięciem zmroku. Ustaw priorytety obrony i uzupełnij wieże zaopatrzeniem.\n\n" +
-                      "• NOC: Spaczona Mgła rodzi hordy potworów nacierających ku Świętej Bramie Bastionu. Twoje wieże prowadzą automatyczny ostrzał."
+                      "• ŚWIT: Faza budowy – otrzymujesz w niej nową populację, jeśli doszło do wzrostu.\n\n" +
+                      "• ZMIERZCH: Przygotowanie przed obroną – możliwość wybudowania wież oraz zapełnienia pustych stanowisk.\n\n" +
+                      "• NOC: Faza obrony – teraz jedyne co zostało, to obserwować obronę."
         },
         new GuideCard
         {
             tabTitle = "Rasy i Ekspedycje",
             cardTitle = "Rasy Mieszkańców oraz Zwiad Mgły",
-            content = "Bastion zrzesza trzy zróżnicowane rasy o unikalnych predyspozycjach roboczych:\n\n" +
+            content = "Miasto zrzesza trzy zróżnicowane rasy o unikalnych predyspozycjach roboczych:\n\n" +
                       "• KRASNOLUDY: Mistrzowie kowalstwa, kamieniarstwa i ciężkiej technologii. Niezbędni w kopalniach oraz machinach parowych.\n\n" +
                       "• ELFY: Związane z magią eteru i naturą. Najbardziej wydajne w tartakach, badaniach i mistycznych strukturach obronnych.\n\n" +
                       "• LUDZIE: Wszechstronni rzemieślnicy, organizatorzy i zwiadowcy.\n\n" +
-                      "• CENTRUM EKSPEDYCJI: Wysyłaj zwiadowców w nieodkryte obszary mgły, odsłaniaj chunki i zabezpieczaj nowe złoża surowców."
+                      "• CENTRUM EKSPEDYCJI: Wysyłaj zwiadowców w nieodkryte obszary mgły, odsłaniaj chunki i zabezpieczaj nowe złoża surowców.\n\n" +
+                      "• ZWIAD I POSTERUNEK: Po odkryciu terenu nie jest on w pełni zabezpieczony – można na nim budować tylko wieże. Aby w pełni zabezpieczyć nowy teren, wymagane jest postawienie posterunku (outpostu)."
         },
         new GuideCard
         {
             tabTitle = "Palenisko",
-            cardTitle = "Święte Palenisko Bastionu (Beacon)",
-            content = "Palenisko jest sercem osady i najważniejszym punktem oporu przeciw spaczeniu:\n\n" +
-                      "• MOC ŚWIĘTEGO OGNIA: Płomień odpędza opary mgły, zmniejsza agresję i osłabia żywotność nocnych bestii.\n\n" +
-                      "• ZAOPATRZENIE W PALIWO: Pilnuj zapasów węgla i drewna. Wygaszenie ognia gwałtownie wzmacnia nacierające potwory!\n\n" +
-                      "• SYSTEM NADZIEI: Pomyślne przetrwanie nocy i sukcesy ekspedycji generują Nadzieję, kluczową dla rozwoju bastionu."
+            cardTitle = "Święty płomień przymierza",
+            content = "Święty płomień jest sercem Miasta i najważniejszym punktem oporu przeciw spaczeniu:\n\n" +
+                      "• MOC ŚWIĘTEGO OGNIA: Płomień odpędza i osłabia bestie mgły.\n\n" +
+                      "• ZAOPATRZENIE W WĘGIEL: Płomień wymaga ciągłego dostarczania węgla, aby wspierać wieże w obronie.\n\n" +
+                      "• ROZROST TERENU: Wraz ze wzrostem przejętego terenu będzie wymagane więcej węgla."
         },
         new GuideCard
         {
             tabTitle = "Wieże i Amunicja",
             cardTitle = "Wieże Obronne i Zaopatrzenie Bojowe",
-            content = "Obrona bastionu opiera się na wyspecjalizowanych wieżach strażniczych:\n\n" +
+            content = "Obrona Miasta opiera się na wyspecjalizowanych wieżach strażniczych oraz wsparciu runicznym:\n\n" +
                       "• ARBALET STRAŻNICZY: Podstawowa, dalekosiężna wieża fizyczna eliminująca pierwsze fale nacierających potworów.\n\n" +
                       "• BOMBARDA KRÓLEWSKA: Ciężka artyleria burząca z pancerzobójczymi pociskami, idealna na zwarte grupy i opancerzone aberracje.\n\n" +
                       "• REPETIER PAROWY: Szybkostrzelna konstrukcja o gęstym ogniu, powstrzymująca szybkich łowców mgły.\n\n" +
+                      "• TYGIEL POŻOGI: Wieża obszarowa zasypująca wrogów ogniem i podpaleniem na krótkim dystansie.\n\n" +
                       "• IGLICA CIENI: Mistyczna iglica zadająca potężne obrażenia magiczne najgroźniejszym abominacjom.\n\n" +
+                      "• KUŹNIA RUNICZNA I WIEŻE RUNICZNE: Wykuwaj i osadzaj runy wzmacniające wybraną wieżę (do 4 sąsiednich Wież Runicznych zwiększa liczbę slotów!).\n\n" +
                       "Pamiętaj: Każda wieża wymaga surowców na budowę oraz dziennego utrzymania!"
         }
     };
@@ -98,11 +103,13 @@ public class MainMenuDemoUI : MonoBehaviour
 
 
     // Elementy runtime dla modalu
+    private TextMeshProUGUI modalHeaderTitle;
     private TextMeshProUGUI modalCardTitle;
     private TextMeshProUGUI modalCardContent;
     private TextMeshProUGUI modalPageIndicator;
     private Button modalBtnPrev;
     private Button modalBtnNext;
+    private Button modalBtnCloseFooter;
     private readonly List<Button> tabButtons = new List<Button>();
 
     private void Awake()
@@ -123,6 +130,7 @@ public class MainMenuDemoUI : MonoBehaviour
     private void HandleLanguageChanged()
     {
         ApplyGeminiUIStandards();
+        RefreshHowToPlayLocalization();
         if (howToPlayModal != null && howToPlayModal.activeSelf)
         {
             ShowCard(currentCardIndex);
@@ -241,6 +249,30 @@ public class MainMenuDemoUI : MonoBehaviour
                        ?? container.Find("Btn_Exit");
             if (t != null) btnExit = t.GetComponent<Button>();
         }
+
+        if (btnFeedback == null)
+        {
+            Transform t = container.Find("Pnl_Background/Pnl_Button/Btn_Feedback")
+                       ?? container.Find("Pnl_Button/Btn_Feedback")
+                       ?? container.Find("Btn_Feedback");
+            if (t != null)
+            {
+                btnFeedback = t.GetComponent<Button>();
+            }
+            else if (btnHowToPlay != null)
+            {
+                GameObject newBtnObj = Instantiate(btnHowToPlay.gameObject, btnHowToPlay.transform.parent);
+                newBtnObj.name = "Btn_Feedback";
+                var loc = newBtnObj.GetComponentInChildren<LocalizedText>(true);
+                if (loc != null) Destroy(loc);
+                btnFeedback = newBtnObj.GetComponent<Button>();
+                int siblingIndex = (btnExit != null && btnExit.transform.parent == btnHowToPlay.transform.parent)
+                    ? btnExit.transform.GetSiblingIndex()
+                    : ((btnSettings != null) ? btnSettings.transform.GetSiblingIndex() + 1 : btnHowToPlay.transform.GetSiblingIndex() + 1);
+                newBtnObj.transform.SetSiblingIndex(siblingIndex);
+                SetButtonText(btnFeedback, LocalizationManager.Get("UI_BTN_FEEDBACK", "Ankieta / Feedback"));
+            }
+        }
     }
 
     private void SetupMainButtons()
@@ -260,7 +292,16 @@ public class MainMenuDemoUI : MonoBehaviour
         if (btnMetaGraph != null)
         {
             btnMetaGraph.onClick.RemoveAllListeners();
-            btnMetaGraph.onClick.AddListener(OpenMetaGraph);
+            if (DemoBuildConfig.IsDemoV2Active)
+            {
+                btnMetaGraph.gameObject.SetActive(false);
+            }
+            else
+            {
+                btnMetaGraph.gameObject.SetActive(true);
+                btnMetaGraph.interactable = true;
+                btnMetaGraph.onClick.AddListener(OpenMetaGraph);
+            }
         }
 
         if (btnSettings != null)
@@ -269,10 +310,19 @@ public class MainMenuDemoUI : MonoBehaviour
             btnSettings.onClick.AddListener(OpenSettings);
         }
 
+        if (btnFeedback != null)
+        {
+            btnFeedback.onClick.RemoveAllListeners();
+            btnFeedback.onClick.AddListener(OpenFeedbackSurvey);
+        }
+
         if (btnExit != null)
         {
             btnExit.onClick.RemoveAllListeners();
             btnExit.onClick.AddListener(ExitGame);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            btnExit.gameObject.SetActive(false);
+#endif
         }
     }
 
@@ -281,15 +331,19 @@ public class MainMenuDemoUI : MonoBehaviour
         // Aktualizacja etykiet lokalizacyjnych z zachowaniem czcionek i ich rozmiarów ze sceny
         SetButtonText(btnStart, LocalizationManager.Get("UI_BTN_START", "Rozpocznij Demo"));
         SetButtonText(btnHowToPlay, LocalizationManager.Get("UI_BTN_HOW_TO_PLAY", "Jak Grać"));
-        SetButtonText(btnMetaGraph, LocalizationManager.Get("UI_META_PROGRESSION", "Drzewo Rozwoju"));
+        string metaLabel = DemoBuildConfig.IsDemoV2Active
+            ? LocalizationManager.Get("UI_META_PROGRESSION_DEMO_LOCKED", "Drzewo Rozwoju (Niedostępne w Demie)")
+            : LocalizationManager.Get("UI_META_PROGRESSION", "Drzewo Rozwoju");
+        SetButtonText(btnMetaGraph, metaLabel);
         SetButtonText(btnSettings, LocalizationManager.Get("UI_BTN_OPTIONS", "Ustawienia"));
+        SetButtonText(btnFeedback, LocalizationManager.Get("UI_BTN_FEEDBACK", "Ankieta / Feedback"));
         SetButtonText(btnExit, LocalizationManager.Get("UI_BTN_EXIT", "Wyjście"));
     }
 
     private void SetButtonText(Button btn, string newText)
     {
         if (btn == null) return;
-        TextMeshProUGUI tmp = btn.GetComponentInChildren<TextMeshProUGUI>();
+        TextMeshProUGUI tmp = btn.GetComponentInChildren<TextMeshProUGUI>(true);
         if (tmp != null)
         {
             if (!string.IsNullOrEmpty(newText)) tmp.text = newText;
@@ -348,6 +402,8 @@ public class MainMenuDemoUI : MonoBehaviour
 
     public void OpenMetaGraph()
     {
+        if (DemoBuildConfig.IsDemoV2Active) return;
+
         if (howToPlayModal != null && howToPlayModal.activeSelf)
         {
             CloseHowToPlay();
@@ -357,6 +413,15 @@ public class MainMenuDemoUI : MonoBehaviour
         if (graph != null)
         {
             graph.OpenGraph();
+        }
+    }
+
+    public void OpenFeedbackSurvey()
+    {
+        string url = string.IsNullOrEmpty(feedbackUrl) ? DemoBuildConfig.FeedbackSurveyUrl : feedbackUrl;
+        if (!string.IsNullOrEmpty(url))
+        {
+            Application.OpenURL(url);
         }
     }
 
@@ -405,6 +470,8 @@ public class MainMenuDemoUI : MonoBehaviour
                 : $"Card {index + 1} of {cards.Count} • {guideTitle}";
         }
 
+        RefreshHowToPlayLocalization();
+
         if (modalBtnPrev != null)
         {
             modalBtnPrev.interactable = index > 0;
@@ -417,7 +484,7 @@ public class MainMenuDemoUI : MonoBehaviour
             {
                 bool isLast = (index == cards.Count - 1);
                 string finishLabel = LocalizationManager.Get("UI_BTN_CLOSE", "Zakończ");
-                string nextLabel = LocalizationManager.CurrentLanguage == "pl" ? "Następna >" : "Next >";
+                string nextLabel = LocalizationManager.Get("UI_GUIDE_BTN_NEXT", LocalizationManager.CurrentLanguage == "pl" ? "Następna >" : "Next >");
                 nextTxt.text = isLast ? finishLabel : nextLabel;
                 nextTxt.fontSize = 14f;
             }
@@ -509,16 +576,16 @@ public class MainMenuDemoUI : MonoBehaviour
         titleRect.offsetMin = Vector2.zero;
         titleRect.offsetMax = new Vector2(-50f, 0f);
 
-        TextMeshProUGUI headerTitle = titleTxtObj.GetComponent<TextMeshProUGUI>();
-        if (fontAsset != null) headerTitle.font = fontAsset;
-        headerTitle.text = LocalizationManager.Get("UI_GUIDE_HEADER_TITLE", "JAK GRAĆ • PORADNIK BASTIONU");
-        headerTitle.fontSize = 20f; // GEMINI.md: 20 pt nagłówek
-        headerTitle.fontStyle = FontStyles.Bold;
-        headerTitle.color = new Color(0.95f, 0.85f, 0.45f); // złoty akcent
-        headerTitle.alignment = TextAlignmentOptions.MidlineLeft;
+        modalHeaderTitle = titleTxtObj.GetComponent<TextMeshProUGUI>();
+        if (fontAsset != null) modalHeaderTitle.font = fontAsset;
+        modalHeaderTitle.text = LocalizationManager.Get("UI_GUIDE_HEADER_TITLE", "JAK GRAĆ • PORADNIK MIASTA");
+        modalHeaderTitle.fontSize = 20f; // GEMINI.md: 20 pt nagłówek
+        modalHeaderTitle.fontStyle = FontStyles.Bold;
+        modalHeaderTitle.color = new Color(0.95f, 0.85f, 0.45f); // złoty akcent
+        modalHeaderTitle.alignment = TextAlignmentOptions.MidlineLeft;
 
         // Przycisk Zamknij ("X")
-        GameObject btnCloseObj = CreateSimpleButton(headerObj.transform, "Btn_Close", "✕", fontAsset, 16f, new Vector2(40f, 40f));
+        GameObject btnCloseObj = CreateSimpleButton(headerObj.transform, "Btn_Close", "X", fontAsset, 16f, new Vector2(40f, 40f));
         RectTransform closeRect = btnCloseObj.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(1f, 0.5f);
         closeRect.anchorMax = new Vector2(1f, 0.5f);
@@ -545,7 +612,8 @@ public class MainMenuDemoUI : MonoBehaviour
         for (int i = 0; i < cards.Count; i++)
         {
             int cardIdx = i;
-            GameObject tabBtnObj = CreateSimpleButton(tabsContainer.transform, $"Tab_{i}", cards[i].tabTitle, fontAsset, 14f, new Vector2(180f, 36f));
+            string tabLabel = LocalizationManager.Get($"GUIDE_TAB_{i}", cards[i].tabTitle);
+            GameObject tabBtnObj = CreateSimpleButton(tabsContainer.transform, $"Tab_{i}", tabLabel, fontAsset, 14f, new Vector2(180f, 36f));
             Button tabBtn = tabBtnObj.GetComponent<Button>();
             tabBtn.onClick.AddListener(() => ShowCard(cardIdx));
             tabButtons.Add(tabBtn);
@@ -646,9 +714,26 @@ public class MainMenuDemoUI : MonoBehaviour
         modalBtnNext.onClick.AddListener(NextCard);
 
         GameObject btnCloseFooterObj = CreateSimpleButton(navBtnContainer.transform, "Btn_CloseFooter", LocalizationManager.Get("UI_GUIDE_BTN_CLOSE", "Zamknij"), fontAsset, 14f, new Vector2(110f, 36f));
-        btnCloseFooterObj.GetComponent<Button>().onClick.AddListener(CloseHowToPlay);
+        modalBtnCloseFooter = btnCloseFooterObj.GetComponent<Button>();
+        modalBtnCloseFooter.onClick.AddListener(CloseHowToPlay);
 
         howToPlayModal = modalObj;
+    }
+
+    private void RefreshHowToPlayLocalization()
+    {
+        if (modalHeaderTitle != null)
+        {
+            modalHeaderTitle.text = LocalizationManager.Get("UI_GUIDE_HEADER_TITLE", "JAK GRAĆ • PORADNIK MIASTA");
+        }
+
+        for (int i = 0; i < tabButtons.Count && i < cards.Count; i++)
+        {
+            SetButtonText(tabButtons[i], LocalizationManager.Get($"GUIDE_TAB_{i}", cards[i].tabTitle));
+        }
+
+        SetButtonText(modalBtnPrev, LocalizationManager.Get("UI_GUIDE_BTN_PREV", "< Poprzednia"));
+        SetButtonText(modalBtnCloseFooter, LocalizationManager.Get("UI_GUIDE_BTN_CLOSE", "Zamknij"));
     }
 
     private GameObject CreateSimpleButton(Transform parent, string name, string label, TMP_FontAsset fontAsset, float fontSize, Vector2 size)

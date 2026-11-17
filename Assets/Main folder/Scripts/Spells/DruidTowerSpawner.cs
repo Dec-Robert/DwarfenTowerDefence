@@ -67,6 +67,7 @@ public class DruidTowerSpawner : MonoBehaviour
 
     public static bool IsMetaUnlocked()
     {
+        if (DemoBuildConfig.IsDemoV2Active) return false;
         if (MetaUpgradeManager.Instance == null) return false;
         return MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockDruidTower);
     }
