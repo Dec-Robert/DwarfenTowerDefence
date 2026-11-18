@@ -17,8 +17,12 @@ public class PopulationInfoPanelUI : MonoBehaviour
     [Header("Visual Feedback")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color noFreeWorkersColor = new Color(0.7f, 0.7f, 0.7f, 1f);
+    [SerializeField] private Color growthIncomingColor = new Color32(74, 222, 128, 255); // #4ADE80
 
-    private bool isSubscribed;
+    private bool isSubscribedWorkforce;
+    private bool isSubscribedTime;
+    private bool isSubscribedResources;
+    private bool isSubscribedEconomy;
 
     public Race Race => race;
     public TextMeshProUGUI TxtFree => txtFree;
@@ -85,27 +89,89 @@ public class PopulationInfoPanelUI : MonoBehaviour
 
     private void Subscribe()
     {
-        if (isSubscribed || WorkforceManager.Instance == null) return;
+        if (!isSubscribedWorkforce && WorkforceManager.Instance != null)
+        {
+            WorkforceManager.Instance.OnWorkforceStatsChanged += HandleStatsChanged;
+            isSubscribedWorkforce = true;
+        }
 
-        WorkforceManager.Instance.OnWorkforceStatsChanged += HandleStatsChanged;
-        isSubscribed = true;
-        UpdateUI(WorkforceManager.Instance.GetStats(race));
+        if (!isSubscribedTime && TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnMorningStarted += HandleEnvironmentChanged;
+            TimePhaseManager.Instance.OnDuskStarted += HandleEnvironmentChanged;
+            TimePhaseManager.Instance.OnNightStarted += HandleEnvironmentChanged;
+            isSubscribedTime = true;
+        }
+
+        if (!isSubscribedResources && ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
+            isSubscribedResources = true;
+        }
+
+        if (!isSubscribedEconomy)
+        {
+            BuildingEntity.OnAnyBuildingEconomyChanged += HandleEnvironmentChanged;
+            PhaseResourceForecastManager.OnForecastDirty += HandleEnvironmentChanged;
+            isSubscribedEconomy = true;
+        }
+
+        if (WorkforceManager.Instance != null)
+        {
+            UpdateUI(WorkforceManager.Instance.GetStats(race));
+        }
     }
 
     private void Unsubscribe()
     {
-        if (!isSubscribed) return;
-
-        if (WorkforceManager.Instance != null)
+        if (isSubscribedWorkforce && WorkforceManager.Instance != null)
+        {
             WorkforceManager.Instance.OnWorkforceStatsChanged -= HandleStatsChanged;
+        }
+        isSubscribedWorkforce = false;
 
-        isSubscribed = false;
+        if (isSubscribedTime && TimePhaseManager.Instance != null)
+        {
+            TimePhaseManager.Instance.OnMorningStarted -= HandleEnvironmentChanged;
+            TimePhaseManager.Instance.OnDuskStarted -= HandleEnvironmentChanged;
+            TimePhaseManager.Instance.OnNightStarted -= HandleEnvironmentChanged;
+        }
+        isSubscribedTime = false;
+
+        if (isSubscribedResources && ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
+        }
+        isSubscribedResources = false;
+
+        if (isSubscribedEconomy)
+        {
+            BuildingEntity.OnAnyBuildingEconomyChanged -= HandleEnvironmentChanged;
+            PhaseResourceForecastManager.OnForecastDirty -= HandleEnvironmentChanged;
+            isSubscribedEconomy = false;
+        }
     }
 
     private void HandleStatsChanged(Race updatedRace, WorkforceManager.WorkforceStats stats)
     {
         if (updatedRace != race) return;
         UpdateUI(stats);
+    }
+
+    private void HandleResourceChanged(ResourceType type, int amount)
+    {
+        RefreshFromManagers();
+    }
+
+    private void HandleEnvironmentChanged()
+    {
+        RefreshFromManagers();
+    }
+
+    public void RefreshFromManagers()
+    {
+        if (WorkforceManager.Instance == null) return;
+        UpdateUI(WorkforceManager.Instance.GetStats(race));
     }
 
     private void UpdateUI(WorkforceManager.WorkforceStats stats)
@@ -124,10 +190,17 @@ public class PopulationInfoPanelUI : MonoBehaviour
             txtWorking.color = normalColor;
         }
 
+        bool isGrowthIncoming = false;
+        if (TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Morning)
+        {
+            var growthForecast = PhaseResourceForecastManager.PredictIncomingPopulationGrowth(TimePhases.Morning);
+            isGrowthIncoming = growthForecast.TryGetValue(race, out bool willGrow) && willGrow;
+        }
+
         if (txtAll != null)
         {
             txtAll.text = stats.Total.ToString();
-            txtAll.color = normalColor;
+            txtAll.color = isGrowthIncoming ? growthIncomingColor : normalColor;
         }
     }
 }

@@ -6,11 +6,11 @@ using UnityEngine;
 /// Precyzyjny kalkulator szacowanego bilansu surowców w skali pełnej doby (24h).
 /// Zbiera i agreguje:
 /// - Produkcję budynków ekonomicznych (o Zmierzchu)
-/// - Produkcję mieszkańców domostw (o Poranku)
+/// - Produkcję mieszkańców domostw (o Zmierzchu)
 /// - Koszty utrzymania (upkeep) budynków ekonomicznych (o Zmierzchu)
 /// - Koszty utrzymania (upkeep) obsadzonych wież obronnych (w Nocy)
-/// - Koszty przetrwania populacji (o Poranku)
-/// - Koszty rozwoju nowej populacji (o Poranku)
+/// - Koszty przetrwania populacji (o Zmierzchu)
+/// - Koszty rozwoju nowej populacji (o Zmierzchu)
 /// </summary>
 public static class DailyResourceCalculator
 {

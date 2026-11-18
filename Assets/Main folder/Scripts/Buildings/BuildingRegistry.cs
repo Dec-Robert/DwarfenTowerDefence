@@ -25,7 +25,6 @@ public class BuildingRegistry : MonoBehaviour
     {
         if (TimePhaseManager.Instance != null)
         {
-            TimePhaseManager.Instance.OnMorningStarted += ExecuteMorningHousingEconomy;
             TimePhaseManager.Instance.OnDuskStarted += ExecuteDuskEconomy;
             TimePhaseManager.Instance.OnNightStarted += ExecuteNightDefenseUpkeep;
         }
@@ -43,7 +42,6 @@ public class BuildingRegistry : MonoBehaviour
     {
         if (TimePhaseManager.Instance != null)
         {
-            TimePhaseManager.Instance.OnMorningStarted -= ExecuteMorningHousingEconomy;
             TimePhaseManager.Instance.OnDuskStarted -= ExecuteDuskEconomy;
             TimePhaseManager.Instance.OnNightStarted -= ExecuteNightDefenseUpkeep;
         }
@@ -100,48 +98,76 @@ public class BuildingRegistry : MonoBehaviour
         BuildingEntity.NotifyEconomyChanged();
     }
 
-    private void ExecuteMorningHousingEconomy()
-    {
-        var housingBuildings = buildings
-            .OfType<HousingEntity>()
-            .Where(h => h != null && h.isBuildingActive && h.housingData != null)
-            .OrderBy(h => h.upkeepPriority)
-            .ThenBy(h => h.GetDaysRemaining())
-            .ToList();
-
-        foreach (var housing in housingBuildings)
-        {
-            housing.ProcessMorningProduction();
-        }
-
-        foreach (var housing in housingBuildings)
-        {
-            housing.ProcessMorningSurvival();
-        }
-
-        foreach (var housing in housingBuildings)
-        {
-            housing.ProcessMorningGrowth();
-        }
-    }
-
     private void ExecuteDuskEconomy()
     {
         var activeBuildings = buildings.Where(b => b != null && b.isBuildingActive).ToList();
 
-        var economicBuildings = activeBuildings
-            .Where(b => b.data != null && b.data.type != BuildingType.Defense && b.data.type != BuildingType.Housing && !(b is HousingEntity))
-            .OrderBy(b => b.upkeepPriority)
-            .ToList();
-
-        foreach (var building in economicBuildings)
+        // Warsztaty narzędziowe (Unique, bez kosztu surowcowego) blokują swoją załogę po dniu pracy
+        foreach (var workshop in activeBuildings.OfType<ToolWorkshopEntity>())
         {
-            building.ProcessUpkeep();
+            workshop.ProcessUpkeep();
         }
 
-        foreach (var building in economicBuildings)
+        // Kroki 1-4: Budynki ekonomiczne w ścisłej kolejności zależności surowcowych
+        var economicBuildings = activeBuildings
+            .Where(b => b.data != null && b.data.type == BuildingType.Economic && !(b is HousingEntity))
+            .OrderBy(b => (int)b.data.GetEffectiveDuskStep())
+            .ThenBy(b => b.upkeepPriority)
+            .ToList();
+
+        for (int step = (int)EconomicPhaseStep.Step1_PrimaryWood; step <= (int)EconomicPhaseStep.Step4_OtherEconomic; step++)
         {
-            building.ProcessProduction();
+            var stepBuildings = economicBuildings
+                .Where(b => (int)b.data.GetEffectiveDuskStep() == step)
+                .ToList();
+            if (stepBuildings.Count == 0) continue;
+
+            foreach (var building in stepBuildings)
+            {
+                building.ProcessUpkeep();
+            }
+
+            foreach (var building in stepBuildings)
+            {
+                building.ProcessProduction();
+            }
+        }
+
+        // Krok 5: Domy mieszkalne (produkcja -> utrzymanie -> wzrost tylko jeśli wszystkie opłaciły utrzymanie)
+        ExecuteDuskHousingEconomy(activeBuildings);
+
+        BuildingEntity.NotifyEconomyChanged();
+        PhaseResourceForecastManager.NotifyForecastDirty();
+    }
+
+    private void ExecuteDuskHousingEconomy(List<BuildingEntity> activeBuildings)
+    {
+        var housingBuildings = activeBuildings
+            .OfType<HousingEntity>()
+            .Where(h => h.housingData != null)
+            .OrderBy(h => h.upkeepPriority)
+            .ThenBy(h => h.GetDaysRemaining())
+            .ToList();
+
+        if (housingBuildings.Count == 0) return;
+
+        foreach (var housing in housingBuildings)
+        {
+            housing.ProcessDuskProduction();
+        }
+
+        bool allHousesPaidSurvival = true;
+        foreach (var housing in housingBuildings)
+        {
+            if (!housing.ProcessDuskSurvival())
+            {
+                allHousesPaidSurvival = false;
+            }
+        }
+
+        foreach (var housing in housingBuildings)
+        {
+            housing.ProcessDuskGrowth(canGrowCityWide: allHousesPaidSurvival);
         }
     }
 

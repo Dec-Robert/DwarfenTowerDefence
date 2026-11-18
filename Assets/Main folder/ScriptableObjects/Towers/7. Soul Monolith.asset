@@ -50,8 +50,9 @@ MonoBehaviour:
     amount: 1
   - type: 1
     amount: 1
+  duskExecutionStep: 0
   tier1Upgrades: []
-  prefab: {fileID: 3289850919208233257, guid: 438ac62c35dd0034b86f3b1d3adca435, type: 3}
+  prefab: {fileID: 919132149155446097, guid: 598958419be95444e85651df33bcd786, type: 3}
   bonusRules: []
   elevationBonus:
     enabled: 0

@@ -3,9 +3,9 @@ using UnityEngine;
 
 /// <summary>
 /// Housing building entity responsible for population management.
-/// Handles resident allocation, passive resource generation per resident, 
-/// daily survival upkeep, and demographic growth. 
-/// Operates strictly on a daily cycle triggered at the dawn phase.
+/// Handles resident allocation, passive resource generation per resident,
+/// daily survival upkeep, and demographic growth.
+/// Operates strictly on a daily cycle triggered at the dusk transition (Morning -> Dusk).
 /// Integrates with the integer-based resource economy and meta-progression systems.
 /// </summary>
 public class HousingEntity : BuildingEntity
@@ -60,34 +60,35 @@ public class HousingEntity : BuildingEntity
 
     public override void ProcessUpkeep()
     {
-        // Domy mieszkalne rozliczają się wyłącznie o Świcie przez BuildingRegistry
+        // Domy mieszkalne rozliczają się wyłącznie przy przejściu Morning -> Dusk przez BuildingRegistry
     }
 
     public override void ProcessProduction()
     {
-        // Domy mieszkalne rozliczają się wyłącznie o Świcie przez BuildingRegistry
+        // Domy mieszkalne rozliczają się wyłącznie przy przejściu Morning -> Dusk przez BuildingRegistry
     }
 
     protected override void HandleDayReset()
     {
         base.HandleDayReset();
-        MarkAsUsed();
     }
 
-    public void ProcessMorningProduction()
+    public void ProcessDuskProduction()
     {
         if (!isBuildingActive || housingData == null) return;
 
         ProducePerResident();
     }
 
-    public void ProcessMorningSurvival()
+    public bool ProcessDuskSurvival()
     {
         if (!isBuildingActive || housingData == null)
         {
             lastSurvivalPaid = false;
-            return;
+            return true;
         }
+
+        MarkAsUsed();
 
         var survivalCost = CalculateSurvivalCost();
         lastSurvivalPaid = ResourceManager.Instance != null && ResourceManager.Instance.SpendResources(survivalCost);
@@ -96,13 +97,15 @@ public class HousingEntity : BuildingEntity
         {
             if (currentGrowthProgress > 0) currentGrowthProgress--;
         }
+
+        return lastSurvivalPaid;
     }
 
-    public void ProcessMorningGrowth()
+    public void ProcessDuskGrowth(bool canGrowCityWide = true)
     {
         if (!isBuildingActive || housingData == null) return;
 
-        if (lastSurvivalPaid && !stopGrowth)
+        if (canGrowCityWide && lastSurvivalPaid && !stopGrowth)
         {
             TryGrow();
         }

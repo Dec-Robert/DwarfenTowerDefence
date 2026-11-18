@@ -41,6 +41,9 @@ public static class AllAutomatedTestsRunner
         // 5. Daily Resource Balance Tests
         DailyResourceBalanceTestRunner.RunTests();
 
+        // 6. Dusk Economy Cycle Tests
+        RunNUnitSuiteEmpirically<DuskEconomyCycleTests>("DuskEconomyCycleTests", ref totalPassed, ref totalFailed);
+
         Debug.Log("==========================================================================");
         if (totalFailed == 0)
         {
@@ -51,5 +54,39 @@ public static class AllAutomatedTestsRunner
             Debug.LogError($"<color=red><b>[AllAutomatedTestsRunner] FINISHED WITH FAILURES ({totalFailed} failed across test suites)</b></color>");
         }
         Debug.Log("==========================================================================");
+    }
+
+    private static void RunNUnitSuiteEmpirically<T>(string suiteName, ref int totalPassed, ref int totalFailed) where T : new()
+    {
+        var suite = new T();
+        var setUp = typeof(T).GetMethod("SetUp");
+        var tearDown = typeof(T).GetMethod("TearDown");
+        var methods = typeof(T).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        int passed = 0;
+        int failed = 0;
+
+        foreach (var m in methods)
+        {
+            if (!m.IsDefined(typeof(NUnit.Framework.TestAttribute), false)) continue;
+            try
+            {
+                setUp?.Invoke(suite, null);
+                m.Invoke(suite, null);
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                failed++;
+                Debug.LogError($"<color=red>[{suiteName} FAIL]</color> {m.Name}: {ex.InnerException?.Message ?? ex.Message}");
+            }
+            finally
+            {
+                try { tearDown?.Invoke(suite, null); } catch { }
+            }
+        }
+
+        totalPassed += passed;
+        totalFailed += failed;
+        Debug.Log($"[{suiteName}] Finished: {passed} PASSED, {failed} FAILED");
     }
 }

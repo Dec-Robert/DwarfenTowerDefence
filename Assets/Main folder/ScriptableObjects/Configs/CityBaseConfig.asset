@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d10231103b6e4b888b338f11cf417c4c, type: 3}
   m_Name: CityBaseConfig
   m_EditorClassIdentifier: 
-  startEther: 8
-  startWood: 45
-  startStone: 20
+  startEther: 4
+  startWood: 60
+  startStone: 10
   startIron: 0
-  startCoal: 30
-  startFood: 45
-  baseCityHP: 20
+  startCoal: 50
+  startFood: 30
+  baseCityHP: 25
   overrideHousingData: 0
   humanStartPop: 1
   humanMaxPop: 4

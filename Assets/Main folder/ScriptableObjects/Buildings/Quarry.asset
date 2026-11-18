@@ -41,9 +41,7 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 1
-    amount: 15
-  - type: 2
-    amount: 5
+    amount: 24
   productionPerCycle:
   - type: 2
     amount: 6

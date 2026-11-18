@@ -41,9 +41,7 @@ MonoBehaviour:
   isOutpost: 0
   constructionCost:
   - type: 1
-    amount: 10
-  - type: 2
-    amount: 5
+    amount: 20
   productionPerCycle:
   - type: 1
     amount: 4
@@ -58,10 +56,10 @@ MonoBehaviour:
     searchRadius: 1
     resourceYields:
     - resourceType: 1
-      baseBonusPerHex: 4
-      onTopProductionBonus: 6
+      baseBonusPerHex: 3
+      onTopProductionBonus: 4
       penaltyPerUser: 1
-      minBonus: 1
+      minBonus: 0
   elevationBonus:
     enabled: 0
     resourceType: 0

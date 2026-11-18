@@ -44,11 +44,6 @@ MonoBehaviour:
     featureLevel: 2
     elevation: 0
     building: {fileID: 0}
-  - localCoord: {x: 0, y: 3}
-    feature: 3
-    featureLevel: 1
-    elevation: 0
-    building: {fileID: 0}
   - localCoord: {x: 0, y: -2}
     feature: 0
     featureLevel: -1
@@ -79,11 +74,6 @@ MonoBehaviour:
     featureLevel: 3
     elevation: 3
     building: {fileID: 0}
-  - localCoord: {x: -3, y: 2}
-    feature: 1
-    featureLevel: 0
-    elevation: 0
-    building: {fileID: 0}
   - localCoord: {x: 1, y: 1}
     feature: 3
     featureLevel: 0
@@ -93,5 +83,20 @@ MonoBehaviour:
     feature: 0
     featureLevel: -2
     elevation: -2
+    building: {fileID: 0}
+  - localCoord: {x: -3, y: 2}
+    feature: 1
+    featureLevel: 0
+    elevation: 0
+    building: {fileID: 11400000, guid: 305ea702f61030e4184fd8704c128bcf, type: 2}
+  - localCoord: {x: 1, y: 2}
+    feature: 3
+    featureLevel: 0
+    elevation: 0
+    building: {fileID: 0}
+  - localCoord: {x: 0, y: 3}
+    feature: 0
+    featureLevel: 1
+    elevation: 1
     building: {fileID: 0}
   roadConnectionEdge: {x: 3, y: -2}

@@ -293,7 +293,8 @@ public class HousingContextWindowUI : MonoBehaviour
 
         if (TimePhaseManager.Instance != null)
         {
-            TimePhaseManager.Instance.OnMorningStarted += HandleMorningStarted;
+            TimePhaseManager.Instance.OnMorningStarted += HandlePhaseChanged;
+            TimePhaseManager.Instance.OnDuskStarted += HandlePhaseChanged;
         }
 
         if (ResourceManager.Instance != null)
@@ -303,7 +304,7 @@ public class HousingContextWindowUI : MonoBehaviour
 
         if (currentHousing != null)
         {
-            currentHousing.OnHousingStateChanged += HandleMorningStarted;
+            currentHousing.OnHousingStateChanged += HandlePhaseChanged;
         }
 
         LocalizationManager.OnLanguageChanged += RefreshAll;
@@ -322,7 +323,8 @@ public class HousingContextWindowUI : MonoBehaviour
 
         if (TimePhaseManager.Instance != null)
         {
-            TimePhaseManager.Instance.OnMorningStarted -= HandleMorningStarted;
+            TimePhaseManager.Instance.OnMorningStarted -= HandlePhaseChanged;
+            TimePhaseManager.Instance.OnDuskStarted -= HandlePhaseChanged;
         }
 
         if (ResourceManager.Instance != null)
@@ -332,7 +334,7 @@ public class HousingContextWindowUI : MonoBehaviour
 
         if (currentHousing != null)
         {
-            currentHousing.OnHousingStateChanged -= HandleMorningStarted;
+            currentHousing.OnHousingStateChanged -= HandlePhaseChanged;
         }
     }
 
@@ -358,7 +360,7 @@ public class HousingContextWindowUI : MonoBehaviour
         RefreshPopulationUI();
     }
 
-    private void HandleMorningStarted()
+    private void HandlePhaseChanged()
     {
         if (currentHousing == null) return;
         RefreshAll();
@@ -705,7 +707,7 @@ public class HousingContextWindowUI : MonoBehaviour
         // Etykieta tempa (backward-compat)
         if (txtProgressRate != null && txtProgressRate != txtTimeToFullHouse)
         {
-            txtProgressRate.text = LocalizationManager.Get("UI_HOUSING_RATE_HINT", "1 cykl / świt (gdy zapewnione zasoby)");
+            txtProgressRate.text = LocalizationManager.Get("UI_HOUSING_RATE_HINT", "1 cykl / zmierzch (gdy zapewnione zasoby)");
         }
     }
 

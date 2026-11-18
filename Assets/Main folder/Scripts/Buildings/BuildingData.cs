@@ -53,6 +53,15 @@ public struct ElevationRequirement
     }
 }
 
+public enum EconomicPhaseStep
+{
+    Auto = 0,
+    Step1_PrimaryWood = 1,
+    Step2_WoodConsumers = 2,
+    Step3_SecondaryConsumers = 3,
+    Step4_OtherEconomic = 4
+}
+
 [CreateAssetMenu(fileName = "NewBuilding", menuName = "Game/Buildings/Building Data")]
 public class BuildingData : ScriptableObject
 {
@@ -117,6 +126,10 @@ public class BuildingData : ScriptableObject
     public List<ResourceCost> constructionCost;
     public List<ResourceCost> productionPerCycle;
     public List<ResourceCost> upkeepPerCycle;
+
+    [Header("Kolejność Rozliczenia o Zmierzchu")]
+    [Tooltip("Auto rozpoznaje kolejność (1: Tartak, 2: Farma/Kamieniołom/Retorta, 3: Kopalnia, 4: Inne).")]
+    public EconomicPhaseStep duskExecutionStep = EconomicPhaseStep.Auto;
 
     [Header("System Ulepszeń")] 
     public List<BuildingUpgradeSO> tier1Upgrades;
@@ -247,5 +260,40 @@ public class BuildingData : ScriptableObject
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Zwraca docelowy krok kolejności rozliczania ekonomii przy przejściu Morning -> Dusk.
+    /// </summary>
+    public EconomicPhaseStep GetEffectiveDuskStep()
+    {
+        if (duskExecutionStep != EconomicPhaseStep.Auto)
+        {
+            return duskExecutionStep;
+        }
+
+        if (MatchesAnyName("Sawmill", "Tartak"))
+            return EconomicPhaseStep.Step1_PrimaryWood;
+
+        if (MatchesAnyName("Farm", "Farma", "Quarry", "Kamieniołom", "Kamieniolom", "Retort", "Retorta"))
+            return EconomicPhaseStep.Step2_WoodConsumers;
+
+        if (MatchesAnyName("Mines", "Mine", "Kopalnia"))
+            return EconomicPhaseStep.Step3_SecondaryConsumers;
+
+        return EconomicPhaseStep.Step4_OtherEconomic;
+    }
+
+    private bool MatchesAnyName(params string[] candidates)
+    {
+        for (int i = 0; i < candidates.Length; i++)
+        {
+            string candidate = candidates[i];
+            if (!string.IsNullOrEmpty(name) && name.IndexOf(candidate, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (!string.IsNullOrEmpty(buildingName) && buildingName.IndexOf(candidate, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+        return false;
     }
 }

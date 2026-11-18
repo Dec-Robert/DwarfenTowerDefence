@@ -47,7 +47,7 @@ MonoBehaviour:
     amount: 10
   upkeepPerCycle:
   - type: 1
-    amount: 8
+    amount: 6
   tier1Upgrades: []
   prefab: {fileID: 4011031713050108421, guid: 07c2962ef65bb134394603a64ca2250e, type: 3}
   bonusRules: []

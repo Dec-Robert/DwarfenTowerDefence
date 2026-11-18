@@ -257,4 +257,37 @@ public class BuildingProductionComponent
 
         return wholePart;
     }
+
+    /// <summary>
+    /// Symuluje całkowitą liczbę sztuk surowców wyprodukowanych w tym cyklu przy podanej efektywności,
+    /// uwzględniając bufor ułamkowy bez modyfikowania stanu budynku.
+    /// </summary>
+    public Dictionary<ResourceType, int> SimulateWholeProduction(float calculatedEfficiency)
+    {
+        var result = new Dictionary<ResourceType, int>();
+        if (calculatedEfficiency <= 0f) return result;
+
+        float finalMultiplier = GetGlobalMultiplier();
+        var baseAmounts = GetBaseProductionWithFlats();
+
+        foreach (var kvp in baseAmounts)
+        {
+            float rawProduced = kvp.Value * finalMultiplier * calculatedEfficiency;
+            int wholePart = Mathf.FloorToInt(rawProduced);
+            float fractionPart = rawProduced - wholePart;
+            float buffered = productionBuffer.TryGetValue(kvp.Key, out float existing) ? existing : 0f;
+
+            if (buffered + fractionPart >= 1f)
+            {
+                wholePart += 1;
+            }
+
+            if (wholePart > 0)
+            {
+                result[kvp.Key] = wholePart;
+            }
+        }
+
+        return result;
+    }
 }

@@ -44,7 +44,7 @@ MonoBehaviour:
   - type: 1
     amount: 35
   - type: 2
-    amount: 35
+    amount: 25
   productionPerCycle:
   - type: 3
     amount: 6
