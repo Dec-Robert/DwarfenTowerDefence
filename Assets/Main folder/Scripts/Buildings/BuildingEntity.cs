@@ -337,44 +337,70 @@ public class BuildingEntity : MonoBehaviour
 
     protected virtual void SetupAtmosphericLighting()
     {
-        if (GetComponentInChildren<SettlementLight>() != null) return;
+        SettlementLight existingLight = GetComponentInChildren<SettlementLight>(true);
+        bool isBeaconBuilding = this is BeaconEntity;
 
-        GameObject lightObj = new GameObject("Settlement_Light");
+        if (existingLight != null)
+        {
+            existingLight.isBeacon = isBeaconBuilding;
+            existingLight.autoControlByPhase = true;
+            return;
+        }
+
+        GameObject lightObj = new GameObject("NightLight");
         lightObj.transform.SetParent(transform, false);
 
         Light ptLight = lightObj.AddComponent<Light>();
         ptLight.type = LightType.Point;
         ptLight.renderMode = LightRenderMode.Auto;
+        ptLight.shadows = LightShadows.None;
+        ptLight.enabled = false;
 
         SettlementLight settlementLight = lightObj.AddComponent<SettlementLight>();
 
-        if (this is BeaconEntity || (data != null && data.type == BuildingType.Unique))
+        if (isBeaconBuilding)
         {
-            lightObj.transform.localPosition = new Vector3(0f, 2.5f, 0f);
-            ptLight.shadows = LightShadows.Soft;
-            settlementLight.isBeacon = true;
-            settlementLight.baseIntensity = 3.5f;
-            settlementLight.baseRange = 25f;
-            settlementLight.lightColor = new Color(1.0f, 0.65f, 0.30f, 1f);
-            settlementLight.autoControlByPhase = false;
+            settlementLight.Configure(
+                SettlementLight.DefaultWarmLightColor,
+                4.5f,
+                16.0f,
+                new Vector3(0f, 2.2f, 0f),
+                allowShadows: false,
+                beaconMode: true,
+                lightPreset: SettlementLight.BuildingLightPreset.BeaconOfHope);
+        }
+        else if (data != null && data.type == BuildingType.Unique)
+        {
+            settlementLight.Configure(
+                SettlementLight.DefaultWarmLightColor,
+                2.5f,
+                7.0f,
+                new Vector3(0f, 1.8f, 0f),
+                allowShadows: false,
+                beaconMode: false,
+                lightPreset: SettlementLight.BuildingLightPreset.Landmark);
         }
         else if (data != null && data.type == BuildingType.Defense)
         {
-            lightObj.transform.localPosition = new Vector3(0f, 3.2f, 0f);
-            ptLight.shadows = LightShadows.Soft;
-            settlementLight.baseIntensity = 2.2f;
-            settlementLight.baseRange = 14f;
-            settlementLight.lightColor = new Color(1.0f, 0.58f, 0.22f, 1f);
-            settlementLight.autoControlByPhase = true;
+            settlementLight.Configure(
+                SettlementLight.DefaultWarmLightColor,
+                2.1f,
+                5.8f,
+                new Vector3(0f, 1.75f, 0f),
+                allowShadows: false,
+                beaconMode: false,
+                lightPreset: SettlementLight.BuildingLightPreset.DefenseTower);
         }
         else
         {
-            lightObj.transform.localPosition = new Vector3(0f, 1.8f, 0f);
-            ptLight.shadows = LightShadows.None;
-            settlementLight.baseIntensity = 1.3f;
-            settlementLight.baseRange = 8f;
-            settlementLight.lightColor = new Color(1.0f, 0.72f, 0.40f, 1f);
-            settlementLight.autoControlByPhase = true;
+            settlementLight.Configure(
+                SettlementLight.DefaultWarmLightColor,
+                2.0f,
+                5.2f,
+                new Vector3(0f, 1.3f, 0f),
+                allowShadows: false,
+                beaconMode: false,
+                lightPreset: SettlementLight.BuildingLightPreset.ResourceBuilding);
         }
     }
 }

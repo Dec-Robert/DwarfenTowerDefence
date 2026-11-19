@@ -44,10 +44,12 @@ public class BuildingGhostController
         currentGhost = Object.Instantiate(data.prefab);
         currentGhost.name = "Placement_Ghost";
 
-        // Wyłączamy logikę i kolizje żeby widmo było pasywne
-        foreach (var s in currentGhost.GetComponentsInChildren<MonoBehaviour>())
+        // Wyłączamy logikę, światła i kolizje żeby widmo było pasywne
+        foreach (var s in currentGhost.GetComponentsInChildren<MonoBehaviour>(true))
             s.enabled = false;
-        foreach (var c in currentGhost.GetComponentsInChildren<Collider>())
+        foreach (var l in currentGhost.GetComponentsInChildren<Light>(true))
+            l.enabled = false;
+        foreach (var c in currentGhost.GetComponentsInChildren<Collider>(true))
             c.enabled = false;
 
         // Podgląd zasięgu dla wież

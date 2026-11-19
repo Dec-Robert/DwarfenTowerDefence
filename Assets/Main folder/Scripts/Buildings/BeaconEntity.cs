@@ -24,7 +24,18 @@ public class BeaconEntity : BuildingEntity
     private static bool isSubscribedToTimeManager;
     private static TimePhaseManager subscribedTimeManager;
 
-    public static int SelectedDraftLevel { get; set; } = 3;
+    private static int selectedDraftLevel = 3;
+    public static int SelectedDraftLevel
+    {
+        get => selectedDraftLevel;
+        set
+        {
+            int clamped = Mathf.Clamp(value, 1, 5);
+            if (selectedDraftLevel == clamped) return;
+            selectedDraftLevel = clamped;
+            OnHearthStateChanged?.Invoke();
+        }
+    }
     public static int ActiveNightLevel { get; private set; } = 0;
 
     public static float ActiveNightEnemyStatsBonus { get; private set; } = 0f;
@@ -48,7 +59,7 @@ public class BeaconEntity : BuildingEntity
         fallbackConfig = null;
         isSubscribedToTimeManager = false;
         subscribedTimeManager = null;
-        SelectedDraftLevel = 3;
+        selectedDraftLevel = 3;
         ActiveNightLevel = 0;
         ActiveNightEnemyStatsBonus = 0f;
         ActiveNightRuneBonus = 0f;

@@ -26,7 +26,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _AmbientBoost: 0.5
+    - _AmbientBoost: 0.65
     - _CrackScale: 1.7
     - _CrackWidth: 0.035
     - _DetailScale: 1.8
@@ -53,9 +53,9 @@ Material:
     - _SoilScale: 0.25
     - _TexelDensity: 16
     m_Colors:
-    - _BaseGrassColor: {r: 0.245, g: 0.335, b: 0.2, a: 1}
+    - _BaseGrassColor: {r: 0.295, g: 0.39, b: 0.245, a: 1}
     - _CrackColor: {r: 0.16899997, g: 0.15299997, b: 0.13699996, a: 1}
-    - _DarkVegColor: {r: 0.18, g: 0.252, b: 0.155, a: 1}
+    - _DarkVegColor: {r: 0.225, g: 0.305, b: 0.195, a: 1}
     - _DryGrassColor: {r: 0.47, g: 0.445, b: 0.295, a: 1}
     - _DrySoilColor: {r: 0.34899998, g: 0.30599996, b: 0.23099995, a: 1}
     - _DrySoilTint: {r: 0.43899998, g: 0.41999996, b: 0.32199997, a: 1}

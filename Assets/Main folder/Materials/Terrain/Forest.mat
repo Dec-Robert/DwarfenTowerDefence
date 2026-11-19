@@ -26,7 +26,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _AmbientBoost: 0.5
+    - _AmbientBoost: 0.65
     - _DetailScale: 2.2
     - _DetailStrength: 0.45
     - _ForestFloorScale: 0.45
@@ -44,8 +44,8 @@ Material:
     - _TexelDensity: 16
     m_Colors:
     - _DryNeedlesColor: {r: 0.475, g: 0.392, b: 0.282, a: 1}
-    - _ForestBaseColor: {r: 0.161, g: 0.169, b: 0.125, a: 1}
-    - _LeafLitterColor: {r: 0.255, g: 0.22, b: 0.165, a: 1}
+    - _ForestBaseColor: {r: 0.225, g: 0.245, b: 0.18, a: 1}
+    - _LeafLitterColor: {r: 0.31, g: 0.27, b: 0.205, a: 1}
     - _MossColor: {r: 0.275, g: 0.314, b: 0.224, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

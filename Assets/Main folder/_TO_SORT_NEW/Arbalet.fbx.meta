@@ -1,99 +1,109 @@
 fileFormatVersion: 2
-guid: a6f033db500681e4ca394b881da243ba
+guid: 8710f20e1eac796428108393adeff41a
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
-      type: UnityEngine:Texture2D
+      type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: abalest1_Alpha_Raw.1001
-    second: {fileID: 2800000, guid: 15be8d34068f5d644b5b29c96020d238, type: 3}
+      name: Material
+    second: {fileID: 2100000, guid: 6b46d981c0592384fa1ab0e1e467131f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: abalest1.001
+    second: {fileID: 2100000, guid: 263053f12989ad54ab9a1f78d9c0e36b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: arbalet2.001
+    second: {fileID: 2100000, guid: d0f704724f8281f4dacfe165a12cd0cf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: arbalet3.001
+    second: {fileID: 2100000, guid: c5eeda4742ab98449bd6215d604efde2, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: abalest1_BaseColor_sRGB.1001
-    second: {fileID: 2800000, guid: 480e8ff4ee8641543b6e3e47281359ad, type: 3}
+      name: abalest1_BaseColor
+    second: {fileID: 2800000, guid: 4847074607ad92044b3f7d28174716a1, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: abalest1_Emission_sRGB.1001
-    second: {fileID: 2800000, guid: ca0b8ec08c3cbf24191654126d183ea4, type: 3}
+      name: abalest1_Emission
+    second: {fileID: 2800000, guid: 69656c5519f5f0541a6b84cf46cbf07f, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: abalest1_Metallic_Raw.1001
-    second: {fileID: 2800000, guid: c13950f96d1a9c04bbac2f978171c4fc, type: 3}
+      name: abalest1_Metallic
+    second: {fileID: 2800000, guid: 69cd63ad1e3e2dc4f9d78b83e638ded0, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: abalest1_Normal_Raw.1001
-    second: {fileID: 2800000, guid: 9e9e17f87a9e95c4aa15766c3644c582, type: 3}
+      name: abalest1_Normal
+    second: {fileID: 2800000, guid: 33596b46552058a4684b1e6c77d4976d, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: abalest1_Roughness_Raw.1001
-    second: {fileID: 2800000, guid: 13304497adbe0fb4f899c384bf829636, type: 3}
+      name: abalest1_Roughness
+    second: {fileID: 2800000, guid: de2b2c30ef675024c82b13b156dd8a0d, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet2_Alpha_Raw.1001
-    second: {fileID: 2800000, guid: 6a83b3fafe5549d4ba3e6039b609b747, type: 3}
+      name: arbalet2_Alpha
+    second: {fileID: 2800000, guid: c10c2168346afe945ae070d60d235e98, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet2_BaseColor_sRGB.1001
-    second: {fileID: 2800000, guid: bd1a279410eedac4bbbc1ec87f2a4c8c, type: 3}
+      name: arbalet2_BaseColor
+    second: {fileID: 2800000, guid: 99bd97a900470c6409560a5438450b60, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet2_Emission_sRGB.1001
-    second: {fileID: 2800000, guid: ee274d097ba0b9942b7941be5208a6b3, type: 3}
+      name: arbalet2_Emission
+    second: {fileID: 2800000, guid: b0833c4edb111c14b83b56771486905b, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet2_Metallic_Raw.1001
-    second: {fileID: 2800000, guid: f4b036dca2b2e844385e4d0440930b88, type: 3}
+      name: arbalet2_Metallic
+    second: {fileID: 2800000, guid: a8c77f14e11cbc344b50146ab2c83ee5, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet2_Normal_Raw.1001
-    second: {fileID: 2800000, guid: 294531b0bf4db03428a4b7f96e508d95, type: 3}
+      name: arbalet2_Normal
+    second: {fileID: 2800000, guid: f2aa3a14e38c3cd4d80d4f7e99cfb024, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet2_Roughness_Raw.1001
-    second: {fileID: 2800000, guid: a13eaebad7e98a540a8a6b6b660f6b7b, type: 3}
+      name: arbalet2_Roughness
+    second: {fileID: 2800000, guid: b39ad5c3698b34d4b961a4eed76d7976, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet3_Alpha_Raw.1001
-    second: {fileID: 2800000, guid: 44c012a9470c7814091544ca1b8f841d, type: 3}
+      name: arbalet3_BaseColor
+    second: {fileID: 2800000, guid: fea9ef0ef3f94364d8b98fb9b0781d82, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet3_BaseColor_sRGB.1001
-    second: {fileID: 2800000, guid: 0d2345048a73497438cbc5de00f4e965, type: 3}
+      name: arbalet3_Emission
+    second: {fileID: 2800000, guid: a3fc7d77b8c488541bb5a0d13678c7d0, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet3_Emission_sRGB.1001
-    second: {fileID: 2800000, guid: 382419018bb86464e8bc8642ed2ce4cf, type: 3}
+      name: arbalet3_Metallic
+    second: {fileID: 2800000, guid: 21e7824cf9c2b7c41813fe6293752547, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet3_Metallic_Raw.1001
-    second: {fileID: 2800000, guid: d8d6754d24b0cdb4893b5ceee1a49a63, type: 3}
+      name: arbalet3_Normal
+    second: {fileID: 2800000, guid: 359b1ab982323f343b702c8c580b3d5f, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: arbalet3_Normal_Raw.1001
-    second: {fileID: 2800000, guid: dd19b49b4d06c8347bcb7ff00b1c2c63, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: arbalet3_Roughness_Raw.1001
-    second: {fileID: 2800000, guid: 7764beb8b4976c349af84e0c9725b3d3, type: 3}
+      name: arbalet3_Roughness
+    second: {fileID: 2800000, guid: c241694ff44eb9b42b79fe3cbd10b4fe, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -123,7 +133,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 2
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -140,12 +150,15 @@ ModelImporter:
     useFileUnits: 1
     keepQuads: 0
     weldVertices: 1
-    bakeAxisConversion: 0
+    bakeAxisConversion: 1
     preserveHierarchy: 0
     skinWeightsMode: 0
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -178,7 +191,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 1
+    globalScale: 2
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0

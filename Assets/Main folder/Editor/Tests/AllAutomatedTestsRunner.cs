@@ -44,6 +44,9 @@ public static class AllAutomatedTestsRunner
         // 6. Dusk Economy Cycle Tests
         RunNUnitSuiteEmpirically<DuskEconomyCycleTests>("DuskEconomyCycleTests", ref totalPassed, ref totalFailed);
 
+        // 7. Day/Night Lighting & Building Lights Tests
+        RunNUnitSuiteEmpirically<DayNightAndBuildingLightTests>("DayNightAndBuildingLightTests", ref totalPassed, ref totalFailed);
+
         Debug.Log("==========================================================================");
         if (totalFailed == 0)
         {

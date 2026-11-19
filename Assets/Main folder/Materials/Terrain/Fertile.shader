@@ -54,6 +54,7 @@ Shader "Custom/FertileSoil"
             // Universal Pipeline keywords
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
@@ -275,7 +276,11 @@ Shader "Custom/FertileSoil"
                 inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
                 inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
-                inputData.bakedGI = SampleSH(normalWS);
+                half3 trilightGI = lerp(unity_AmbientEquator.rgb, unity_AmbientSky.rgb, saturate(normalWS.y));
+                trilightGI = lerp(trilightGI, unity_AmbientGround.rgb, saturate(-normalWS.y));
+                half trilightSum = trilightGI.r + trilightGI.g + trilightGI.b;
+                half3 baseAmbient = trilightSum > 0.0001 ? trilightGI : SampleSH(normalWS);
+                inputData.bakedGI = max(baseAmbient, half3(0.008, 0.010, 0.015));
                 inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 
                 SurfaceData surfaceData = (SurfaceData)0;

@@ -15,6 +15,9 @@ ShaderVariantCollection:
         passType: 0
       - keywords: 
         passType: 13
+      - keywords: _ALPHAPREMULTIPLY_ON _ALPHATEST_ON _ENVIRONMENTREFLECTIONS_OFF
+          _RECEIVE_SHADOWS_OFF _SPECULARHIGHLIGHTS_OFF _SPECULAR_SETUP _SURFACE_TYPE_TRANSPARENT
+        passType: 13
       - keywords: _ALPHAPREMULTIPLY_ON _EMISSION _SURFACE_TYPE_TRANSPARENT
         passType: 13
       - keywords: _ALPHAPREMULTIPLY_ON _SURFACE_TYPE_TRANSPARENT
@@ -24,6 +27,10 @@ ShaderVariantCollection:
       - keywords: _EMISSION
         passType: 13
       - keywords: _EMISSION _ENVIRONMENTREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+        passType: 13
+      - keywords: _EMISSION _NORMALMAP
+        passType: 13
+      - keywords: _NORMALMAP
         passType: 13
   - first: {fileID: -6465566751694194690, guid: efcfe4eff4a744a41bd35dbd086b97b0, type: 3}
     second:
@@ -134,6 +141,16 @@ ShaderVariantCollection:
       - keywords: 
         passType: 13
   - first: {fileID: 4800000, guid: e4a91f3b7c2d48a19e6f03b5d2a8c174, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 13
+  - first: {fileID: 4800000, guid: a51c84e37c1d4b7c8fd513aa32175154, type: 3}
+    second:
+      variants:
+      - keywords: 
+        passType: 13
+  - first: {fileID: 4800000, guid: 315776ed3f1345b9ad15252814f95eb3, type: 3}
     second:
       variants:
       - keywords: 

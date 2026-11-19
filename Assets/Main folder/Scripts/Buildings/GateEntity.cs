@@ -179,5 +179,11 @@ public class GateEntity : MonoBehaviour
 
         var col = GetComponent<Collider>();
         if (col != null) col.enabled = !IsDestroyed;
+
+        var nightLight = GetComponentInChildren<SettlementLight>(true);
+        if (nightLight != null)
+        {
+            nightLight.SetOperationalEnabled(!IsDestroyed);
+        }
     }
 }

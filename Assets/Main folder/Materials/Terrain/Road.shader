@@ -70,6 +70,7 @@ Shader "Custom/Road"
 
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
@@ -376,10 +377,13 @@ Shader "Custom/Road"
                 inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
                 inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
 
-                // Podloga ambientowa (Ambient Floor) z regulacja _AmbientBoost:
-                // Gwarantuje odbior cieplego zmierzchu i chlodnego granatu nocy bez zapadania sie w czern
-                half3 ambientGI = SampleSH(normWS);
-                half3 ambientFloor = half3(0.040, 0.045, 0.042) * (1.0 + _AmbientBoost * 0.85);
+                // Real-time Trilight z DayNightCycle jako glowne GI terenu (bez zawyzania przez statyczne SampleSH skyboxa)
+                half3 trilightGI = lerp(unity_AmbientEquator.rgb, unity_AmbientSky.rgb, saturate(normWS.y));
+                trilightGI = lerp(trilightGI, unity_AmbientGround.rgb, saturate(-normWS.y));
+                half trilightSum = trilightGI.r + trilightGI.g + trilightGI.b;
+                half3 baseAmbient = trilightSum > 0.0001 ? trilightGI : SampleSH(normWS);
+                half3 ambientGI = baseAmbient * (1.0 + _AmbientBoost * 0.22);
+                half3 ambientFloor = half3(0.008, 0.010, 0.015) * (1.0 + _AmbientBoost * 0.35);
                 inputData.bakedGI = max(ambientGI, ambientFloor);
 
                 inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);

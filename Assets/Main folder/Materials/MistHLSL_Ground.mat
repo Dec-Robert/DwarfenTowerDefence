@@ -27,10 +27,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _BlockedBrightness: 0
-    - _BlockedEmission: 1.01
+    - _BlockedEmission: 1.212
     - _Cull: 2
     - _DiscoverableBrightness: 0
-    - _DiscoverableEmission: 1.01
+    - _DiscoverableEmission: 1.212
     - _DstBlend: 10
     - _MistAlpha: 0.2
     - _MistAnimationSpeed: 2.5
@@ -44,7 +44,7 @@ Material:
     - _MistTexelDensity: 12
     - _SparkBlinkSpeed: 1
     - _SparkDensity: 0.18
-    - _SparkIntensity: 0.8
+    - _SparkIntensity: 1
     - _SparkSize: 0.05
     - _SrcBlend: 5
     - _ZWrite: 0

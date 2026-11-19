@@ -142,10 +142,13 @@ half4 CalculateTerrainLitPBR(
     inputData.shadowCoord = TransformWorldToShadowCoord(positionWS);
     inputData.fogCoord = InitializeInputDataFog(float4(positionWS, 1.0), fogFactor);
 
-    // Podloga ambientowa (Ambient Floor) wzbogacona o _AmbientBoost:
-    // Zapewnia prawidlowy odbior chlodnego zmierzchu i nocy bez czarnych plam
-    half3 ambientGI = SampleSH(inputData.normalWS);
-    half3 ambientFloor = half3(0.040, 0.045, 0.042) * (1.0 + ambientBoost * 0.85);
+    // Real-time Trilight z DayNightCycle jako glowne GI terenu (bez zawyzania przez statyczne SampleSH skyboxa)
+    half3 trilightGI = lerp(unity_AmbientEquator.rgb, unity_AmbientSky.rgb, saturate(inputData.normalWS.y));
+    trilightGI = lerp(trilightGI, unity_AmbientGround.rgb, saturate(-inputData.normalWS.y));
+    half trilightSum = trilightGI.r + trilightGI.g + trilightGI.b;
+    half3 baseAmbient = trilightSum > 0.0001 ? trilightGI : SampleSH(inputData.normalWS);
+    half3 ambientGI = baseAmbient * (1.0 + ambientBoost * 0.22);
+    half3 ambientFloor = half3(0.008, 0.010, 0.015) * (1.0 + ambientBoost * 0.35);
     inputData.bakedGI = max(ambientGI, ambientFloor);
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(positionCS);
 

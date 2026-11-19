@@ -14,15 +14,15 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_Fog: 1
+  m_FogColor: {r: 0.208, g: 0.157, b: 0.278, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.01
+  m_FogDensity: 0.007
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
-  m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
-  m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  m_AmbientSkyColor: {r: 0.298, g: 0.333, b: 0.42, a: 1}
+  m_AmbientEquatorColor: {r: 0.227, g: 0.259, b: 0.337, a: 1}
+  m_AmbientGroundColor: {r: 0.149, g: 0.176, b: 0.247, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
@@ -913,46 +913,67 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sunLight: {fileID: 410087040}
   sanctuaryLight: {fileID: 0}
-  sanctuaryLightColor: {r: 1, g: 0.6, b: 0.3, a: 1}
-  transitionDuration: 1
-  enemyGlowColor: {r: 0.34, g: 0.08, b: 0.68, a: 1}
+  targetCamera: {fileID: 0}
+  syncCameraBackgroundColor: 1
+  sanctuaryLightColor: {r: 1, g: 0.7372549, b: 0.4392157, a: 1}
+  transitionDuration: 2.5
+  enemyGlowColor: {r: 0.4, g: 0.13, b: 0.72, a: 1}
+  maxActiveBuildingLights: 64
+  buildingLightCullDistance: 90
+  buildingLightFadeMargin: 15
+  appliedPresetVersion: 2
   morningConfig:
-    phaseName: Rano
-    sunEulerAngles: {x: 45, y: -30, z: 0}
-    sunColor: {r: 0.9, g: 0.88, b: 0.84, a: 1}
-    sunIntensity: 1.15
-    shadowStrength: 0.9
-    ambientSkyColor: {r: 0.18, g: 0.2, b: 0.24, a: 1}
-    ambientEquatorColor: {r: 0.12, g: 0.13, b: 0.15, a: 1}
-    ambientGroundColor: {r: 0.06, g: 0.06, b: 0.07, a: 1}
-    fogColor: {r: 0.22, g: 0.25, b: 0.28, a: 1}
-    fogDensity: 0.003
+    phaseName: "\u015Awit (Dawn) - Pos\u0119pny poranek"
+    sunEulerAngles: {x: 32, y: -35, z: 0}
+    sunColor: {r: 0.812, g: 0.635, b: 0.51, a: 1}
+    sunIntensity: 0.68
+    shadowStrength: 0.78
+    ambientSkyColor: {r: 0.298, g: 0.333, b: 0.42, a: 1}
+    ambientEquatorColor: {r: 0.227, g: 0.259, b: 0.337, a: 1}
+    ambientGroundColor: {r: 0.149, g: 0.176, b: 0.247, a: 1}
+    fogColor: {r: 0.208, g: 0.157, b: 0.278, a: 1}
+    fogDensity: 0.007
+    cameraBackgroundColor: {r: 0.094, g: 0.078, b: 0.137, a: 1}
+    mistEmissionMultiplier: 0.32
+    mistBrightnessMultiplier: 0.48
+    mistSparkMultiplier: 0.25
+    outskirtsMistMultiplier: 0.45
     enemyGlow: 0
-    sanctuaryIntensity: 0.25
+    sanctuaryIntensity: 0
   duskConfig:
-    phaseName: Zmierzch
-    sunEulerAngles: {x: 14, y: -60, z: 0}
-    sunColor: {r: 0.92, g: 0.46, b: 0.18, a: 1}
-    sunIntensity: 0.95
+    phaseName: Zmierzch (Dusk) - Nadciaga mrok
+    sunEulerAngles: {x: 26, y: -75, z: 0}
+    sunColor: {r: 0.62, g: 0.408, b: 0.518, a: 1}
+    sunIntensity: 0.46
     shadowStrength: 0.8
-    ambientSkyColor: {r: 0.44, g: 0.44, b: 0.56, a: 1}
-    ambientEquatorColor: {r: 0.35, g: 0.36, b: 0.47, a: 1}
-    ambientGroundColor: {r: 0.22, g: 0.23, b: 0.32, a: 1}
-    fogColor: {r: 0.23, g: 0.12, b: 0.21, a: 1}
-    fogDensity: 0.005
+    ambientSkyColor: {r: 0.204, g: 0.196, b: 0.306, a: 1}
+    ambientEquatorColor: {r: 0.157, g: 0.149, b: 0.243, a: 1}
+    ambientGroundColor: {r: 0.102, g: 0.106, b: 0.18, a: 1}
+    fogColor: {r: 0.22, g: 0.106, b: 0.322, a: 1}
+    fogDensity: 0.01
+    cameraBackgroundColor: {r: 0.071, g: 0.051, b: 0.118, a: 1}
+    mistEmissionMultiplier: 0.58
+    mistBrightnessMultiplier: 0.68
+    mistSparkMultiplier: 0.55
+    outskirtsMistMultiplier: 0.7
     enemyGlow: 0
-    sanctuaryIntensity: 0.85
+    sanctuaryIntensity: 0
   nightConfig:
-    phaseName: Noc
-    sunEulerAngles: {x: 70, y: -30, z: 0}
-    sunColor: {r: 0.36, g: 0.34, b: 0.7, a: 1}
-    sunIntensity: 0.65
-    shadowStrength: 0.55
-    ambientSkyColor: {r: 0.44, g: 0.51, b: 0.68, a: 1}
-    ambientEquatorColor: {r: 0.36, g: 0.44, b: 0.58, a: 1}
-    ambientGroundColor: {r: 0.22, g: 0.27, b: 0.38, a: 1}
-    fogColor: {r: 0.11, g: 0.07, b: 0.2, a: 1}
-    fogDensity: 0.006
+    phaseName: "Noc (Night) - Wyspy \u015Bwiat\u0142a"
+    sunEulerAngles: {x: 52, y: -35, z: 0}
+    sunColor: {r: 0.29, g: 0.384, b: 0.557, a: 1}
+    sunIntensity: 0.24
+    shadowStrength: 0.45
+    ambientSkyColor: {r: 0.125, g: 0.18, b: 0.29, a: 1}
+    ambientEquatorColor: {r: 0.09, g: 0.129, b: 0.22, a: 1}
+    ambientGroundColor: {r: 0.059, g: 0.078, b: 0.149, a: 1}
+    fogColor: {r: 0.149, g: 0.063, b: 0.247, a: 1}
+    fogDensity: 0.013
+    cameraBackgroundColor: {r: 0.039, g: 0.024, b: 0.078, a: 1}
+    mistEmissionMultiplier: 1.2
+    mistBrightnessMultiplier: 1.05
+    mistSparkMultiplier: 1.25
+    outskirtsMistMultiplier: 1
     enemyGlow: 1
     sanctuaryIntensity: 1.65
 --- !u!1 &45473676
@@ -8735,8 +8756,8 @@ Camera:
   m_GameObject: {fileID: 330585543}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.094, g: 0.078, b: 0.137, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -8815,7 +8836,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 1
+  m_RenderPostProcessing: 0
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -11344,8 +11365,8 @@ Light:
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 2
+  m_Color: {r: 0.812, g: 0.635, b: 0.51, a: 1}
+  m_Intensity: 0.68
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -11354,7 +11375,7 @@ Light:
     m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.78
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -11389,7 +11410,7 @@ Light:
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
   m_ColorTemperature: 5000
-  m_UseColorTemperature: 1
+  m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
@@ -18428,293 +18449,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ToolWorkshopWindowUI
   txtTitle: {fileID: 610131284}
   btnClose: {fileID: 630928492}
-  txtWorkersStatus: {fileID: 0}
-  btnAddWorker: {fileID: 0}
-  btnRemoveWorker: {fileID: 0}
-  txtResearchStatus: {fileID: 0}
-  btnCancelResearch: {fileID: 0}
-  txtUpgradeDetails: {fileID: 0}
-  techOptionSlots:
-  - buildingKey: Farm
-    tier: 1
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Farm
-    tier: 1
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Farm
-    tier: 2
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Farm
-    tier: 2
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Farm
-    tier: 3
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Farm
-    tier: 3
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Farm
-    tier: 4
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Farm
-    tier: 4
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Sawmill
-    tier: 1
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Sawmill
-    tier: 1
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Sawmill
-    tier: 2
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Sawmill
-    tier: 2
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Sawmill
-    tier: 3
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Sawmill
-    tier: 3
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Sawmill
-    tier: 4
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Sawmill
-    tier: 4
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Mines
-    tier: 1
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Mines
-    tier: 1
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Mines
-    tier: 2
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Mines
-    tier: 2
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Mines
-    tier: 3
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Mines
-    tier: 3
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Mines
-    tier: 4
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Mines
-    tier: 4
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Quarry
-    tier: 1
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Quarry
-    tier: 1
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Quarry
-    tier: 2
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Quarry
-    tier: 2
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Quarry
-    tier: 3
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Quarry
-    tier: 3
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Quarry
-    tier: 4
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Quarry
-    tier: 4
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Retort
-    tier: 1
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Retort
-    tier: 1
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Retort
-    tier: 2
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Retort
-    tier: 2
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Retort
-    tier: 3
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Retort
-    tier: 3
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Retort
-    tier: 4
-    isOptionA: 1
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
-  - buildingKey: Retort
-    tier: 4
-    isOptionA: 0
-    button: {fileID: 0}
-    titleText: {fileID: 0}
-    statusText: {fileID: 0}
-    background: {fileID: 0}
+  secBuildingsTab: {fileID: 0}
+  buildingTabs: []
+  txtFlavourHeader: {fileID: 0}
+  txtSelectedBuilding: {fileID: 0}
+  txtProgress: {fileID: 0}
+  pnlUpgradeTabs: {fileID: 0}
+  tierRows: []
+  workerController: {fileID: 0}
+  txtRequiredWorkers: {fileID: 0}
+  pnlUpgradeInfo: {fileID: 0}
+  imgUpgradeIcon: {fileID: 0}
+  txtUpgradeName: {fileID: 0}
+  pnlDescription: {fileID: 0}
+  txtDescription: {fileID: 0}
+  pnlEffect: {fileID: 0}
+  txtEffectDescription: {fileID: 0}
+  txtCostsHeader: {fileID: 0}
+  pnlCostsContainer: {fileID: 0}
+  costResourceSlots: []
+  objCostDivider: {fileID: 0}
+  txtTime: {fileID: 0}
+  btnResearch: {fileID: 0}
+  imgResearchButton: {fileID: 0}
+  txtResearchButtonLabel: {fileID: 0}
 --- !u!114 &657140322
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23182,7 +22940,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 832575517}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 

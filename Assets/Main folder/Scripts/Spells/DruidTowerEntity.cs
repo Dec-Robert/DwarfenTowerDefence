@@ -63,6 +63,12 @@ public class DruidTowerEntity : BuildingEntity
         RefreshVisualState();
     }
 
+    protected override void SetupAtmosphericLighting()
+    {
+        base.SetupAtmosphericLighting();
+        RefreshVisualState();
+    }
+
     protected override void OnDestroy()
     {
         base.OnDestroy();
@@ -358,5 +364,11 @@ public class DruidTowerEntity : BuildingEntity
     {
         if (ruinedVisual != null) ruinedVisual.SetActive(State == DruidTowerState.Ruined);
         if (activeVisual != null) activeVisual.SetActive(State != DruidTowerState.Ruined);
+
+        var nightLight = GetComponentInChildren<SettlementLight>(true);
+        if (nightLight != null)
+        {
+            nightLight.SetOperationalEnabled(State != DruidTowerState.Ruined);
+        }
     }
 }

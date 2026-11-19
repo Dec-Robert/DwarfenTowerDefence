@@ -72,6 +72,7 @@ Shader "Custom/Terrain/HexSideTerrain"
 
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
@@ -366,9 +367,13 @@ Shader "Custom/Terrain/HexSideTerrain"
                 inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
                 inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
 
-                // Bezpieczna podloga ambientowa (Ambient Floor) chroniaca pionowe sciany w cieniu przed zapadaniem sie w czern:
-                half3 ambientGI = SampleSH(normWS);
-                half3 ambientFloor = half3(0.065, 0.070, 0.068) * (1.0 + _AmbientBoost * 1.5);
+                // Real-time Trilight z DayNightCycle dla scian bocznych heksow (bez zawyzania przez statyczne SampleSH)
+                half3 trilightGI = lerp(unity_AmbientEquator.rgb, unity_AmbientSky.rgb, saturate(normWS.y));
+                trilightGI = lerp(trilightGI, unity_AmbientGround.rgb, saturate(-normWS.y));
+                half trilightSum = trilightGI.r + trilightGI.g + trilightGI.b;
+                half3 baseAmbient = trilightSum > 0.0001 ? trilightGI : SampleSH(normWS);
+                half3 ambientGI = baseAmbient * (1.0 + _AmbientBoost * 0.25);
+                half3 ambientFloor = half3(0.012, 0.014, 0.020) * (1.0 + _AmbientBoost * 0.45);
                 inputData.bakedGI = max(ambientGI, ambientFloor);
                 inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 
