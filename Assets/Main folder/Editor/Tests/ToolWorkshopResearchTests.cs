@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ToolWorkshopResearchTests
 {
@@ -34,6 +36,7 @@ public class ToolWorkshopResearchTests
         }
         createdObjects.Clear();
         SetAutoPropertyOrField(typeof(ToolWorkshopResearchManager), null, "<Instance>k__BackingField", null);
+        SetAutoPropertyOrField(typeof(ResourceManager), null, "<Instance>k__BackingField", null);
     }
 
     [Test]
@@ -306,6 +309,335 @@ public class ToolWorkshopResearchTests
             list.Add(new Citizen { race = Race.Humans });
         }
         researchManager.NotifyWorkshopsChanged();
+    }
+
+    [Test]
+    public void ResearchCost_ChecksAffordability_SpendsOnStart_AndRefundsProportionallyOnCancel()
+    {
+        var rm = CreateResourceManager();
+        rm.AddResource(ResourceType.Wood, 15);
+        rm.AddResource(ResourceType.Iron, 5);
+
+        var farm = CreateBuildingData("Farm", BuildingType.Economic);
+        var t1a = CreateUpgrade("Farm_T1_A", u =>
+        {
+            u.cost = new List<ResourceCost>
+            {
+                new ResourceCost { type = ResourceType.Wood, amount = 10 },
+                new ResourceCost { type = ResourceType.Iron, amount = 5 }
+            };
+        });
+        var t1b = CreateUpgrade("Farm_T1_B");
+        var t2a = CreateUpgrade("Farm_T2_A", u =>
+        {
+            u.cost = new List<ResourceCost>
+            {
+                new ResourceCost { type = ResourceType.Wood, amount = 10 },
+                new ResourceCost { type = ResourceType.Iron, amount = 3 }
+            };
+        });
+        var t2b = CreateUpgrade("Farm_T2_B");
+        catalog.buildingTrees.Add(MakeTwoTierTree(farm, t1a, t1b, t2a, t2b));
+
+        var workshop = CreateWorkshop(CreateBuildingData("ToolWorkshop", BuildingType.Utility, 3));
+        AssignHumanWorkersDirectly(workshop, 3);
+
+        // T1A kosztuje 10 Wood, 5 Iron -> przechodzi, zostaje 5 Wood, 0 Iron
+        Assert.IsTrue(researchManager.TryStartResearch(farm, 1, true));
+        Assert.AreEqual(5, rm.GetResourceAmount(ResourceType.Wood));
+        Assert.AreEqual(0, rm.GetResourceAmount(ResourceType.Iron));
+
+        // Konczymy T1A (1 dzien) -> odblokowane = 1, wiec T2 ma bazowy czas 2 + 1 = 3 dni
+        researchManager.ProcessMorningTick();
+        Assert.IsTrue(researchManager.IsOptionResearched(farm, 1, true));
+
+        // Nie stac nas na T2A (potrzeba 10 Wood, 3 Iron)
+        Assert.IsFalse(researchManager.CanAffordUpgrade(t2a));
+        Assert.IsFalse(researchManager.TryStartResearch(farm, 2, true));
+
+        // Dodajemy surowce i uruchamiamy T2A (wymaga 3 dni, koszt 10 Wood, 3 Iron)
+        rm.AddResource(ResourceType.Wood, 5);
+        rm.AddResource(ResourceType.Iron, 3);
+        Assert.IsTrue(researchManager.TryStartResearch(farm, 2, true));
+        Assert.AreEqual(0, rm.GetResourceAmount(ResourceType.Wood));
+        Assert.AreEqual(0, rm.GetResourceAmount(ResourceType.Iron));
+
+        // Po 1 dniu postep = 1/3 -> zwrot: 100 - (100/3 * 1) = 66.66% -> Floor(10 * 2/3) = 6 Wood, Floor(3 * 2/3) = 2 Iron
+        researchManager.ProcessMorningTick();
+        Assert.AreEqual(2f / 3f, researchManager.GetCurrentCancelRefundRatio(), 0.001f);
+        researchManager.CancelCurrentResearch();
+
+        Assert.IsNull(researchManager.ActiveResearch);
+        Assert.AreEqual(6, rm.GetResourceAmount(ResourceType.Wood));
+        Assert.AreEqual(2, rm.GetResourceAmount(ResourceType.Iron));
+    }
+
+    [Test]
+    public void ToolWorkshopWindowUI_HidesFifthRow_DisplaysFlavourAndEffects_AndDisablesBtnWhenMissingCost()
+    {
+        var rm = CreateResourceManager();
+        rm.AddResource(ResourceType.Wood, 5); // za malo na T1A (koszt 20)
+
+        var farm = CreateBuildingData("Farm", BuildingType.Economic);
+        var mines = CreateBuildingData("Mines", BuildingType.Economic);
+
+        var f1a = CreateUpgrade("Farm_T1_A", u =>
+        {
+            u.flavourDescription = "Stare zaprzegi przyspieszaja orke.";
+            u.firstWorkerBonusMultiplier = 0.30f;
+            u.extraSearchRadius = 1;
+            u.cost = new List<ResourceCost> { new ResourceCost { type = ResourceType.Wood, amount = 20 } };
+        });
+        var f1b = CreateUpgrade("Farm_T1_B", u =>
+        {
+            u.terrainFlatBonus = 2f;
+        });
+        var m1a = CreateUpgrade("Mines_T1_A", u => u.specialEffectIDs.Add("MINE_MOUNTAIN_CHAIN"));
+        var m1b = CreateUpgrade("Mines_T1_B");
+
+        catalog.buildingTrees.Add(MakeTwoTierTree(farm, f1a, f1b, null, null));
+        catalog.buildingTrees.Add(MakeTwoTierTree(mines, m1a, m1b, null, null));
+
+        var workshop = CreateWorkshop(CreateBuildingData("ToolWorkshop", BuildingType.Utility, 3));
+        AssignHumanWorkersDirectly(workshop, 2);
+
+        var ui = BuildTestWorkshopWindowUI(out var tabButtons, out var rowRoots, out var rowOptA, out var rowOptB,
+            out var txtSelectedBuilding, out var txtProgress, out var txtRequiredWorkers,
+            out var pnlDescription, out var txtDescription, out var txtEffects,
+            out var txtCostsHeader, out var pnlCostsInner, out var txtTime, out var btnResearch, out var txtBtnLabel);
+
+        ui.Setup(workshop);
+
+        // Drzewo ma 2 tiery -> wiersze 0..1 aktywne, wiersze 2..4 ukryte
+        Assert.IsTrue(rowRoots[0].activeSelf);
+        Assert.IsTrue(rowRoots[1].activeSelf);
+        Assert.IsFalse(rowRoots[2].activeSelf);
+        Assert.IsFalse(rowRoots[3].activeSelf);
+        Assert.IsFalse(rowRoots[4].activeSelf);
+
+        Assert.AreEqual("Farm", txtSelectedBuilding.text);
+        Assert.AreEqual("Ukończone 0/2", txtProgress.text);
+        StringAssert.Contains("Nieaktywny (2/3)", txtRequiredWorkers.text);
+
+        // F1A ma flavourDescription, punkty efektow i koszt
+        Assert.IsTrue(pnlDescription.activeSelf);
+        Assert.AreEqual("Stare zaprzegi przyspieszaja orke.", txtDescription.text);
+        StringAssert.Contains("+30% wydajności 1. pracownika", txtEffects.text);
+        StringAssert.Contains("+1 do zasięgu skanowania terenu", txtEffects.text);
+        Assert.IsTrue(txtCostsHeader.gameObject.activeSelf);
+        Assert.IsTrue(pnlCostsInner.gameObject.activeSelf);
+
+        // Brak surowcow -> przycisk wyszarzony i nieaktywny
+        Assert.IsFalse(btnResearch.interactable);
+        Assert.AreEqual("Brak surowców", txtBtnLabel.text);
+        Assert.Less(btnResearch.GetComponent<Image>().color.r, 0.7f);
+
+        // Klikniecie F1B (bez flavour i bez kosztu) -> ukrywa opis i koszty, odblokowuje przycisk
+        rowOptB[0].onClick.Invoke();
+        Assert.IsFalse(pnlDescription.activeSelf);
+        Assert.IsFalse(txtCostsHeader.gameObject.activeSelf);
+        Assert.IsFalse(pnlCostsInner.gameObject.activeSelf);
+        StringAssert.Contains("+2 produkcji za każde pasujące pole w zasięgu", txtEffects.text);
+        Assert.IsTrue(btnResearch.interactable);
+        Assert.AreEqual("Opracuj technologię", txtBtnLabel.text);
+
+        // Przelaczenie na zakladke Mines
+        tabButtons[1].onClick.Invoke();
+        Assert.AreEqual("Mines", txtSelectedBuilding.text);
+        StringAssert.Contains("pasma górskiego", txtEffects.text);
+    }
+
+    [Test]
+    public void ToolWorkshopWindowUI_ActiveResearchKeepsCancelButtonAcrossPreviews_AndCancelsWithRefund()
+    {
+        var rm = CreateResourceManager();
+        rm.AddResource(ResourceType.Wood, 10);
+
+        var farm = CreateBuildingData("Farm", BuildingType.Economic);
+        var mines = CreateBuildingData("Mines", BuildingType.Economic);
+
+        var f1a = CreateUpgrade("Farm_T1_A", u =>
+        {
+            u.cost = new List<ResourceCost> { new ResourceCost { type = ResourceType.Wood, amount = 10 } };
+        });
+        var f1b = CreateUpgrade("Farm_T1_B");
+        var f2a = CreateUpgrade("Farm_T2_A", u =>
+        {
+            u.cost = new List<ResourceCost> { new ResourceCost { type = ResourceType.Wood, amount = 10 } };
+        });
+        var f2b = CreateUpgrade("Farm_T2_B");
+        var m1a = CreateUpgrade("Mines_T1_A");
+        var m1b = CreateUpgrade("Mines_T1_B");
+
+        catalog.buildingTrees.Add(MakeTwoTierTree(farm, f1a, f1b, f2a, f2b));
+        catalog.buildingTrees.Add(MakeTwoTierTree(mines, m1a, m1b, null, null));
+
+        var workshop = CreateWorkshop(CreateBuildingData("ToolWorkshop", BuildingType.Utility, 3));
+        AssignHumanWorkersDirectly(workshop, 3);
+
+        var ui = BuildTestWorkshopWindowUI(out var tabButtons, out _, out var rowOptA, out _,
+            out _, out _, out _, out _, out _, out _, out _, out _, out _, out var btnResearch, out var txtBtnLabel);
+
+        ui.Setup(workshop);
+
+        // Start F1A (10 Wood, 1 dzien) i ukoncz -> odblokowane 1
+        btnResearch.onClick.Invoke();
+        Assert.AreEqual(0, rm.GetResourceAmount(ResourceType.Wood));
+        researchManager.ProcessMorningTick();
+        Assert.IsTrue(researchManager.IsOptionResearched(farm, 1, true));
+
+        // Dodaj 10 Wood i zacznij F2A (wymaga 2 + 1 = 3 dni)
+        rm.AddResource(ResourceType.Wood, 10);
+        rowOptA[1].onClick.Invoke();
+        btnResearch.onClick.Invoke();
+        Assert.IsNotNull(researchManager.ActiveResearch);
+        Assert.AreEqual(0, rm.GetResourceAmount(ResourceType.Wood));
+
+        // Przelacz podglad na Mines T1A -> przycisk nadal pozwala anulowac aktywne badanie
+        tabButtons[1].onClick.Invoke();
+        Assert.IsTrue(btnResearch.interactable);
+        StringAssert.Contains("Anuluj badanie", txtBtnLabel.text);
+
+        // Anuluj przy 0 postepie -> 100% zwrotu (10 Wood) i przycisk wraca do trybu odkrywania wybranego Mines T1A
+        btnResearch.onClick.Invoke();
+        Assert.IsNull(researchManager.ActiveResearch);
+        Assert.AreEqual(10, rm.GetResourceAmount(ResourceType.Wood));
+        Assert.AreEqual("Opracuj technologię", txtBtnLabel.text);
+    }
+
+    private ResourceManager CreateResourceManager()
+    {
+        var cfg = ScriptableObject.CreateInstance<CityBaseConfigSO>();
+        createdObjects.Add(cfg);
+
+        var rmGo = new GameObject("Test_ResourceManager");
+        createdObjects.Add(rmGo);
+        rmGo.SetActive(false);
+        var rm = rmGo.AddComponent<ResourceManager>();
+        rm.cityConfig = cfg;
+        rmGo.SetActive(true);
+        return rm;
+    }
+
+    private ToolWorkshopWindowUI BuildTestWorkshopWindowUI(
+        out List<Button> tabButtons,
+        out List<GameObject> rowRoots,
+        out List<Button> rowOptA,
+        out List<Button> rowOptB,
+        out TMP_Text txtSelectedBuilding,
+        out TMP_Text txtProgress,
+        out TMP_Text txtRequiredWorkers,
+        out GameObject pnlDescription,
+        out TMP_Text txtDescription,
+        out TMP_Text txtEffects,
+        out TMP_Text txtCostsHeader,
+        out Transform pnlCostsInner,
+        out TMP_Text txtTime,
+        out Button btnResearch,
+        out TMP_Text txtBtnLabel)
+    {
+        var root = new GameObject("Pnl_ToolWorkshopWindow");
+        createdObjects.Add(root);
+
+        var secHeader = CreateChild(root.transform, "Sec_Header");
+        CreateTextChild(secHeader, "Txt_Title");
+        CreateButtonChild(secHeader, "Btn_Close");
+
+        var secTabs = CreateChild(root.transform, "Sec_BuildingsTab");
+        tabButtons = new List<Button>();
+        for (int i = 0; i < 5; i++)
+        {
+            var tab = CreateChild(secTabs, "Pnl_BuildingTab");
+            tab.gameObject.AddComponent<Image>();
+            tabButtons.Add(tab.gameObject.AddComponent<Button>());
+            CreateChild(tab, "Img_Icon").gameObject.AddComponent<Image>();
+            CreateTextChild(tab, "Txt_BuildingName");
+        }
+
+        var secFooter = CreateChild(root.transform, "Sec_Footer");
+        var pnlResearch = CreateChild(secFooter, "Pnl_Research");
+        var pnlResearchInfo = CreateChild(pnlResearch, "Pnl_Research_info");
+        CreateTextChild(pnlResearchInfo, "Txt_Flavour");
+        txtSelectedBuilding = CreateTextChild(pnlResearchInfo, "Txt_SelectedBuilding");
+        txtProgress = CreateTextChild(pnlResearchInfo, "Txt_Progress");
+
+        var pnlUpgradeTabs = CreateChild(pnlResearch, "Pnl_UpgradeTabs");
+        rowRoots = new List<GameObject>();
+        rowOptA = new List<Button>();
+        rowOptB = new List<Button>();
+        for (int i = 0; i < 5; i++)
+        {
+            var row = CreateChild(pnlUpgradeTabs, $"Pnl_SingleUpgradeRow_{i}");
+            rowRoots.Add(row.gameObject);
+            CreateTextChild(row, "Txt_TierNumber");
+            rowOptA.Add(CreateUpgradeSlotChild(row, "Pnl_UpgradeA"));
+            rowOptB.Add(CreateUpgradeSlotChild(row, "Pnl_UpgradeB"));
+        }
+
+        var pnlInfo = CreateChild(secFooter, "Pnl_Info");
+        var workerGo = CreateChild(pnlInfo, "Pnl_RaceControllersSingle Variant");
+        txtRequiredWorkers = CreateTextChild(workerGo, "Txt_RequiredWorkers");
+
+        var pnlUpgradeInfo = CreateChild(pnlInfo, "Pnl_UpgradeInfo");
+        var pnlHeader = CreateChild(pnlUpgradeInfo, "Pnl_Header");
+        CreateChild(CreateChild(pnlHeader, "Img_Boarder"), "Img_Icon").gameObject.AddComponent<Image>();
+        CreateTextChild(pnlHeader, "Txt_Name");
+
+        pnlDescription = CreateChild(pnlUpgradeInfo, "Pnl_Description").gameObject;
+        txtDescription = CreateTextChild(pnlDescription.transform, "Txt_Description");
+
+        var pnlEffect = CreateChild(pnlUpgradeInfo, "Pnl_Effect");
+        txtEffects = CreateTextChild(pnlEffect.transform, "Txt_EffectDesciptiorn");
+
+        var pnlCostsOuter = CreateChild(pnlUpgradeInfo, "Pnl_Costs");
+        txtCostsHeader = CreateTextChild(pnlCostsOuter, "Txt_Costs");
+        pnlCostsInner = CreateChild(pnlCostsOuter, "Pnl_Costs");
+        for (int i = 0; i < 3; i++)
+        {
+            var resGo = CreateChild(pnlCostsInner, $"Pnl_SingleResource_Small_{i}");
+            var amountTmp = CreateTextChild(resGo, "Txt_Amount");
+            var iconImg = CreateChild(resGo, "Img_Icon").gameObject.AddComponent<Image>();
+            var singleRes = resGo.gameObject.AddComponent<SingleResourceUI>();
+            SetAutoPropertyOrField(typeof(SingleResourceUI), singleRes, "ammount", amountTmp);
+            SetAutoPropertyOrField(typeof(SingleResourceUI), singleRes, "icon", iconImg);
+        }
+
+        CreateChild(pnlCostsOuter, "Divider");
+        txtTime = CreateTextChild(pnlCostsOuter, "Txt_Time");
+        btnResearch = CreateButtonChild(pnlCostsOuter, "Btn_Research");
+        btnResearch.gameObject.AddComponent<Image>();
+        txtBtnLabel = CreateTextChild(btnResearch.transform, "Text (TMP)");
+
+        return root.AddComponent<ToolWorkshopWindowUI>();
+    }
+
+    private static Transform CreateChild(Transform parent, string name)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        return go.transform;
+    }
+
+    private static TMP_Text CreateTextChild(Transform parent, string name)
+    {
+        var tr = CreateChild(parent, name);
+        return tr.gameObject.AddComponent<TextMeshProUGUI>();
+    }
+
+    private static Button CreateButtonChild(Transform parent, string name)
+    {
+        var tr = CreateChild(parent, name);
+        return tr.gameObject.AddComponent<Button>();
+    }
+
+    private static Button CreateUpgradeSlotChild(Transform parent, string name)
+    {
+        var tr = CreateChild(parent, name);
+        tr.gameObject.AddComponent<Image>();
+        var btn = tr.gameObject.AddComponent<Button>();
+        CreateChild(tr, "Img_Icon").gameObject.AddComponent<Image>();
+        CreateTextChild(tr, "Txt_UpgradeName");
+        return btn;
     }
 
     private static void SetAutoPropertyOrField(System.Type type, object instance, string fieldName, object value)

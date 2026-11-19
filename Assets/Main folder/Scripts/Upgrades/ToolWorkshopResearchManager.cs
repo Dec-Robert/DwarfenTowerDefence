@@ -14,6 +14,7 @@ public class ToolWorkshopResearchManager : MonoBehaviour
         public BuildingUpgradeSO upgrade;
         public float currentProgress;
         public float requiredProgress;
+        public List<ResourceCost> paidCost = new List<ResourceCost>();
 
         public bool IsActive => upgrade != null && !string.IsNullOrEmpty(buildingKey);
         public float NormalizedProgress => requiredProgress > 0f ? Mathf.Clamp01(currentProgress / requiredProgress) : 0f;
@@ -216,6 +217,22 @@ public class ToolWorkshopResearchManager : MonoBehaviour
     // ZARZĄDZANIE BADANIAMI
     // =========================================================================
 
+    public bool CanAffordUpgrade(BuildingUpgradeSO upgrade)
+    {
+        if (upgrade == null) return false;
+        if (upgrade.cost == null || upgrade.cost.Count == 0) return true;
+        if (ResourceManager.Instance == null) return true;
+        return ResourceManager.Instance.CanAfford(upgrade.cost);
+    }
+
+    public float GetCurrentCancelRefundRatio()
+    {
+        if (activeResearch == null || !activeResearch.IsActive) return 0f;
+        if (activeResearch.requiredProgress <= 0f) return 1f;
+        float completedRatio = Mathf.Clamp01(activeResearch.currentProgress / activeResearch.requiredProgress);
+        return Mathf.Clamp01(1f - completedRatio);
+    }
+
     public bool TryStartResearch(BuildingData targetBuilding, int tier, bool isOptionA)
     {
         EnsureCatalogLoaded();
@@ -223,13 +240,34 @@ public class ToolWorkshopResearchManager : MonoBehaviour
         if (!techCatalog.TryGetTree(targetBuilding, out var tree)) return false;
 
         int nextAllowedTier = GetUnlockedTierCount(targetBuilding) + 1;
-        if (tier != nextAllowedTier || tier < 1 || tier > 4) return false;
+        if (tier != nextAllowedTier || tier < 1 || tier > 5) return false;
 
         var tierEntry = tree.GetTier(tier);
         if (tierEntry == null) return false;
 
         var upgrade = tierEntry.GetOption(isOptionA);
         if (upgrade == null) return false;
+
+        if (!CanAffordUpgrade(upgrade)) return false;
+
+        var paidSnapshot = new List<ResourceCost>();
+        if (upgrade.cost != null && upgrade.cost.Count > 0)
+        {
+            if (ResourceManager.Instance != null && !ResourceManager.Instance.SpendResources(upgrade.cost))
+                return false;
+
+            for (int i = 0; i < upgrade.cost.Count; i++)
+            {
+                if (upgrade.cost[i].amount > 0f)
+                {
+                    paidSnapshot.Add(new ResourceCost
+                    {
+                        type = upgrade.cost[i].type,
+                        amount = upgrade.cost[i].amount
+                    });
+                }
+            }
+        }
 
         string key = GetBuildingKey(targetBuilding);
         activeResearch = new ActiveResearchState
@@ -240,7 +278,8 @@ public class ToolWorkshopResearchManager : MonoBehaviour
             isOptionA = isOptionA,
             upgrade = upgrade,
             currentProgress = 0f,
-            requiredProgress = CalculateBaseDuration(tier, DiscoveredUpgradesCount)
+            requiredProgress = CalculateBaseDuration(tier, DiscoveredUpgradesCount),
+            paidCost = paidSnapshot
         };
 
         OnResearchStateChanged?.Invoke();
@@ -250,6 +289,22 @@ public class ToolWorkshopResearchManager : MonoBehaviour
     public void CancelCurrentResearch()
     {
         if (activeResearch == null || !activeResearch.IsActive) return;
+
+        if (ResourceManager.Instance != null && activeResearch.paidCost != null && activeResearch.paidCost.Count > 0)
+        {
+            float refundRatio = GetCurrentCancelRefundRatio();
+            for (int i = 0; i < activeResearch.paidCost.Count; i++)
+            {
+                var cost = activeResearch.paidCost[i];
+                if (cost.amount <= 0f) continue;
+                int refundAmount = Mathf.FloorToInt(cost.amount * refundRatio);
+                if (refundAmount > 0)
+                {
+                    ResourceManager.Instance.AddResource(cost.type, refundAmount);
+                }
+            }
+        }
+
         activeResearch = null;
         OnResearchStateChanged?.Invoke();
     }
@@ -396,7 +451,9 @@ public class ToolWorkshopResearchManager : MonoBehaviour
 
     public bool IsTierAvailableToResearch(BuildingData data, int tier)
     {
-        if (data == null || tier < 1 || tier > 4) return false;
+        if (data == null || tier < 1 || tier > 5) return false;
+        if (techCatalog != null && techCatalog.TryGetTree(data, out var tree) && tree.GetTier(tier) == null)
+            return false;
         return tier == GetUnlockedTierCount(data) + 1;
     }
 

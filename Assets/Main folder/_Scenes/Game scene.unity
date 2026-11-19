@@ -21860,7 +21860,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45d8194f5199ed547af0c639380ce41c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ToolWorkshopResearchManager
-  techCatalog: {fileID: 0}
+  techCatalog: {fileID: 11400000, guid: 9157a11287232b54bb6b568a0c40fec8, type: 2}
 --- !u!1 &743807534
 GameObject:
   m_ObjectHideFlags: 0

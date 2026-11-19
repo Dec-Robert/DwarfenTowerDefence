@@ -8,9 +8,11 @@ public class BuildingUpgradeSO : ScriptableObject
 
     public Sprite icon;
     [TextArea] public string description;
+    [TextArea] public string flavourDescription;
 
     public string DisplayName => LocalizationManager.Get($"UPGRADE_{GetLocalizationId()}_NAME", upgradeName);
     public string DisplayDescription => LocalizationManager.Get($"UPGRADE_{GetLocalizationId()}_DESC", description);
+    public string DisplayFlavourDescription => LocalizationManager.Get($"UPGRADE_{GetLocalizationId()}_FLAVOUR", flavourDescription);
 
     public string GetLocalizationId()
     {

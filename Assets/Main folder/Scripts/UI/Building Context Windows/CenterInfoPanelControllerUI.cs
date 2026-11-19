@@ -197,6 +197,18 @@ public class CenterInfoPanelControllerUI : MonoBehaviour
             }
         }
 
+        if (toolWorkshopPanel != null)
+        {
+            toolWorkshopPanel.SetActive(true);
+            var workshopUI = toolWorkshopPanel.GetComponent<ToolWorkshopWindowUI>();
+            if (workshopUI == null) workshopUI = toolWorkshopPanel.AddComponent<ToolWorkshopWindowUI>();
+            if (workshopUI != null)
+            {
+                workshopUI.AutoBindReferences();
+                workshopUI.ForceRebuildImmediate();
+            }
+        }
+
         Canvas.ForceUpdateCanvases();
         HideAll();
     }
