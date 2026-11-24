@@ -2,43 +2,45 @@ Shader "Custom/Grassland"
 {
     Properties
     {
-        [Header(Grass Color Palette)]
-        _BaseGrassColor("Trawa bazowa - Base Grass", Color) = (0.245, 0.335, 0.200, 1.0)
-        _DarkVegColor("Ciemna roslinnosc - Dark Vegetation", Color) = (0.180, 0.252, 0.155, 1.0)
-        _LightGrassColor("Jasna trawa - Light Grass", Color) = (0.365, 0.445, 0.265, 1.0)
-        _DryGrassColor("Wysuszona trawa - Dry Grass", Color) = (0.470, 0.445, 0.295, 1.0)
-        _SoilColor("Odslonieta gleba - Exposed Soil", Color) = (0.340, 0.280, 0.200, 1.0)
+        [Header(Debug Diagnostics)]
+        _DebugGrassMode("Debug (0:Norm, 1:Grid, 2:Idx, 3:DrySoil, 4:Albedo)", Range(0, 4)) = 0
 
-        [Header(Macro Variation)]
-        _MacroScale("Skala duzych plam - Macro Scale", Float) = 0.35
-        _MacroContrast("Kontrast plam - Macro Contrast", Range(0.2, 2.0)) = 0.85
+        [Header(Terrain Palette sRGB)]
+        _Color0("0: Gleboka zielen (#2E3F31)", Color) = (0.18039216, 0.24705882, 0.19215687, 1.0)
+        _Color1("1: Ciemna zielen (#3B4F37)", Color) = (0.23137255, 0.30980393, 0.21568628, 1.0)
+        _Color2("2: Bazowa zielen (#475D3E)", Color) = (0.2784314, 0.3647059, 0.24313726, 1.0)
+        _Color3("3: Jasniejsza zielen (#566D48)", Color) = (0.3372549, 0.42745098, 0.28235295, 1.0)
+        _Color4("4: Sucha oliwka (#687148)", Color) = (0.40784314, 0.44313726, 0.28235295, 1.0)
+        _Color5("5: Brudny braz (#544B3C)", Color) = (0.32941177, 0.29411766, 0.23529412, 1.0)
 
-        [Header(Retro Stylized Detail)]
-        _TexelDensity("Gestosc pikseli retro - Texel Density", Float) = 16.0
-        _DetailScale("Skala drobnego detalu - Detail Scale", Float) = 1.8
-        _DetailStrength("Sila detalu retro - Detail Strength", Range(0.0, 1.0)) = 0.60
-        _QuantizeSteps("Kwantyzacja odcieni - Color Steps", Range(2.0, 8.0)) = 4.0
+        [Header(Retro Texel Grid)]
+        _TexelDensity("Texel Density (per hex width)", Float) = 32.0
+        _HexRadius("Promien heksa - Hex Radius", Float) = 1.0
+        _Seed("Seed wzoru - Seed", Float) = 7.0
 
-        [Header(Dry Vegetation)]
-        _DryAmount("Ilosc suchej trawy - Dry Amount", Range(0.0, 0.25)) = 0.08
-        _DryIntensity("Intensywnosc wysuszenia - Dry Intensity", Range(0.0, 1.0)) = 0.85
-        _DryScale("Skala skupisk suchej trawy - Dry Scale", Float) = 0.65
+        [Header(Procedural Grass Structure)]
+        _ClusterSize("Cluster Size (3-6 texels)", Range(2.0, 10.0)) = 4.5
+        _MacroNoiseScale("Macro Noise Scale", Float) = 0.25
+        _MacroNoiseStrength("Macro Noise Strength", Range(0.0, 1.0)) = 0.22
+        _MicroNoiseScale("Micro Noise Scale", Float) = 0.90
+        _MicroNoiseStrength("Micro Noise Strength", Range(0.0, 0.40)) = 0.14
+        _Contrast("Contrast (niski-sredni)", Range(0.4, 2.0)) = 0.85
 
-        [Header(Exposed Soil)]
-        _SoilAmount("Ilosc odslonietej gleby - Soil Amount", Range(0.0, 0.15)) = 0.035
-        _SoilScale("Skala plam gleby - Soil Scale", Float) = 0.75
+        [Header(Dry Grass and Exposed Soil)]
+        _DetailAmount("Detail Amount (sucha trawa)", Range(0.0, 0.50)) = 0.12
+        _DirtAmount("Dirt Amount (przebijajaca ziemia)", Range(0.0, 0.50)) = 0.08
 
         [Header(Hex Grid Readability)]
+        _HexBorderColor("Kolor granicy heksa - Border Color", Color) = (0.38431373, 0.5019608, 0.35686275, 1.0)
         _HexBorderWidth("Szerokosc granicy heksa - Border Width", Range(0.01, 0.20)) = 0.07
-        _HexBorderStrength("Widocznosc granicy - Border Strength", Range(0.0, 1.0)) = 0.45
+        _HexBorderStrength("Widocznosc granicy - Border Strength", Range(0.0, 1.0)) = 0.88
         _HexBorderNoiseStrength("Nieregularnosc granicy - Border Noise", Range(0.0, 1.0)) = 0.35
-        _HexRadius("Promien heksa - Hex Radius", Float) = 1.0
 
         [Header(Low Light Readability)]
-        _AmbientBoost("Jasnosc w polmroku i nocy - Ambient Boost", Range(0.0, 1.0)) = 0.50
+        _AmbientBoost("Jasnosc w polmroku i nocy - Ambient Boost", Range(0.0, 1.0)) = 0.65
 
         [Header(Surface Properties)]
-        _Smoothness("Gladkosc - Smoothness", Range(0.0, 1.0)) = 0.04
+        _Smoothness("Gladkosc - Smoothness", Range(0.0, 1.0)) = 0.00
     }
 
     SubShader
@@ -75,30 +77,31 @@ Shader "Custom/Grassland"
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fog
 
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "TerrainGroundCommon.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _BaseGrassColor;
-                float4 _DarkVegColor;
-                float4 _LightGrassColor;
-                float4 _DryGrassColor;
-                float4 _SoilColor;
-                float  _MacroScale;
-                float  _MacroContrast;
+                float4 _Color0;
+                float4 _Color1;
+                float4 _Color2;
+                float4 _Color3;
+                float4 _Color4;
+                float4 _Color5;
+                float4 _HexBorderColor;
+                float  _DebugGrassMode;
                 float  _TexelDensity;
-                float  _DetailScale;
-                float  _DetailStrength;
-                float  _QuantizeSteps;
-                float  _DryAmount;
-                float  _DryIntensity;
-                float  _DryScale;
-                float  _SoilAmount;
-                float  _SoilScale;
+                float  _HexRadius;
+                float  _Seed;
+                float  _ClusterSize;
+                float  _MacroNoiseScale;
+                float  _MacroNoiseStrength;
+                float  _MicroNoiseScale;
+                float  _MicroNoiseStrength;
+                float  _Contrast;
+                float  _DetailAmount;
+                float  _DirtAmount;
                 float  _HexBorderWidth;
                 float  _HexBorderStrength;
                 float  _HexBorderNoiseStrength;
-                float  _HexRadius;
                 float  _AmbientBoost;
                 float  _Smoothness;
             CBUFFER_END
@@ -122,44 +125,6 @@ Shader "Custom/Grassland"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
-
-            // Szybki 2D Hash zwracajacy skalar [0, 1]
-            float Hash21(float2 p)
-            {
-                p = frac(p * float2(123.34, 456.21));
-                p += dot(p, p + 45.32);
-                return frac(p.x * p.y);
-            }
-
-            // Wydajny 2D Value Noise (0 zewnetrznych tekstur, plynna interpolacja Hermite'a)
-            float ValueNoise2D(float2 p)
-            {
-                float2 i = floor(p);
-                float2 f = frac(p);
-                float2 u = f * f * (3.0 - 2.0 * f);
-
-                float a = Hash21(i);
-                float b = Hash21(i + float2(1.0, 0.0));
-                float c = Hash21(i + float2(0.0, 1.0));
-                float d = Hash21(i + float2(1.0, 1.0));
-
-                return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
-            }
-
-            // Uniwersalna funkcja obliczajaca maske [0, 1] krawedzi wewnatrz heksa (pointy-top)
-            float EvaluateHexBorderMask(float2 localPosXZ, float2 worldXZ, float hexRadius, float borderWidth, float borderStrength, float noiseStrength)
-            {
-                float rIn = hexRadius * 0.8660254; // apotema: R * cos(30 deg)
-                float2 p = abs(localPosXZ);
-                float hexD = max(p.x, 0.5 * p.x + 0.8660254 * p.y);
-                float distFromEdge = max(0.0, rIn - hexD);
-
-                float edgePixelSpan = length(fwidth(distFromEdge));
-                float borderNoise = ValueNoise2D(worldXZ * 3.5 + float2(5.2, 9.1)) - 0.5;
-                float effectiveWidth = max(borderWidth * (1.0 + borderNoise * noiseStrength), edgePixelSpan * 1.2);
-
-                return smoothstep(effectiveWidth, 0.0, distFromEdge) * borderStrength;
-            }
 
             Varyings LitPassVertex(Attributes input)
             {
@@ -188,118 +153,124 @@ Shader "Custom/Grassland"
                 float3 normWS = normalize(input.normalWS);
                 float2 worldXZ = input.positionWS.xz;
 
-                // --- 1. Filtrowanie i ochrona antyaliasingowa (fwidth) ---
-                float texelPixelSpan = length(fwidth(worldXZ * _TexelDensity));
-                float detailFade = saturate(1.0 - (texelPixelSpan - 0.6) * 1.6);
+                // --- 1. Ostra, wspolna siatka texeli (~32 texele / szerokosc heksa) ---
+                RetroTexelGrid grid = EvaluateDiscreteTexelGrid(worldXZ, _HexRadius, _TexelDensity);
+                float2 seedOff = SeedOffset2D(_Seed);
 
-                // Drobne znieksztalcenie siatki texeli, zapobiegajace sztucznym kwadratom
-                float2 warpOffset = (float2(Hash21(floor(worldXZ * 2.0)), Hash21(floor(worldXZ * 2.0) + 17.5)) - 0.5) * 0.04;
-                float2 warpedWorld = worldXZ + warpOffset;
+                // --- 2. Spokojne przebarwienia makro + nieregularne skupiska zieleni (3-6 texeli) ---
+                float safeCluster = max(2.0, _ClusterSize);
+                float clusterField = GradientNoise2D((grid.cell + seedOff * 9.0) / safeCluster * 1.15);
+                float macroField   = GradientNoise2D((grid.pixelPos + seedOff) * _MacroNoiseScale);
 
-                // Kwantyzacja wspolrzednych do siatki wirtualnych texeli w stylu PSX / 256px
-                float2 quantizedUV = floor(warpedWorld * _TexelDensity + 0.5) / _TexelDensity;
-                float2 retroUV = lerp(quantizedUV, worldXZ, saturate(texelPixelSpan * 0.8));
+                // Drobna struktura kepkowatej darni (2-3 texele) + kontrolowany Micro Noise
+                float turfClump = ValueNoise2D(grid.cell * float2(0.58, 0.72) + seedOff * 2.1);
+                float fineNoise = ValueNoise2D(grid.cell * _MicroNoiseScale + seedOff * 0.6);
+                float cellHash  = Hash21(grid.cell + seedOff * 3.1);
+                float micro     = ((fineNoise * 0.65 + cellHash * 0.35) - 0.5) * _MicroNoiseStrength * grid.microFade;
 
-                // --- 2. Warstwa A: Duze organiczne plamy (Macro Variation) ---
-                float2 macroUV = worldXZ * _MacroScale;
-                float macroWarp = (ValueNoise2D(macroUV * 0.6 + float2(3.1, 7.8)) - 0.5) * 0.5;
-                float macroVal = ValueNoise2D(macroUV + macroWarp);
+                float baseTone = 0.50
+                    + (clusterField - 0.5) * 0.42
+                    + (macroField - 0.5) * _MacroNoiseStrength
+                    + (turfClump - 0.5) * 0.30
+                    + micro;
+                baseTone = saturate(0.50 + (baseTone - 0.50) * _Contrast);
 
-                float macroTone = saturate(0.5 + (macroVal - 0.5) * _MacroContrast);
-                float3 macroColor = lerp(_DarkVegColor.rgb, _BaseGrassColor.rgb, saturate(macroTone * 1.8));
-                macroColor = lerp(macroColor, _LightGrassColor.rgb, saturate((macroTone - 0.55) * 2.0));
+                // --- 3. Dyskretny wybor podstawowej zieleni (spokojne ~70% bazy + ~25% detali) ---
+                int idx = 2; // Bazowa zielen (#414D36)
+                if (baseTone < 0.16)      idx = 0; // Gleboka zielen (#29332A) - zaglebienia
+                else if (baseTone < 0.39) idx = 1; // Ciemna zielen (#364230) - ciemniejsze skupiska
+                else if (baseTone < 0.74) idx = 2; // Bazowa zielen (#414D36) - dominujaca
+                else                      idx = 3; // Jasniejsza zielen (#505C40) - kepki trawy
 
-                // --- 3. Warstwa B: Stylizowany detal powierzchni (Retro Hand-Painted / PSX Detail) ---
-                float detailNoise = ValueNoise2D(retroUV * _DetailScale + float2(11.3, 19.7));
-                float steppedDetail = floor(detailNoise * _QuantizeSteps + 0.5) / _QuantizeSteps;
-                float detailMod = (steppedDetail - 0.5) * _DetailStrength * detailFade;
-
-                float3 grassColor = macroColor;
-                if (detailMod > 0.0)
+                // Subtelne podbicie drobnych 2-3 pikselowych kepek w wyzszych skupiskach
+                float tuftSpot = ValueNoise2D(grid.cell * 0.88 + seedOff * 4.7);
+                if (idx == 2 && tuftSpot > 0.76 && baseTone > 0.56)
                 {
-                    grassColor = lerp(grassColor, _LightGrassColor.rgb, saturate(detailMod * 1.8));
+                    idx = 3;
                 }
-                else
+
+                // Bardzo subtelna, niskokontrastowa struktura drobnych texeli pomiedzy skupiskami (max +/-1 ton zieleni)
+                float fineTexelPattern = ValueNoise2D(grid.cell * (_MicroNoiseScale * 1.15) + seedOff * 7.3) * 0.65 + cellHash * 0.35;
+                if (grid.microFade > 0.20)
                 {
-                    // Lagodniejsze przyciemnienie - chroni przed powstawaniem czarnych plam
-                    grassColor = lerp(grassColor, _DarkVegColor.rgb, saturate(-detailMod * 1.4) * 0.75);
+                    if (idx == 2 && fineTexelPattern < 0.22)
+                    {
+                        idx = 1;
+                    }
+                    else if (idx == 2 && fineTexelPattern > 0.82 && baseTone > 0.48)
+                    {
+                        idx = 3;
+                    }
+                    else if (idx == 1 && fineTexelPattern > 0.80)
+                    {
+                        idx = 2;
+                    }
                 }
 
-                // Drobny dithering o lagodnym zakresie
-                float microDither = (Hash21(floor(warpedWorld * _TexelDensity)) - 0.5) * 0.04 * _DetailStrength * detailFade;
-                grassColor = saturate(grassColor + microDither);
+                // --- 4. Rzadkie fragmenty wysuszonej trawy (#656A46) i przebijajacej ziemi (#51483A) (~5%) ---
+                float dryZone = GradientNoise2D((grid.pixelPos + seedOff * 1.9) * (_MacroNoiseScale * 1.9) + float2(47.2, 13.9));
+                float dryClump = ValueNoise2D(grid.cell * 0.62 + seedOff * 5.3);
+                float dryScore = dryZone * 0.52 + dryClump * 0.36 + cellHash * 0.12 * grid.microFade;
+                float dryThreshold = 1.0 - saturate(_DetailAmount * 1.15);
+                bool isDry = (_DetailAmount > 0.001 && dryScore > dryThreshold && baseTone > 0.46);
 
-                // Zabezpieczenie minimalnego albedo: roslinnosc nigdy nie spada do czerni
-                grassColor = max(grassColor, _DarkVegColor.rgb * 0.85);
+                float dirtZone = GradientNoise2D((grid.pixelPos + seedOff * 2.7) * (_MacroNoiseScale * 1.6) + float2(83.1, 51.4));
+                float dirtClump = Hash21(floor(grid.cell * 0.55) + seedOff * 6.1);
+                float dirtScore = dirtZone * 0.60 + dirtClump * 0.40;
+                float dirtThreshold = 1.0 - saturate(_DirtAmount * 1.10);
+                bool isDirt = (_DirtAmount > 0.001 && dirtScore > dirtThreshold && baseTone < 0.44);
 
-                // --- 4. Warstwa C: Wysuszona roslinnosc (Dry / Wilted Grass, 5-12%) ---
-                float dryCluster = ValueNoise2D(worldXZ * _DryScale + float2(47.2, 13.9));
-                float dryThreshold = 1.0 - saturate(_DryAmount * 1.8);
-                float dryMask = smoothstep(dryThreshold, dryThreshold + 0.12, dryCluster);
+                if (isDry)
+                {
+                    idx = (grid.microFade > 0.15) ? 4 : 3;
+                }
+                else if (isDirt)
+                {
+                    idx = (grid.microFade > 0.15) ? 5 : 1;
+                }
 
-                float dryDetail = ValueNoise2D(retroUV * 3.5 + float2(2.1, 8.4));
-                dryMask *= smoothstep(0.3, 0.7, dryDetail) * _DryIntensity;
+                // --- Tryby diagnostyczne (_DebugGrassMode) ---
+                int debugMode = (int)(_DebugGrassMode + 0.5);
+                if (debugMode == 1)
+                {
+                    float checker = (fmod(abs(grid.cell.x) + abs(grid.cell.y), 2.0) < 1.0) ? 0.08 : 0.92;
+                    return half4(checker, checker, checker, 1.0);
+                }
+                else if (debugMode == 2)
+                {
+                    float v = (float)idx / 5.0;
+                    return half4(v, v, v, 1.0);
+                }
+                else if (debugMode == 3)
+                {
+                    return half4(isDry ? 1.0 : 0.0, isDirt ? 1.0 : 0.0, clusterField, 1.0);
+                }
 
-                float3 withDry = lerp(grassColor, _DryGrassColor.rgb, saturate(dryMask));
+                // --- 5. Gladka, czytelna granica heksa (antyalising fwidth, bez pikselizacji) ---
+                float borderMask = EvaluateHexBorder(
+                    input.positionOS_XZ, worldXZ,
+                    _HexRadius, _HexBorderWidth, _HexBorderStrength, _HexBorderNoiseStrength);
 
-                // --- 5. Warstwa D: Odslonieta gleba (Exposed Soil, rzadkie plamy) ---
-                float soilNoise = ValueNoise2D(worldXZ * _SoilScale + float2(83.1, 51.4));
-                float soilThreshold = 1.0 - saturate(_SoilAmount * 2.2);
-                float soilMask = smoothstep(soilThreshold, soilThreshold + 0.10, soilNoise);
+                float3 baseTopColor = PickPalette6(
+                    idx,
+                    _Color0.rgb, _Color1.rgb, _Color2.rgb,
+                    _Color3.rgb, _Color4.rgb, _Color5.rgb);
+                float3 finalTopColor = lerp(baseTopColor, _HexBorderColor.rgb, borderMask);
 
-                float soilRough = (ValueNoise2D(retroUV * 4.0) - 0.5) * 0.12 * detailFade;
-                float3 soilWithTexel = saturate(_SoilColor.rgb + soilRough);
-
-                float3 topColor = lerp(withDry, soilWithTexel, saturate(soilMask));
-
-                // --- 6. Subtelne granice heksa (Hex Border Readability) ---
-                float borderMask = EvaluateHexBorderMask(input.positionOS_XZ, worldXZ, _HexRadius, _HexBorderWidth, _HexBorderStrength, _HexBorderNoiseStrength);
-
-                // Naturalna ubita / suchsza darn wzdluz krawedzi (delikatnie ciemniejsza/bardziej zuzyta)
-                float3 borderTone = lerp(_DarkVegColor.rgb * 0.82, _SoilColor.rgb * 0.88, 0.45);
-                borderTone = lerp(borderTone, _DryGrassColor.rgb * 0.78, 0.30);
-                float3 finalTopColor = lerp(topColor, borderTone, borderMask);
-
-                // --- 7. Sciany boczne heksa (Fallback dla starszych / pojedynczych meshy) ---
+                // --- 6. Sciany boczne heksa (fallback dla pojedynczych meshy) ---
                 float topMask = saturate((normWS.y - 0.25) / 0.45);
-                float horizontalTangent = dot(input.positionWS.xz, float2(normWS.z, -normWS.x));
-                float2 wallCoord = float2(horizontalTangent, input.positionWS.y);
-                float sideStrata = sin(input.positionWS.y * 6.0 + ValueNoise2D(wallCoord * 2.0) * 2.0) * 0.15;
-                float3 sideSoilColor = lerp(_SoilColor.rgb * 0.75, _DarkVegColor.rgb * 0.85, saturate(0.5 + sideStrata));
-                float3 finalAlbedo = lerp(sideSoilColor, finalTopColor, topMask);
+                float3 sideColor = EvaluateSideStrataSoil(input.positionWS, normWS, _Color0.rgb, _Color5.rgb);
+                float3 finalAlbedo = lerp(sideColor, finalTopColor, topMask);
 
-                // --- 8. URP PBR Lighting z ochrona czytelnosci w polmroku i nocy ---
-                InputData inputData = (InputData)0;
-                inputData.positionWS = input.positionWS;
-                inputData.normalWS = normWS;
-                inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
-                inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
-                inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
+                if (debugMode == 4)
+                {
+                    return half4(finalAlbedo, 1.0);
+                }
 
-                // Real-time Trilight z DayNightCycle jako glowne GI terenu (bez zawyzania przez statyczne SampleSH skyboxa)
-                half3 trilightGI = lerp(unity_AmbientEquator.rgb, unity_AmbientSky.rgb, saturate(normWS.y));
-                trilightGI = lerp(trilightGI, unity_AmbientGround.rgb, saturate(-normWS.y));
-                half trilightSum = trilightGI.r + trilightGI.g + trilightGI.b;
-                half3 baseAmbient = trilightSum > 0.0001 ? trilightGI : SampleSH(normWS);
-                half3 ambientGI = baseAmbient * (1.0 + _AmbientBoost * 0.22);
-                half3 ambientFloor = half3(0.008, 0.010, 0.015) * (1.0 + _AmbientBoost * 0.35);
-                inputData.bakedGI = max(ambientGI, ambientFloor);
-
-                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
-
-                SurfaceData surfaceData = (SurfaceData)0;
-                surfaceData.albedo = finalAlbedo;
-                surfaceData.metallic = 0.0;
-                surfaceData.specular = half3(0.04, 0.04, 0.04);
-                surfaceData.smoothness = _Smoothness;
-                surfaceData.normalTS = half3(0, 0, 1);
-                surfaceData.emission = half3(0, 0, 0);
-                surfaceData.occlusion = 1.0;
-                surfaceData.alpha = 1.0;
-
-                half4 finalColor = UniversalFragmentPBR(inputData, surfaceData);
-                finalColor.rgb = MixFog(finalColor.rgb, inputData.fogCoord);
-                return finalColor;
+                // --- 7. URP PBR Lighting (surowy mat: Metallic = 0, Smoothness = 0) ---
+                return CalculateTerrainLitPBR(
+                    input.positionWS, normWS, input.positionCS, input.fogFactor,
+                    finalAlbedo, _Smoothness, _AmbientBoost);
             }
             ENDHLSL
         }

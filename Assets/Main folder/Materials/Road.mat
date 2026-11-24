@@ -26,34 +26,33 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _AmbientBoost: 0.255
+    - _AmbientBoost: 0.65
+    - _ClusterSize: 5.8
+    - _Contrast: 0.86
     - _DebugEdgeMask: 0
-    - _DebugShoulders: 0
-    - _DetailScale: 2.2
-    - _DetailStrength: 0.5
-    - _HexBorderNoiseStrength: 0.35
-    - _HexBorderStrength: 0.35
-    - _HexBorderWidth: 0.07
+    - _DebugRoadMode: 0
+    - _DetailAmount: 0.18
+    - _DirtAmount: 0.09
     - _HexRadius: 1
-    - _MacroContrast: 0.9
-    - _MacroScale: 0.1
-    - _PebbleClusterScale: 0.5
-    - _PebbleContrast: 0.425
-    - _PebbleDensity: 0.4
-    - _PebbleScale: 16
-    - _QuantizeSteps: 3.82
-    - _RoadBodyBrightness: 1.2
+    - _MacroNoiseScale: 0.24
+    - _MacroNoiseStrength: 0.34
+    - _MicroNoiseScale: 0.85
+    - _MicroNoiseStrength: 0.13
+    - _Seed: 23
+    - _ShoulderEmission: 0
     - _ShoulderNoiseStrength: 0.2
     - _ShoulderStrength: 1
     - _ShoulderWidth: 0.1
-    - _Smoothness: 0.4
-    - _TexelDensity: 8
+    - _Smoothness: 0
+    - _TexelDensity: 32
     m_Colors:
-    - _PebbleColorDark: {r: 0.24, g: 0.22, b: 0.2, a: 1}
-    - _PebbleColorLight: {r: 0.38, g: 0.34, b: 0.3, a: 1}
-    - _RoadBaseColor: {r: 0.4039216, g: 0.3137255, b: 0.25882354, a: 1}
-    - _RoadDarkColor: {r: 0.26666668, g: 0.20000002, b: 0.15294118, a: 1}
-    - _RoadDustColor: {r: 0.5176471, g: 0.40784317, b: 0.32156864, a: 1}
-    - _ShoulderColor: {r: 0.58, g: 0.45899993, b: 0.36499998, a: 1}
+    - _Color0: {r: 0.26666668, g: 0.20392157, b: 0.1882353, a: 1}
+    - _Color1: {r: 0.32941177, g: 0.2509804, b: 0.21960784, a: 1}
+    - _Color2: {r: 0.41960785, g: 0.3254902, b: 0.26666668, a: 1}
+    - _Color3: {r: 0.4392157, g: 0.34117648, b: 0.2901961, a: 1}
+    - _Color4: {r: 0.5176471, g: 0.41568628, b: 0.32941177, a: 1}
+    - _Color5: {r: 0.30980393, g: 0.26666668, b: 0.24705882, a: 1}
+    - _ShoulderColor: {r: 0.13725491, g: 0.09803922, b: 0.09019608, a: 1}
+    - _ShoulderEmissionColor: {r: 0.24705882, g: 0.18039216, b: 0.15686275, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

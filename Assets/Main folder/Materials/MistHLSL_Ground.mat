@@ -26,33 +26,48 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BlockedBrightness: 0
-    - _BlockedEmission: 1.7452801
+    - _AmbientBoost: 0.55
+    - _BlockedBrightness: 0.55
+    - _BlockedEmission: 0.45
+    - _BoundaryAnimationSpeed: 1
+    - _BoundaryDetailStrength: 0.55
+    - _BoundaryWarpAmplitude: 0.65
     - _Cull: 2
-    - _DiscoverableBrightness: 0
-    - _DiscoverableEmission: 1.7452801
+    - _DebugBoundaryMode: 0
+    - _DiscoverableBrightness: 0.65
+    - _DiscoverableEmission: 0.55
     - _DstBlend: 10
+    - _HexRadius: 1
+    - _LogicalWilderness: 0
     - _MistAlpha: 0.2
-    - _MistAnimationSpeed: 2.5
-    - _MistDetailScale: 1
+    - _MistAlphaMaskSmoothness: 0.85
+    - _MistAlphaVariation: 0.8
+    - _MistAnimationSpeed: 0.7
+    - _MistContrast: 0.95
+    - _MistDetailScale: 1.8
     - _MistDetailStrength: 0.3
     - _MistLegacyLook: 0
-    - _MistMacroScale: 0.3
-    - _MistQuantizeSteps: 4
-    - _MistRetroStrength: 1
+    - _MistMacroScale: 0.42
+    - _MistQuantizeSteps: 14
+    - _MistSideDarkening: 0.2
     - _MistSideDrop: 2
-    - _MistTexelDensity: 12
-    - _SparkBlinkSpeed: 1
-    - _SparkDensity: 0.18
+    - _MistSwirlScale: 0.85
+    - _MistTexelDensity: 32
+    - _MistWarpStrength: 1.75
+    - _SparkBlinkSpeed: 0.9
+    - _SparkDensity: 0.12
     - _SparkIntensity: 1.5625
     - _SparkSize: 0.05
     - _SrcBlend: 5
     - _ZWrite: 0
     m_Colors:
-    - _BlockedColorDark: {r: 0.1254902, g: 0, b: 0.20784315, a: 1}
-    - _BlockedColorLight: {r: 0.54509807, g: 0.03529412, b: 0.87843144, a: 1}
-    - _DiscoverableColorDark: {r: 0.41960788, g: 0.11764707, b: 0.6117647, a: 1}
-    - _DiscoverableColorLight: {r: 0.1254902, g: 0, b: 0.20784315, a: 1}
-    - _SparkColor: {r: 1, g: 0.537, b: 0.931, a: 1}
+    - _BlockedColorDark: {r: 0.09803922, g: 0.08235294, b: 0.13333334, a: 1}
+    - _BlockedColorLight: {r: 0.23137255, g: 0.14901961, b: 0.28627452, a: 1}
+    - _DiscColor0: {r: 0.16078432, g: 0.1254902, b: 0.21568628, a: 1}
+    - _DiscColor1: {r: 0.21960784, g: 0.15294118, b: 0.29411766, a: 1}
+    - _DiscColor2: {r: 0.30588236, g: 0.20784314, b: 0.39607844, a: 1}
+    - _DiscColor3: {r: 0.40392157, g: 0.2784314, b: 0.50980395, a: 1}
+    - _DiscColor4: {r: 0.5019608, g: 0.36078432, b: 0.627451, a: 1}
+    - _SparkColor: {r: 0.85, g: 0.5, b: 0.95, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

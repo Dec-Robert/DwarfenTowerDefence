@@ -26,7 +26,9 @@ Shader "Custom/Terrain/HexSideTerrain"
         [Header(Height Strata System)]
         _HeightStep("Wysokosc poziomu (Height Step)", Float) = 0.30
         _BaseHeightY("Poziom bazowy Y (Base Height Y)", Float) = 0.0
-        _StrataLineColor("Kolor glowny linii (Line Color)", Color) = (0.784, 0.600, 0.345, 1.0)
+        _StrataLineColor("Kolor linii powyzej 0 (>0 Above Base)", Color) = (0.6745098, 0.5372549, 0.31764707, 1.0)
+        _StrataZeroColor("Kolor linii poziomu 0 (=0 Base Level)", Color) = (0.8156863, 0.7372549, 0.5647059, 1.0)
+        _StrataBelowColor("Kolor linii ponizej 0 (<0 Below Base)", Color) = (0.5411765, 0.28235295, 0.28235295, 1.0)
         _StrataDarkColor("Ciemna wariacja linii (Dark Line)", Color) = (0.549, 0.384, 0.224, 1.0)
         _StrataLightColor("Jasny akcent linii (Light Accent)", Color) = (0.886, 0.722, 0.471, 1.0)
         _StrataLineWidth("Szerokosc linii (Line Width)", Range(0.005, 0.08)) = 0.024
@@ -91,6 +93,8 @@ Shader "Custom/Terrain/HexSideTerrain"
                 float4 _MountainSideMiddleColor;
                 float4 _MountainSideTopColor;
                 float4 _StrataLineColor;
+                float4 _StrataZeroColor;
+                float4 _StrataBelowColor;
                 float4 _StrataDarkColor;
                 float4 _StrataLightColor;
                 float  _IsMountainSide;
@@ -278,8 +282,16 @@ Shader "Custom/Terrain/HexSideTerrain"
                 float hexTopLevel = round(continuousLevel - (input.sideInfo.y / heightStep));
                 float hexBottomLevel = round(continuousLevel - ((input.sideInfo.y + input.sideInfo.z) / heightStep));
 
-                // Najblizszy poziom calkowity:
-                float nearestLevel = round(continuousLevel);
+                // Najblizszy wskaznik wysokosci: 0 na 0.0, dodatnie na +0.5/+1.5/..., ujemne na -0.5/-1.5/...
+                float nearestLevel = 0.0;
+                if (continuousLevel >= 0.25)
+                {
+                    nearestLevel = floor(continuousLevel) + 0.5;
+                }
+                else if (continuousLevel <= -0.25)
+                {
+                    nearestLevel = -floor(-continuousLevel) - 0.5;
+                }
 
                 // Subtelna nieregularnosc retro (stabilna statycznie, nie migocze):
                 float lineWarpNoise = ValueNoise2D(float2(horizontalTangent * 2.2 + input.positionWS.x * 0.1, nearestLevel * 7.13 + 12.4));
@@ -318,15 +330,27 @@ Shader "Custom/Terrain/HexSideTerrain"
 
                 float totalLineMask = saturate(internalLineMask + topRimMask);
 
-                // Kolorystyka linii (miedziano-brazowa / zlotawa paleta z subtelnym zroznicowaniem):
+                // Kolorystyka linii wzgledem globalnego poziomu bazowego (_BaseHeightY):
+                // > 0 (+0.5, +1.5, ...): zlotobrazowy (#AC8951), == 0 (0.0): jasniejszy bazowy (#D0BC90), < 0 (-0.5, -1.5, ...): czerwonobrazowy (#8A4848)
+                float3 levelBaseColor = _StrataZeroColor.rgb;
+                if (nearestLevel > 0.25)
+                {
+                    levelBaseColor = _StrataLineColor.rgb;
+                }
+                else if (nearestLevel < -0.25)
+                {
+                    levelBaseColor = _StrataBelowColor.rgb;
+                }
+
+                // Subtelne organiczne zroznicowanie w obrebie koloru danego poziomu (zachowana stylistyka linii)
                 float lineVarNoise = ValueNoise2D(float2(horizontalTangent * 1.5, nearestLevel * 5.31 + 4.2));
-                float3 lineTone = lerp(_StrataLineColor.rgb, _StrataLightColor.rgb, saturate(lineVarNoise * 1.3 - 0.15));
                 float darkVarNoise = ValueNoise2D(float2(horizontalTangent * 3.1 + 8.2, nearestLevel * 2.11));
-                lineTone = lerp(lineTone, _StrataDarkColor.rgb, darkVarNoise * 0.35);
+                float3 lineTone = lerp(levelBaseColor * 0.94, levelBaseColor * 1.08, saturate(lineVarNoise * 1.3 - 0.15));
+                lineTone = lerp(lineTone, levelBaseColor * 0.80, darkVarNoise * 0.30);
                 lineTone *= _StrataLineBrightness;
 
                 // Jasniejszy akcent dla samej gornej krawedzi:
-                float3 topRimColor = _StrataLightColor.rgb * _StrataLineBrightness * 1.05;
+                float3 topRimColor = levelBaseColor * _StrataLineBrightness * 1.05;
                 float3 finalLineColor = lerp(lineTone, topRimColor, topRimMask / max(0.001, totalLineMask));
 
                 half3 strataEmission = half3(0, 0, 0);

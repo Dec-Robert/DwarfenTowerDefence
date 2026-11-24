@@ -16,44 +16,61 @@ Shader "Custom/MistHLSL"
     // =======================================================================================
     Properties
     {
-        [Header(Mist Pattern)]
-        _MistMacroScale        ("Macro Scale (wieksza = drobniejsze masy)",  Range(0.05, 1.5)) = 0.28
-        _MistDetailScale       ("Detail Scale",                              Range(0.2, 4.0))  = 1.1
-        _MistDetailStrength    ("Detail Strength",                           Range(0.0, 1.0))  = 0.22
-        _MistTexelDensity      ("Texel Density (teksle / jednostke swiata)", Range(0.5, 16.0)) = 4.0
-        [IntRange] _MistQuantizeSteps ("Quantize Steps (poziomy tonow)",     Range(3, 8))      = 5
-        _MistRetroStrength     ("Retro Strength (0 = gladko)",               Range(0.0, 1.0))  = 0.65
-        _MistAnimationSpeed    ("Animation Speed (tylko wzor)",              Range(0.0, 3.0))  = 1.0
-        [Toggle(_MIST_LEGACY_LOOK)] _MistLegacyLook ("Legacy V1 Look (porownanie)", Float)     = 0
+        [Header(Mist Pixel Grid and Shape)]
+        _MistTexelDensity      ("Texel Density (per hex width)", Range(8.0, 64.0)) = 24.0
+        _HexRadius             ("Hex Radius", Float) = 1.0
+        _MistMacroScale        ("Macro Scale (mniejsze = wieksze masy)", Range(0.05, 1.5)) = 0.42
+        _MistSwirlScale        ("Swirl Scale (klyby i wiry)", Range(0.1, 2.5)) = 0.85
+        _MistWarpStrength      ("Domain Warp Strength", Range(0.0, 3.5)) = 1.75
+        _MistDetailScale       ("Detail Scale (wieloskalowy dym)", Range(0.2, 4.0)) = 1.80
+        _MistDetailStrength    ("Detail Strength", Range(0.0, 0.8)) = 0.30
+        _MistQuantizeSteps     ("Quantize Steps (poziomy tonow)", Range(4.0, 24.0)) = 14.0
+        _MistContrast          ("Field Contrast", Range(0.5, 2.5)) = 0.95
+        _MistAnimationSpeed    ("Animation Speed", Range(0.0, 3.0)) = 0.85
+        [Toggle(_MIST_LEGACY_LOOK)] _MistLegacyLook ("Legacy V1 Look (porownanie)", Float) = 0
 
-        [Header(Discoverable Mist)]
-        _DiscoverableColorDark  ("Color Dark",  Color) = (0.293, 0.039, 0.461, 1)
-        _DiscoverableColorLight ("Color Light", Color) = (0.517, 0.190, 0.735, 1)
-        _DiscoverableBrightness ("Brightness (albedo)", Range(0.0, 3.0)) = 1.0
-        _DiscoverableEmission   ("Emission",            Range(0.0, 3.0)) = 1.0
+        [Header(Discoverable Borderlands Palette sRGB)]
+        _DiscColor0            ("0: Gleboki cien (#291B36)", Color) = (0.16078432, 0.10588235, 0.21176471, 1.0)
+        _DiscColor1            ("1: Ciemny fiolet (#361C48)", Color) = (0.21176471, 0.10980392, 0.28235295, 1.0)
+        _DiscColor2            ("2: Bazowy fiolet (#552B70)", Color) = (0.33333334, 0.16862746, 0.4392157, 1.0)
+        _DiscColor3            ("3: Jasny fiolet (#683585)", Color) = (0.40784314, 0.20784314, 0.52156866, 1.0)
+        _DiscColor4            ("4: Magiczny akcent (#7E439C)", Color) = (0.49411765, 0.2627451, 0.6117647, 1.0)
+        _DiscoverableBrightness ("Discoverable Brightness (albedo)", Range(0.0, 3.0)) = 0.85
+        _DiscoverableEmission   ("Discoverable Emission", Range(0.0, 3.0)) = 0.55
 
-        [Header(Blocked Mist)]
-        _BlockedColorDark  ("Color Dark",  Color) = (0.100, 0.051, 0.235, 1)
-        _BlockedColorLight ("Color Light", Color) = (0.272, 0.078, 0.349, 1)
-        _BlockedBrightness ("Brightness (albedo)", Range(0.0, 3.0)) = 1.0
-        _BlockedEmission   ("Emission",            Range(0.0, 3.0)) = 1.0
+        [Header(Blocked Wilderness Temporary)]
+        _BlockedColorDark      ("Blocked Color Dark",  Color) = (0.07843138, 0.0627451, 0.10980392, 1.0)
+        _BlockedColorLight     ("Blocked Color Light", Color) = (0.18431373, 0.11372549, 0.23921569, 1.0)
+        _BlockedBrightness     ("Blocked Brightness (albedo)", Range(0.0, 3.0)) = 0.62
+        _BlockedEmission       ("Blocked Emission", Range(0.0, 3.0)) = 0.34
 
-        [Header(Mist Geometry and Transparency)]
-        _MistSideDrop          ("Side Drop (zejscie bokow w dol)",           Range(0.0, 5.0))  = 0.0
-        _MistAlpha             ("Mist Alpha (przezroczystosc)",              Range(0.0, 1.0))  = 1.0
+        [Header(Frontier Boundary)]
+        _BoundaryWarpAmplitude ("Boundary Warp Amplitude", Range(0.0, 1.5)) = 0.65
+        _BoundaryDetailStrength("Boundary Detail Strength", Range(0.0, 1.5)) = 0.55
+        _BoundaryAnimationSpeed("Boundary Animation Speed", Range(0.0, 3.0)) = 1.0
+        [PerRendererData] _LogicalWilderness ("Logical Wilderness (0=Borderlands, 1=Wilderness)", Float) = 0.0
+        _DebugBoundaryMode     ("Debug Boundary (0:Off, 1:State, 2:Frontier, 3:Dist, 4:Final)", Range(0, 4)) = 0
+
+        [Header(Mist Geometry and Lighting)]
+        _MistSideDrop          ("Side Drop (zejscie bokow w dol)", Range(0.0, 5.0)) = 2.5
+        _MistSideDarkening     ("Side Bottom Darkening", Range(0.0, 0.8)) = 0.30
+        _MistAlpha             ("Mist Alpha (przezroczystosc)", Range(0.0, 1.0)) = 1.0
+        _MistAlphaMaskSmoothness ("Alpha Mask Smoothness (brak kwadratowych plam)", Range(0.0, 1.0)) = 0.82
+        _MistAlphaVariation    ("Alpha Local Variation (rozpraszanie dymu)", Range(0.0, 1.0)) = 0.72
+        _AmbientBoost          ("Ambient Boost (Trilight GI)", Range(0.0, 1.0)) = 0.55
 
         [Header(Surface and Blending)]
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1.0
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0.0
         [Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", Float) = 1.0
-        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2.0
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 0.0
 
         [Header(Chaos Sparks)]
-        [HDR] _SparkColor ("Color", Color) = (1.0, 0.537, 0.931, 1)
-        _SparkDensity    ("Density (odsetek komorek z iskra)", Range(0.0, 1.0))  = 0.18
-        _SparkSize       ("Size (promien, jednostki swiata)",  Range(0.01, 0.2)) = 0.05
-        _SparkIntensity  ("Intensity",                         Range(0.0, 3.0))  = 0.8
-        _SparkBlinkSpeed ("Blink Speed",                       Range(0.1, 4.0))  = 1.0
+        [HDR] _SparkColor      ("Color", Color) = (0.85, 0.50, 0.95, 1.0)
+        _SparkDensity          ("Density (odsetek komorek z iskra)", Range(0.0, 1.0)) = 0.12
+        _SparkSize             ("Size (promien, jednostki swiata)", Range(0.01, 0.2)) = 0.05
+        _SparkIntensity        ("Intensity", Range(0.0, 3.0)) = 0.65
+        _SparkBlinkSpeed       ("Blink Speed", Range(0.1, 4.0)) = 0.9
     }
 
     SubShader
@@ -76,19 +93,35 @@ Shader "Custom/MistHLSL"
         // 1. PARAMETRY MATERIALU (SRP Batcher) - ten sam CBUFFER w kazdym passie
         // ===================================================================================
         CBUFFER_START(UnityPerMaterial)
+            float  _MistTexelDensity;
+            float  _HexRadius;
             float  _MistMacroScale;
+            float  _MistSwirlScale;
+            float  _MistWarpStrength;
             float  _MistDetailScale;
             float  _MistDetailStrength;
-            float  _MistTexelDensity;
             float  _MistQuantizeSteps;
-            float  _MistRetroStrength;
+            float  _MistContrast;
             float  _MistAnimationSpeed;
             float  _MistLegacyLook;
             float  _MistSideDrop;
+            float  _MistSideDarkening;
             float  _MistAlpha;
+            float  _MistAlphaMaskSmoothness;
+            float  _MistAlphaVariation;
+            float  _AmbientBoost;
 
-            float4 _DiscoverableColorDark;
-            float4 _DiscoverableColorLight;
+            float  _BoundaryWarpAmplitude;
+            float  _BoundaryDetailStrength;
+            float  _BoundaryAnimationSpeed;
+            float  _LogicalWilderness;
+            float  _DebugBoundaryMode;
+
+            float4 _DiscColor0;
+            float4 _DiscColor1;
+            float4 _DiscColor2;
+            float4 _DiscColor3;
+            float4 _DiscColor4;
             float  _DiscoverableBrightness;
             float  _DiscoverableEmission;
 
@@ -111,6 +144,7 @@ Shader "Custom/MistHLSL"
         TEXTURE2D(_FogMask);
         SAMPLER(sampler_FogMask);
         float4 _FogWorldBounds;
+        float  _FogTransitionWidthWorld;
         float  _UnscaledTime;
 
         // ===================================================================================
@@ -315,12 +349,10 @@ Shader "Custom/MistHLSL"
         }
 
         // ===================================================================================
-        // 7. MIST V2 - MACRO MIST + RETRO DETAIL
+        // 7. MIST V3 - LIVING PS1/PS2 SUPERNATURAL MIST
+        //    Stabilna siatka texeli (32 / szer. heksa), animowany szum, brak rozciagania na bokach.
         // ===================================================================================
 
-        // Gradient noise V2: ta sama konstrukcja co w V1, ale kierunki gradientow sa liczone
-        // z hasha przeskalowanego do [-1,1] (jak w oryginalnym nodzie Unity). W V1 hash [0,1]
-        // dawal kierunki tylko w dwoch cwiartkach, czyli diagonalne smugi (anizotropia).
         float2 MistV2_GradientDir(float2 p)
         {
             float h;
@@ -329,7 +361,6 @@ Shader "Custom/MistHLSL"
             return normalize(float2(x - floor(x + 0.5), abs(x) - 0.5));
         }
 
-        // p jest juz przeskalowane. Zwraca ~[0,1], srednia ~0.5.
         float MistV2_GradientNoise(float2 p)
         {
             float2 ip = floor(p);
@@ -342,75 +373,111 @@ Shader "Custom/MistHLSL"
             return lerp(lerp(d00, d01, fp.y), lerp(d10, d11, fp.y), fp.x) + 0.5;
         }
 
-        // Miekka kwantyzacja: N tonow, ale przejscia miedzy poziomami sa wygladzone
-        // (plateau ~60% pasa, przejscie ~40%), zeby nie powstawaly ostre, plaskie pasy.
-        float MistV2_SoftQuantize(float v, float steps)
+        // Wyznacza dyskretna wspolrzedna srodka texela w przestrzeni swiata (wyrównana z terenem)
+        // oraz niweluje rozciaganie na pionowych sciankach bocznych mgly.
+        float2 EvaluateMistPixelCoord(float2 worldXZ, float3 normalWS, float normalOSY, float sideDepth, out float detailFade, out float2 smoothSampleSpace)
         {
-            float levels = max(steps - 1.0, 1.0);
-            float x  = v * levels;
-            float fl = floor(x);
-            float fr = x - fl;
-            return (fl + smoothstep(0.3, 0.7, fr)) / levels;
+            float wallWeight = 1.0 - saturate((normalOSY - 0.35) / 0.30);
+            float2 sideDir = normalize(normalWS.xz + float2(1e-5, 0.0));
+            float2 tangentDir = float2(-sideDir.y, sideDir.x);
+
+            // Przy gornej krawedzi (sideDepth == 0) wspolrzedna jest identyczna z worldXZ -> pelna ciaglosc.
+            // Schodzac w dol po pionowej scianie przesuwa sie 1:1 z wysokoscia, dajac kwadratowe texele!
+            smoothSampleSpace = worldXZ
+                - sideDir * (sideDepth * wallWeight)
+                + tangentDir * (sideDepth * wallWeight * 0.25);
+
+            float texelsPerUnit = max(1.0, _MistTexelDensity) / max(0.001, 2.0 * _HexRadius);
+            float2 texelCoords = smoothSampleSpace * texelsPerUnit;
+
+            float2 dTex = fwidth(texelCoords);
+            float texelSpan = max(dTex.x, dTex.y);
+            detailFade = 1.0 - smoothstep(0.95, 2.15, texelSpan);
+
+            return (floor(texelCoords) + 0.5) / texelsPerUnit;
         }
 
-        // Pole wizualne Mist w [0,1]. Wspolne dla Discoverable i Blocked (jedno obliczenie).
-        // detailNoise (nieskwantyzowany) sluzy tylko do akcentow koloru.
-        // Koszt: 3 gradient-noise (+ 4 sin/cos dla nieregularnego dryfu). Zadnych FBM.
-        float EvaluateMistField(float2 worldXZ, float time, out float detailNoise)
+        // Miekka maska gestosci dla przezroczystych wariantow (Surveying / Ground):
+        // ogranicza kwadratowe plamy przy zachowaniu sredniego krycia i tego samego ruchu co wiry.
+        float EvaluateMistSmoothAlphaMask(float2 smoothPos, float time)
         {
-            float retro = saturate(_MistRetroStrength);
-
-            // --- A. Pikselizacja w przestrzeni swiata (stabilna: zalezy tylko od worldXZ) ---
-            // Siatka tekseli jest nieruchoma w swiecie; wzor plynie "przez" tekstle.
-            // Probkujemy srodek tekselu. Retro < 1 plynnie wraca do gladkiego wzoru.
-            float  density     = max(_MistTexelDensity, 0.01);
-            float2 texelCenter = (floor(worldXZ * density) + 0.5) / density;
-            float2 pos         = lerp(worldXZ, texelCenter, retro);
-
-            // --- B. Ruch: powolny dryf + wolne, niewspolbiezne wahania (brak widocznej petli) ---
-            // Kazda warstwa ma wlasny kierunek, predkosc i fazy wahan, wiec warstwy powoli
-            // "przesuwaja sie wzgledem siebie". Predkosci ~0.03-0.09 jednostki swiata / s.
             float t = time * _MistAnimationSpeed;
-            float2 drift1 = t * float2( 0.060,  0.025) + float2(sin(t * 0.071 + 1.3), cos(t * 0.053      )) * 0.9;
-            float2 drift2 = t * float2(-0.040,  0.052) + float2(cos(t * 0.083 + 0.4), sin(t * 0.061 + 2.1)) * 0.7;
-            float2 driftD = t * float2( 0.026, -0.034) + float2(sin(t * 0.097 + 4.2), cos(t * 0.067 + 0.9)) * 0.5;
+            float2 driftMacro = t * float2(-0.032,  0.041);
+            float2 driftSwirl = t * float2( 0.062, -0.036);
 
-            // --- C. Warstwa MACRO: duze masy + warstwa srednia zwarpowana przez macro ---
-            float macroS = _MistMacroScale;
-            float n1 = MistV2_GradientNoise((pos + drift1) * macroS);
+            float macroSmooth = MistV2_GradientNoise((smoothPos + driftMacro) * _MistMacroScale);
+            float swirlSmooth = MistV2_GradientNoise((smoothPos + driftSwirl) * (_MistSwirlScale * 0.9) + float2(17.4, 42.8));
 
-            float2 pm = (pos + drift2) * (macroS * MIST_MID_RATIO) + (n1 - 0.5) * float2(1.9, -1.4) + 17.3;
-            float  n2 = MistV2_GradientNoise(pm);
-
-            // --- D. Warstwa DETAIL: jedna probka, zwarpowana przez n2 (zadnych drobnych plam) ---
-            float2 pd = (pos + driftD) * _MistDetailScale + (n2 - 0.5) * float2(-1.2, 1.6) + 41.7;
-            detailNoise = MistV2_GradientNoise(pd);
-
-            float baseN = n1 * 0.64 + n2 * 0.36;
-            float field = (baseN - 0.5) * MIST_FIELD_CONTRAST + 0.5
-                        + (detailNoise - 0.5) * _MistDetailStrength;
-            field = saturate(field);
-
-            // --- E. Kwantyzacja tonow - tylko wizualnego pola, nigdy maski/wildernessu ---
-            float q = MistV2_SoftQuantize(field, _MistQuantizeSteps);
-            return lerp(field, q, retro);
+            float smoothField = macroSmooth * 0.62 + swirlSmooth * 0.38;
+            // Symetryczne rozciagniecie wokol 0.5 -> srednia wartosc pozostaje ~0.5 (zachowane srednie krycie)
+            return saturate(0.5 + (smoothField - 0.5) * 1.85);
         }
 
-        // Palety. Wszystkie kolory z Properties sa uzywane bez konwersji (patrz naglowek).
-        void EvaluateMistPalette(float mist, float detailNoise, out float3 discoverable, out float3 blocked)
+        // Pole gestosci mgly [0..1] wspolne dla koloru i maski gestosci.
+        // Siatka texeli stoi w miejscu; animuja sie wylacznie warstwy noise i wiry.
+        float EvaluateMistDensityField(float2 pixelPos, float time, float detailFade, out float swirlSignal)
         {
-            // Discoverable: ciemniejszy fiolet wokol, jasne skupiska w makrostrukturze.
-            float  mD   = smoothstep(0.12, 0.92, mist);
-            float3 disc = lerp(_DiscoverableColorDark.rgb, _DiscoverableColorLight.rgb, mD);
+            float t = time * _MistAnimationSpeed;
 
-            // Subtelny rozowo-fioletowy akcent - tylko w najjasniejszych skupiskach, niejednolicie.
-            float accent = smoothstep(0.62, 1.0, mist) * saturate((detailNoise - 0.35) * 2.5);
-            disc *= lerp(float3(1.0, 1.0, 1.0), MIST_PINK_TINT, accent * 0.8);
-            discoverable = disc;
+            // Warstwy organicznego ruchu o roznych kierunkach i niskich predkosciach
+            float2 driftWarp  = t * float2( 0.048,  0.022);
+            float2 driftMacro = t * float2(-0.032,  0.041);
+            float2 driftSwirl = t * float2( 0.062, -0.036);
+            float2 driftGas1  = t * float2(-0.052, -0.029);
+            float2 driftGas2  = t * float2( 0.038,  0.047);
 
-            // Blocked: ten sam wzor, ale mniejszy kontrast (spokojniejszy) i ciemna paleta.
-            float mB = saturate(0.5 + (mist - 0.5) * MIST_BLOCKED_CONTRAST);
-            blocked = lerp(_BlockedColorDark.rgb, _BlockedColorLight.rgb, mB);
+            // 1. Domain Warping - organiczne zakrzywienia chmur mgly
+            float warpX = MistV2_GradientNoise((pixelPos + driftWarp) * (_MistMacroScale * 1.15) + float2(7.3, 19.1)) - 0.5;
+            float warpY = MistV2_GradientNoise((pixelPos - driftWarp * 0.8) * (_MistMacroScale * 1.15) + float2(31.7, 5.9)) - 0.5;
+            float2 warpVec = float2(warpX, warpY) * _MistWarpStrength;
+
+            // 2. Organiczne chmuropodobne masy (Macro Noise)
+            float macroMass = MistV2_GradientNoise((pixelPos + driftMacro + warpVec) * _MistMacroScale);
+
+            // 3. Mniejsze kleby i wiry w obrebie skupisk
+            float2 swirlPos = (pixelPos + driftSwirl + warpVec * 1.25) * _MistSwirlScale + float2(17.4, 42.8);
+            swirlSignal = MistV2_GradientNoise(swirlPos);
+
+            // 4. Wieloskalowy Detail Noise (rozbija jednolite plamy na gazowa strukture)
+            float detail1 = MistV2_GradientNoise((pixelPos + driftGas1 + warpVec * 0.65) * _MistDetailScale + float2(63.1, 11.7));
+            float detail2 = MistV2_GradientNoise((pixelPos + driftGas2 + warpVec * 0.35) * (_MistDetailScale * 2.15) + float2(91.4, 28.3));
+            float multiDetail = detail1 * 0.65 + detail2 * 0.35;
+
+            float baseField = macroMass * 0.54 + swirlSignal * 0.46;
+            float contrasted = saturate(0.5 + (baseField - 0.5) * _MistContrast);
+            float withGas = contrasted + (multiDetail - 0.5) * _MistDetailStrength * lerp(0.35, 1.0, detailFade);
+
+            return saturate(withGas);
+        }
+
+        float3 EvaluateMistDiscRamp5(float t)
+        {
+            if (t < 0.27) return lerp(_DiscColor0.rgb, _DiscColor1.rgb, saturate(t / 0.27));
+            if (t < 0.54) return lerp(_DiscColor1.rgb, _DiscColor2.rgb, saturate((t - 0.27) / 0.27));
+            if (t < 0.80) return lerp(_DiscColor2.rgb, _DiscColor3.rgb, saturate((t - 0.54) / 0.26));
+            return lerp(_DiscColor3.rgb, _DiscColor4.rgb, saturate((t - 0.80) / 0.20));
+        }
+
+        // Ewaluacja palety Borderlands (Discoverable) z 12-16 poziomami kwantyzacji:
+        // ostre granice texeli, miekka gradacja gazu (zero poziomic), ~20-30% jasniejszych skupisk.
+        void EvaluateDiscoverableMist(float density, float swirlSignal, float detailFade, out float3 outColor, out float outEmissionFactor)
+        {
+            float shaped = saturate(density + (swirlSignal - 0.5) * 0.14);
+
+            // 12-16 dyskretnych poziomow tonalnych (miekka gazowa substancja bez plaskich poziomic)
+            float steps = max(4.0, _MistQuantizeSteps);
+            float qTone = floor(shaped * (steps - 1.0) + 0.5) / (steps - 1.0);
+
+            outColor = EvaluateMistDiscRamp5(qTone);
+            outEmissionFactor = lerp(0.30, 1.25, qTone * qTone);
+        }
+
+        // Tymczasowa, uporzadkowana ewaluacja Blocked (Wilderness) na wspolnej siatce texeli przed kolejnym etapem
+        float3 EvaluateBlockedMistTemp(float density)
+        {
+            float mB = saturate(0.5 + (density - 0.5) * 0.55);
+            float qB = floor(mB * 4.0 + 0.5) / 4.0;
+            return lerp(_BlockedColorDark.rgb, _BlockedColorLight.rgb, qB);
         }
 
         // ===================================================================================
@@ -484,9 +551,9 @@ Shader "Custom/MistHLSL"
             float env = smoothstep(0.0, 0.15, u) * (1.0 - smoothstep(0.35, 1.0, u));
             float brightness = lerp(0.6, 1.0, rBright);       // niewielkie roznice jasnosci
 
-            // Ksztalt: maly, ostry punkt. Retro Strength laczy kolo (0) z kwadratowym teksem (1).
+            // Ksztalt: maly, ostry punkt. Retro tu zawsze kwadratowy texel zgodny z estetyka PS1/PS2.
             float2 dv = abs(cellFrac - center) * MIST_SPARK_CELL;
-            float  d  = lerp(length(dv), max(dv.x, dv.y), saturate(_MistRetroStrength));
+            float  d  = max(dv.x, dv.y);
 
             float rr    = min(max(_SparkSize, pxWidth * 0.75), MIST_SPARK_CELL * 0.24);
             float soft  = max(pxWidth * 0.75, rr * 0.2);
@@ -541,6 +608,11 @@ Shader "Custom/MistHLSL"
             return sum / norm;
         }
 
+        float4 SampleFogMaskRaw(float2 uv)
+        {
+            return SAMPLE_TEXTURE2D(_FogMask, sampler_FogMask, saturate(uv));
+        }
+
         float FogSampleMask(float2 uv)
         {
             return SAMPLE_TEXTURE2D(_FogMask, sampler_FogMask, saturate(uv)).r;
@@ -549,34 +621,56 @@ Shader "Custom/MistHLSL"
         float CalculateFogWilderness(
             float3 WorldPos,
             float4 WorldBounds,
-            float FadeMin,
-            float FadeMax
+            out float outRawDistMask,
+            out float outFrontierLine,
+            out float outLogicalMask
         )
         {
+            // Etap 1: Odczyt rzeczywistego stanu fragmentu (PerRendererData z MaterialPropertyBlock)
+            float logicalWilderness = saturate(_LogicalWilderness);
+            outLogicalMask = logicalWilderness;
+
             float4 bounds = (length(WorldBounds.zw) > 0.001) ? WorldBounds : _FogWorldBounds;
             float2 size   = max(bounds.zw, float2(0.0001, 0.0001));
-
             float2 p      = WorldPos.xz;
-            float  time   = _Time.y;
+            float2 rawUV  = (p - bounds.xy) / size;
+
+            float4 rawSample = SampleFogMaskRaw(rawUV);
+            outRawDistMask  = rawSample.r;
+            outFrontierLine = rawSample.b;
+
+            // Fragment na chunku Wilderness nigdy nie moze otrzymac jasnego wariantu Discoverable
+            if (logicalWilderness >= 0.999)
+            {
+                return 1.0;
+            }
+
+            // Etap 2: Organiczne, animowane przejscie wylacznie wewnatrz Borderlands na bazie maski odleglosci od Frontier
+            float transitionWidth = _FogTransitionWidthWorld > 0.01 ? _FogTransitionWidthWorld : 1.9;
+            float warpAmp = transitionWidth * _BoundaryWarpAmplitude;
+
+            float time = _Time.y * _BoundaryAnimationSpeed;
             float2 drift1 = float2(time * 0.035, time * 0.02);
             float2 drift2 = float2(-time * 0.02, time * 0.035);
 
-            // 1. DOMAIN WARPING
+            // 1. DOMAIN WARPING (proporcjonalny do szerokosci pasa przejsciowego)
             float2 warp;
             warp.x = FogFBM(p * FOG_WARP_FREQ + drift1);
             warp.y = FogFBM(p * FOG_WARP_FREQ + drift2 + float2(37.2, 11.7));
-            warp = (warp - 0.5) * 3.0 * FOG_WARP_AMOUNT;
+            warp = (warp - 0.5) * 2.0 * warpAmp;
 
-            // drobna, szybsza warstwa wypustek
             float2 warpFine;
             warpFine.x = FogNoise2D(p * 0.9 + drift2 * 2.0);
             warpFine.y = FogNoise2D(p * 0.9 - drift1 * 2.0 + float2(8.3, 21.9));
-            warp += (warpFine - 0.5) * 1.2;
+            warp += (warpFine - 0.5) * (0.45 * warpAmp);
 
-            float2 uv = (p + warp - bounds.xy) / size;
+            // Ograniczamy deformacje do strefy blisko granicy Frontier
+            float nearFrontier = smoothstep(0.0, 0.25, rawSample.r + 0.12);
+            float2 uv = (p + warp * nearFrontier - bounds.xy) / size;
 
-            // 2. MIEKKA, NIEJEDNOLITA KRAWEDZ - 5 probek maski z promieniem zaleznym od szumu
-            float  r  = FOG_SOFTNESS * (0.4 + FogNoise2D(p * 0.3 + drift1)) / size.x;
+            // 2. MIEKKA, NIEJEDNOLITA KRAWEDZ - 5 probek maski odleglosci
+            float softnessWorld = min(FOG_SOFTNESS, transitionWidth * 0.55);
+            float  r  = softnessWorld * (0.4 + FogNoise2D(p * 0.3 + drift1)) / size.x;
             float2 ro = float2(r, r * size.x / size.y);
 
             float m  = FogSampleMask(uv) * 0.36;
@@ -588,12 +682,16 @@ Shader "Custom/MistHLSL"
             // 3. POSTRZEPIENIE - szum dziala tylko w pasie przejscia (m ~ 0.5)
             float detail = FogFBM(p * FOG_DETAIL_FREQ + drift2 * 2.0 + float2(15.7, 39.2));
             float band   = saturate(4.0 * m * (1.0 - m));
-            float dynamicMask = saturate(m + (detail - 0.5) * 2.0 * FOG_DETAIL_STRENGTH * band);
+            float dynamicMask = saturate(m + (detail - 0.5) * 2.0 * _BoundaryDetailStrength * band);
 
-            // 4. Przejscie do ciemnej mgly (wilderness: 0 = Discoverable, 1 = Blocked)
-            float fMin = min(FadeMin, 0.25);
-            float fMax = max(FadeMax, 0.80);
-            return smoothstep(fMin, fMax, dynamicMask);
+            float dynamicWilderness = smoothstep(0.18, 0.85, dynamicMask);
+
+            // Plynne domkniecie na samej krawedzi z Wilderness do wariantu Blocked
+            float edgeSeal = smoothstep(0.72, 0.97, rawSample.r);
+            dynamicWilderness = max(dynamicWilderness, edgeSeal);
+
+            // Etap 3: Twarde ograniczenie do rzeczywistego stanu logicznego
+            return max(logicalWilderness, dynamicWilderness);
         }
         ENDHLSL
 
@@ -663,6 +761,7 @@ Shader "Custom/MistHLSL"
                 half4  fogFactorAndVertexLight  : TEXCOORD2;
                 DECLARE_LIGHTMAP_OR_SH(staticLightmapUV, vertexSH, 3);
                 float  normalOSY                : TEXCOORD4;
+                float  sideDepth                : TEXCOORD5;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -682,6 +781,7 @@ Shader "Custom/MistHLSL"
                 }
 
                 float3 posOS = input.positionOS.xyz;
+                float sideDepth = 0.0;
                 if (input.normalOS.y < 0.5)
                 {
                     if (posOS.y < -0.05)
@@ -692,6 +792,7 @@ Shader "Custom/MistHLSL"
                     {
                         posOS.y -= 0.002;
                     }
+                    sideDepth = max(0.0, -posOS.y);
                 }
                 VertexPositionInputs vertexInput = GetVertexPositionInputs(posOS);
 
@@ -708,6 +809,7 @@ Shader "Custom/MistHLSL"
                 output.positionWS = vertexInput.positionWS;
                 output.normalWS = normalInput.normalWS;
                 output.normalOSY = input.normalOS.y;
+                output.sideDepth = sideDepth;
 
                 half fogFactor = 0;
                 #if !defined(_FOG_FRAGMENT)
@@ -731,18 +833,45 @@ Shader "Custom/MistHLSL"
 
                 float2 worldXZ = input.positionWS.xz;
 
-                // 1. GAMEPLAY: wspolczynnik wilderness z maski (FadeMin = 0.55, FadeMax = 0.88
-                //    jak w nodzie CalculateFog). Nie kwantyzowany, nie pikselizowany.
+                // 1. GAMEPLAY / GRANICA: 3-etapowe CalculateFogWilderness
+                float rawDistMask;
+                float frontierLine;
+                float logicalMask;
                 float wilderness = CalculateFogWilderness(
                     input.positionWS,
                     _FogWorldBounds,
-                    0.55,
-                    0.88
+                    rawDistMask,
+                    frontierLine,
+                    logicalMask
                 );
+
+                // Tryby debugowania granicy (_DebugBoundaryMode)
+                int debugBoundary = (int)(_DebugBoundaryMode + 0.5);
+                if (debugBoundary == 1)
+                {
+                    float3 stateCol = lerp(float3(0.15, 0.78, 0.28), float3(0.85, 0.18, 0.22), logicalMask);
+                    return half4(stateCol, 1.0);
+                }
+                else if (debugBoundary == 2)
+                {
+                    float3 baseCol = lerp(float3(0.12, 0.42, 0.22), float3(0.32, 0.10, 0.14), logicalMask);
+                    float3 fCol = lerp(baseCol, float3(1.0, 0.90, 0.15), step(0.35, frontierLine));
+                    return half4(fCol, 1.0);
+                }
+                else if (debugBoundary == 3)
+                {
+                    return half4(rawDistMask, rawDistMask, rawDistMask, 1.0);
+                }
+                else if (debugBoundary == 4)
+                {
+                    return half4(wilderness, wilderness, wilderness, 1.0);
+                }
 
                 // 2. WYGLAD: kolor bazowy (albedo) i emisja sa teraz niezalezne
                 float3 albedoColor;
                 float3 emissionColor;
+                float  mist = 0.5;
+                float2 smoothAlphaCoord = worldXZ;
 
                 #if defined(_MIST_LEGACY_LOOK)
                     // --- Legacy V1: identyczny wynik jak poprzedni shader ---
@@ -755,26 +884,34 @@ Shader "Custom/MistHLSL"
                     albedoColor   = fogFinalColor;
                     emissionColor = fogFinalColor;
                 #else
-                    // --- Mist V2: Retro Chaos ---
-                    // Pochodne liczone poza galeziami dynamicznymi (wymog derivatives).
-                    float2 fw = fwidth(worldXZ);
-                    float pxWidth = max(fw.x, fw.y);
+                    // --- Mist V3: Living PS1/PS2 Mist (Borderlands / Discoverable standard) ---
+                    float3 normWS = NormalizeNormalPerPixel(input.normalWS);
+                    float detailFade;
+                    float2 pixelPos = EvaluateMistPixelCoord(worldXZ, normWS, input.normalOSY, input.sideDepth, detailFade, smoothAlphaCoord);
 
-                    float detailNoise;
-                    float mist = EvaluateMistField(worldXZ, _UnscaledTime, detailNoise);
+                    float swirlSignal;
+                    float density = EvaluateMistDensityField(pixelPos, _UnscaledTime, detailFade, swirlSignal);
+                    mist = density;
 
                     float3 discoverableColor;
-                    float3 blockedColor;
-                    EvaluateMistPalette(mist, detailNoise, discoverableColor, blockedColor);
+                    float  discEmissionFactor;
+                    EvaluateDiscoverableMist(density, swirlSignal, detailFade, discoverableColor, discEmissionFactor);
 
-                    // Ten sam wspolczynnik wilderness miesza oba stany, jak w V1.
+                    float3 blockedColor = EvaluateBlockedMistTemp(density);
+
+                    // Delikatne przyciemnienie podstawy pionowych scianek bocznych dla glebi
+                    float sideDarken = 1.0 - saturate(input.sideDepth / max(0.01, _MistSideDrop)) * _MistSideDarkening;
+                    discoverableColor *= sideDarken;
+                    blockedColor *= sideDarken;
+
                     albedoColor   = lerp(discoverableColor * _DiscoverableBrightness,
                                          blockedColor      * _BlockedBrightness, wilderness);
-                    emissionColor = lerp(discoverableColor * _DiscoverableEmission,
+                    emissionColor = lerp(discoverableColor * (_DiscoverableEmission * discEmissionFactor),
                                          blockedColor      * _BlockedEmission, wilderness);
 
                     // Chaos Sparks: tylko Blocked, plynnie wygaszane na granicy stanow.
-                    // Dodawane wylacznie do emisji (nie sa oswietlane, nie rozjasniaja albedo).
+                    float2 fw = fwidth(worldXZ);
+                    float pxWidth = max(fw.x, fw.y);
                     float sparkGate = smoothstep(0.55, 0.95, wilderness);
                     [branch]
                     if (sparkGate > 0.0)
@@ -783,7 +920,7 @@ Shader "Custom/MistHLSL"
                     }
                 #endif
 
-                // 3. Konfiguracja InputData i SurfaceData identyczna z Universal Lit Shader Graph
+                // 3. Konfiguracja InputData (real-time Trilight z DayNightCycle + fallback)
                 InputData inputData = (InputData)0;
                 inputData.positionWS = input.positionWS;
                 inputData.normalWS = NormalizeNormalPerPixel(input.normalWS);
@@ -791,7 +928,15 @@ Shader "Custom/MistHLSL"
                 inputData.shadowCoord = float4(0.0, 0.0, 0.0, 0.0);
                 inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactorAndVertexLight.x);
                 inputData.vertexLighting = input.fogFactorAndVertexLight.yzw;
-                inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS);
+
+                half3 trilightGI = lerp(unity_AmbientEquator.rgb, unity_AmbientSky.rgb, saturate(inputData.normalWS.y));
+                trilightGI = lerp(trilightGI, unity_AmbientGround.rgb, saturate(-inputData.normalWS.y));
+                half trilightSum = trilightGI.r + trilightGI.g + trilightGI.b;
+                half3 baseAmbient = trilightSum > 0.0001 ? trilightGI : SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS);
+                half3 ambientGI = baseAmbient * (1.0 + _AmbientBoost * 0.22);
+                half3 ambientFloor = half3(0.008, 0.010, 0.015) * (1.0 + _AmbientBoost * 0.35);
+                inputData.bakedGI = max(ambientGI, ambientFloor);
+
                 inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
                 inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
 
@@ -806,8 +951,11 @@ Shader "Custom/MistHLSL"
                 float finalAlpha = _MistAlpha;
                 if (_MistAlpha < 0.999)
                 {
-                    // Lekkie rozejscie sie wzoru mgly nad eksplorowanym terenem
-                    finalAlpha = saturate(_MistAlpha * lerp(0.85, 1.15, mist));
+                    // Lagodne przejscie maski przezroczystosci (ogranicza kwadratowe plamy przy zachowaniu sredniego krycia)
+                    float smoothAlphaMask = EvaluateMistSmoothAlphaMask(smoothAlphaCoord, _UnscaledTime);
+                    float blendedMask = lerp(mist, smoothAlphaMask, saturate(_MistAlphaMaskSmoothness));
+                    float alphaMultiplier = lerp(1.0 - _MistAlphaVariation, 1.0 + _MistAlphaVariation, blendedMask);
+                    finalAlpha = saturate(_MistAlpha * alphaMultiplier);
                 }
                 surfaceData.alpha               = finalAlpha;
                 surfaceData.clearCoatMask       = 0.0;

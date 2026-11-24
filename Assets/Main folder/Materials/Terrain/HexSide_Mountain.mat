@@ -53,8 +53,10 @@ Material:
     - _MountainSideBottomColor: {r: 0.23921569, g: 0.18039216, b: 0.12941177, a: 1}
     - _MountainSideMiddleColor: {r: 0.32156864, g: 0.2784314, b: 0.23921569, a: 1}
     - _MountainSideTopColor: {r: 0.43137255, g: 0.39215687, b: 0.3529412, a: 1}
+    - _StrataBelowColor: {r: 0.5411765, g: 0.28235295, b: 0.28235295, a: 1}
     - _StrataDarkColor: {r: 0.54901963, g: 0.38431373, b: 0.22352941, a: 1}
     - _StrataLightColor: {r: 0.8862745, g: 0.72156864, b: 0.47058824, a: 1}
-    - _StrataLineColor: {r: 0.78431374, g: 0.6, b: 0.34509805, a: 1}
+    - _StrataLineColor: {r: 0.6745098, g: 0.5372549, b: 0.31764707, a: 1}
+    - _StrataZeroColor: {r: 0.8156863, g: 0.7372549, b: 0.5647059, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

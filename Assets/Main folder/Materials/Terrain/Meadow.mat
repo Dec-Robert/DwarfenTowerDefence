@@ -26,25 +26,31 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _AmbientBoost: 1
+    - _AccentChance: 0.16
+    - _AmbientBoost: 0.65
+    - _ClusterSize: 7.5
+    - _Contrast: 1.05
     - _DebugMeadowMode: 0
-    - _DetailScale: 2.2
-    - _DetailStrength: 0.3
-    - _HexBorderNoiseStrength: 0.8
-    - _HexBorderStrength: 1
-    - _HexBorderWidth: 0.05
+    - _DetailAmount: 0.46
+    - _HexBorderNoiseStrength: 0.3
+    - _HexBorderStrength: 0.85
+    - _HexBorderWidth: 0.07
     - _HexRadius: 1
-    - _PatchContrast: 0.75
-    - _PatchScale: 0.52
-    - _QuantizeSteps: 4
-    - _Smoothness: 0.25
-    - _SoilCoverage: 0
-    - _TexelDensity: 16
+    - _MacroNoiseScale: 0.22
+    - _MacroNoiseStrength: 0.28
+    - _MicroNoiseScale: 0.85
+    - _MicroNoiseStrength: 0.14
+    - _Seed: 13
+    - _Smoothness: 0
+    - _TexelDensity: 32
     m_Colors:
-    - _MeadowBaseColor: {r: 0.349, g: 0.431, b: 0.271, a: 1}
-    - _MeadowBorderColor: {r: 0.549, g: 0.635, b: 0.42, a: 1}
-    - _MeadowDarkColor: {r: 0.247, g: 0.322, b: 0.204, a: 1}
-    - _MeadowLightColor: {r: 0.506, g: 0.584, b: 0.38, a: 1}
-    - _MeadowSoilColor: {r: 0.4, g: 0.32, b: 0.225, a: 1}
+    - _Color0: {r: 0.27450982, g: 0.33333334, b: 0.21960784, a: 1}
+    - _Color1: {r: 0.3137255, g: 0.3764706, b: 0.23921569, a: 1}
+    - _Color2: {r: 0.34509805, g: 0.41960785, b: 0.2627451, a: 1}
+    - _Color3: {r: 0.3764706, g: 0.45490196, b: 0.28627452, a: 1}
+    - _Color4: {r: 0.41568628, g: 0.49019608, b: 0.30980393, a: 1}
+    - _Color5: {r: 0.45490196, g: 0.53333336, b: 0.34117648, a: 1}
+    - _Color6: {r: 0.50980395, g: 0.5882353, b: 0.3764706, a: 1}
+    - _HexBorderColor: {r: 0.5568628, g: 0.6313726, b: 0.41960785, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

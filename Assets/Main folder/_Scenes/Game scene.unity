@@ -45925,10 +45925,13 @@ MonoBehaviour:
   manualMistWorldHeight: 0.85
   mistHeightOffset: 0.1
   mistElevationLevel: 3
-  maskResolution: 128
-  chunkRadiusMultiplier: 2.2
-  coreRadiusRatio: 0.55
+  maskResolution: 512
+  maskPixelsPerHex: 4.5
   worldMarginMultiplier: 3
+  boundaryTransitionWidth: 0.16
+  boundaryWarpAmplitude: 0.65
+  boundaryDetailStrength: 0.55
+  boundaryAnimationSpeed: 1
   surveyingEnemySpeedMultiplier: 1.5
 --- !u!114 &1837610586
 MonoBehaviour:

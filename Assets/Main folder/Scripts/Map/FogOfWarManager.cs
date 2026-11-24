@@ -27,6 +27,8 @@ public class FogOfWarManager : MonoBehaviour
         if (surveyPulseMultiplier <= 1f) surveyPulseMultiplier = 2.2f;
         if (outskirtsTransitionDuration <= 0f) outskirtsTransitionDuration = 1.5f;
         if (outskirtsSinkDistance <= 0f) outskirtsSinkDistance = 0.8f;
+        if (boundaryTransitionWidth <= 0.01f) boundaryTransitionWidth = 0.16f;
+        if (maskResolution < 256) maskResolution = 512;
         if (transitionEaseCurve == null || transitionEaseCurve.length == 0)
         {
             transitionEaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -49,9 +51,20 @@ public class FogOfWarManager : MonoBehaviour
         if (surveyPulseMultiplier <= 1f) surveyPulseMultiplier = 2.2f;
         if (outskirtsTransitionDuration <= 0f) outskirtsTransitionDuration = 1.5f;
         if (outskirtsSinkDistance <= 0f) outskirtsSinkDistance = 0.8f;
+        boundaryTransitionWidth = Mathf.Clamp(boundaryTransitionWidth, 0.05f, 0.45f);
+        boundaryWarpAmplitude = Mathf.Clamp(boundaryWarpAmplitude, 0f, 1.5f);
+        boundaryDetailStrength = Mathf.Clamp(boundaryDetailStrength, 0f, 1.5f);
+        boundaryAnimationSpeed = Mathf.Clamp(boundaryAnimationSpeed, 0f, 3f);
+        maskResolution = Mathf.Clamp(maskResolution, 128, 1024);
         if (transitionEaseCurve == null || transitionEaseCurve.length == 0)
         {
             transitionEaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        }
+
+        SyncBoundaryParametersToMaterials();
+        if (Application.isPlaying && fogMaskTexture != null && expansionManager != null)
+        {
+            UpdateGlobalFogMask();
         }
     }
 
@@ -143,10 +156,16 @@ public class FogOfWarManager : MonoBehaviour
     private static readonly int PropGroundMistFade = Shader.PropertyToID("_GroundMistFade");
     private static readonly int PropMistAlpha = Shader.PropertyToID("_MistAlpha");
     private static readonly int PropDiscoverableEmission = Shader.PropertyToID("_DiscoverableEmission");
+    private static readonly int PropLogicalWilderness = Shader.PropertyToID("_LogicalWilderness");
+    private static readonly int PropBoundaryWarpAmplitude = Shader.PropertyToID("_BoundaryWarpAmplitude");
+    private static readonly int PropBoundaryDetailStrength = Shader.PropertyToID("_BoundaryDetailStrength");
+    private static readonly int PropBoundaryAnimationSpeed = Shader.PropertyToID("_BoundaryAnimationSpeed");
+    private static readonly int PropFogTransitionWidthWorld = Shader.PropertyToID("_FogTransitionWidthWorld");
     private static readonly WaitForFixedUpdate WaitForFixed = new WaitForFixedUpdate();
 
     private MaterialPropertyBlock groundMistPropertyBlock;
     private MaterialPropertyBlock highMistPropertyBlock;
+    private MaterialPropertyBlock logicalStatePropertyBlock;
     private readonly Dictionary<Vector2Int, Coroutine> activeFadeCoroutines = new Dictionary<Vector2Int, Coroutine>();
     private readonly Dictionary<Vector2Int, Coroutine> activeTransitionCoroutines = new Dictionary<Vector2Int, Coroutine>();
     private readonly Dictionary<Vector2Int, GameObject> transitionalFogChunks = new Dictionary<Vector2Int, GameObject>();
@@ -253,14 +272,43 @@ public class FogOfWarManager : MonoBehaviour
     }
 
     [Header("Maska Globalna Mgły")]
-    [Tooltip("Rozdzielczość generowanej tekstury maski mgły (np. 128, 256)")]
-    public int maskResolution = 128;
-    [Tooltip("Mnożnik promienia chunka w świecie określający zasięg mgły")]
-    public float chunkRadiusMultiplier = 2.2f;
-    [Tooltip("Promień wewnętrznego jednolitego rdzenia fioletowej mgły (0..1)")]
-    [Range(0.2f, 0.8f)] public float coreRadiusRatio = 0.55f;
-    [Tooltip("Margines wokół granic mapy (w jednostkach promienia chunka)")]
+    [Tooltip("Minimalna rozdzielczość generowanej tekstury maski mgły (automatycznie skalowana do rozmiaru świata).")]
+    public int maskResolution = 512;
+    [Tooltip("Docelowa liczba pikseli maski na pojedynczy heks dla precyzyjnego odwzorowania granic chunków.")]
+    [Min(2f)] public float maskPixelsPerHex = 4.5f;
+    [Tooltip("Margines wokół granic mapy (w jednostkach promienia chunka).")]
     public float worldMarginMultiplier = 3.0f;
+
+    [Header("Granica Mgły (Frontier Boundary)")]
+    [Tooltip("Szerokość pasa przejściowego wewnątrz Borderlands jako ułamek szerokości chunka (np. 0.16 = 16%).")]
+    [Range(0.05f, 0.45f)] public float boundaryTransitionWidth = 0.16f;
+    [Tooltip("Amplituda deformacji (Domain Warping) proporcjonalna do szerokości pasa przejściowego.")]
+    [Range(0f, 1.5f)] public float boundaryWarpAmplitude = 0.65f;
+    [Tooltip("Siła poszarpania i detalu FBM na granicy Frontier.")]
+    [Range(0f, 1.5f)] public float boundaryDetailStrength = 0.55f;
+    [Tooltip("Prędkość animacji granicy po stronie GPU.")]
+    [Range(0f, 3f)] public float boundaryAnimationSpeed = 1.0f;
+
+    private struct FrontierSegment
+    {
+        public Vector2 p0;
+        public Vector2 p1;
+        public float minX;
+        public float maxX;
+        public float minZ;
+        public float maxZ;
+    }
+
+    private readonly List<FrontierSegment> frontierSegments = new List<FrontierSegment>(128);
+    private static readonly Vector2Int[] AxialNeighborDirs =
+    {
+        new Vector2Int(1, 0),
+        new Vector2Int(1, -1),
+        new Vector2Int(0, -1),
+        new Vector2Int(-1, 0),
+        new Vector2Int(-1, 1),
+        new Vector2Int(0, 1)
+    };
 
     [Header("Efekty Mgły na Przeciwnikach")]
     [Tooltip("Mnożnik prędkości przeciwników poruszających się po chunku w trakcie eksploracji (Surveying). 1.5 = +50%.")]
@@ -278,6 +326,7 @@ public class FogOfWarManager : MonoBehaviour
 
     // Pola dla globalnej maski mgły w shaderze
     private Texture2D fogMaskTexture;
+    public Texture2D FogMaskTexture => fogMaskTexture;
     private Color32[] maskPixels;
     private Vector2 worldBoundsMin;
     private Vector2 worldBoundsSize;
@@ -294,6 +343,8 @@ public class FogOfWarManager : MonoBehaviour
             hexSize = mapGenerator.hexSize;
             padding = mapGenerator.padding;
         }
+
+        SyncBoundaryParametersToMaterials();
 
         if (expansionManager != null)
         {
@@ -379,6 +430,7 @@ public class FogOfWarManager : MonoBehaviour
 
         CalculateWorldBounds(allChunks);
         InitMaskTexture();
+        SyncBoundaryParametersToMaterials();
 
         if (expansionManager == null) expansionManager = MapExpansionManager.Instance ?? FindFirstObjectByType<MapExpansionManager>();
         if (mapGenerator == null) mapGenerator = HexMapGenerator.Instance ?? FindFirstObjectByType<HexMapGenerator>();
@@ -402,8 +454,42 @@ public class FogOfWarManager : MonoBehaviour
     }
 
     // =========================================================================
-    // LOGIKA GLOBALNEJ MASKI MGŁY
+    // LOGIKA GLOBALNEJ MASKI MGŁY (FRONTIER DISTANCE + STAN LOGICZNY)
     // =========================================================================
+
+    private float GetChunkWidthWorld()
+    {
+        EnsureGridMetrics();
+        int r = chunkRadius > 0 ? chunkRadius : 3;
+        float totalHex = Mathf.Max(0.1f, hexSize + padding);
+        return Mathf.Sqrt(3f) * (2 * r + 1) * totalHex;
+    }
+
+    private float GetTransitionWidthWorld()
+    {
+        return Mathf.Max(0.25f, GetChunkWidthWorld() * Mathf.Clamp(boundaryTransitionWidth, 0.05f, 0.45f));
+    }
+
+    private void SyncBoundaryParametersToMaterials()
+    {
+        float transitionWorld = GetTransitionWidthWorld();
+        Shader.SetGlobalFloat(PropFogTransitionWidthWorld, transitionWorld);
+
+        ApplyBoundaryMaterialParams(defaultFogMaterial);
+        if (borderlandsFogMaterial != null && borderlandsFogMaterial != defaultFogMaterial)
+        {
+            ApplyBoundaryMaterialParams(borderlandsFogMaterial);
+        }
+        ApplyBoundaryMaterialParams(surveyingFogMaterial);
+    }
+
+    private void ApplyBoundaryMaterialParams(Material mat)
+    {
+        if (mat == null) return;
+        if (mat.HasProperty(PropBoundaryWarpAmplitude)) mat.SetFloat(PropBoundaryWarpAmplitude, boundaryWarpAmplitude);
+        if (mat.HasProperty(PropBoundaryDetailStrength)) mat.SetFloat(PropBoundaryDetailStrength, boundaryDetailStrength);
+        if (mat.HasProperty(PropBoundaryAnimationSpeed)) mat.SetFloat(PropBoundaryAnimationSpeed, boundaryAnimationSpeed);
+    }
 
     private void CalculateWorldBounds(HashSet<Vector2Int> allChunks)
     {
@@ -432,9 +518,23 @@ public class FogOfWarManager : MonoBehaviour
         Shader.SetGlobalVector("_FogWorldBounds", new Vector4(worldBoundsMin.x, worldBoundsMin.y, worldBoundsSize.x, worldBoundsSize.y));
     }
 
+    private int ComputeTargetMaskResolution()
+    {
+        EnsureGridMetrics();
+        float totalHex = Mathf.Max(0.1f, hexSize + padding);
+        float maxSpan = Mathf.Max(worldBoundsSize.x, worldBoundsSize.y);
+        int worldDriven = maxSpan > 1f
+            ? Mathf.CeilToInt((maxSpan / totalHex) * Mathf.Max(2f, maskPixelsPerHex))
+            : 512;
+        int minAllowed = Mathf.Max(256, maskResolution);
+        int res = Mathf.Clamp(Mathf.Max(minAllowed, worldDriven), 256, 1024);
+        // Zaokraglenie do wielokrotnosci 64 dla spojnosci alokacji tekstury
+        return ((res + 63) / 64) * 64;
+    }
+
     private void InitMaskTexture()
     {
-        int res = Mathf.Clamp(maskResolution, 32, 512);
+        int res = ComputeTargetMaskResolution();
 
         if (fogMaskTexture != null && (fogMaskTexture.width != res || fogMaskTexture.height != res))
         {
@@ -443,7 +543,10 @@ public class FogOfWarManager : MonoBehaviour
 
         if (fogMaskTexture == null)
         {
-            fogMaskTexture = new Texture2D(res, res, TextureFormat.R8, false);
+            // R = dystans od Frontier w Borderlands (1 na Frontier/Wilderness -> 0 w glebi Borderlands)
+            // G = logiczny stan (255 = Wilderness, 0 = pozostale)
+            // B = cienka linia krawedzi Frontier (do debugowania)
+            fogMaskTexture = new Texture2D(res, res, TextureFormat.RGBA32, false, true);
             fogMaskTexture.filterMode = FilterMode.Bilinear;
             fogMaskTexture.wrapMode = TextureWrapMode.Clamp;
             maskPixels = new Color32[res * res];
@@ -469,79 +572,168 @@ public class FogOfWarManager : MonoBehaviour
         maskPixels = null;
     }
 
+    private static float DistancePointToSegmentSq(Vector2 p, Vector2 a, Vector2 b)
+    {
+        Vector2 ab = b - a;
+        float lenSq = ab.sqrMagnitude;
+        if (lenSq <= 1e-6f) return (p - a).sqrMagnitude;
+        float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / lenSq);
+        Vector2 proj = a + ab * t;
+        return (p - proj).sqrMagnitude;
+    }
+
+    private static bool IsDiscoverableFogState(ChunkState state)
+    {
+        return state == ChunkState.Borderlands || state == ChunkState.Surveying;
+    }
+
+    private void BuildFrontierSegments(int rChunk, float totalHexSize, float transitionWidthWorld)
+    {
+        frontierSegments.Clear();
+        if (expansionManager == null) return;
+
+        float halfEdge = 0.5f * totalHexSize;
+
+        foreach (var kvp in expansionManager.activeChunks)
+        {
+            if (kvp.Value == null || !IsDiscoverableFogState(kvp.Value.EffectiveState)) continue;
+
+            Vector2Int chunkCoord = kvp.Key;
+            for (int q = -rChunk; q <= rChunk; q++)
+            {
+                int r1 = Mathf.Max(-rChunk, -q - rChunk);
+                int r2 = Mathf.Min(rChunk, -q + rChunk);
+                for (int r = r1; r <= r2; r++)
+                {
+                    // Sprawdzamy wylacznie zewnetrzny obwod heksow chunka
+                    int hexDist = Mathf.Max(Mathf.Abs(q), Mathf.Max(Mathf.Abs(r), Mathf.Abs(-q - r)));
+                    if (hexDist < rChunk) continue;
+
+                    Vector2Int globalHex = HexGridMath.LocalToGlobal(chunkCoord, new Vector2Int(q, r), rChunk);
+                    Vector3 centerA3 = HexGridMath.AxialToWorld(globalHex.x, globalHex.y, hexSize, padding);
+                    Vector2 cA = new Vector2(centerA3.x, centerA3.z);
+
+                    for (int k = 0; k < 6; k++)
+                    {
+                        Vector2Int nGlobal = globalHex + AxialNeighborDirs[k];
+                        HexGridMath.GlobalToChunkAndLocal(nGlobal, rChunk, out var nChunk, out _);
+                        if (nChunk == chunkCoord) continue;
+
+                        // Frontier istnieje WYLACZNIE miedzy Borderlands/Surveying a istniejacym chunkiem Wilderness.
+                        // Nie generujemy granicy z Borderlands, Settled ani Outskirts.
+                        if (!expansionManager.activeChunks.TryGetValue(nChunk, out var nData) || nData == null) continue;
+                        if (nData.EffectiveState != ChunkState.Wilderness) continue;
+
+                        Vector3 centerB3 = HexGridMath.AxialToWorld(nGlobal.x, nGlobal.y, hexSize, padding);
+                        Vector2 cB = new Vector2(centerB3.x, centerB3.z);
+                        Vector2 mid = 0.5f * (cA + cB);
+                        Vector2 dir = (cB - cA).normalized;
+                        Vector2 tan = new Vector2(-dir.y, dir.x);
+
+                        Vector2 p0 = mid - tan * halfEdge;
+                        Vector2 p1 = mid + tan * halfEdge;
+
+                        frontierSegments.Add(new FrontierSegment
+                        {
+                            p0 = p0,
+                            p1 = p1,
+                            minX = Mathf.Min(p0.x, p1.x) - transitionWidthWorld,
+                            maxX = Mathf.Max(p0.x, p1.x) + transitionWidthWorld,
+                            minZ = Mathf.Min(p0.y, p1.y) - transitionWidthWorld,
+                            maxZ = Mathf.Max(p0.y, p1.y) + transitionWidthWorld
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     public void UpdateGlobalFogMask()
     {
         if (fogMaskTexture == null || expansionManager == null || maskPixels == null || worldBoundsSize.x <= 0f) return;
 
+        EnsureGridMetrics();
         int res = fogMaskTexture.width;
+        int rChunk = chunkRadius > 0 ? chunkRadius : 3;
+        float totalHexSize = Mathf.Max(0.1f, hexSize + padding);
+        float transitionWidthWorld = GetTransitionWidthWorld();
+        Shader.SetGlobalFloat(PropFogTransitionWidthWorld, transitionWidthWorld);
 
-        // Domyślnie cała mapa to Wilderness (255 = 1.0 / ciemna mgła)
-        byte defaultVal = 255;
-        for (int i = 0; i < maskPixels.Length; i++)
+        // 1. Wypelnienie rzeczywistego stanu logicznego dla kazdego piksela maski na bazie heksow
+        float invRes = 1f / res;
+        for (int py = 0; py < res; py++)
         {
-            maskPixels[i] = new Color32(defaultVal, defaultVal, defaultVal, 255);
+            float v = (py + 0.5f) * invRes;
+            float worldZ = worldBoundsMin.y + v * worldBoundsSize.y;
+            int rowOffset = py * res;
+
+            for (int px = 0; px < res; px++)
+            {
+                float u = (px + 0.5f) * invRes;
+                float worldX = worldBoundsMin.x + u * worldBoundsSize.x;
+
+                Vector2Int globalHex = HexGridMath.WorldToAxial(worldX, worldZ, hexSize, padding);
+                HexGridMath.GlobalToChunkAndLocal(globalHex, rChunk, out var cCoord, out _);
+
+                bool isWild = true;
+                if (expansionManager.activeChunks.TryGetValue(cCoord, out var chunkData) && chunkData != null)
+                {
+                    isWild = chunkData.EffectiveState == ChunkState.Wilderness;
+                }
+
+                byte val = isWild ? (byte)255 : (byte)0;
+                maskPixels[rowOffset + px] = new Color32(val, val, 0, 255);
+            }
         }
 
-        float chunkWorldRadius = chunkRadius * hexSize * chunkRadiusMultiplier;
-        float pixelRadius = (chunkWorldRadius / worldBoundsSize.x) * res;
-        int r = Mathf.CeilToInt(pixelRadius);
+        // 2. Wyznaczenie rzeczywistych odcinkow Frontier (Borderlands/Surveying <-> Wilderness)
+        BuildFrontierSegments(rChunk, totalHexSize, transitionWidthWorld);
 
-        // Wypalamy wyłącznie tereny odkryte (Settled) i do odkrycia (Borderlands)
-        foreach (var kvp in expansionManager.activeChunks)
+        // 3. Wypalenie maski odleglosci od Frontier wylacznie wewnatrz Borderlands/Surveying
+        if (frontierSegments.Count > 0)
         {
-            if (kvp.Value.EffectiveState == ChunkState.Wilderness) continue;
+            float transitionSq = transitionWidthWorld * transitionWidthWorld;
+            float frontierDebugThickness = Mathf.Max(0.22f, totalHexSize * 0.25f);
+            float frontierDebugSq = frontierDebugThickness * frontierDebugThickness;
 
-            Vector3 center = HexGridMath.GetChunkCenterWorld(kvp.Key, chunkRadius, hexSize, padding);
-
-            float u = (center.x - worldBoundsMin.x) / worldBoundsSize.x;
-            float v = (center.z - worldBoundsMin.y) / worldBoundsSize.y;
-            int px = Mathf.RoundToInt(u * (res - 1));
-            int py = Mathf.RoundToInt(v * (res - 1));
-
-            bool isBorderlands = kvp.Value.EffectiveState == ChunkState.Borderlands || kvp.Value.EffectiveState == ChunkState.Surveying;
-            bool isSettled = kvp.Value.EffectiveState == ChunkState.Settled || kvp.Value.EffectiveState == ChunkState.Outskirts;
-
-            for (int y = -r; y <= r; y++)
+            for (int s = 0; s < frontierSegments.Count; s++)
             {
-                int targetY = py + y;
-                if (targetY < 0 || targetY >= res) continue;
+                FrontierSegment seg = frontierSegments[s];
+                int minPx = Mathf.Clamp(Mathf.FloorToInt(((seg.minX - worldBoundsMin.x) / worldBoundsSize.x) * res), 0, res - 1);
+                int maxPx = Mathf.Clamp(Mathf.CeilToInt(((seg.maxX - worldBoundsMin.x) / worldBoundsSize.x) * res), 0, res - 1);
+                int minPy = Mathf.Clamp(Mathf.FloorToInt(((seg.minZ - worldBoundsMin.y) / worldBoundsSize.y) * res), 0, res - 1);
+                int maxPy = Mathf.Clamp(Mathf.CeilToInt(((seg.maxZ - worldBoundsMin.y) / worldBoundsSize.y) * res), 0, res - 1);
 
-                for (int x = -r; x <= r; x++)
+                for (int py = minPy; py <= maxPy; py++)
                 {
-                    int targetX = px + x;
-                    if (targetX < 0 || targetX >= res) continue;
+                    float worldZ = worldBoundsMin.y + (py + 0.5f) * invRes * worldBoundsSize.y;
+                    int rowOffset = py * res;
 
-                    float distNorm = Mathf.Sqrt(x * x + y * y) / pixelRadius;
-                    if (distNorm <= 1.0f)
+                    for (int px = minPx; px <= maxPx; px++)
                     {
-                        int idx = targetY * res + targetX;
-                        byte candidate = 255;
+                        int idx = rowOffset + px;
+                        Color32 cur = maskPixels[idx];
 
-                        if (isSettled)
+                        float worldX = worldBoundsMin.x + (px + 0.5f) * invRes * worldBoundsSize.x;
+                        float distSq = DistancePointToSegmentSq(new Vector2(worldX, worldZ), seg.p0, seg.p1);
+
+                        if (distSq <= frontierDebugSq && cur.b == 0)
                         {
-                            // Osada: czyste 0 (brak mgły, brak ciemnienia przy krawędzi z Borderlands)
-                            candidate = 0;
+                            cur.b = 255;
                         }
-                        else if (isBorderlands)
+
+                        // Maska odleglosci w pasie przejsciowym obliczana tylko wewnatrz Borderlands (G == 0)
+                        if (cur.g == 0 && distSq <= transitionSq)
                         {
-                            // Borderlands:
-                            // Wewnątrz coreRadiusRatio (np. 0.55): czysty, jednolity fiolet (brak sztucznego punktowego światła)
-                            // Na zewnątrz coreRadiusRatio ku 1.0: ciemna mgła napływa z Wilderness (wartość rośnie do 255)
-                            if (distNorm <= coreRadiusRatio)
+                            float d = Mathf.Sqrt(distSq);
+                            byte distMask = (byte)Mathf.RoundToInt((1f - Mathf.Clamp01(d / transitionWidthWorld)) * 255f);
+                            if (distMask > cur.r)
                             {
-                                candidate = 0;
-                            }
-                            else
-                            {
-                                float t = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(coreRadiusRatio, 1.0f, distNorm));
-                                candidate = (byte)Mathf.RoundToInt(Mathf.Lerp(0f, 255f, t));
+                                cur.r = distMask;
                             }
                         }
 
-                        if (candidate < maskPixels[idx].r)
-                        {
-                            maskPixels[idx] = new Color32(candidate, candidate, candidate, 255);
-                        }
+                        maskPixels[idx] = cur;
                     }
                 }
             }
@@ -585,13 +777,13 @@ public class FogOfWarManager : MonoBehaviour
         {
             case ChunkState.Wilderness:
                 StopTransitionCoroutine(coord);
-                SetFogFull(coord, defaultFogMaterial);
+                SetFogFull(coord, defaultFogMaterial, null, 1f);
                 SetTerrainVisible(coord, false);
                 break;
 
             case ChunkState.Borderlands:
                 StopTransitionCoroutine(coord);
-                SetFogFull(coord, discMat);
+                SetFogFull(coord, discMat, null, 0f);
                 SetTerrainVisible(coord, false);
                 break;
 
@@ -608,7 +800,7 @@ public class FogOfWarManager : MonoBehaviour
                 else
                 {
                     StopTransitionCoroutine(coord);
-                    SetFogFull(coord, surveyMat, surveyingDepthMaterial);
+                    SetFogFull(coord, surveyMat, surveyingDepthMaterial, 0f);
                     SetTerrainVisible(coord, true);
                 }
                 OnChunkSurveyingStarted?.Invoke(coord);
@@ -738,7 +930,7 @@ public class FogOfWarManager : MonoBehaviour
         if (hexSize <= 0f) hexSize = 1f;
     }
 
-    private void SetFogFull(Vector2Int coord, Material mat, Material depthPrepassMat = null)
+    private void SetFogFull(Vector2Int coord, Material mat, Material depthPrepassMat = null, float logicalWilderness = 0f)
     {
         StopFadeCoroutine(coord);
 
@@ -764,6 +956,22 @@ public class FogOfWarManager : MonoBehaviour
         pos.y = MistWorldHeight;
         fog.transform.position = pos;
         ApplyMaterial(fog, mat, depthPrepassMat);
+        SetChunkLogicalWilderness(fog, logicalWilderness);
+    }
+
+    private void SetChunkLogicalWilderness(GameObject fog, float logicalWilderness)
+    {
+        if (fog == null) return;
+        if (logicalStatePropertyBlock == null) logicalStatePropertyBlock = new MaterialPropertyBlock();
+        logicalStatePropertyBlock.SetFloat(PropLogicalWilderness, logicalWilderness);
+
+        rendererBuffer.Clear();
+        fog.GetComponentsInChildren(rendererBuffer);
+        for (int i = 0; i < rendererBuffer.Count; i++)
+        {
+            rendererBuffer[i].SetPropertyBlock(logicalStatePropertyBlock);
+        }
+        rendererBuffer.Clear();
     }
 
     private void DisableAndDestroyColliders(GameObject fog)
@@ -793,6 +1001,7 @@ public class FogOfWarManager : MonoBehaviour
         if (highMistPropertyBlock == null) highMistPropertyBlock = new MaterialPropertyBlock();
         highMistPropertyBlock.SetFloat(PropMistAlpha, Mathf.Clamp01(alpha));
         highMistPropertyBlock.SetFloat(PropDiscoverableEmission, Mathf.Max(0f, emission));
+        highMistPropertyBlock.SetFloat(PropLogicalWilderness, 0f);
 
         rendererBuffer.Clear();
         fog.GetComponentsInChildren(rendererBuffer);
@@ -805,14 +1014,7 @@ public class FogOfWarManager : MonoBehaviour
 
     private void ClearPropertyBlock(GameObject fog)
     {
-        if (fog == null) return;
-        rendererBuffer.Clear();
-        fog.GetComponentsInChildren(rendererBuffer);
-        for (int i = 0; i < rendererBuffer.Count; i++)
-        {
-            rendererBuffer[i].SetPropertyBlock(null);
-        }
-        rendererBuffer.Clear();
+        SetChunkLogicalWilderness(fog, 0f);
     }
 
     private void StopTransitionCoroutine(Vector2Int coord)
@@ -1094,6 +1296,7 @@ public class FogOfWarManager : MonoBehaviour
             ? outskirtsFogMaterial.GetFloat(PropMistAlpha)
             : 0.2f;
         groundMistPropertyBlock.SetFloat(PropMistAlpha, clamped * targetAlpha);
+        groundMistPropertyBlock.SetFloat(PropLogicalWilderness, 0f);
 
         rendererBuffer.Clear();
         fog.GetComponentsInChildren(rendererBuffer);

@@ -47,8 +47,10 @@ Material:
     - _AccentColor: {r: 0.48, g: 0.4, b: 0.3, a: 1}
     - _BaseColor: {r: 0.38, g: 0.3, b: 0.22, a: 1}
     - _DarkColor: {r: 0.24, g: 0.18, b: 0.13, a: 1}
+    - _StrataBelowColor: {r: 0.5411765, g: 0.28235295, b: 0.28235295, a: 1}
     - _StrataDarkColor: {r: 0.549, g: 0.384, b: 0.224, a: 1}
     - _StrataLightColor: {r: 0.886, g: 0.722, b: 0.471, a: 1}
-    - _StrataLineColor: {r: 0.784, g: 0.6, b: 0.345, a: 1}
+    - _StrataLineColor: {r: 0.6745098, g: 0.5372549, b: 0.31764707, a: 1}
+    - _StrataZeroColor: {r: 0.8156863, g: 0.7372549, b: 0.5647059, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -3,37 +3,43 @@ Shader "Custom/Terrain/Meadow"
     Properties
     {
         [Header(Debug Diagnostics)]
-        _DebugMeadowMode("Tryb debugowania (0:Norm, 1:Grid, 2:Detail, 3:Tufts)", Range(0, 3)) = 0
+        _DebugMeadowMode("Debug (0:Norm, 1:Grid, 2:Idx, 3:Tufts, 4:Albedo)", Range(0, 4)) = 0
 
-        [Header(Meadow Green Palette)]
-        _MeadowBaseColor("Podstawowa zielen laki - Base Green", Color) = (0.349, 0.431, 0.271, 1.0)
-        _MeadowDarkColor("Ciemniejszy ton dla glebi - Dark Green", Color) = (0.247, 0.322, 0.204, 1.0)
-        _MeadowLightColor("Jasna bujna trawa - Light Grass", Color) = (0.506, 0.584, 0.380, 1.0)
-        _MeadowBorderColor("Jasna zielona granica heksa - Border Green", Color) = (0.549, 0.635, 0.420, 1.0)
+        [Header(Terrain Palette sRGB)]
+        _Color0("0: Najciemniejsza (#465538)", Color) = (0.27450982, 0.33333334, 0.21960784, 1.0)
+        _Color1("1: Ciemna baza (#50603D)", Color) = (0.3137255, 0.3764706, 0.23921569, 1.0)
+        _Color2("2: Baza chlodniejsza (#586B43)", Color) = (0.34509805, 0.41960785, 0.2627451, 1.0)
+        _Color3("3: Glowna baza (#607449)", Color) = (0.3764706, 0.45490196, 0.28627452, 1.0)
+        _Color4("4: Baza jasniejsza (#6A7D4F)", Color) = (0.41568628, 0.49019608, 0.30980393, 1.0)
+        _Color5("5: Kepki trawy (#748857)", Color) = (0.45490196, 0.53333336, 0.34117648, 1.0)
+        _Color6("6: Rzadkie akcenty (#829660)", Color) = (0.50980395, 0.5882353, 0.3764706, 1.0)
 
-        [Header(Optional Soil Undertone)]
-        _SoilCoverage("Subtelny undertone gleby (domyslnie 0) - Soil Undertone", Range(0.0, 0.20)) = 0.00
-        _MeadowSoilColor("Kolor undertone gleby - Soil Color", Color) = (0.400, 0.320, 0.225, 1.0)
+        [Header(Retro Texel Grid)]
+        _TexelDensity("Texel Density (per hex width)", Float) = 32.0
+        _HexRadius("Promien heksa - Hex Radius", Float) = 1.0
+        _Seed("Seed wzoru - Seed", Float) = 13.0
 
-        [Header(Grass Tufts Distribution)]
-        _PatchScale("Skala kep bujnej trawy - Patch Scale", Float) = 0.52
-        _PatchContrast("Kontrast kep bujnej trawy - Patch Contrast", Range(0.5, 2.0)) = 0.75
+        [Header(Layer 1 and 2 Base and Subtle Patches)]
+        _ClusterSize("Patch Cluster Size (5-10 texels)", Range(3.0, 14.0)) = 7.5
+        _MacroNoiseScale("Macro Noise Scale", Float) = 0.22
+        _MacroNoiseStrength("Macro Noise Strength", Range(0.0, 1.0)) = 0.28
+        _MicroNoiseScale("Micro Noise Scale", Float) = 0.85
+        _MicroNoiseStrength("Micro Noise Strength", Range(0.0, 0.35)) = 0.14
+        _Contrast("Contrast (lokalny)", Range(0.4, 2.0)) = 1.05
 
-        [Header(Retro Stylized Detail)]
-        _TexelDensity("Gestosc pikseli na heks - Texel Density", Float) = 16.0
-        _DetailScale("Skala struktury roslinnej - Detail Scale", Float) = 2.2
-        _DetailStrength("Sila struktury roslinnej - Detail Strength", Range(0.0, 1.0)) = 0.30
-        _QuantizeSteps("Kwantyzacja odcieni - Color Steps", Range(2.0, 8.0)) = 4.0
+        [Header(Layer 3 Procedural Grass Tufts)]
+        _DetailAmount("Tuft Density", Range(0.0, 1.0)) = 0.46
+        _AccentChance("Rare Highlight Tips (#829660)", Range(0.0, 1.0)) = 0.16
 
         [Header(Hex Grid Readability)]
+        _HexBorderColor("Kolor granicy heksa - Border Color", Color) = (0.5568628, 0.6313726, 0.41960785, 1.0)
         _HexBorderWidth("Szerokosc granicy heksa - Border Width", Range(0.01, 0.20)) = 0.07
-        _HexBorderStrength("Widocznosc jasnej granicy - Border Strength", Range(0.0, 1.0)) = 0.35
-        _HexBorderNoiseStrength("Nieregularnosc granicy - Border Noise", Range(0.0, 1.0)) = 0.35
-        _HexRadius("Promien heksa - Hex Radius", Float) = 1.0
+        _HexBorderStrength("Widocznosc granicy - Border Strength", Range(0.0, 1.0)) = 0.85
+        _HexBorderNoiseStrength("Nieregularnosc granicy - Border Noise", Range(0.0, 1.0)) = 0.30
 
         [Header(Lighting and Surface)]
-        _AmbientBoost("Jasnosc w polmroku i nocy - Ambient Boost", Range(0.0, 1.0)) = 0.50
-        _Smoothness("Matowosc podloza - Smoothness", Range(0.0, 1.0)) = 0.02
+        _AmbientBoost("Jasnosc w polmroku i nocy - Ambient Boost", Range(0.0, 1.0)) = 0.65
+        _Smoothness("Matowosc podloza - Smoothness", Range(0.0, 1.0)) = 0.00
     }
 
     SubShader
@@ -73,23 +79,29 @@ Shader "Custom/Terrain/Meadow"
             #include "TerrainGroundCommon.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _MeadowBaseColor;
-                float4 _MeadowDarkColor;
-                float4 _MeadowLightColor;
-                float4 _MeadowBorderColor;
-                float4 _MeadowSoilColor;
+                float4 _Color0;
+                float4 _Color1;
+                float4 _Color2;
+                float4 _Color3;
+                float4 _Color4;
+                float4 _Color5;
+                float4 _Color6;
+                float4 _HexBorderColor;
                 float  _DebugMeadowMode;
-                float  _SoilCoverage;
-                float  _PatchScale;
-                float  _PatchContrast;
                 float  _TexelDensity;
-                float  _DetailScale;
-                float  _DetailStrength;
-                float  _QuantizeSteps;
+                float  _HexRadius;
+                float  _Seed;
+                float  _ClusterSize;
+                float  _MacroNoiseScale;
+                float  _MacroNoiseStrength;
+                float  _MicroNoiseScale;
+                float  _MicroNoiseStrength;
+                float  _Contrast;
+                float  _DetailAmount;
+                float  _AccentChance;
                 float  _HexBorderWidth;
                 float  _HexBorderStrength;
                 float  _HexBorderNoiseStrength;
-                float  _HexRadius;
                 float  _AmbientBoost;
                 float  _Smoothness;
             CBUFFER_END
@@ -113,6 +125,88 @@ Shader "Custom/Terrain/Meadow"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
+
+            float3 PickMeadowPalette7(int idx)
+            {
+                int i = clamp(idx, 0, 6);
+                if (i == 0) return _Color0.rgb;
+                if (i == 1) return _Color1.rgb;
+                if (i == 2) return _Color2.rgb;
+                if (i == 3) return _Color3.rgb;
+                if (i == 4) return _Color4.rgb;
+                if (i == 5) return _Color5.rgb;
+                return _Color6.rgb;
+            }
+
+            // Warstwa 3: Asymetryczne, zroznicowane kepki trawy o niskim kontrascie
+            // Zwraca: 0 = brak kepki, 1 = subtelny cien u nasady, 2 = przejscie kepki, 3 = glowne zdzbla, 4 = rzadki jasny czubek
+            int EvaluateMeadowTuftMask(float2 cell, float2 seedOff, float tuftDensity, float accentChance)
+            {
+                const float cellSize = 6.0;
+                float2 shiftedCell = cell + floor(seedOff * 5.0);
+                float2 blockId = floor(shiftedCell / cellSize);
+                float2 localTex = shiftedCell - blockId * cellSize; // [0..5]
+
+                float hSpawn = Hash21(blockId + float2(11.3, 27.9));
+                if (hSpawn > tuftDensity) return 0;
+
+                float hPosX   = Hash21(blockId + float2(41.7, 13.1));
+                float hPosY   = Hash21(blockId + float2(73.2, 59.4));
+                float hShape  = Hash21(blockId + float2(91.5, 37.8));
+                float hFlipX  = Hash21(blockId + float2(17.9, 83.2));
+                float hFlipY  = Hash21(blockId + float2(52.3, 19.7));
+                float hAccent = Hash21(blockId + float2(63.1, 47.6));
+
+                // Centrum w [1..4] wewnatrz bloku 6x6 daje nieregularne odstepy (3..9 texeli) bez widocznej siatki
+                float2 center = float2(1.0 + floor(hPosX * 4.0), 1.0 + floor(hPosY * 4.0));
+                int2 rel = int2(round(localTex - center));
+
+                if (hFlipX > 0.5) rel.x = -rel.x;
+                if (hFlipY > 0.65) rel.y = -rel.y;
+
+                int variant = (int)floor(hShape * 5.0); // 0..4, wszystkie asymetryczne
+
+                if (variant == 0)
+                {
+                    // Drobna 2-pikselowa asymetryczna kepka
+                    if (rel.x == 0 && rel.y == 0) return 2;
+                    if (rel.x == 1 && rel.y == 1) return (hAccent < accentChance * 0.6) ? 4 : 3;
+                }
+                else if (variant == 1)
+                {
+                    // Pochylona 3-pikselowa kepka L
+                    if (rel.x == -1 && rel.y == 0) return 1;
+                    if (rel.x == 0 && rel.y == 0)  return 2;
+                    if (rel.x == 1 && rel.y == 0)  return 3;
+                    if (rel.x == 1 && rel.y == 1)  return (hAccent < accentChance) ? 4 : 3;
+                }
+                else if (variant == 2)
+                {
+                    // Niska, rozrzucona kepka 3-4 pikseli
+                    if (rel.x == 0 && rel.y == -1) return 1;
+                    if (rel.x == 0 && rel.y == 0)  return 3;
+                    if (rel.x == 1 && rel.y == 0)  return 2;
+                    if (rel.x == -1 && rel.y == 1) return 3;
+                }
+                else if (variant == 3)
+                {
+                    // Wieksza asymetryczna kepka 4-5 pikseli
+                    if (rel.x == -1 && rel.y == -1) return 1;
+                    if (rel.x == 0 && rel.y == 0)   return 2;
+                    if (rel.x == 1 && rel.y == 0)   return 3;
+                    if (rel.x == 0 && rel.y == 1)   return 3;
+                    if (rel.x == 1 && rel.y == 2)   return (hAccent < accentChance) ? 4 : 2;
+                }
+                else
+                {
+                    // Skosne podwojne zdzblo
+                    if (rel.x == 0 && rel.y == 0)  return 3;
+                    if (rel.x == 0 && rel.y == 1)  return 2;
+                    if (rel.x == 1 && rel.y == -1) return 1;
+                }
+
+                return 0;
+            }
 
             Varyings LitPassVertex(Attributes input)
             {
@@ -142,78 +236,66 @@ Shader "Custom/Terrain/Meadow"
                 float2 worldXZ = input.positionWS.xz;
 
                 // =========================================================================
-                // 1. WIRTUALNA SIATKA TEXELI (TEXEL DENSITY)
+                // 0. OSTRA SIATKA TEXELI (~32 TEXELS / HEX WIDTH)
                 // =========================================================================
-                float hexDiameter = max(0.001, 2.0 * _HexRadius);
-                float density = max(1.0, _TexelDensity);
-
-                float2 texelCoords = (worldXZ / hexDiameter) * density;
-                float2 gridCell = floor(texelCoords);
-                float2 quantizedGrid = gridCell + 0.5;
-                float2 samplePos = (quantizedGrid / density) * hexDiameter;
-
-                // Antyaliasing na oddaleniu kamery
-                float2 dTexel = fwidth(texelCoords);
-                float texelScreenSpan = max(dTexel.x, dTexel.y);
-                float aaBlend = smoothstep(0.75, 1.5, texelScreenSpan);
-                float detailFade = 1.0 - smoothstep(1.0, 2.5, texelScreenSpan);
-
-                float2 retroUV = lerp(samplePos, worldXZ, aaBlend);
+                RetroTexelGrid grid = EvaluateDiscreteTexelGrid(worldXZ, _HexRadius, _TexelDensity);
+                float2 seedOff = SeedOffset2D(_Seed);
 
                 // =========================================================================
-                // 2. BAZA TRAWY ŁĄKOWEJ + SUBTELNE ZRÓŻNICOWANIE MAKRO
+                // 1. WARSTWA BAZOWA + DELIKATNY MICRO NOISE O NISKIM KONTRASCIE
                 // =========================================================================
-                float macroNoise = ValueNoise2D(worldXZ * (_PatchScale * 0.6) + float2(12.3, 45.6));
-                float macroDepth = smoothstep(0.60, 0.95, macroNoise);
-                float3 grassBase = lerp(_MeadowBaseColor.rgb, _MeadowDarkColor.rgb, macroDepth * 0.25);
-
-                // =========================================================================
-                // 3. KĘPY JAŚNIEJSZEJ TRAWY (TUFTS OF LIGHTER GRASS)
-                // Zastępuje plamy gleby - tworzy miękkie, nieregularne skupiska bujniejszej zieleni
-                // =========================================================================
-                float tuftNoiseA = ValueNoise2D(worldXZ * _PatchScale + float2(38.4, 71.2));
-                float tuftNoiseB = ValueNoise2D(worldXZ * (_PatchScale * 1.8) + float2(89.1, 14.7));
-                float combinedTufts = tuftNoiseA * 0.65 + tuftNoiseB * 0.35;
-
-                float tuftContrastAdjusted = saturate(0.5 + (combinedTufts - 0.5) * _PatchContrast);
-                float tuftMask = smoothstep(0.35, 0.75, tuftContrastAdjusted);
-
-                float3 surfaceWithTufts = lerp(grassBase, _MeadowLightColor.rgb, tuftMask * 0.70);
+                float fineNoise = ValueNoise2D(grid.cell * _MicroNoiseScale + seedOff * 0.7);
+                float cellHash = Hash21(grid.cell + seedOff * 2.9);
+                float cellMicro = ((fineNoise * 0.65 + cellHash * 0.35) - 0.5) * _MicroNoiseStrength * grid.microFade;
 
                 // =========================================================================
-                // 4. RETRO STRUKTURA DROBNYCH ŹDŹBEŁ / KĘPEK (PROWADZONA PRZEZ retroUV)
+                // 2. SUBTELNE ZROZNICOWANIE TRAWY (3-4 ZBLIZONE ODCIENIE SRODKA PALETY)
                 // =========================================================================
-                float2 bladeCoord = retroUV * _DetailScale;
-                float fineBladeNoise = ValueNoise2D(bladeCoord * float2(1.8, 1.1) + float2(31.2, 74.9));
-                float fineClump = ValueNoise2D(bladeCoord * 0.8 + float2(84.1, 19.3));
-                float bladeStructure = fineBladeNoise * 0.70 + fineClump * 0.30;
+                float safeCluster = max(3.0, _ClusterSize);
+                float patchField = GradientNoise2D((grid.cell + seedOff * 12.0) / safeCluster * 1.15);
+                float macroField = GradientNoise2D((grid.pixelPos + seedOff) * _MacroNoiseScale);
+                // Srednia faktura trawy (2-4 texele) nadajaca zroznicowanie calej powierzchni
+                float turfStructure = ValueNoise2D(grid.cell * 0.52 + seedOff * 2.3);
 
-                float steppedBlade = floor(bladeStructure * _QuantizeSteps + 0.5) / _QuantizeSteps;
-                float bladeDelta = (steppedBlade - 0.5) * 2.0; // [-1.0 .. +1.0]
+                float baseTone = 0.53
+                    + (patchField - 0.5) * 0.34
+                    + (macroField - 0.5) * _MacroNoiseStrength
+                    + (turfStructure - 0.5) * 0.28
+                    + cellMicro;
+                baseTone = saturate(0.53 + (baseTone - 0.53) * _Contrast);
 
-                float3 bladeHighlight = lerp(surfaceWithTufts, _MeadowLightColor.rgb, 0.75);
-                float3 bladeShadow    = lerp(surfaceWithTufts, _MeadowDarkColor.rgb, 0.60);
+                // Wiekszosc powierzchni korzysta ze srodkowych, zblizonych tonow (1, 2, 3, 4)
+                int idx = 3; // Glowna baza (#536344)
+                if (baseTone < 0.14)      idx = 0; // (#3D4B34) - oszczednie
+                else if (baseTone < 0.30) idx = 1; // (#46563A)
+                else if (baseTone < 0.50) idx = 2; // (#4D5D40)
+                else if (baseTone < 0.72) idx = 3; // (#536344) - lekko rozjasniony srodek
+                else if (baseTone < 0.90) idx = 4; // (#59694A)
+                else                      idx = 5; // (#63734E) - rzadkie jasniejsze fragmenty w tle
 
-                float detailFactor = _DetailStrength * detailFade;
-                float3 surfaceColor = surfaceWithTufts;
-                if (bladeDelta > 0.0)
+                // =========================================================================
+                // 3. WARSTWA KEPEK TRAWY (MNIEJ O ~30%, NIZSZY KONTRAST, ASYMETRYCZNE)
+                // =========================================================================
+                int tuftState = EvaluateMeadowTuftMask(grid.cell, seedOff, _DetailAmount, _AccentChance);
+                if (tuftState == 1)
                 {
-                    surfaceColor = lerp(surfaceWithTufts, bladeHighlight, saturate(bladeDelta * detailFactor * 1.4));
+                    // Bardzo subtelny cien u nasady - przesuwa tylko o 1 stopien w dol
+                    idx = max(0, idx - 1);
                 }
-                else
+                else if (tuftState == 2)
                 {
-                    surfaceColor = lerp(surfaceWithTufts, bladeShadow, saturate(-bladeDelta * detailFactor * 1.4));
+                    // Lagodne przejscie kepki (#59694A)
+                    idx = max(idx, 4);
                 }
-
-                // =========================================================================
-                // 5. OPCJONALNY SUBTELNY UNDERTONE GLEBY (domyślnie _SoilCoverage = 0.00)
-                // =========================================================================
-                if (_SoilCoverage > 0.001)
+                else if (tuftState == 3)
                 {
-                    float soilNoise = ValueNoise2D(worldXZ * (_PatchScale * 2.2) + float2(44.2, 81.7));
-                    float soilCutoff = 1.0 - saturate(_SoilCoverage * 1.5);
-                    float soilMask = smoothstep(soilCutoff, soilCutoff + 0.08, soilNoise);
-                    surfaceColor = lerp(surfaceColor, _MeadowSoilColor.rgb, soilMask * 0.65);
+                    // Glowne zdzbla o obnizonym kontrascie (#63734E, przy oddaleniu #59694A)
+                    idx = (grid.microFade > 0.25) ? max(idx, 5) : max(idx, 4);
+                }
+                else if (tuftState == 4)
+                {
+                    // Najjasniejsze rzadkie akcenty (#718057)
+                    idx = (grid.microFade > 0.45) ? 6 : 5;
                 }
 
                 // =========================================================================
@@ -222,33 +304,45 @@ Shader "Custom/Terrain/Meadow"
                 int debugMode = (int)(_DebugMeadowMode + 0.5);
                 if (debugMode == 1)
                 {
-                    float checker = (fmod(abs(gridCell.x) + abs(gridCell.y), 2.0) < 1.0) ? 0.05 : 0.95;
+                    float checker = (fmod(abs(grid.cell.x) + abs(grid.cell.y), 2.0) < 1.0) ? 0.08 : 0.92;
                     return half4(checker, checker, checker, 1.0);
                 }
                 else if (debugMode == 2)
                 {
-                    return half4(steppedBlade, steppedBlade, steppedBlade, 1.0);
+                    float v = (float)idx / 6.0;
+                    return half4(v, v, v, 1.0);
                 }
                 else if (debugMode == 3)
                 {
-                    // Tryb 3: Rozmieszczenie kęp bujniejszej trawy (tuftMask)
-                    return half4(tuftMask, tuftMask, tuftMask, 1.0);
+                    float tv = (float)tuftState / 4.0;
+                    return half4(tv, tv, tv, 1.0);
                 }
 
                 // =========================================================================
-                // 6. ROZJAŚNIONA ZIELONA GRANICA HEKSÓW (BRIGHTER MEADOW HEX BORDER)
-                // Obrys heksa jest czytelny, organiczny i JAŚNIEJSZY niż środek heksa
+                // 4. WYRAZNA, GLADKA GRANICA HEKSA (ANTYALIASING fwidth, BEZ PIKSELIZACJI)
                 // =========================================================================
-                float borderMask = EvaluateHexBorder(input.positionOS_XZ, worldXZ, _HexRadius, _HexBorderWidth, _HexBorderStrength, _HexBorderNoiseStrength);
-                float3 finalTopColor = lerp(surfaceColor, _MeadowBorderColor.rgb, borderMask);
+                float borderMask = EvaluateHexBorder(
+                    input.positionOS_XZ, worldXZ,
+                    _HexRadius, _HexBorderWidth, _HexBorderStrength, _HexBorderNoiseStrength);
 
-                // Ścianki boczne heksa (uskoki terenu)
+                float3 baseTopColor = PickMeadowPalette7(idx);
+                float3 finalTopColor = lerp(baseTopColor, _HexBorderColor.rgb, borderMask);
+
+                // Scianki boczne heksa (fallback dla pojedynczych meshy)
                 float topMask = saturate((normWS.y - 0.25) / 0.45);
-                float3 sideColor = EvaluateSideStrataSoil(input.positionWS, normWS, _MeadowDarkColor.rgb, _MeadowBaseColor.rgb);
+                float3 sideColor = EvaluateSideStrataSoil(input.positionWS, normWS, _Color0.rgb, _Color1.rgb);
                 float3 finalAlbedo = lerp(sideColor, finalTopColor, topMask);
 
-                // Oświetlenie URP PBR
-                return CalculateTerrainLitPBR(input.positionWS, normWS, input.positionCS, input.fogFactor, finalAlbedo, _Smoothness, _AmbientBoost);
+                // Tryb 4: Czyste Albedo bez oswietlenia, cieni i mgly dystansowej
+                if (debugMode == 4)
+                {
+                    return half4(finalAlbedo, 1.0);
+                }
+
+                // Oswietlenie URP PBR (surowy mat: Metallic = 0, Smoothness = 0)
+                return CalculateTerrainLitPBR(
+                    input.positionWS, normWS, input.positionCS, input.fogFactor,
+                    finalAlbedo, _Smoothness, _AmbientBoost);
             }
             ENDHLSL
         }
