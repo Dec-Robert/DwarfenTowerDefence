@@ -218,7 +218,7 @@ public class EnemyStats : MonoBehaviour
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
-    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical, float criticalMultiplier, TowerEntity sourceTower = null, bool isAoE = false, DeathSource deathSource = DeathSource.Combat)
+    public void TakeDamage(float rawDamage, DamageType type, float armourPiercing, float magicPiercing, bool isCritical, float criticalMultiplier, TowerEntity sourceTower = null, bool isAoE = false, DeathSource deathSource = DeathSource.Combat, bool triggerHitFlash = true)
     {
         if (isDead) return;
 
@@ -238,7 +238,10 @@ public class EnemyStats : MonoBehaviour
 
         currentHealth -= finalDamage;
 
-        FlashColor(Color.white, 0.1f);
+        if (triggerHitFlash)
+        {
+            FlashColor(Color.white, 0.1f);
+        }
 
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 

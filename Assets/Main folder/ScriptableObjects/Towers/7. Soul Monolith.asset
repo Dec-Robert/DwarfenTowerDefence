@@ -52,7 +52,7 @@ MonoBehaviour:
     amount: 1
   duskExecutionStep: 0
   tier1Upgrades: []
-  prefab: {fileID: 919132149155446097, guid: 598958419be95444e85651df33bcd786, type: 3}
+  prefab: {fileID: 7942014654870091631, guid: d7ab5215c7e17014ea1337ba02ede355, type: 3}
   bonusRules: []
   elevationBonus:
     enabled: 0
@@ -63,15 +63,16 @@ MonoBehaviour:
     searchRadius: 0
   baseMaxWorkers: 2
   isUnlocked: 1
-  baseRange: 1
+  baseRange: 3
   baseDamage: 50
-  fireRate: 3
+  fireRate: 10
   criticalChancel: 0.05
   criticalDamageMultiplier: 2
   armorPenetration: 0
   magicPenetration: 0
   damageType: 1
   canShootChunk: 0
+  tillDeath: 1
   defaultTargetingPriorities: 
   effects: []
-  bulletPrefab: {fileID: 1508738095332709406, guid: 85fe7ed40cca507438cd0f907d3acd01, type: 3}
+  bulletPrefab: {fileID: 0}

@@ -26,7 +26,6 @@ public class HexMapVisualizer : MonoBehaviour
 
     // --- Prefaby Specjalne ---
     [Header("Prefaby Budynków Specjalnych")]
-    public GameObject prefabBase;   // Kapitol
     public GameObject prefabBeacon; // Beacon of Hope
 
     [Header("Materiały Specjalne")]
@@ -37,7 +36,6 @@ public class HexMapVisualizer : MonoBehaviour
     public Material matSinkhole;
     public Material matFertile;
     public Material matMeadow;
-    public Material matBase;
     public Material matBeacon;
 
     [Header("Materiał Domyślny")]
@@ -266,23 +264,6 @@ public class HexMapVisualizer : MonoBehaviour
                     matToUse = matMeadow != null ? matMeadow : (matFertile != null ? matFertile : groundMat);
                     nameSuffix = " (Meadow)";
                     if (prefabMeadow != null) SpawnProp(hexObj, prefabMeadow);
-                    break;
-
-                case HexFeatureType.Base:
-                    matToUse = matBase != null ? matBase : groundMat;
-                    nameSuffix = " [CAPITOL]";
-                    if (prefabBase != null)
-                    {
-                        GameObject bObj = Instantiate(prefabBase, hexObj.transform);
-                        bObj.transform.localPosition = Vector3.zero;
-                        BuildingEntity bEntity = bObj.GetComponent<BuildingEntity>() ?? bObj.AddComponent<BuildingEntity>();
-                        HexCell cell = hexObj.GetComponent<HexCell>();
-                        if (cell != null) cell.SetBuilding(bEntity);
-                    }
-                    else
-                    {
-                        hexObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-                    }
                     break;
 
                 case HexFeatureType.Beacon:

@@ -437,9 +437,6 @@ public enum HexFeatureType
     Hill = 10,
     [System.Obsolete("Zapadliny sa teraz obslugiwane przez elevation < 0")]
     Sinkhole = 11,
-    [System.Obsolete("Kapitol jest teraz budynkiem BuildingEntity")]
-    Base = 12,
-    [System.Obsolete("Latarnia jest teraz budynkiem BuildingEntity")]
     Beacon = 13,
     [System.Obsolete("Mur jest zarzadzany przez ChunkWallManager")]
     Wall = 14

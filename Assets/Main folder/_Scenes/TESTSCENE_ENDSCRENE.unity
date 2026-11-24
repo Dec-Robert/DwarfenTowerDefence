@@ -3178,7 +3178,6 @@ MonoBehaviour:
   mountainTopScaleMultiplier: 1
   randomizeMountainRotation: 1
   matSideMountain: {fileID: 0}
-  prefabBase: {fileID: 0}
   prefabBeacon: {fileID: 0}
   matPath: {fileID: 0}
   matForest: {fileID: 0}
@@ -3187,7 +3186,6 @@ MonoBehaviour:
   matSinkhole: {fileID: 0}
   matFertile: {fileID: 0}
   matMeadow: {fileID: 0}
-  matBase: {fileID: 0}
   matBeacon: {fileID: 0}
   matDefaultGrass: {fileID: 0}
   elevationHeightStep: 0.25

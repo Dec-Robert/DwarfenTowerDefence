@@ -108,8 +108,21 @@ public class TowerContextWindowUI : MonoBehaviour
     [SerializeField] private List<PrioritySlotView> prioritySlots = new List<PrioritySlotView>();
     [SerializeField] private List<TargetingButtonView> targetingButtons = new List<TargetingButtonView>();
 
+    // ── Dolna Belka (Wyburzanie) ──────────────────────────────────────────────
+    [Header("Akcje i Wyburzanie")]
+    [SerializeField] private Button btnDemolish;
+    [SerializeField] private TextMeshProUGUI txtDemolishLabel;
+    [SerializeField] private Image imgDemolishBackground;
+
     // ── Stan bieżącej wieży ───────────────────────────────────────────────────
     private TowerEntity currentTower;
+    private bool isDemolishConfirming;
+
+    // Kolory przycisku Wyburzania (zgodne z ProductionContextWindowUI i HousingContextWindowUI)
+    private readonly Color demolishNormalBg = new Color(0.32f, 0.12f, 0.12f, 0.95f);
+    private readonly Color demolishNormalTxt = new Color(1f, 0.45f, 0.45f, 1f);
+    private readonly Color demolishConfirmBg = new Color(0.6f, 0.15f, 0.15f, 1f);
+    private readonly Color demolishConfirmTxt = new Color(1f, 0.9f, 0.2f, 1f);
 
     private void Awake()
     {
@@ -131,6 +144,7 @@ public class TowerContextWindowUI : MonoBehaviour
             layoutCoroutine = null;
         }
         UnsubscribeEvents();
+        ResetDemolishState();
     }
 
     private void OnDestroy()
@@ -211,6 +225,28 @@ public class TowerContextWindowUI : MonoBehaviour
         // 8. Priorytety ostrzału
         AutoBindPrioritySlots();
         AutoBindTargetingButtons();
+
+        // 9. Dolna belka (wyburzanie)
+        if (btnDemolish == null)
+        {
+            btnDemolish = transform.Find("Pnl_Bottom/Btn_Destroy")?.GetComponent<Button>()
+                ?? transform.Find("Pnl_BottomBar/Btn_Demolish")?.GetComponent<Button>();
+        }
+
+        if (btnDemolish != null)
+        {
+            if (txtDemolishLabel == null)
+            {
+                txtDemolishLabel = btnDemolish.transform.Find("Text (TMP)")?.GetComponent<TextMeshProUGUI>()
+                    ?? btnDemolish.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>()
+                    ?? btnDemolish.GetComponentInChildren<TextMeshProUGUI>(true);
+            }
+
+            if (imgDemolishBackground == null)
+            {
+                imgDemolishBackground = btnDemolish.GetComponent<Image>();
+            }
+        }
     }
 
     private void AutoBindRaceControls()
@@ -574,6 +610,13 @@ public class TowerContextWindowUI : MonoBehaviour
         // Podpięcie przycisków trybów celowania
         SetupTargetingButtonListeners();
 
+        // Podpięcie przycisku wyburzenia
+        if (btnDemolish != null)
+        {
+            btnDemolish.onClick.RemoveAllListeners();
+            btnDemolish.onClick.AddListener(HandleDemolishClick);
+        }
+
         // Pełne odświeżenie widoku
         LocalizationManager.OnLanguageChanged += RefreshAll;
         RefreshAll();
@@ -639,6 +682,7 @@ public class TowerContextWindowUI : MonoBehaviour
         RefreshWorkersUI();
         RefreshCombatStatsAndEfficiency();
         RefreshPrioritiesUI();
+        ResetDemolishState();
 
         // Wymuś przebudowę układu
         ForceRebuildLayout();
@@ -1300,11 +1344,69 @@ public class TowerContextWindowUI : MonoBehaviour
     }
 
     /// <summary>
+    /// Obsługuje dwustopniowe potwierdzenie wyburzenia wieży.
+    /// 1. kliknięcie: zmiana etykiety na "NA PEWNO? ({0}%)".
+    /// 2. kliknięcie: zamknięcie okna i wywołanie Demolish().
+    /// </summary>
+    public void HandleDemolishClick()
+    {
+        if (currentTower == null || !currentTower.CanDemolish()) return;
+
+        if (!isDemolishConfirming)
+        {
+            // Krok 1: oczekiwanie na potwierdzenie
+            isDemolishConfirming = true;
+            int percent = currentTower.RefundPercentage;
+            if (txtDemolishLabel != null) txtDemolishLabel.text = LocalizationManager.GetFormat("UI_BTN_DEMOLISH_CONFIRM_FMT", percent);
+            if (imgDemolishBackground != null) imgDemolishBackground.color = demolishConfirmBg;
+            if (txtDemolishLabel != null) txtDemolishLabel.color = demolishConfirmTxt;
+        }
+        else
+        {
+            // Krok 2: faktyczne wyburzenie
+            isDemolishConfirming = false;
+            var towerToDemolish = currentTower;
+            CloseWindow();
+            towerToDemolish.Demolish();
+        }
+    }
+
+    private void ResetDemolishState()
+    {
+        isDemolishConfirming = false;
+        bool canDemolish = currentTower != null && currentTower.CanDemolish();
+
+        if (btnDemolish != null)
+        {
+            btnDemolish.gameObject.SetActive(canDemolish);
+        }
+
+        if (txtDemolishLabel != null)
+        {
+            if (canDemolish && currentTower != null)
+            {
+                txtDemolishLabel.text = LocalizationManager.GetFormat("UI_BTN_DEMOLISH_REFUND_FMT", currentTower.RefundPercentage);
+            }
+            else
+            {
+                txtDemolishLabel.text = LocalizationManager.Get("UI_BTN_DEMOLISH", "WYBURZ");
+            }
+            txtDemolishLabel.color = demolishNormalTxt;
+        }
+
+        if (imgDemolishBackground != null)
+        {
+            imgDemolishBackground.color = demolishNormalBg;
+        }
+    }
+
+    /// <summary>
     /// Zamyka okno i czyści zaznaczenie wieży.
     /// </summary>
     public void CloseWindow()
     {
         UnsubscribeEvents();
+        ResetDemolishState();
 
         if (CenterInfoPanelControllerUI.Instance != null)
         {

@@ -38,7 +38,7 @@ public class FogOfWarManager : MonoBehaviour
         }
         else if (mistHeightOffset <= 0f)
         {
-            mistHeightOffset = 0.2f;
+            mistHeightOffset = 0.1f;
         }
     }
 
@@ -153,24 +153,24 @@ public class FogOfWarManager : MonoBehaviour
     private readonly Dictionary<Vector2Int, ChunkState> chunkFogStates = new Dictionary<Vector2Int, ChunkState>();
 
     [Header("Wspólna Wysokość Mgły (Mist World Height)")]
-    [Tooltip("Czy automatycznie obliczać wysokość mgły na podstawie maksymalnej wysokości powierzchni terenu.")]
+    [Tooltip("Czy automatycznie obliczać wysokość mgły na podstawie docelowego poziomu wzniesienia terenu (wzgórze +3).")]
     public bool autoCalculateMistHeight = true;
 
     [Tooltip("Ręczna wysokość Y mgły w przestrzeni świata (używana gdy autoCalculateMistHeight = false).")]
-    public float manualMistWorldHeight = 1.3f;
+    public float manualMistWorldHeight = 0.85f;
 
-    [Tooltip("Dodatni offset ponad maksymalną powierzchnię terenu zapobiegający Z-fighting.")]
-    public float mistHeightOffset = 0.2f;
+    [Tooltip("Dodatni offset ponad powierzchnię docelowego poziomu wzniesienia zapobiegający Z-fighting.")]
+    public float mistHeightOffset = 0.1f;
 
-    [Tooltip("Awaryjny maksymalny poziom wzniesienia terenu (gdy brak danych z wizualizatora, np. 5).")]
-    public int fallbackMaxElevationLevel = 5;
+    [Tooltip("Poziom wzniesienia terenu (np. 3 dla wzgórza +3), na wysokości którego spawnowana jest mgła.")]
+    public int mistElevationLevel = 3;
 
     private float cachedMistWorldHeight = 0f;
     private bool isMistHeightCached = false;
 
     /// <summary>
     /// Jednolita wysokość Y w przestrzeni świata dla wszystkich poziomych powierzchni mgły eksploracyjnej.
-    /// MistWorldHeight = MaxTerrainSurfaceY + mistHeightOffset.
+    /// MistWorldHeight = mistElevationLevel * elevationHeightStep + mistHeightOffset.
     /// </summary>
     public float MistWorldHeight
     {
@@ -199,7 +199,23 @@ public class FogOfWarManager : MonoBehaviour
             {
                 return mapGenerator.visualizer.MaxTerrainSurfaceY;
             }
-            return fallbackMaxElevationLevel * 0.25f;
+            return mistElevationLevel * 0.25f;
+        }
+    }
+
+    private float ElevationHeightStep
+    {
+        get
+        {
+            if (mapVisualizer != null && mapVisualizer.elevationHeightStep > 0f)
+            {
+                return mapVisualizer.elevationHeightStep;
+            }
+            if (mapGenerator != null && mapGenerator.visualizer != null && mapGenerator.visualizer.elevationHeightStep > 0f)
+            {
+                return mapGenerator.visualizer.elevationHeightStep;
+            }
+            return 0.25f;
         }
     }
 
@@ -210,9 +226,9 @@ public class FogOfWarManager : MonoBehaviour
             return manualMistWorldHeight;
         }
 
-        float maxY = MaxTerrainSurfaceY;
-        float offset = mistHeightOffset > 0f ? mistHeightOffset : (fogHeightOffset > 0f ? fogHeightOffset : 0.2f);
-        return maxY + offset;
+        float baseY = mistElevationLevel * ElevationHeightStep;
+        float offset = mistHeightOffset > 0f ? mistHeightOffset : (fogHeightOffset > 0f ? fogHeightOffset : 0.1f);
+        return baseY + offset;
     }
 
     public void RefreshMistHeight()

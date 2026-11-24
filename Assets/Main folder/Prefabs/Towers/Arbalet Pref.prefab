@@ -72,6 +72,9 @@ MonoBehaviour:
   turnSpeed: 10
   shootAngleMargin: 10
   rangeIndicatorPrefab: {fileID: 66276893048416449, guid: 46d23b10a158dfb4fb030960fb034997, type: 3}
+  muzzleFireVfx: {fileID: 0}
+  muzzleSmokeVfx: {fileID: 0}
+  alignSmokeToFirePoint: 1
   canShoot: 1
   currentRange: 0
   currentDamage: 0
@@ -84,6 +87,8 @@ MonoBehaviour:
   isFeared: 0
   activeTargetingRules: 
   targetChunkCoord: {x: 0, y: 0}
+  tillDeath: 0
+  beamWeapon: {fileID: 0}
   hasGroundTarget: 0
   groundTargetPosition: {x: 0, y: 0, z: 0}
   targetHexCell: {fileID: 0}

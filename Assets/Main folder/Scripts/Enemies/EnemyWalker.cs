@@ -16,7 +16,22 @@ public class EnemyWalker : MonoBehaviour
     private float spellSpeedMultiplier = 1f;
     private float spellSlowTimer = 0f;
 
-    public float EffectiveSpeed => speed * currentFogSpeedMultiplier * spellSpeedMultiplier;
+    private float towerSpeedMultiplier = 1f;
+    private float towerSlowTimer = 0f;
+    private const float MinCombinedNonFreezeSpeedMultiplier = 0.30f;
+
+    public float EffectiveSpeed
+    {
+        get
+        {
+            float slowMult = spellSpeedMultiplier * towerSpeedMultiplier;
+            if (spellSpeedMultiplier > 0.001f)
+            {
+                slowMult = Mathf.Max(MinCombinedNonFreezeSpeedMultiplier, slowMult);
+            }
+            return speed * currentFogSpeedMultiplier * slowMult;
+        }
+    }
     public bool IsInSurveyingFog => isInSurveyingFog;
 
     public void Initialize(List<Vector3> path, EnemyStats stats)
@@ -47,6 +62,16 @@ public class EnemyWalker : MonoBehaviour
             }
         }
 
+        if (towerSlowTimer > 0f)
+        {
+            towerSlowTimer -= Time.deltaTime;
+            if (towerSlowTimer <= 0f)
+            {
+                towerSlowTimer = 0f;
+                towerSpeedMultiplier = 1f;
+            }
+        }
+
         RefreshSurveyingFogState();
 
         Vector3 targetPos = pathPoints[targetIndex];
@@ -71,6 +96,22 @@ public class EnemyWalker : MonoBehaviour
         {
             spellSpeedMultiplier = targetMultiplier;
             spellSlowTimer = Mathf.Max(spellSlowTimer, duration);
+        }
+    }
+
+    public void ApplyTowerSlow(float slowPercent, float duration)
+    {
+        if (duration <= 0f) return;
+
+        float targetMultiplier = Mathf.Clamp01(1f - slowPercent);
+        if (targetMultiplier < towerSpeedMultiplier - 0.0001f || towerSlowTimer <= 0f)
+        {
+            towerSpeedMultiplier = targetMultiplier;
+            towerSlowTimer = duration;
+        }
+        else if (Mathf.Abs(targetMultiplier - towerSpeedMultiplier) <= 0.0001f)
+        {
+            towerSlowTimer = Mathf.Max(towerSlowTimer, duration);
         }
     }
 

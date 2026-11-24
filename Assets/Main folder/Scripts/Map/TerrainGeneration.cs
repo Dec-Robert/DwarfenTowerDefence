@@ -133,12 +133,8 @@ public class TerrainGenerator
             FillChunkFeatures(chunkCoord, isBridgehead, chunksWithMountainCluster, ref mountainPity);
         }
 
-        // Punkty specjalne bazy
-        SetFeature(Vector2Int.zero, Vector2Int.zero, HexFeatureType.Base);
-        Vector2Int beaconPos = new Vector2Int(0, 1);
-        SetFeature(Vector2Int.zero,
-            IsPath(Vector2Int.zero, beaconPos) ? new Vector2Int(1, 0) : beaconPos,
-            HexFeatureType.Beacon);
+        // Centrum startowego chunka: Beacon of Hope
+        SetFeature(Vector2Int.zero, Vector2Int.zero, HexFeatureType.Beacon);
     }
 
     /// <summary>
@@ -328,7 +324,7 @@ public class TerrainGenerator
             {
                 var cell = kvp.Value;
                 if (cell.isPath) continue;
-                if (cell.feature == HexFeatureType.Base || cell.feature == HexFeatureType.Beacon || cell.feature == HexFeatureType.Wall) continue;
+                if (cell.feature == HexFeatureType.Beacon || cell.feature == HexFeatureType.Wall) continue;
                 if (protectedFeatures.Contains(cell.feature)) continue;
                 if (cell.feature == HexFeatureType.None)
                 {

@@ -298,4 +298,27 @@ public class SurveyingSpawnAndSpeedTests
             Object.DestroyImmediate(hpMat);
         }
     }
+
+    [Test]
+    public void MistWorldHeight_TargetsHillPlus3ElevationWithOffset_IgnoringHigherMountains()
+    {
+        var visGo = new GameObject("HexMapVisualizer");
+        visGo.transform.SetParent(holder.transform);
+        var vis = visGo.AddComponent<HexMapVisualizer>();
+        vis.elevationHeightStep = 0.25f;
+
+        var fowGo = new GameObject("FogOfWarManager");
+        fowGo.transform.SetParent(holder.transform);
+        var fow = fowGo.AddComponent<FogOfWarManager>();
+        fow.mapVisualizer = vis;
+
+        // Domyślnie: wzgórze +3 (3 * 0.25 = 0.75) + mistHeightOffset (0.1) = 0.85
+        Assert.AreEqual(3, fow.mistElevationLevel);
+        Assert.AreEqual(0.1f, fow.mistHeightOffset, 0.0001f);
+        Assert.AreEqual(0.85f, fow.CalculateMistWorldHeight(), 0.0001f);
+
+        // Nawet jeśli elevationHeightStep się zmieni, wysokość mgły pozostaje powiązana z +3
+        vis.elevationHeightStep = 0.4f;
+        Assert.AreEqual(3 * 0.4f + 0.1f, fow.CalculateMistWorldHeight(), 0.0001f);
+    }
 }

@@ -24,6 +24,9 @@ public class TowerData : BuildingData
     public bool canShootChunk;
     public bool CanTargetGroundHex => canShootChunk;
 
+    [Tooltip("Czy wieża utrzymuje obecny cel aż do jego śmierci lub wyjścia z zasięgu (zamiast przełączać się co 0.5 s).")]
+    public bool tillDeath = false;
+
     [Tooltip("Domyślna lista priorytetów (do 3). Puste = domyślnie ClosestOnTrack")]
     public List<TargetingMode> defaultTargetingPriorities;
 

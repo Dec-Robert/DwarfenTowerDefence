@@ -307,7 +307,6 @@ public class MetaMapConfigEditorWindow : EditorWindow
                 HexFeatureType.Meadow => new Color(0.5f, 0.8f, 0.1f),
                 HexFeatureType.Hill => new Color(0.6f, 0.5f, 0.2f),
                 HexFeatureType.Sinkhole => new Color(0.3f, 0.2f, 0.4f),
-                HexFeatureType.Base => new Color(0.1f, 0.2f, 0.8f),
                 HexFeatureType.Beacon => new Color(0.9f, 0.6f, 0.1f),
                 _ => new Color(0.25f, 0.3f, 0.25f)
             };

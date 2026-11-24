@@ -439,4 +439,24 @@ public class MapGenerationTests
         Assert.GreaterOrEqual(report.minStartChunkRoadHexes, 6, "Minimum road hexes on first 2 chunks across 500 seeds must be >= 6");
         Assert.GreaterOrEqual(report.minLoops, 1, "Minimum loops across 500 seeds must be >= 1");
     }
+
+    [Test]
+    public void Test08_StartingChunkCenter_HasBeaconAndNoSideBeacon()
+    {
+        var gen = CreateGenerator();
+        MapGenerationContext ctx = gen.BuildMapData(42);
+
+        Assert.IsTrue(ctx.worldData.TryGetValue(Vector2Int.zero, out var centerChunk), "Starting chunk (0,0) must exist.");
+        Assert.IsTrue(centerChunk.TryGetValue(Vector2Int.zero, out var centerHex), "Center hex (0,0) must exist.");
+        Assert.AreEqual(HexFeatureType.Beacon, centerHex.feature, "Center hex (0,0) must have HexFeatureType.Beacon.");
+
+        if (centerChunk.TryGetValue(new Vector2Int(0, 1), out var sideHexA))
+        {
+            Assert.AreNotEqual(HexFeatureType.Beacon, sideHexA.feature, "Hex (0,1) should no longer hold a separate Beacon.");
+        }
+        if (centerChunk.TryGetValue(new Vector2Int(1, 0), out var sideHexB))
+        {
+            Assert.AreNotEqual(HexFeatureType.Beacon, sideHexB.feature, "Hex (1,0) should no longer hold a separate Beacon.");
+        }
+    }
 }

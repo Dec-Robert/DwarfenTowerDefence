@@ -15,6 +15,15 @@ public class TowerController : MonoBehaviour
     public GameObject rangeIndicatorPrefab;
     private GameObject rangeIndicatorInstance;
 
+    [Header("VFX Wystrzału")]
+    [SerializeField] private ParticleSystem muzzleFireVfx;
+    [SerializeField] private ParticleSystem muzzleSmokeVfx;
+    [SerializeField] private bool alignSmokeToFirePoint = true;
+
+    public ParticleSystem MuzzleFireVfx => muzzleFireVfx;
+    public ParticleSystem MuzzleSmokeVfx => muzzleSmokeVfx;
+    public bool AlignSmokeToFirePoint => alignSmokeToFirePoint;
+
     [Header("Status (Read Only)")]
     [SerializeField] public bool canShoot = true;
     [SerializeField] private float currentRange;
@@ -39,6 +48,19 @@ public class TowerController : MonoBehaviour
     [Header("System Celowania")]
     public List<TargetingMode> activeTargetingRules = new List<TargetingMode>();
     public Vector2Int targetChunkCoord;
+    [SerializeField] private bool tillDeath = false;
+
+    [Header("Broń Promieniowa (Opcjonalna)")]
+    [SerializeField] private TowerBeamWeapon beamWeapon;
+
+    public bool TillDeath => tillDeath;
+    public TowerBeamWeapon BeamWeapon => beamWeapon;
+    public Transform CurrentTarget => target;
+
+    public void SetTillDeath(bool value)
+    {
+        tillDeath = value;
+    }
 
     [Header("Celowanie w Heks (Ground Target)")]
     [SerializeField] private bool hasGroundTarget = false;
@@ -62,6 +84,10 @@ public class TowerController : MonoBehaviour
     private void Awake()
     {
         towerEntity = GetComponent<TowerEntity>();
+        if (beamWeapon == null)
+        {
+            beamWeapon = GetComponent<TowerBeamWeapon>();
+        }
     }
 
     private void Start()
@@ -73,6 +99,7 @@ public class TowerController : MonoBehaviour
             currentFireRate = towerData.fireRate;
             criticalChance = towerData.criticalChancel;
             criticalMultiplier = towerData.criticalDamageMultiplier;
+            tillDeath = towerData.tillDeath;
 
             if (towerData.defaultTargetingPriorities != null && towerData.defaultTargetingPriorities.Count > 0)
                 activeTargetingRules = new List<TargetingMode>(towerData.defaultTargetingPriorities);
@@ -232,6 +259,9 @@ public class TowerController : MonoBehaviour
 
         if (targetHexIndicatorInstance != null)
             targetHexIndicatorInstance.SetActive(false);
+
+        if (beamWeapon != null)
+            beamWeapon.StopBeam();
     }
 
     private void HandleNightStarted()
@@ -266,9 +296,7 @@ public class TowerController : MonoBehaviour
 
         if (forcedTarget != null)
         {
-            Vector3 diff = forcedTarget.position - transform.position;
-            diff.y = 0;
-            if (diff.sqrMagnitude <= worldRange * worldRange)
+            if (IsTargetAliveAndInRange(forcedTarget))
             {
                 target = forcedTarget;
                 return;
@@ -277,6 +305,11 @@ public class TowerController : MonoBehaviour
             {
                 forcedTarget = null;
             }
+        }
+
+        if (tillDeath && IsTargetAliveAndInRange(target))
+        {
+            return;
         }
 
         List<EnemyStats> current = candidateBufferA;
@@ -351,6 +384,7 @@ public class TowerController : MonoBehaviour
         if (!canShoot || !isNight)
         {
             isAimed = false;
+            if (beamWeapon != null) beamWeapon.StopBeam();
             return;
         }
 
@@ -358,19 +392,40 @@ public class TowerController : MonoBehaviour
 
         if (isGroundMode)
         {
+            if (beamWeapon != null) beamWeapon.StopBeam();
             LockOnGroundTarget();
             CheckIfAimedGround();
         }
         else
         {
+            if (beamWeapon != null && target != null && !IsTargetAliveAndInRange(target))
+            {
+                target = null;
+                UpdateTarget();
+            }
+
             if (target == null)
             {
                 isAimed = false;
+                if (beamWeapon != null) beamWeapon.StopBeam();
                 return;
             }
 
             LockOnTarget();
             CheckIfAimed();
+        }
+
+        if (beamWeapon != null && !isGroundMode)
+        {
+            if (partToRotate == null || isAimed)
+            {
+                beamWeapon.TickBeam(target, GetAllStats(), towerEntity, firePoint, Time.deltaTime);
+            }
+            else
+            {
+                beamWeapon.StopBeam();
+            }
+            return;
         }
 
         if (fireCountdown <= 0f)
@@ -452,6 +507,8 @@ public class TowerController : MonoBehaviour
         Vector3 spawnPos = firePoint != null ? firePoint.position : transform.position;
         Quaternion spawnRot = firePoint != null ? firePoint.rotation : (partToRotate != null ? partToRotate.rotation : transform.rotation);
 
+        PlayMuzzleVfx(spawnPos, spawnRot);
+
         GameObject bulletGO = Instantiate(towerData.bulletPrefab, spawnPos, spawnRot);
         ProjectileBase projectile = bulletGO.GetComponent<ProjectileBase>();
 
@@ -500,6 +557,52 @@ public class TowerController : MonoBehaviour
         }
     }
 
+    private void PlayMuzzleVfx(Vector3 spawnPos, Quaternion spawnRot)
+    {
+        PlaySingleMuzzleVfx(muzzleFireVfx, spawnPos, spawnRot, clearExistingParticles: true, alignToFirePoint: true);
+        PlaySingleMuzzleVfx(muzzleSmokeVfx, spawnPos, spawnRot, clearExistingParticles: false, alignToFirePoint: alignSmokeToFirePoint);
+    }
+
+    private static void PlaySingleMuzzleVfx(ParticleSystem vfx, Vector3 spawnPos, Quaternion spawnRot, bool clearExistingParticles, bool alignToFirePoint)
+    {
+        if (vfx == null) return;
+
+        if (alignToFirePoint)
+        {
+            AlignMuzzleVfx(vfx.transform, spawnPos, spawnRot);
+        }
+
+        if (clearExistingParticles)
+        {
+            vfx.Clear(true);
+        }
+
+        vfx.Play(true);
+    }
+
+    private static void AlignMuzzleVfx(Transform vfxTransform, Vector3 spawnPos, Quaternion spawnRot)
+    {
+        vfxTransform.position = spawnPos;
+
+        Vector3 targetForward = spawnRot * Vector3.forward;
+        if (vfxTransform.parent != null)
+        {
+            Vector3 localDir = vfxTransform.parent.InverseTransformDirection(targetForward);
+            if (localDir.sqrMagnitude > 0.0001f)
+            {
+                Vector3 localUp = vfxTransform.parent.InverseTransformDirection(spawnRot * Vector3.up);
+                if (localUp.sqrMagnitude < 0.0001f)
+                {
+                    localUp = Vector3.up;
+                }
+                vfxTransform.localRotation = Quaternion.LookRotation(localDir.normalized, localUp.normalized);
+                return;
+            }
+        }
+
+        vfxTransform.rotation = spawnRot;
+    }
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = canShoot ? Color.cyan : Color.red;
@@ -524,6 +627,23 @@ public class TowerController : MonoBehaviour
     public void OverrideTargeting(Transform newTarget)
     {
         forcedTarget = newTarget;
+        if (newTarget != null && IsTargetAliveAndInRange(newTarget))
+        {
+            target = newTarget;
+        }
+    }
+
+    private bool IsTargetAliveAndInRange(Transform candidate)
+    {
+        if (candidate == null) return false;
+
+        EnemyStats enemy = candidate.GetComponent<EnemyStats>();
+        if (enemy != null && enemy.IsDead) return false;
+
+        float worldRange = CurrentWorldRange;
+        Vector3 diff = candidate.position - transform.position;
+        diff.y = 0f;
+        return diff.sqrMagnitude <= worldRange * worldRange;
     }
 
     public void ClearOverride()

@@ -744,7 +744,6 @@ MonoBehaviour:
   prefabMountain: {fileID: 0}
   prefabFertile: {fileID: 0}
   prefabMeadow: {fileID: 0}
-  prefabBase: {fileID: 0}
   prefabBeacon: {fileID: 0}
   matPath: {fileID: 0}
   matForest: {fileID: 0}
@@ -753,7 +752,6 @@ MonoBehaviour:
   matSinkhole: {fileID: 0}
   matFertile: {fileID: 0}
   matMeadow: {fileID: 0}
-  matBase: {fileID: 0}
   matBeacon: {fileID: 0}
   matDefaultGrass: {fileID: 0}
 --- !u!114 &406902615
