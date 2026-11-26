@@ -14,6 +14,10 @@ public class MetaMapConfig : ScriptableObject
     // To definiuje zmiany na istniej�cych chunkach (np. wi�cej lasu na -1,0)
     public List<ChunkModifierLink> globalModifiers;
 
+    [Header("Odtworzone domy startowe (Meta: Potencjal ziemi 1)")]
+    public HousingBuildingData restoredElvenHouse;
+    public HousingBuildingData restoredDwarvenHouse;
+
     [System.Serializable]
     public struct ExpansionChunkLink
     {

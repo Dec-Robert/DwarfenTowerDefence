@@ -38,6 +38,7 @@ public static class BuildingWorkerOverlayTestRunner
         Run(test.Test06_ActiveBuilding_ZeroWorkers_ShowsWarningCapsuleOnly, "Test06_ActiveBuilding_ZeroWorkers_ShowsWarningCapsuleOnly");
         Run(test.Test07_ActiveBuilding_WithWorkers_ShowsOnlyAllocatedRaces, "Test07_ActiveBuilding_WithWorkers_ShowsOnlyAllocatedRaces");
         Run(test.Test08_PausedBuilding_ShowsWarningCapsule, "Test08_PausedBuilding_ShowsWarningCapsule");
+        Run(test.Test09_NewBuildingConstructedWhileOverlayVisible_AutomaticallyGetsVisibleOverlay, "Test09_NewBuildingConstructedWhileOverlayVisible_AutomaticallyGetsVisibleOverlay");
 
         Debug.Log($"[BuildingWorkerOverlayTests] Summary: {passed} PASSED, {failed} FAILED");
     }

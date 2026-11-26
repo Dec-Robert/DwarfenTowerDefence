@@ -314,15 +314,143 @@ public class MapExpansionManager : MonoBehaviour
         {
             chunkData.surveyDaysRemaining = 0;
             SetChunkBaseState(mission.targetChunk, ChunkState.Outskirts);
+
+            TryApplyExtraTerrainOnSurvey(mission.targetChunk);
+            TryGatherResourcesOnSurvey(chunkData);
         }
         else if (mission.missionType == ScoutingMissionType.Recon)
         {
             chunkData.isReconActive = false;
             chunkData.reconIntel = GenerateReconIntel(mission.targetChunk);
+            TryGatherResourcesOnRecon(chunkData);
             OnReconIntelDiscovered?.Invoke(mission.targetChunk, chunkData.reconIntel);
         }
 
         OnMissionCompleted?.Invoke(mission);
+    }
+
+    private void TryApplyExtraTerrainOnSurvey(Vector2Int chunkCoord)
+    {
+        if (MetaUpgradeManager.Instance == null || HexMapGenerator.Instance == null || HexMapGenerator.Instance.worldData == null)
+            return;
+
+        float chance = Mathf.Clamp01(MetaUpgradeManager.Instance.GetValue(MetaEffectType.ExpeditionExtraTerrainChance));
+        if (chance <= 0f || UnityEngine.Random.value >= chance) return;
+
+        if (!HexMapGenerator.Instance.worldData.TryGetValue(chunkCoord, out var chunkHexes) || chunkHexes == null)
+            return;
+
+        var candidates = new List<KeyValuePair<Vector2Int, HexCellData>>();
+        foreach (var kvp in chunkHexes)
+        {
+            HexCellData cell = kvp.Value;
+            if (cell == null) continue;
+            if (cell.isPath || cell.isRoad) continue;
+            if (cell.startingBuilding != null || cell.occupyingBuilding != null) continue;
+            if (cell.feature == HexFeatureType.None && cell.elevation == 0)
+            {
+                candidates.Add(kvp);
+            }
+        }
+
+        if (candidates.Count == 0) return;
+
+        var chosen = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        HexCellData targetCell = chosen.Value;
+        int roll = UnityEngine.Random.Range(0, 4);
+        switch (roll)
+        {
+            case 0:
+                targetCell.feature = HexFeatureType.Forest;
+                break;
+            case 1:
+                targetCell.feature = HexFeatureType.Meadow;
+                break;
+            case 2:
+                targetCell.feature = HexFeatureType.Mountain;
+                break;
+            default:
+                targetCell.feature = HexFeatureType.None;
+                targetCell.elevation = 1;
+                break;
+        }
+
+        HexMapVisualizer.Instance?.UpdateHexTerrainAndVisuals(chunkCoord, chosen.Key, targetCell);
+        Debug.Log($"[MapExpansionManager] Dodatkowy teren z ekspedycji na chunku {chunkCoord} ({chosen.Key}): feature={targetCell.feature}, elev={targetCell.elevation}");
+    }
+
+    private void TryGatherResourcesOnSurvey(ChunkStateData chunkData)
+    {
+        if (chunkData == null || chunkData.hasGatheredResources) return;
+        if (MetaUpgradeManager.Instance == null) return;
+
+        int perHex = Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.ExpeditionSurveyResourceProfit));
+        if (perHex <= 0) return;
+
+        GrantChunkTerrainResources(chunkData, perHex, "Ekspedycja");
+    }
+
+    private void TryGatherResourcesOnRecon(ChunkStateData chunkData)
+    {
+        if (chunkData == null || chunkData.hasGatheredResources) return;
+        if (MetaUpgradeManager.Instance == null) return;
+
+        float chance = Mathf.Clamp01(MetaUpgradeManager.Instance.GetValue(MetaEffectType.ReconResourceGatherChance));
+        if (chance <= 0f || UnityEngine.Random.value >= chance) return;
+
+        GrantChunkTerrainResources(chunkData, 1, "Zwiad Taktyczny");
+    }
+
+    public bool GrantChunkTerrainResources(ChunkStateData chunkData, int perMatchingHex, string sourceLabel = "Ekspedycja")
+    {
+        if (chunkData == null || chunkData.hasGatheredResources || perMatchingHex <= 0) return false;
+        if (HexMapGenerator.Instance == null || HexMapGenerator.Instance.worldData == null) return false;
+        if (!HexMapGenerator.Instance.worldData.TryGetValue(chunkData.chunkCoord, out var chunkHexes) || chunkHexes == null)
+            return false;
+
+        var gains = new Dictionary<ResourceType, int>();
+        foreach (var cell in chunkHexes.Values)
+        {
+            if (cell == null) continue;
+            if (cell.feature == HexFeatureType.Forest)
+                AddGatherGain(gains, ResourceType.Wood, perMatchingHex);
+            else if (cell.feature == HexFeatureType.Meadow)
+                AddGatherGain(gains, ResourceType.Food, perMatchingHex);
+            else if (cell.feature == HexFeatureType.Mountain)
+            {
+                AddGatherGain(gains, ResourceType.Iron, perMatchingHex);
+                AddGatherGain(gains, ResourceType.Coal, perMatchingHex);
+            }
+            else if (cell.elevation > 0 || cell.feature == HexFeatureType.Hill)
+            {
+                AddGatherGain(gains, ResourceType.Stone, perMatchingHex);
+            }
+        }
+
+        chunkData.hasGatheredResources = true;
+
+        if (gains.Count == 0) return false;
+
+        if (ResourceManager.Instance != null)
+        {
+            foreach (var kvp in gains)
+            {
+                if (kvp.Value > 0)
+                {
+                    ResourceManager.Instance.AddResource(kvp.Key, kvp.Value);
+                }
+            }
+        }
+
+        Debug.Log($"[MapExpansionManager] {sourceLabel} na {chunkData.chunkCoord} zebrał surowce: " +
+                  string.Join(", ", gains.Select(k => $"{k.Key}+{k.Value}")));
+        return true;
+    }
+
+    private static void AddGatherGain(Dictionary<ResourceType, int> gains, ResourceType type, int amount)
+    {
+        if (amount <= 0) return;
+        gains[type] = gains.TryGetValue(type, out int cur) ? cur + amount : amount;
     }
 
     private ChunkReconIntel GenerateReconIntel(Vector2Int chunkCoord)
@@ -578,8 +706,20 @@ public class MapExpansionManager : MonoBehaviour
         return true;
     }
 
+    public static bool IsTacticalReconUnlocked()
+    {
+        if (MetaUpgradeManager.Instance == null) return true;
+        return MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockTacticalRecon);
+    }
+
     public bool CanStartRecon(Vector2Int coord, out string reason)
     {
+        if (!IsTacticalReconUnlocked())
+        {
+            reason = LocalizationManager.Get("reason_recon_locked", "Zwiad taktyczny wymaga odblokowania w Meta-Progresji.");
+            return false;
+        }
+
         if (!activeChunks.TryGetValue(coord, out var data))
         {
             reason = LocalizationManager.Get("reason_invalid_chunk", "Nieprawidłowy obszar.");

@@ -17,6 +17,20 @@ public class SpellUpgradeNodeData
     public Sprite icon;
     public List<ResourceCost> costs = new List<ResourceCost>();
     public List<SpellStatModifier> modifiers = new List<SpellStatModifier>();
+
+    public string GetDisplayName(string spellId, int tierIndex)
+    {
+        if (string.IsNullOrEmpty(spellId) || tierIndex < 0) return nodeName;
+        string cleanId = SpellDataSO.SanitizeKey(spellId);
+        return LocalizationManager.Get($"SPELL_{cleanId}_T{tierIndex + 1}_NAME", nodeName);
+    }
+
+    public string GetDisplayDescription(string spellId, int tierIndex)
+    {
+        if (string.IsNullOrEmpty(spellId) || tierIndex < 0) return description;
+        string cleanId = SpellDataSO.SanitizeKey(spellId);
+        return LocalizationManager.Get($"SPELL_{cleanId}_T{tierIndex + 1}_DESC", description);
+    }
 }
 
 [Serializable]
@@ -28,6 +42,14 @@ public class SpellSpecializationData
     public Sprite icon;
     public List<ResourceCost> costs = new List<ResourceCost>();
     public List<SpellStatModifier> modifiers = new List<SpellStatModifier>();
+
+    public string DisplayName => string.IsNullOrEmpty(specializationId)
+        ? specializationName
+        : LocalizationManager.Get($"SPELL_SPEC_{SpellDataSO.SanitizeKey(specializationId)}_NAME", specializationName);
+
+    public string DisplayDescription => string.IsNullOrEmpty(specializationId)
+        ? description
+        : LocalizationManager.Get($"SPELL_SPEC_{SpellDataSO.SanitizeKey(specializationId)}_DESC", description);
 
     [Header("Efekty Specjalne")]
     public bool spawnsGroundZone;
@@ -47,6 +69,23 @@ public class SpellDataSO : ScriptableObject
     public string spellName;
     [TextArea] public string description;
     public Sprite icon;
+
+    public string DisplayName => LocalizationManager.Get($"SPELL_{SanitizeKey(!string.IsNullOrEmpty(spellId) ? spellId : name)}_NAME", spellName);
+    public string DisplayDescription => LocalizationManager.Get($"SPELL_{SanitizeKey(!string.IsNullOrEmpty(spellId) ? spellId : name)}_DESC", description);
+
+    public static string SanitizeKey(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return "UNKNOWN";
+        var sb = new System.Text.StringBuilder();
+        foreach (char c in raw)
+        {
+            if (char.IsLetterOrDigit(c)) sb.Append(char.ToUpperInvariant(c));
+            else if (c == ' ' || c == '_' || c == '-') sb.Append('_');
+        }
+        string clean = sb.ToString();
+        while (clean.Contains("__")) clean = clean.Replace("__", "_");
+        return clean.Trim('_');
+    }
 
     [Header("Wizualia")]
     public GameObject vfxPrefab;

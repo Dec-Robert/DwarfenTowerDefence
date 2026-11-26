@@ -330,6 +330,20 @@ public class FogOfWarManager : MonoBehaviour
     private Color32[] maskPixels;
     private Vector2 worldBoundsMin;
     private Vector2 worldBoundsSize;
+    private bool isGlobalFogMaskDirty;
+
+    // Cache statycznego mapowania piksel -> indeks chunku dla szybkiego UpdateGlobalFogMask
+    private int[] pixelChunkIndices;
+    private int pixelChunkLookupRes = -1;
+    private Vector2 pixelChunkLookupBoundsMin;
+    private Vector2 pixelChunkLookupBoundsSize;
+    private int pixelChunkLookupRadius = -1;
+    private float pixelChunkLookupHexSize = -1f;
+    private float pixelChunkLookupPadding = -1f;
+    private int pixelChunkLookupChunkCount = -1;
+    private readonly List<Vector2Int> maskChunkCoords = new List<Vector2Int>(128);
+    private readonly Dictionary<Vector2Int, int> maskChunkIndexLookup = new Dictionary<Vector2Int, int>(128);
+    private bool[] chunkIsWildernessCache;
 
     private void Start()
     {
@@ -365,7 +379,6 @@ public class FogOfWarManager : MonoBehaviour
         if (mission != null && expansionManager != null)
         {
             UpdateChunkFogState(mission.targetChunk, expansionManager.GetEffectiveState(mission.targetChunk));
-            UpdateGlobalFogMask();
         }
     }
 
@@ -387,7 +400,15 @@ public class FogOfWarManager : MonoBehaviour
     private void OnChunkStateChangedHandler(Vector2Int coord, ChunkState state)
     {
         UpdateChunkFogState(coord, state);
-        UpdateGlobalFogMask();
+    }
+
+    private void LateUpdate()
+    {
+        if (isGlobalFogMaskDirty)
+        {
+            isGlobalFogMaskDirty = false;
+            UpdateGlobalFogMask();
+        }
     }
 
     private void Update()
@@ -552,6 +573,7 @@ public class FogOfWarManager : MonoBehaviour
             maskPixels = new Color32[res * res];
         }
 
+        EnsurePixelChunkLookup(res);
         Shader.SetGlobalTexture("_FogMask", fogMaskTexture);
     }
 
@@ -570,6 +592,87 @@ public class FogOfWarManager : MonoBehaviour
             fogMaskTexture = null;
         }
         maskPixels = null;
+        InvalidatePixelChunkLookup();
+    }
+
+    private void InvalidatePixelChunkLookup()
+    {
+        pixelChunkIndices = null;
+        pixelChunkLookupRes = -1;
+        pixelChunkLookupChunkCount = -1;
+        maskChunkCoords.Clear();
+        maskChunkIndexLookup.Clear();
+        chunkIsWildernessCache = null;
+    }
+
+    private void EnsurePixelChunkLookup(int res)
+    {
+        if (expansionManager == null || expansionManager.activeChunks == null || worldBoundsSize.x <= 0f)
+            return;
+
+        EnsureGridMetrics();
+        int rChunk = chunkRadius > 0 ? chunkRadius : 3;
+        int chunkCount = expansionManager.activeChunks.Count;
+
+        if (pixelChunkIndices != null &&
+            pixelChunkIndices.Length == res * res &&
+            pixelChunkLookupRes == res &&
+            pixelChunkLookupChunkCount == chunkCount &&
+            pixelChunkLookupBoundsMin == worldBoundsMin &&
+            pixelChunkLookupBoundsSize == worldBoundsSize &&
+            pixelChunkLookupRadius == rChunk &&
+            Mathf.Approximately(pixelChunkLookupHexSize, hexSize) &&
+            Mathf.Approximately(pixelChunkLookupPadding, padding))
+        {
+            return;
+        }
+
+        maskChunkCoords.Clear();
+        maskChunkIndexLookup.Clear();
+        int nextIdx = 0;
+        foreach (var coord in expansionManager.activeChunks.Keys)
+        {
+            maskChunkIndexLookup[coord] = nextIdx++;
+            maskChunkCoords.Add(coord);
+        }
+
+        if (chunkIsWildernessCache == null || chunkIsWildernessCache.Length < maskChunkCoords.Count)
+        {
+            chunkIsWildernessCache = new bool[Mathf.Max(1, maskChunkCoords.Count)];
+        }
+
+        int totalPixels = res * res;
+        if (pixelChunkIndices == null || pixelChunkIndices.Length != totalPixels)
+        {
+            pixelChunkIndices = new int[totalPixels];
+        }
+
+        float invRes = 1f / res;
+        for (int py = 0; py < res; py++)
+        {
+            float v = (py + 0.5f) * invRes;
+            float worldZ = worldBoundsMin.y + v * worldBoundsSize.y;
+            int rowOffset = py * res;
+
+            for (int px = 0; px < res; px++)
+            {
+                float u = (px + 0.5f) * invRes;
+                float worldX = worldBoundsMin.x + u * worldBoundsSize.x;
+
+                Vector2Int globalHex = HexGridMath.WorldToAxial(worldX, worldZ, hexSize, padding);
+                HexGridMath.GlobalToChunkAndLocal(globalHex, rChunk, out var cCoord, out _);
+
+                pixelChunkIndices[rowOffset + px] = maskChunkIndexLookup.TryGetValue(cCoord, out int cIdx) ? cIdx : -1;
+            }
+        }
+
+        pixelChunkLookupRes = res;
+        pixelChunkLookupBoundsMin = worldBoundsMin;
+        pixelChunkLookupBoundsSize = worldBoundsSize;
+        pixelChunkLookupRadius = rChunk;
+        pixelChunkLookupHexSize = hexSize;
+        pixelChunkLookupPadding = padding;
+        pixelChunkLookupChunkCount = chunkCount;
     }
 
     private static float DistancePointToSegmentSq(Vector2 p, Vector2 a, Vector2 b)
@@ -650,6 +753,7 @@ public class FogOfWarManager : MonoBehaviour
 
     public void UpdateGlobalFogMask()
     {
+        isGlobalFogMaskDirty = false;
         if (fogMaskTexture == null || expansionManager == null || maskPixels == null || worldBoundsSize.x <= 0f) return;
 
         EnsureGridMetrics();
@@ -659,30 +763,57 @@ public class FogOfWarManager : MonoBehaviour
         float transitionWidthWorld = GetTransitionWidthWorld();
         Shader.SetGlobalFloat(PropFogTransitionWidthWorld, transitionWidthWorld);
 
-        // 1. Wypelnienie rzeczywistego stanu logicznego dla kazdego piksela maski na bazie heksow
+        // 1. Wypelnienie rzeczywistego stanu logicznego dla kazdego piksela maski na bazie cache piksel->chunk
+        EnsurePixelChunkLookup(res);
         float invRes = 1f / res;
-        for (int py = 0; py < res; py++)
+
+        int chunkCount = maskChunkCoords.Count;
+        if (pixelChunkIndices != null && pixelChunkIndices.Length == maskPixels.Length && chunkCount > 0)
         {
-            float v = (py + 0.5f) * invRes;
-            float worldZ = worldBoundsMin.y + v * worldBoundsSize.y;
-            int rowOffset = py * res;
-
-            for (int px = 0; px < res; px++)
+            for (int i = 0; i < chunkCount; i++)
             {
-                float u = (px + 0.5f) * invRes;
-                float worldX = worldBoundsMin.x + u * worldBoundsSize.x;
-
-                Vector2Int globalHex = HexGridMath.WorldToAxial(worldX, worldZ, hexSize, padding);
-                HexGridMath.GlobalToChunkAndLocal(globalHex, rChunk, out var cCoord, out _);
-
                 bool isWild = true;
-                if (expansionManager.activeChunks.TryGetValue(cCoord, out var chunkData) && chunkData != null)
+                if (expansionManager.activeChunks.TryGetValue(maskChunkCoords[i], out var chunkData) && chunkData != null)
                 {
                     isWild = chunkData.EffectiveState == ChunkState.Wilderness;
                 }
+                chunkIsWildernessCache[i] = isWild;
+            }
 
-                byte val = isWild ? (byte)255 : (byte)0;
-                maskPixels[rowOffset + px] = new Color32(val, val, 0, 255);
+            Color32 wildColor = new Color32(255, 255, 0, 255);
+            Color32 nonWildColor = new Color32(0, 0, 0, 255);
+            int pixelCount = maskPixels.Length;
+            for (int i = 0; i < pixelCount; i++)
+            {
+                int cIdx = pixelChunkIndices[i];
+                maskPixels[i] = (cIdx < 0 || chunkIsWildernessCache[cIdx]) ? wildColor : nonWildColor;
+            }
+        }
+        else
+        {
+            for (int py = 0; py < res; py++)
+            {
+                float v = (py + 0.5f) * invRes;
+                float worldZ = worldBoundsMin.y + v * worldBoundsSize.y;
+                int rowOffset = py * res;
+
+                for (int px = 0; px < res; px++)
+                {
+                    float u = (px + 0.5f) * invRes;
+                    float worldX = worldBoundsMin.x + u * worldBoundsSize.x;
+
+                    Vector2Int globalHex = HexGridMath.WorldToAxial(worldX, worldZ, hexSize, padding);
+                    HexGridMath.GlobalToChunkAndLocal(globalHex, rChunk, out var cCoord, out _);
+
+                    bool isWild = true;
+                    if (expansionManager.activeChunks.TryGetValue(cCoord, out var chunkData) && chunkData != null)
+                    {
+                        isWild = chunkData.EffectiveState == ChunkState.Wilderness;
+                    }
+
+                    byte val = isWild ? (byte)255 : (byte)0;
+                    maskPixels[rowOffset + px] = new Color32(val, val, 0, 255);
+                }
             }
         }
 
@@ -740,7 +871,7 @@ public class FogOfWarManager : MonoBehaviour
         }
 
         fogMaskTexture.SetPixels32(maskPixels);
-        fogMaskTexture.Apply();
+        fogMaskTexture.Apply(updateMipmaps: false, makeNoLongerReadable: false);
     }
 
     public void UpdateChunkFogState(Vector2Int coord, ChunkState state)
@@ -760,6 +891,10 @@ public class FogOfWarManager : MonoBehaviour
         }
 
         chunkFogStates[coord] = state;
+        if (AffectsGlobalFogMask(hadPrev, prevState, state))
+        {
+            isGlobalFogMaskDirty = true;
+        }
         if (state == ChunkState.Surveying)
         {
             activeSurveyingChunks.Add(coord);
@@ -1081,7 +1216,7 @@ public class FogOfWarManager : MonoBehaviour
         pos.y = MistWorldHeight;
         fog.transform.position = pos;
 
-        ApplyMaterial(fog, surveyMat, depthPrepassMat);
+        ApplyMaterial(fog, surveyMat, depthPrepassMat, clearPropertyBlock: false);
         SetTerrainVisible(coord, true);
 
         activeTransitionCoroutines[coord] = StartCoroutine(BorderlandsToSurveyingRoutine(coord, fog, surveyMat, surveyTransitionDuration));
@@ -1407,7 +1542,14 @@ public class FogOfWarManager : MonoBehaviour
     /// dokladany jako drugi material (mesh ma jeden submesh, wiec Unity renderuje go drugi raz
     /// tym materialem). Uzywane tylko dla Surveying - pozostale stany maja jeden material.
     /// </summary>
-    private void ApplyMaterial(GameObject root, Material mat, Material depthPrepassMat = null)
+    private static bool AffectsGlobalFogMask(bool hadPrev, ChunkState prevState, ChunkState nextState)
+    {
+        if (!hadPrev) return true;
+        return (prevState == ChunkState.Wilderness) != (nextState == ChunkState.Wilderness)
+            || IsDiscoverableFogState(prevState) != IsDiscoverableFogState(nextState);
+    }
+
+    private void ApplyMaterial(GameObject root, Material mat, Material depthPrepassMat = null, bool clearPropertyBlock = true)
     {
         if (root == null || mat == null) return;
 
@@ -1430,7 +1572,10 @@ public class FogOfWarManager : MonoBehaviour
         foreach (var r in rendererBuffer)
         {
             r.sharedMaterials = mats; // Unity kopiuje tablice
-            r.SetPropertyBlock(null);
+            if (clearPropertyBlock)
+            {
+                r.SetPropertyBlock(null);
+            }
         }
         rendererBuffer.Clear();
     }
@@ -1439,7 +1584,7 @@ public class FogOfWarManager : MonoBehaviour
     {
         if (mapVisualizer == null) return;
         var chunkObj = mapVisualizer.GetChunkGameObject(coord);
-        if (chunkObj != null)
+        if (chunkObj != null && chunkObj.activeSelf != visible)
         {
             chunkObj.SetActive(visible);
         }

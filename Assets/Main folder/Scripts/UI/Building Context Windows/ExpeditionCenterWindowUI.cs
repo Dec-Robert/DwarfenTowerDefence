@@ -39,6 +39,7 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
 
     private ExpeditionCenterEntity currentCenter;
     private Coroutine highlightCoroutine;
+    private bool isRefreshDirty;
 
     private void Awake()
     {
@@ -48,7 +49,17 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
     private void OnEnable()
     {
         SubscribeEvents();
+        isRefreshDirty = false;
         RefreshUI();
+    }
+
+    private void LateUpdate()
+    {
+        if (isRefreshDirty && gameObject.activeInHierarchy)
+        {
+            isRefreshDirty = false;
+            RefreshUI();
+        }
     }
 
     private void OnDisable()
@@ -63,6 +74,9 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
 
     private void SubscribeEvents()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshUI;
+        LocalizationManager.OnLanguageChanged += RefreshUI;
+
         if (MapExpansionManager.Instance != null)
         {
             MapExpansionManager.Instance.OnEquipmentChanged += HandleEquipmentChanged;
@@ -78,6 +92,8 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
 
     private void UnsubscribeEvents()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshUI;
+
         if (MapExpansionManager.Instance != null)
         {
             MapExpansionManager.Instance.OnEquipmentChanged -= HandleEquipmentChanged;
@@ -93,17 +109,17 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
 
     private void HandleEquipmentChanged(int available, int total)
     {
-        RefreshUI();
+        isRefreshDirty = true;
     }
 
     private void HandleMissionUpdated(ScoutingMission mission)
     {
-        RefreshUI();
+        isRefreshDirty = true;
     }
 
     private void HandleMorningTick()
     {
-        RefreshUI();
+        isRefreshDirty = true;
     }
 
     // =========================================================================
@@ -204,6 +220,7 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
 
     public void RefreshUI()
     {
+        RefreshStaticLabels();
         if (MapExpansionManager.Instance == null) return;
 
         int totalEquipment = MapExpansionManager.Instance.TotalEquipment;
@@ -233,6 +250,27 @@ public class ExpeditionCenterWindowUI : MonoBehaviour
 
         // 3. Lista misji w toku
         RebuildMissionsList();
+    }
+
+    private void RefreshStaticLabels()
+    {
+        if (txtTitle != null)
+            txtTitle.text = LocalizationManager.Get("UI_EXPEDITION_CENTER_TITLE", "CENTRUM EKSPEDYCYJNE");
+
+        SetStaticTMP("Pnl_TopStatsBanner/Col_Available/Txt_Label", "UI_EXPEDITION_BANNER_AVAILABLE", "DOSTĘPNE");
+        SetStaticTMP("Pnl_TopStatsBanner/Col_Buildings/Txt_Label", "UI_EXPEDITION_BANNER_BUILDINGS", "BUDYNKI");
+        SetStaticTMP("Pnl_TopStatsBanner/Col_Equipment/Txt_Label", "UI_EXPEDITION_BANNER_EQUIPMENT", "EKWIPUNEK");
+        SetStaticTMP("Sec_EquipmentStatus/Txt_SectionHeader", "UI_EXPEDITION_GEAR_STATUS_HEADER", "STAN EKWIPUNKÓW ZWIADOWCÓW");
+        SetStaticTMP("Sec_EquipmentStatus/Pnl_GearCard/Pnl_GearSubheader/Pnl_Legend/Txt_LegFree", "UI_EXPEDITION_LEGEND_FREE", "WOLNY");
+        SetStaticTMP("Sec_EquipmentStatus/Pnl_GearCard/Pnl_GearSubheader/Pnl_Legend/Txt_LegBusy", "UI_EXPEDITION_LEGEND_BUSY", "W TRASIE");
+        SetStaticTMP("Sec_ActiveMissions/Txt_SectionHeader", "UI_EXPEDITION_ACTIVE_MISSIONS_HEADER", "WYPRAWY W TOKU");
+        SetStaticTMP("Pnl_BottomBar/Btn_Demolish/Txt_Label", "UI_BTN_DEMOLISH", "WYBURZ");
+    }
+
+    private void SetStaticTMP(string path, string key, string fallback)
+    {
+        var tmp = transform.Find(path)?.GetComponent<TextMeshProUGUI>();
+        if (tmp != null) tmp.text = LocalizationManager.Get(key, fallback);
     }
 
     private void RebuildSlotBadges(int total, int used)

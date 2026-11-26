@@ -259,7 +259,7 @@ public class ToolWorkshopWindowUI : MonoBehaviour
         {
             txtTitle.text = currentWorkshop != null && currentWorkshop.data != null
                 ? currentWorkshop.data.DisplayName
-                : "Warsztat narzędziowy";
+                : LocalizationManager.Get("BUILDING_WARSZTAT_NARZEDZIOWY_NAME", "Warsztat narzędziowy");
         }
 
         EnsureSelectionValid(mgr);
@@ -645,14 +645,14 @@ public class ToolWorkshopWindowUI : MonoBehaviour
     {
         if (txtFlavourHeader != null)
         {
-            txtFlavourHeader.text = "Drzewko ulepszeń";
+            txtFlavourHeader.text = LocalizationManager.Get("UI_WORKSHOP_TREE_HEADER", "Drzewko ulepszeń");
         }
 
         if (selectedBuilding == null || mgr == null || mgr.TechCatalog == null ||
             !mgr.TechCatalog.TryGetTree(selectedBuilding, out var tree))
         {
             if (txtSelectedBuilding != null) txtSelectedBuilding.text = "-";
-            if (txtProgress != null) txtProgress.text = "Ukończone 0/0";
+            if (txtProgress != null) txtProgress.text = string.Format(LocalizationManager.Get("UI_WORKSHOP_PROGRESS_FMT", "Ukończone {0}/{1}"), 0, 0);
             HideAllTierRows();
             return;
         }
@@ -668,11 +668,11 @@ public class ToolWorkshopWindowUI : MonoBehaviour
 
         if (txtProgress != null)
         {
-            string progressText = $"Ukończone {unlockedTiers}/{totalTiers}";
+            string progressText = string.Format(LocalizationManager.Get("UI_WORKSHOP_PROGRESS_FMT", "Ukończone {0}/{1}"), unlockedTiers, totalTiers);
             if (mgr.ActiveResearch != null && mgr.ActiveResearch.IsActive &&
                 IsSameBuilding(mgr.ActiveResearch.targetBuilding, selectedBuilding))
             {
-                progressText += $"  (Badanie: {mgr.ActiveResearch.NormalizedProgress * 100f:F0}%)";
+                progressText += string.Format(LocalizationManager.Get("UI_WORKSHOP_PROGRESS_RESEARCHING_FMT", "  (Badanie: {0:F0}%)"), mgr.ActiveResearch.NormalizedProgress * 100f);
             }
             txtProgress.text = progressText;
         }
@@ -775,13 +775,13 @@ public class ToolWorkshopWindowUI : MonoBehaviour
         bool isNight = TimePhaseManager.Instance != null && TimePhaseManager.Instance.CurrentTimePhase == TimePhases.Night;
 
         string statusPart = isOperational
-            ? $"<color=#7EE081>Aktywny ({workers}/{required})</color>"
-            : $"<color=#E07A7A>Nieaktywny ({workers}/{required})</color>";
+            ? string.Format(LocalizationManager.Get("UI_WORKSHOP_WORKERS_ACTIVE_FMT", "<color=#7EE081>Aktywny ({0}/{1})</color>"), workers, required)
+            : string.Format(LocalizationManager.Get("UI_WORKSHOP_WORKERS_INACTIVE_FMT", "<color=#E07A7A>Nieaktywny ({0}/{1})</color>"), workers, required);
 
-        string text = $"Do pracy budynku wymagana jest {required} liczba pracowników.\n{statusPart}";
+        string text = string.Format(LocalizationManager.Get("UI_WORKSHOP_WORKERS_REQ_FMT", "Do pracy budynku wymagana jest {0} liczba pracowników.\n{1}"), required, statusPart);
         if (isNight)
         {
-            text += "  <color=#C8C8C8>(Noc: zmiana załogi zablokowana)</color>";
+            text += LocalizationManager.Get("UI_WORKSHOP_WORKERS_NIGHT_LOCKED", "  <color=#C8C8C8>(Noc: zmiana załogi zablokowana)</color>");
         }
 
         txtRequiredWorkers.text = text;
@@ -798,7 +798,7 @@ public class ToolWorkshopWindowUI : MonoBehaviour
             if (txtCostsHeader != null) txtCostsHeader.gameObject.SetActive(false);
             if (pnlCostsContainer != null) pnlCostsContainer.gameObject.SetActive(false);
             if (txtTime != null) txtTime.text = string.Empty;
-            SetResearchButtonState(false, "Opracuj technologię", ColorBtnDisabledBg, ColorBtnDisabledText);
+            SetResearchButtonState(false, LocalizationManager.Get("UI_WORKSHOP_BTN_RESEARCH", "Opracuj technologię"), ColorBtnDisabledBg, ColorBtnDisabledText);
             return;
         }
 
@@ -832,7 +832,11 @@ public class ToolWorkshopWindowUI : MonoBehaviour
     private void RefreshCostSection(BuildingUpgradeSO upgrade)
     {
         bool hasCosts = upgrade.cost != null && upgrade.cost.Count > 0;
-        if (txtCostsHeader != null) txtCostsHeader.gameObject.SetActive(hasCosts);
+        if (txtCostsHeader != null)
+        {
+            txtCostsHeader.text = LocalizationManager.Get("UI_WORKSHOP_COSTS_HEADER", "Koszt Ulepszenia");
+            txtCostsHeader.gameObject.SetActive(hasCosts);
+        }
         if (pnlCostsContainer != null) pnlCostsContainer.gameObject.SetActive(hasCosts);
         if (objCostDivider != null) objCostDivider.SetActive(true);
 
@@ -873,11 +877,11 @@ public class ToolWorkshopWindowUI : MonoBehaviour
             float pct = mgr.ActiveResearch.NormalizedProgress * 100f;
             if (activeWorkshops > 0)
             {
-                txtTime.text = $"Czas opracowania: ~{remDays:F1} dni (postęp: {pct:F0}%)";
+                txtTime.text = string.Format(LocalizationManager.Get("UI_WORKSHOP_TIME_PROGRESS_FMT", "Czas opracowania: ~{0:F1} dni (postęp: {1:F0}%)"), remDays, pct);
             }
             else
             {
-                txtTime.text = $"WSTRZYMANE — brak aktywnego warsztatu (postęp: {pct:F0}%)";
+                txtTime.text = string.Format(LocalizationManager.Get("UI_WORKSHOP_TIME_PAUSED_FMT", "WSTRZYMANE — brak aktywnego warsztatu (postęp: {0:F0}%)"), pct);
             }
             return;
         }
@@ -887,11 +891,11 @@ public class ToolWorkshopWindowUI : MonoBehaviour
 
         if (float.IsInfinity(estDays) || activeWorkshops <= 0)
         {
-            txtTime.text = $"Czas opracowania: {baseDays} dni (brak aktywnego warsztatu 3/3)";
+            txtTime.text = string.Format(LocalizationManager.Get("UI_WORKSHOP_TIME_NO_WORKSHOP_FMT", "Czas opracowania: {0} dni (brak aktywnego warsztatu 3/3)"), baseDays);
         }
         else
         {
-            txtTime.text = $"Czas opracowania: ~{estDays:F1} dni";
+            txtTime.text = string.Format(LocalizationManager.Get("UI_WORKSHOP_TIME_EST_FMT", "Czas opracowania: ~{0:F1} dni"), estDays);
         }
     }
 
@@ -904,8 +908,8 @@ public class ToolWorkshopWindowUI : MonoBehaviour
             int refundPct = Mathf.RoundToInt(mgr.GetCurrentCancelRefundRatio() * 100f);
             bool hasPaidCost = mgr.ActiveResearch.paidCost != null && mgr.ActiveResearch.paidCost.Count > 0;
             string cancelLabel = hasPaidCost
-                ? $"Anuluj badanie (zwrot {refundPct}%)"
-                : "Anuluj badanie";
+                ? string.Format(LocalizationManager.Get("UI_WORKSHOP_BTN_CANCEL_REFUND_FMT", "Anuluj badanie (zwrot {0}%)"), refundPct)
+                : LocalizationManager.Get("UI_WORKSHOP_BTN_CANCEL", "Anuluj badanie");
             SetResearchButtonState(true, cancelLabel, ColorBtnCancelBg, ColorBtnCancelText);
             return;
         }
@@ -913,31 +917,31 @@ public class ToolWorkshopWindowUI : MonoBehaviour
         bool isResearched = mgr.IsOptionResearched(selectedBuilding, selectedTier, selectedIsOptionA);
         if (isResearched)
         {
-            SetResearchButtonState(false, "Zbadano", ColorBtnDisabledBg, ColorBtnDisabledText);
+            SetResearchButtonState(false, LocalizationManager.Get("UI_WORKSHOP_BTN_RESEARCHED", "Zbadano"), ColorBtnDisabledBg, ColorBtnDisabledText);
             return;
         }
 
         bool isBlockedByAlt = mgr.IsTierLockedByAlternative(selectedBuilding, selectedTier, selectedIsOptionA);
         if (isBlockedByAlt)
         {
-            SetResearchButtonState(false, "Zablokowano", ColorBtnDisabledBg, ColorBtnDisabledText);
+            SetResearchButtonState(false, LocalizationManager.Get("UI_WORKSHOP_BTN_LOCKED", "Zablokowano"), ColorBtnDisabledBg, ColorBtnDisabledText);
             return;
         }
 
         bool isTierAvailable = mgr.IsTierAvailableToResearch(selectedBuilding, selectedTier);
         if (!isTierAvailable)
         {
-            SetResearchButtonState(false, $"Wymaga Tier {selectedTier - 1}", ColorBtnDisabledBg, ColorBtnDisabledText);
+            SetResearchButtonState(false, string.Format(LocalizationManager.Get("UI_WORKSHOP_BTN_REQUIRES_TIER_FMT", "Wymaga Tier {0}"), selectedTier - 1), ColorBtnDisabledBg, ColorBtnDisabledText);
             return;
         }
 
         if (!mgr.CanAffordUpgrade(upgrade))
         {
-            SetResearchButtonState(false, "Brak surowców", ColorBtnDisabledBg, ColorBtnDisabledText);
+            SetResearchButtonState(false, LocalizationManager.Get("UI_WORKSHOP_BTN_NO_RESOURCES", "Brak surowców"), ColorBtnDisabledBg, ColorBtnDisabledText);
             return;
         }
 
-        SetResearchButtonState(true, "Opracuj technologię", ColorBtnReadyBg, ColorBtnReadyText);
+        SetResearchButtonState(true, LocalizationManager.Get("UI_WORKSHOP_BTN_RESEARCH", "Opracuj technologię"), ColorBtnReadyBg, ColorBtnReadyText);
     }
 
     private void SetResearchButtonState(bool interactable, string label, Color bgColor, Color textColor)
@@ -971,7 +975,7 @@ public class ToolWorkshopWindowUI : MonoBehaviour
                 var res = upgrade.productionBonus[i];
                 if (Mathf.Abs(res.amount) > 0.001f)
                 {
-                    lines.Add($"• {FormatSigned(res.amount)} {GetResourceName(res.type)} do bazowej produkcji");
+                    lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_BASE_PROD_FMT", "• {0} {1} do bazowej produkcji"), FormatSigned(res.amount), GetResourceName(res.type)));
                 }
             }
         }
@@ -983,7 +987,7 @@ public class ToolWorkshopWindowUI : MonoBehaviour
                 var res = upgrade.upkeepReduction[i];
                 if (res.amount > 0.001f)
                 {
-                    lines.Add($"• -{FormatNumber(res.amount)} {GetResourceName(res.type)} dziennego utrzymania");
+                    lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_UPKEEP_RED_FMT", "• -{0} {1} dziennego utrzymania"), FormatNumber(res.amount), GetResourceName(res.type)));
                 }
             }
         }
@@ -995,54 +999,54 @@ public class ToolWorkshopWindowUI : MonoBehaviour
                 var res = upgrade.upkeepIncrease[i];
                 if (res.amount > 0.001f)
                 {
-                    lines.Add($"• +{FormatNumber(res.amount)} {GetResourceName(res.type)} dziennego utrzymania");
+                    lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_UPKEEP_INC_FMT", "• +{0} {1} dziennego utrzymania"), FormatNumber(res.amount), GetResourceName(res.type)));
                 }
             }
         }
 
         if (Mathf.Abs(upgrade.globalProductionMultiplierBonus) > 0.001f)
         {
-            lines.Add($"• {FormatSignedPercent(upgrade.globalProductionMultiplierBonus)} globalnej wydajności budynku");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_GLOBAL_PROD_FMT", "• {0} globalnej wydajności budynku"), FormatSignedPercent(upgrade.globalProductionMultiplierBonus)));
         }
 
         if (Mathf.Abs(upgrade.globalUpkeepMultiplierBonus) > 0.001f)
         {
-            lines.Add($"• {FormatSignedPercent(upgrade.globalUpkeepMultiplierBonus)} kosztów utrzymania budynku");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_GLOBAL_UPKEEP_FMT", "• {0} kosztów utrzymania budynku"), FormatSignedPercent(upgrade.globalUpkeepMultiplierBonus)));
         }
 
         if (upgrade.extraSearchRadius != 0)
         {
-            lines.Add($"• {FormatSigned(upgrade.extraSearchRadius)} do zasięgu skanowania terenu");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_SEARCH_RADIUS_FMT", "• {0} do zasięgu skanowania terenu"), FormatSigned(upgrade.extraSearchRadius)));
         }
 
         if (Mathf.Abs(upgrade.terrainFlatBonus) > 0.001f)
         {
-            lines.Add($"• {FormatSigned(upgrade.terrainFlatBonus)} produkcji za każde pasujące pole w zasięgu");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_TERRAIN_FLAT_FMT", "• {0} produkcji za każde pasujące pole w zasięgu"), FormatSigned(upgrade.terrainFlatBonus)));
         }
 
         if (Mathf.Abs(upgrade.terrainPercentBonus) > 0.001f)
         {
-            lines.Add($"• {FormatSignedPercent(upgrade.terrainPercentBonus)} premii z sąsiadującego terenu");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_TERRAIN_PCT_FMT", "• {0} premii z sąsiadującego terenu"), FormatSignedPercent(upgrade.terrainPercentBonus)));
         }
 
         if (upgrade.extraShifts != 0)
         {
-            lines.Add($"• {FormatSigned(upgrade.extraShifts)} zmiana pracy");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_EXTRA_SHIFTS_FMT", "• {0} zmiana pracy"), FormatSigned(upgrade.extraShifts)));
         }
 
         if (upgrade.extraWorkersPerShift != 0)
         {
-            lines.Add($"• {FormatSigned(upgrade.extraWorkersPerShift)} miejsc na pracowników");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_EXTRA_WORKERS_FMT", "• {0} miejsc na pracowników"), FormatSigned(upgrade.extraWorkersPerShift)));
         }
 
         if (Mathf.Abs(upgrade.firstWorkerBonusMultiplier) > 0.001f)
         {
-            lines.Add($"• {FormatSignedPercent(upgrade.firstWorkerBonusMultiplier)} wydajności 1. pracownika");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_FIRST_WORKER_FMT", "• {0} wydajności 1. pracownika"), FormatSignedPercent(upgrade.firstWorkerBonusMultiplier)));
         }
 
         if (upgrade.passiveNoWorkerEfficiency > 0.001f)
         {
-            lines.Add($"• {Mathf.RoundToInt(upgrade.passiveNoWorkerEfficiency * 100f)}% pasywnej wydajności bez pracowników");
+            lines.Add(string.Format(LocalizationManager.Get("UI_WORKSHOP_EFF_PASSIVE_EFF_FMT", "• {0}% pasywnej wydajności bez pracowników"), Mathf.RoundToInt(upgrade.passiveNoWorkerEfficiency * 100f)));
         }
 
         bool hasUnmappedSpecial = false;
@@ -1055,7 +1059,7 @@ public class ToolWorkshopWindowUI : MonoBehaviour
 
                 if (SpecialEffectDescriptions.TryGetValue(id, out string desc))
                 {
-                    lines.Add($"• {desc}");
+                    lines.Add($"• {LocalizationManager.Get($"WORKSHOP_SPEC_{id}", desc)}");
                 }
                 else
                 {

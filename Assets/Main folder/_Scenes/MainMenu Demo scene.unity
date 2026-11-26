@@ -14445,6 +14445,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5e21edda5161fb944a93ce8406a07d0b, type: 2}
   - {fileID: 11400000, guid: a5b654a5b099a0e4b8822d6060a6e7de, type: 2}
   - {fileID: 11400000, guid: d293ea409cccef44986a8534662a171a, type: 2}
+  - {fileID: 11400000, guid: 4b916ce7db25dc5419e142f90d7fe4ca, type: 2}
+  - {fileID: 11400000, guid: d112c08a413509b44ac579f8e2583603, type: 2}
   allTowers: []
   gameSceneName: Game scene
 --- !u!4 &2042010942

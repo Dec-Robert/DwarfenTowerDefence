@@ -21,8 +21,11 @@ public class ChunkWallManager : MonoBehaviour
 
     private WallSystemMode currentMode = WallSystemMode.Disabled;
     private readonly List<GameObject> activeWalls = new List<GameObject>();
+    private readonly Stack<GameObject> wallPool = new Stack<GameObject>();
+    private readonly List<GameObject> nonPooledObjects = new List<GameObject>();
     private readonly Dictionary<(Vector2Int, Vector2Int), GateEntity> activeGates = new Dictionary<(Vector2Int, Vector2Int), GateEntity>();
     private Dictionary<Vector2Int, Vector2Int> globalHexToChunk = new Dictionary<Vector2Int, Vector2Int>();
+    private bool isRebuildDirty;
 
     private int chunkRadius;
     private float hexSize;
@@ -54,6 +57,19 @@ public class ChunkWallManager : MonoBehaviour
         {
             expansionManager.OnMapInitialized -= HandleMapInitialized;
             expansionManager.OnChunkStateChanged -= HandleChunkStateChanged;
+        }
+        while (wallPool.Count > 0)
+        {
+            var pooled = wallPool.Pop();
+            if (pooled != null) Destroy(pooled);
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (isRebuildDirty)
+        {
+            RebuildAll();
         }
     }
 
@@ -90,12 +106,13 @@ public class ChunkWallManager : MonoBehaviour
         if (currentMode == WallSystemMode.Disabled) return;
         if (newState == ChunkState.Settled || newState == ChunkState.Outskirts)
         {
-            RebuildAll();
+            isRebuildDirty = true;
         }
     }
 
     private void RebuildAll()
     {
+        isRebuildDirty = false;
         ClearAll();
 
         if (currentMode == WallSystemMode.Disabled) return;
@@ -264,7 +281,7 @@ public class ChunkWallManager : MonoBehaviour
                         }
                         else
                         {
-                            activeWalls.Add(gateObj);
+                            nonPooledObjects.Add(gateObj);
                         }
 
                         return;
@@ -382,15 +399,48 @@ public class ChunkWallManager : MonoBehaviour
     private void SpawnWall(GameObject prefab, Vector3 pos, Quaternion rot)
     {
         if (prefab == null) return;
-        var obj = Instantiate(prefab, pos, rot, transform);
-        activeWalls.Add(obj);
+
+        GameObject obj = null;
+        if (prefab == wallPrefab)
+        {
+            while (wallPool.Count > 0 && obj == null)
+            {
+                obj = wallPool.Pop();
+            }
+        }
+
+        if (obj != null)
+        {
+            obj.transform.SetPositionAndRotation(pos, rot);
+            obj.SetActive(true);
+            activeWalls.Add(obj);
+            return;
+        }
+
+        obj = Instantiate(prefab, pos, rot, transform);
+        if (prefab == wallPrefab)
+        {
+            activeWalls.Add(obj);
+        }
+        else
+        {
+            nonPooledObjects.Add(obj);
+        }
     }
 
     private void ClearAll()
     {
         foreach (var wall in activeWalls)
-            if (wall != null) Destroy(wall);
+        {
+            if (wall == null) continue;
+            wall.SetActive(false);
+            wallPool.Push(wall);
+        }
         activeWalls.Clear();
+
+        foreach (var obj in nonPooledObjects)
+            if (obj != null) Destroy(obj);
+        nonPooledObjects.Clear();
 
         foreach (var kvp in activeGates)
             if (kvp.Value != null) Destroy(kvp.Value.gameObject);

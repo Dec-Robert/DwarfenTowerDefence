@@ -27,15 +27,15 @@ Material:
     m_Ints: []
     m_Floats:
     - _AmbientBoost: 0.55
-    - _BlockedBrightness: 0.55
-    - _BlockedEmission: 0.45
+    - _BlockedBrightness: 0.27719998
+    - _BlockedEmission: 0.1728
     - _BoundaryAnimationSpeed: 1
     - _BoundaryDetailStrength: 0.55
     - _BoundaryWarpAmplitude: 0.65
     - _Cull: 2
     - _DebugBoundaryMode: 0
-    - _DiscoverableBrightness: 0.65
-    - _DiscoverableEmission: 0.55
+    - _DiscoverableBrightness: 0.32759997
+    - _DiscoverableEmission: 0.2112
     - _DstBlend: 10
     - _HexRadius: 1
     - _LogicalWilderness: 0
@@ -56,7 +56,7 @@ Material:
     - _MistWarpStrength: 1.75
     - _SparkBlinkSpeed: 0.9
     - _SparkDensity: 0.12
-    - _SparkIntensity: 1.5625
+    - _SparkIntensity: 0.48828125
     - _SparkSize: 0.05
     - _SrcBlend: 5
     - _ZWrite: 0

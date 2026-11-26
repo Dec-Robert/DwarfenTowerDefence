@@ -18,13 +18,13 @@ public class SpellChoiceCardUI : MonoBehaviour
 
     public void AutoBindReferences()
     {
-        imgIcon ??= transform.Find("Img_Icon")?.GetComponent<Image>();
-        txtTitle ??= transform.Find("Txt_Title")?.GetComponent<TextMeshProUGUI>();
-        txtDescription ??= transform.Find("Txt_Desc")?.GetComponent<TextMeshProUGUI>();
-        txtDamage ??= transform.Find("Txt_Damage")?.GetComponent<TextMeshProUGUI>();
-        txtStats ??= transform.Find("Txt_Stats")?.GetComponent<TextMeshProUGUI>();
-        btnChoose ??= transform.Find("Btn_Choose")?.GetComponent<Button>();
-        txtChooseLabel ??= transform.Find("Btn_Choose/Txt_Label")?.GetComponent<TextMeshProUGUI>();
+        if (imgIcon == null) imgIcon = transform.Find("Img_Icon")?.GetComponent<Image>();
+        if (txtTitle == null) txtTitle = transform.Find("Txt_Title")?.GetComponent<TextMeshProUGUI>();
+        if (txtDescription == null) txtDescription = transform.Find("Txt_Desc")?.GetComponent<TextMeshProUGUI>();
+        if (txtDamage == null) txtDamage = transform.Find("Txt_Damage")?.GetComponent<TextMeshProUGUI>();
+        if (txtStats == null) txtStats = transform.Find("Txt_Stats")?.GetComponent<TextMeshProUGUI>();
+        if (btnChoose == null) btnChoose = transform.Find("Btn_Choose")?.GetComponent<Button>();
+        if (txtChooseLabel == null) txtChooseLabel = transform.Find("Btn_Choose/Txt_Label")?.GetComponent<TextMeshProUGUI>();
     }
 
     public void Setup(SpellDataSO spell, Action onChoose)
@@ -39,10 +39,10 @@ public class SpellChoiceCardUI : MonoBehaviour
         }
 
         if (txtTitle != null)
-            txtTitle.text = spell.spellName;
+            txtTitle.text = spell.DisplayName;
 
         if (txtDescription != null)
-            txtDescription.text = spell.description;
+            txtDescription.text = spell.DisplayDescription;
 
         if (txtDamage != null)
             txtDamage.text = FormatDamageText(spell.damageType, spell.baseDamage);
@@ -88,9 +88,9 @@ public class SpellChoiceCardUI : MonoBehaviour
     {
         return spell.castLimitMode switch
         {
-            SpellCastLimitMode.LimitedUsesPerNight => $"{spell.maxUsesPerNight} na noc",
-            SpellCastLimitMode.RechargeableCharges => $"{spell.maxCharges} ład. | {spell.chargeRechargeSeconds:0}s / ład.",
-            SpellCastLimitMode.CooldownOnly => $"Odnowienie: {spell.cooldownSeconds:0}s",
+            SpellCastLimitMode.LimitedUsesPerNight => string.Format(LocalizationManager.Get("SPELL_CHOICE_PER_NIGHT_FMT", "{0} na noc"), spell.maxUsesPerNight),
+            SpellCastLimitMode.RechargeableCharges => string.Format(LocalizationManager.Get("SPELL_CHOICE_CHARGES_FMT", "{0} ład. | {1:0}s / ład."), spell.maxCharges, spell.chargeRechargeSeconds),
+            SpellCastLimitMode.CooldownOnly => string.Format(LocalizationManager.Get("SPELL_CHOICE_COOLDOWN_FMT", "Odnowienie: {0:0}s"), spell.cooldownSeconds),
             _ => string.Empty
         };
     }

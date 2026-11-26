@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: ulepszenie_wiez_2_a
   upgradeName: "Ulepszenie Wie\u017C II A"
+  category: 3
   description: "Wyb\xF3r Specjalizacji: Szybkostrzelno\u015B\u0107 lub obra\u017Cenia
     dla wszystkich wie\u017C. (Wariant A)"
   icon: {fileID: 0}
@@ -21,7 +22,7 @@ MonoBehaviour:
   nodePosition: {x: 0, y: 0}
   isUnlocked: 0
   prerequisites: []
-  effectType: 55
+  effectType: 52
   effectValue: 0.1
   effectValue2: 0
   targetBuilding: {fileID: 0}

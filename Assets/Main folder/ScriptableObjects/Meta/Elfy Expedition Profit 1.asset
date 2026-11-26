@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: elfy_expedition_profit_1
   upgradeName: Elfy Expedition Profit 1
+  category: 4
   description: "Ekspedycje pozyskuj\u0105 ma\u0142\u0105 cz\u0119\u015B\u0107 surowc\xF3w"
   icon: {fileID: 0}
   cost: 75
@@ -21,8 +22,8 @@ MonoBehaviour:
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: d293ea409cccef44986a8534662a171a, type: 2}
-  effectType: 10
-  effectValue: 10
+  effectType: 62
+  effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}
   hasVariants: 0

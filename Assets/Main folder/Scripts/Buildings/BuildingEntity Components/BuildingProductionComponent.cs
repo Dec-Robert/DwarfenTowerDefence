@@ -123,25 +123,31 @@ public class BuildingProductionComponent
 
         if (workerCount > 0 && workerComponent != null && MetaUpgradeManager.Instance != null)
         {
-            // Human production synergy (Ludzka wytrwałość I): if humanCount >= 4, +20% efficiency
+            // Human production synergy (Ludzka wytrwałość I): if humanCount >= 4, +20% (from SO or legacy fallback)
             int humanCount = workerComponent.GetWorkerCount(Race.Humans);
             if (humanCount >= 4 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.ProductionSynergy_Human) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.ProductionSynergy_Human)))
             {
-                baseEff += 0.20f;
+                baseEff += ResolveSynergyValue(MetaUpgradeManager.Instance.GetValue(MetaEffectType.ProductionSynergy_Human), 0.20f);
             }
 
-            // Elf production synergy (Elfy 3): if sawmill/farm, +5% efficiency per elf worker
+            // Elf production synergy (Elfy 3): if sawmill/farm, +5% per elf worker (from SO or legacy fallback)
             int elfCount = workerComponent.GetWorkerCount(Race.Elves);
             if (elfCount > 0 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.ProductionSynergy_Elf) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.ProductionSynergy_Elf)))
             {
                 if (IsSawmillOrFarm())
                 {
-                    baseEff += 0.05f * elfCount;
+                    float perElf = ResolveSynergyValue(MetaUpgradeManager.Instance.GetValue(MetaEffectType.ProductionSynergy_Elf), 0.05f);
+                    baseEff += perElf * elfCount;
                 }
             }
         }
 
         return baseEff;
+    }
+
+    private static float ResolveSynergyValue(float configuredValue, float legacyFallback)
+    {
+        return (configuredValue > 0.0001f && configuredValue < 0.999f) ? configuredValue : legacyFallback;
     }
 
     private bool IsSawmillOrFarm()
@@ -167,7 +173,7 @@ public class BuildingProductionComponent
         {
             foreach (var res in data.productionPerCycle)
             {
-                AddToDict(total, res.type, res.amount);
+                AddToDict(total, res.type, res.amount + BuildingProductionCalculator.GetMetaFlatProductionBonus(data, res.type));
             }
         }
 

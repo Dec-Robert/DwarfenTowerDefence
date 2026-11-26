@@ -47,10 +47,22 @@ public class HousingEntity : BuildingEntity
         var metaBonus = MetaUpgradeManager.Instance != null
             ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingStartPopulation))
             : 0;
-            
+
+        if (housingData.housingRace == Race.Dwarves && MetaUpgradeManager.Instance != null)
+        {
+            metaBonus += Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HousingStartPopulation_Dwarves));
+        }
+
         var finalStartPop = baseStartPop + metaBonus;
 
-        for (var i = 0; i < finalStartPop; i++)
+        AddBonusStartResidents(finalStartPop);
+    }
+
+    public void AddBonusStartResidents(int count)
+    {
+        if (housingData == null || count <= 0) return;
+
+        for (var i = 0; i < count; i++)
         {
             if (residents.Count >= GetEffectiveMaxResidents()) break;
             if (PopLifeCycleManager.Instance == null) break;

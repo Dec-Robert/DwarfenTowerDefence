@@ -113,6 +113,8 @@ public class HearthWindowUI : MonoBehaviour
 
         BeaconEntity.OnHearthStateChanged -= RefreshAllUI;
         BeaconEntity.OnHearthStateChanged += RefreshAllUI;
+        LocalizationManager.OnLanguageChanged -= RefreshAllUI;
+        LocalizationManager.OnLanguageChanged += RefreshAllUI;
 
         ApplyBackdropAndOrder();
         HideEmptyPlaceholderIcons();
@@ -121,6 +123,7 @@ public class HearthWindowUI : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshAllUI;
         BeaconEntity.OnHearthStateChanged -= RefreshAllUI;
 
         if (ResourceManager.Instance != null)
@@ -141,6 +144,11 @@ public class HearthWindowUI : MonoBehaviour
 
         isPreviewOnly = previewOnly;
         currentSelectedLevel = Mathf.Clamp(BeaconEntity.SelectedDraftLevel, 1, 5);
+        if (!BeaconEntity.IsLevelUnlocked(currentSelectedLevel))
+        {
+            currentSelectedLevel = 3;
+            BeaconEntity.SelectedDraftLevel = 3;
+        }
 
         if (idleWorkersModalRoot != null) idleWorkersModalRoot.SetActive(false);
         ApplyBackdropAndOrder();
@@ -251,7 +259,10 @@ public class HearthWindowUI : MonoBehaviour
 
     public void SelectLevel(int levelIndex)
     {
-        currentSelectedLevel = Mathf.Clamp(levelIndex, 1, 5);
+        int clamped = Mathf.Clamp(levelIndex, 1, 5);
+        if (!BeaconEntity.IsLevelUnlocked(clamped)) return;
+
+        currentSelectedLevel = clamped;
         BeaconEntity.SelectedDraftLevel = currentSelectedLevel;
         RefreshAllUI();
     }
@@ -329,6 +340,7 @@ public class HearthWindowUI : MonoBehaviour
 
     public void RefreshAllUI()
     {
+        RefreshStaticLabels();
         HearthConfigSO config = BeaconEntity.GetConfig();
         if (config == null) return;
 
@@ -341,6 +353,26 @@ public class HearthWindowUI : MonoBehaviour
         RefreshPreviewBoxUI(selectedData);
         RefreshEffectsUI(selectedData);
         RefreshFooterUI(selectedData, currentCoal);
+    }
+
+    private void RefreshStaticLabels()
+    {
+        var pnlHearth = transform.Find("Pnl_Hearth");
+        if (pnlHearth == null) return;
+
+        SetHearthTMP(pnlHearth, "Pnl_TopBar/Txt_WindowTitle", "UI_HEARTH_WINDOW_TITLE", "PŁOMIEŃ NADZIEI");
+        SetHearthTMP(pnlHearth, "Pnl_InfoAndCoalBar/Txt_IntroDesc", "UI_HEARTH_INTRO_DESC", "Dzień dobiega końca.");
+        SetHearthTMP(pnlHearth, "Pnl_InfoAndCoalBar/Pnl_FreeWorkers/Txt_FreeWorkersLabel", "UI_HEARTH_FREE_WORKERS_LABEL", "WOLNI PRACOWNICY:");
+        SetHearthTMP(pnlHearth, "Pnl_InfoAndCoalBar/Pnl_CoalStock/Txt_CoalLabel", "UI_HEARTH_COAL_STOCK_LABEL", "ZAPAS WĘGLA:");
+        SetHearthTMP(pnlHearth, "Pnl_EffectsColumnsRow/Sec_DayEffects/Pnl_Header/Txt_SectionTitle", "UI_HEARTH_DAY_EFFECTS_TITLE", "EFEKTY NASTĘPNEGO DNIA (PRODUKCJA)");
+        SetHearthTMP(pnlHearth, "Pnl_EffectsColumnsRow/Sec_NightEffects/Pnl_Header/Txt_SectionTitle", "UI_HEARTH_NIGHT_EFFECTS_TITLE", "EFEKTY TEJ NOCY (OBRONA & ŁUPY)");
+        SetHearthTMP(pnlHearth, "Pnl_FooterBar/Btn_Cancel/Txt_CancelLabel", "UI_BTN_CANCEL", "ANULUJ");
+    }
+
+    private static void SetHearthTMP(Transform root, string path, string key, string fallback)
+    {
+        var tmp = root.Find(path)?.GetComponent<TextMeshProUGUI>();
+        if (tmp != null) tmp.text = LocalizationManager.Get(key, fallback);
     }
 
     private int GetCurrentCoalAmount()
@@ -399,14 +431,27 @@ public class HearthWindowUI : MonoBehaviour
             if (card == null || card.rootObject == null) continue;
 
             HearthLevelData data = config.GetLevelData(i + 1);
+            bool isLevelUnlocked = BeaconEntity.IsLevelUnlocked(data.levelIndex);
             int coalCost = BeaconEntity.GetCoalCost(data);
-            bool isSelected = (data.levelIndex == currentSelectedLevel);
+            bool isSelected = (data.levelIndex == currentSelectedLevel) && isLevelUnlocked;
             bool canAfford = currentCoal >= coalCost;
+
+            if (card.button != null)
+            {
+                card.button.interactable = isLevelUnlocked;
+            }
+
+            if (card.background != null)
+            {
+                card.background.color = !isLevelUnlocked
+                    ? new Color(0.10f, 0.09f, 0.09f, 0.65f)
+                    : (isSelected ? ColorCardSelectedBg : ColorCardNormalBg);
+            }
 
             if (card.outline != null)
             {
-                Color levelOutlineColor = GetLevelOutlineColor(data.levelIndex);
-                levelOutlineColor.a = isSelected ? 1f : 0.55f;
+                Color levelOutlineColor = isLevelUnlocked ? GetLevelOutlineColor(data.levelIndex) : ColorNeutral;
+                levelOutlineColor.a = !isLevelUnlocked ? 0.25f : (isSelected ? 1f : 0.55f);
                 card.outline.effectColor = levelOutlineColor;
                 card.outline.effectDistance = isSelected ? new Vector2(2f, -2f) : new Vector2(1f, -1f);
             }
@@ -572,15 +617,16 @@ public class HearthWindowUI : MonoBehaviour
         );
 
         // Dzień 1: Produkcja wszystkich budynków następnego dnia
-        bool hasDayProduction = !Mathf.Approximately(selectedData.nextDayProductionBonus, 0f);
+        float effectiveDayProduction = BeaconEntity.GetEffectiveNextDayProductionBonus(selectedData);
+        bool hasDayProduction = !Mathf.Approximately(effectiveDayProduction, 0f);
         if (hasDayProduction)
         {
             UpdateEffectItem(
                 GetDayEffect(0),
                 LocalizationManager.Get("UI_HEARTH_EFF_PRODUCTION", "Produkcja wszystkich budynków"),
-                FormatPercentDelta(selectedData.nextDayProductionBonus),
-                GetPlayerBeneficialColor(selectedData.nextDayProductionBonus),
-                GetDayProductionDescription(selectedData.nextDayProductionBonus),
+                FormatPercentDelta(effectiveDayProduction),
+                GetPlayerBeneficialColor(effectiveDayProduction),
+                GetDayProductionDescription(effectiveDayProduction),
                 true
             );
         }

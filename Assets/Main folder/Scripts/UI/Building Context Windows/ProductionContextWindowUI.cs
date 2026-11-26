@@ -445,11 +445,13 @@ public class ProductionContextWindowUI : MonoBehaviour
         SetupRaceButtonListeners();
 
         // Pełne odświeżenie widoku
+        LocalizationManager.OnLanguageChanged += RefreshAll;
         RefreshAll();
     }
 
     private void UnsubscribeEvents()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshAll;
         if (WorkforceManager.Instance != null)
         {
             WorkforceManager.Instance.OnWorkforceStatsChanged -= OnWorkforceChanged;
@@ -524,6 +526,8 @@ public class ProductionContextWindowUI : MonoBehaviour
     {
         if (currentBuilding == null) return;
 
+        RefreshStaticLabels();
+
         // 1. Tytuł budynku
         if (txtBuildingName != null)
         {
@@ -545,6 +549,43 @@ public class ProductionContextWindowUI : MonoBehaviour
 
         // Wymuś przebudowę układu
         ForceRebuildLayout();
+    }
+
+    private void RefreshStaticLabels()
+    {
+        var txtWorkersTitle = secWorkers != null
+            ? secWorkers.transform.Find("Txt_WorkersTitle")?.GetComponent<TextMeshProUGUI>()
+            : transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_Workers/Txt_WorkersTitle")?.GetComponent<TextMeshProUGUI>();
+        if (txtWorkersTitle != null)
+            txtWorkersTitle.text = LocalizationManager.Get("UI_PROD_WORKERS_TITLE", "OBSADA BUDYNKU");
+
+        if (txtThresholdLabel != null)
+            txtThresholdLabel.text = LocalizationManager.Get("UI_THRESHOLD_LABEL", "PROGI WYDAJNOŚCI:");
+
+        var txtUpkeepTitle = secUpkeep != null
+            ? secUpkeep.transform.Find("Txt_UpkeepTitle")?.GetComponent<TextMeshProUGUI>()
+            : transform.Find("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_Upkeep/Txt_UpkeepTitle")?.GetComponent<TextMeshProUGUI>();
+        if (txtUpkeepTitle != null)
+            txtUpkeepTitle.text = LocalizationManager.Get("UI_UPKEEP_TITLE", "KOSZTY UTRZYMANIA");
+
+        SetChildTMP(lblRowBase, "UI_PROD_MOD_BASE", "Wartość bazowa:");
+        SetChildTMP(lblRowOnTopBonus, "UI_PROD_MOD_ON_TOP", "Złoże (pod budynkiem):");
+        SetChildTMP(lblRowAdjacentBonus, "UI_PROD_MOD_ADJACENT", "Złoża w pobliżu:");
+        SetChildTMP(lblRowCrewEfficiency, "UI_PROD_MOD_CREW_EFF", "Wydajność pracowników:");
+        SetChildTMP(lblRowExternalMult, "UI_PROD_MOD_EXTERNAL", "Mnożnik ulepszeń / badań:");
+
+        if (txtNetSummaryLabel != null)
+            txtNetSummaryLabel.text = LocalizationManager.Get("UI_PROD_NET_SUMMARY", "Produkcja netto:");
+
+        if (txtStopped != null)
+            txtStopped.text = LocalizationManager.Get("UI_PROD_PAUSED_BANNER", "WSTRZYMANY");
+    }
+
+    private static void SetChildTMP(GameObject go, string key, string fallback)
+    {
+        if (go == null) return;
+        var tmp = go.GetComponent<TextMeshProUGUI>();
+        if (tmp != null) tmp.text = LocalizationManager.Get(key, fallback);
     }
 
     private void RefreshStoppedAndPauseButton()

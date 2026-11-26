@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: nowa_wieza_1
   upgradeName: "Nowa wie\u017Ca 1"
+  category: 3
   description: "Daje dostep do nowej wie\u017Cy(gracz wybiera kt\xF3r\u0105\nz 5
     zablokowanych wybiera)\n"
   icon: {fileID: 0}

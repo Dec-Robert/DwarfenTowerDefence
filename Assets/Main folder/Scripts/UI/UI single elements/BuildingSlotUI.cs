@@ -279,13 +279,14 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public bool CanAfford()
     {
-        if (buildingData == null || buildingData.constructionCost == null || buildingData.constructionCost.Count == 0)
+        if (buildingData == null)
             return true;
 
-        if (ResourceManager.Instance == null)
+        var costs = buildingData.GetEffectiveConstructionCosts();
+        if (costs.Count == 0 || ResourceManager.Instance == null)
             return true;
 
-        foreach (var cost in buildingData.constructionCost)
+        foreach (var cost in costs)
         {
             if (cost.amount > 0 && !ResourceManager.Instance.CanAfford(cost.type, cost.amount))
                 return false;
@@ -434,7 +435,8 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             costInfoText.text = LocalizationManager.Get("UI_TOOLTIP_COST", "Koszt budowy:");
         }
 
-        bool hasCosts = buildingData.constructionCost != null && buildingData.constructionCost.Any(c => c.amount > 0);
+        var effectiveCosts = buildingData.GetEffectiveConstructionCosts();
+        bool hasCosts = effectiveCosts.Any(c => c.amount > 0);
 
         if (costStatsPanel != null)
         {
@@ -448,7 +450,7 @@ public class BuildingSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         if (hasCosts && resourceSlotPrefab != null)
         {
-            var sortedCosts = buildingData.constructionCost
+            var sortedCosts = effectiveCosts
                 .Where(c => c.amount > 0)
                 .OrderBy(c => ResourceCost.GetPriority(c.type));
 

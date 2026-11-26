@@ -71,6 +71,29 @@ public static class ExpansionCostCalculator
         int elfCount,
         int extraDiscoveredChunks = -1)
     {
+        float metaCostReduction = 0f;
+        int metaFreeThresholdBonus = 0;
+        if (MetaUpgradeManager.Instance != null)
+        {
+            metaCostReduction = Mathf.Clamp01(MetaUpgradeManager.Instance.GetValue(MetaEffectType.ExpansionCostReduction));
+            metaFreeThresholdBonus = Mathf.Max(0, Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.ExpeditionFreeChunkThresholdBonus)));
+        }
+
+        return CalculateSurveyCostWithModifiers(
+            targetChunk, activeChunks, isRoadChunk, cfg, elfCount,
+            extraDiscoveredChunks, metaCostReduction, metaFreeThresholdBonus);
+    }
+
+    public static MissionCost CalculateSurveyCostWithModifiers(
+        Vector2Int targetChunk,
+        Dictionary<Vector2Int, ChunkStateData> activeChunks,
+        bool isRoadChunk,
+        ExpansionCostConfig cfg,
+        int elfCount,
+        int extraDiscoveredChunks,
+        float costReductionPercent,
+        int freeThresholdBonus)
+    {
         if ((object)cfg == null)
         {
             return new MissionCost
@@ -97,12 +120,13 @@ public static class ExpansionCostCalculator
         int baseDays = Mathf.RoundToInt(Mathf.Lerp(cfg.minDays, cfg.maxDays, timeRatio));
 
         // Obliczanie bazowych kosztów wg liczby odkrytych terenów / terenów w trakcie eksploracji
+        int freeThreshold = 4 + Mathf.Max(0, freeThresholdBonus);
         int totalExploredOrExploring = extraDiscoveredChunks;
         float food;
         float wood;
         float ether;
 
-        if (totalExploredOrExploring < 4)
+        if (totalExploredOrExploring < freeThreshold)
         {
             int t = Mathf.Max(0, totalExploredOrExploring);
             food = 10f + t * 5f;
@@ -111,7 +135,7 @@ public static class ExpansionCostCalculator
         }
         else
         {
-            int n = totalExploredOrExploring - 4;
+            int n = totalExploredOrExploring - freeThreshold;
             food = 30f + n * 4f;
             ether = 4f + n * 2f;
             wood = 15f + n * 1f;
@@ -137,15 +161,16 @@ public static class ExpansionCostCalculator
         int finalDays = Mathf.Max(cfg.minSurveyDays, baseDays - extraElves * cfg.daysReductionPerExtraElf);
 
         float elfCostMultiplier = (float)clampedElves / Mathf.Max(1, cfg.minElvesForSurvey);
-        ether *= elfCostMultiplier;
-        food *= elfCostMultiplier;
-        wood *= elfCostMultiplier;
+        float metaCostMultiplier = 1f - Mathf.Clamp01(costReductionPercent);
+        ether *= elfCostMultiplier * metaCostMultiplier;
+        food *= elfCostMultiplier * metaCostMultiplier;
+        wood *= elfCostMultiplier * metaCostMultiplier;
 
         return new MissionCost
         {
-            etherCost = Mathf.RoundToInt(ether),
-            foodCost = Mathf.RoundToInt(food),
-            woodCost = Mathf.RoundToInt(wood),
+            etherCost = Mathf.Max(0, Mathf.RoundToInt(ether)),
+            foodCost = Mathf.Max(0, Mathf.RoundToInt(food)),
+            woodCost = Mathf.Max(0, Mathf.RoundToInt(wood)),
             days = finalDays,
             distance = distance,
             isRoad = isRoadChunk

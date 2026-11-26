@@ -44,6 +44,7 @@ public class TopBonusInfoUI : MonoBehaviour
 
     private float pollTimer = 0f;
     private const float PollInterval = 0.5f;
+    private bool isRefreshDirty;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoInitialize()
@@ -138,6 +139,14 @@ public class TopBonusInfoUI : MonoBehaviour
         if (pollTimer >= PollInterval)
         {
             pollTimer = 0f;
+            isRefreshDirty = true;
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (isRefreshDirty)
+        {
             RefreshUI();
         }
     }
@@ -270,13 +279,18 @@ public class TopBonusInfoUI : MonoBehaviour
         }
     }
 
+    private void MarkDirty()
+    {
+        isRefreshDirty = true;
+    }
+
     private void SubscribeEvents()
     {
         if (TimePhaseManager.Instance != null)
         {
-            TimePhaseManager.Instance.OnMorningStarted += RefreshUI;
-            TimePhaseManager.Instance.OnDuskStarted += RefreshUI;
-            TimePhaseManager.Instance.OnNightStarted += RefreshUI;
+            TimePhaseManager.Instance.OnMorningStarted += MarkDirty;
+            TimePhaseManager.Instance.OnDuskStarted += MarkDirty;
+            TimePhaseManager.Instance.OnNightStarted += MarkDirty;
         }
 
         if (BuildingRegistry.Instance != null)
@@ -290,17 +304,17 @@ public class TopBonusInfoUI : MonoBehaviour
             ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
         }
 
-        BuildingEntity.OnAnyBuildingEconomyChanged += RefreshUI;
-        PhaseResourceForecastManager.OnForecastDirty += RefreshUI;
+        BuildingEntity.OnAnyBuildingEconomyChanged += MarkDirty;
+        PhaseResourceForecastManager.OnForecastDirty += MarkDirty;
     }
 
     private void UnsubscribeEvents()
     {
         if (TimePhaseManager.Instance != null)
         {
-            TimePhaseManager.Instance.OnMorningStarted -= RefreshUI;
-            TimePhaseManager.Instance.OnDuskStarted -= RefreshUI;
-            TimePhaseManager.Instance.OnNightStarted -= RefreshUI;
+            TimePhaseManager.Instance.OnMorningStarted -= MarkDirty;
+            TimePhaseManager.Instance.OnDuskStarted -= MarkDirty;
+            TimePhaseManager.Instance.OnNightStarted -= MarkDirty;
         }
 
         if (BuildingRegistry.Instance != null)
@@ -314,22 +328,24 @@ public class TopBonusInfoUI : MonoBehaviour
             ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
         }
 
-        BuildingEntity.OnAnyBuildingEconomyChanged -= RefreshUI;
-        PhaseResourceForecastManager.OnForecastDirty -= RefreshUI;
+        BuildingEntity.OnAnyBuildingEconomyChanged -= MarkDirty;
+        PhaseResourceForecastManager.OnForecastDirty -= MarkDirty;
     }
 
     private void HandleBuildingChanged(BuildingEntity b)
     {
-        RefreshUI();
+        MarkDirty();
     }
 
     private void HandleResourceChanged(ResourceType type, int amount)
     {
-        RefreshUI();
+        MarkDirty();
     }
 
     public void RefreshUI()
     {
+        isRefreshDirty = false;
+        pollTimer = 0f;
         try
         {
             if (TimePhaseManager.Instance == null)

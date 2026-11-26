@@ -26,6 +26,7 @@ public class BuildingEntity : MonoBehaviour
     public int currentTier => Upgrades?.CurrentTier ?? 0;
 
     public static event Action OnAnyBuildingEconomyChanged;
+    public static event Action<BuildingEntity> OnAnyBuildingInitialized;
 
     public static void NotifyEconomyChanged()
     {
@@ -83,6 +84,7 @@ public class BuildingEntity : MonoBehaviour
         SetupAtmosphericLighting();
 
         isInitialized = true;
+        OnAnyBuildingInitialized?.Invoke(this);
     }
 
     private void CreateComponents()

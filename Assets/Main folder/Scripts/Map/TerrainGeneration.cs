@@ -78,6 +78,64 @@ public class TerrainGenerator
                 ApplyLayoutToChunk(mod.targetChunk, mod.modifierLayout);
             }
         }
+
+        if (MetaUpgradeManager.Instance != null &&
+            MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.RestoreStarterRuinedHouses))
+        {
+            ApplyRestoreStarterRuinedHouses();
+        }
+    }
+
+    /// <summary>
+    /// Odtwarza zrujnowane domy elfów i krasnoludów na startowym chunku (0,0),
+    /// podmieniając je na pełnoprawne domy przy zachowaniu startowych mieszkańców.
+    /// </summary>
+    public void ApplyRestoreStarterRuinedHouses(
+        HousingBuildingData elvenOverride = null,
+        HousingBuildingData dwarvenOverride = null)
+    {
+        if (ctx == null || ctx.worldData == null || !ctx.worldData.TryGetValue(Vector2Int.zero, out var originChunk))
+            return;
+
+        HousingBuildingData restoredElven = elvenOverride != null
+            ? elvenOverride
+            : (metaConfig != null ? metaConfig.restoredElvenHouse : null);
+        HousingBuildingData restoredDwarven = dwarvenOverride != null
+            ? dwarvenOverride
+            : (metaConfig != null ? metaConfig.restoredDwarvenHouse : null);
+
+#if UNITY_EDITOR
+        if (restoredElven == null)
+        {
+            restoredElven = UnityEditor.AssetDatabase.LoadAssetAtPath<HousingBuildingData>(
+                "Assets/Main folder/ScriptableObjects/Buildings/Houses/Elf house.asset");
+        }
+        if (restoredDwarven == null)
+        {
+            restoredDwarven = UnityEditor.AssetDatabase.LoadAssetAtPath<HousingBuildingData>(
+                "Assets/Main folder/ScriptableObjects/Buildings/Houses/Dwarven house.asset");
+        }
+#endif
+
+        foreach (var cell in originChunk.Values)
+        {
+            if (cell == null || !(cell.startingBuilding is HousingBuildingData housing)) continue;
+
+            bool isRuined = housing.name.IndexOf("Ruined", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || (!string.IsNullOrEmpty(housing.buildingName) &&
+                    housing.buildingName.IndexOf("Ruined", System.StringComparison.OrdinalIgnoreCase) >= 0);
+            if (!isRuined) continue;
+
+            HousingBuildingData replacement = null;
+            if (housing.housingRace == Race.Elves) replacement = restoredElven;
+            else if (housing.housingRace == Race.Dwarves) replacement = restoredDwarven;
+
+            if (replacement == null) continue;
+
+            int preservedResidents = Mathf.Max(1, housing.initialResidents);
+            cell.startingBuilding = replacement;
+            cell.starterHouseBonusResidents = Mathf.Max(cell.starterHouseBonusResidents, preservedResidents);
+        }
     }
 
     /// <summary>Krok 2 – Generuje teren dla wszystkich chunków (reguły pierścieni bez biomów).</summary>

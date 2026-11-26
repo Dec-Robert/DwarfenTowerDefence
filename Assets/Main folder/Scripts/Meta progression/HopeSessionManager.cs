@@ -188,7 +188,9 @@ public class HopeSessionManager : MonoBehaviour
                 int wavePoints = GetPointsForWave(nightsSurvived);
                 wavePointsEarned += wavePoints;
 
-                AddRecord($"Przetrwano noc {nightsSurvived}", wavePoints, MilestoneType.NightsSurvived, "NightsSurvived", "Survivor");
+                string survivedMsg = string.Format(LocalizationManager.Get("UI_HOPE_NIGHT_SURVIVED_FMT", "Przetrwano noc {0}"), nightsSurvived);
+                string survivorGroup = LocalizationManager.Get("UI_HOPE_GROUP_SURVIVOR", "Ocalały");
+                AddRecord(survivedMsg, wavePoints, MilestoneType.NightsSurvived, "NightsSurvived", survivorGroup);
                 EvaluateMilestones(MilestoneType.NightsSurvived, nightsSurvived);
             }
         }

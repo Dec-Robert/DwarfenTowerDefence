@@ -215,7 +215,7 @@ public class HexMapVisualizer : MonoBehaviour
                     // Budowanie predefiniowanych budynków
                     if (cellData.startingBuilding != null)
                     {
-                        SpawnPredefinedBuilding(hex, cellData.startingBuilding);
+                        SpawnPredefinedBuilding(hex, cellData.startingBuilding, cellData.starterHouseBonusResidents);
                     }
                 }
             }
@@ -362,7 +362,7 @@ public class HexMapVisualizer : MonoBehaviour
         ReleaseTerrainMeshes();
     }
 
-    void SpawnPredefinedBuilding(GameObject hexObj, BuildingData buildingData)
+    void SpawnPredefinedBuilding(GameObject hexObj, BuildingData buildingData, int bonusResidents = 0)
     {
         if (buildingData.prefab == null) return;
 
@@ -400,6 +400,10 @@ public class HexMapVisualizer : MonoBehaviour
         }
 
         entity.Initialize(buildingData);
+        if (bonusResidents > 0 && entity is HousingEntity housingEntity)
+        {
+            housingEntity.AddBonusStartResidents(bonusResidents);
+        }
         HexCell cellComp = hexObj.GetComponent<HexCell>();
         if (cellComp != null) cellComp.SetBuilding(entity);
     }
@@ -534,18 +538,28 @@ public class HexMapVisualizer : MonoBehaviour
         cellData.featureLevel = 0;
         cellData.elevation = 0;
 
+        UpdateHexTerrainAndVisuals(chunkCoord, localCoord, cellData);
+    }
+
+    /// <summary>
+    /// Odświeża wysokość, mesh i wizualia zmienionego heksa oraz sąsiednich ścian.
+    /// </summary>
+    public void UpdateHexTerrainAndVisuals(Vector2Int chunkCoord, Vector2Int localCoord, HexCellData cellData)
+    {
+        if (cellData == null) return;
+
         int chunkRadius = cachedChunkRadius > 0 ? cachedChunkRadius : 3;
         Vector2Int centerAxial = HexGridMath.GetChunkCenterAxial(chunkCoord, chunkRadius);
         Vector2Int globalCoord = centerAxial + localCoord;
 
         if (globalHeightsMap != null)
         {
-            globalHeightsMap[globalCoord] = 0f;
+            globalHeightsMap[globalCoord] = GetTerrainHeight(cellData);
         }
 
         RedrawSingleHex(chunkCoord, localCoord, cellData);
 
-        // Odśwież sąsiadów niebędących drogami, aby ich boczne ściany dopasowały się do nowej wysokości 0
+        // Odśwież sąsiadów niebędących drogami, aby ich boczne ściany dopasowały się do nowej wysokości
         for (int k = 0; k < 6; k++)
         {
             Vector2Int neighborGlobal = globalCoord + HexTerrainMeshBuilder.Directions[k];

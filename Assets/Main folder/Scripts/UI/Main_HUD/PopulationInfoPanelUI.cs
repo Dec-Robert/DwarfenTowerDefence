@@ -23,6 +23,7 @@ public class PopulationInfoPanelUI : MonoBehaviour
     private bool isSubscribedTime;
     private bool isSubscribedResources;
     private bool isSubscribedEconomy;
+    private bool isRefreshDirty;
 
     public Race Race => race;
     public TextMeshProUGUI TxtFree => txtFree;
@@ -152,24 +153,34 @@ public class PopulationInfoPanelUI : MonoBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        if (isRefreshDirty)
+        {
+            isRefreshDirty = false;
+            RefreshFromManagers();
+        }
+    }
+
     private void HandleStatsChanged(Race updatedRace, WorkforceManager.WorkforceStats stats)
     {
         if (updatedRace != race) return;
-        UpdateUI(stats);
+        isRefreshDirty = true;
     }
 
     private void HandleResourceChanged(ResourceType type, int amount)
     {
-        RefreshFromManagers();
+        isRefreshDirty = true;
     }
 
     private void HandleEnvironmentChanged()
     {
-        RefreshFromManagers();
+        isRefreshDirty = true;
     }
 
     public void RefreshFromManagers()
     {
+        isRefreshDirty = false;
         if (WorkforceManager.Instance == null) return;
         UpdateUI(WorkforceManager.Instance.GetStats(race));
     }

@@ -136,7 +136,7 @@ public class SpellHudButtonUI : MonoBehaviour
 
         if (spellNameText != null)
         {
-            spellNameText.text = spell.spellName;
+            spellNameText.text = spell.DisplayName;
         }
 
         if (hotkeyText != null)
@@ -167,13 +167,13 @@ public class SpellHudButtonUI : MonoBehaviour
         {
             if (!mgr.IsNightPhase())
             {
-                statusText.text = "Dzień";
+                statusText.text = LocalizationManager.Get("UI_LABEL_DAY", "Dzień");
                 return;
             }
 
             if (mgr.IsTargeting)
             {
-                statusText.text = "Celuj...";
+                statusText.text = LocalizationManager.Get("UI_SPELL_TARGETING", "Celuj...");
                 return;
             }
 
@@ -183,7 +183,7 @@ public class SpellHudButtonUI : MonoBehaviour
                 SpellCastLimitMode.RechargeableCharges => mgr.CurrentCharges < mgr.ActiveTower.GetEffectiveMaxUsesOrCharges()
                     ? $"{mgr.CurrentCharges} ({mgr.CooldownTimer:0}s)"
                     : $"{mgr.CurrentCharges}/{mgr.ActiveTower.GetEffectiveMaxUsesOrCharges()}",
-                SpellCastLimitMode.CooldownOnly => mgr.CooldownTimer > 0f ? $"{mgr.CooldownTimer:0.0}s" : "Gotowy",
+                SpellCastLimitMode.CooldownOnly => mgr.CooldownTimer > 0f ? $"{mgr.CooldownTimer:0.0}s" : LocalizationManager.Get("UI_SPELL_READY", "Gotowy"),
                 _ => ""
             };
         }

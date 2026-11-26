@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: narzedzie_ludu_3
   upgradeName: "Narz\u0119dzie ludu III"
+  category: 2
   description: "Kazdy budynek produkcyjny mo\u017Ce pomie\u015Bcic \njednego wi\u0119cej
     pracownika"
   icon: {fileID: 0}

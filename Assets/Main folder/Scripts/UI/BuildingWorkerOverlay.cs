@@ -57,6 +57,7 @@ public class BuildingWorkerOverlay : MonoBehaviour
         SetupWorldCanvas();
         CreateCapsules();
         isInitialized = true;
+        UpdateBillboard();
         RefreshView();
         UpdateVisibility(BuildingWorkerOverlayManager.Instance != null && BuildingWorkerOverlayManager.Instance.IsVisible);
     }

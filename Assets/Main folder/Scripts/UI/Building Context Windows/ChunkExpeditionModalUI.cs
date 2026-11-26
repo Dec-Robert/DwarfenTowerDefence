@@ -84,6 +84,7 @@ public class ChunkExpeditionModalUI : MonoBehaviour
     private Vector2Int currentChunk;
     private int assignedElves = 2;
     private bool isSurveyTabActive = true;
+    private bool isSubmittingMission;
 
     private void Awake()
     {
@@ -92,6 +93,9 @@ public class ChunkExpeditionModalUI : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshView;
+        LocalizationManager.OnLanguageChanged += RefreshView;
+
         if (ResourceManager.Instance != null)
             ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
 
@@ -101,6 +105,8 @@ public class ChunkExpeditionModalUI : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshView;
+
         if (ResourceManager.Instance != null)
             ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
 
@@ -110,11 +116,13 @@ public class ChunkExpeditionModalUI : MonoBehaviour
 
     private void HandleResourceChanged(ResourceType type, int amount)
     {
+        if (isSubmittingMission) return;
         RefreshView();
     }
 
     private void HandleWorkforceChanged(Race race, WorkforceManager.WorkforceStats stats)
     {
+        if (isSubmittingMission) return;
         if (race == Race.Elves)
         {
             RefreshView();
@@ -362,12 +370,50 @@ public class ChunkExpeditionModalUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    private void RefreshStaticLabels()
+    {
+        Transform card = transform.Find("Pnl_WindowCard") ?? transform;
+
+        if (txtTabSurveyLabel != null)
+            txtTabSurveyLabel.text = LocalizationManager.Get("UI_EXPEDITION_TAB_SURVEY", "GŁÓWNA\nEKSPEDYCJA");
+
+        SetModalTMP(card, "View_Survey/Sec_Forecast/Txt_Header", "UI_EXPEDITION_FORECAST_HEADER", "PROGNOZA TERENU Z MGŁY");
+        SetModalTMP(card, "View_Survey/Sec_Forecast/Pnl_ForecastBox/Pnl_UnscoutedState/Txt_Hint", "UI_EXPEDITION_UNSCOUTED_HINT", "Teren zasnuty gęstą mgłą. Wyślij zwiad taktyczny, by odkryć biomy.");
+        SetModalTMP(card, "View_Survey/Sec_Team/Txt_Header", "UI_EXPEDITION_TEAM_HEADER", "DRUŻYNA EKSPEDYCYJNA (ELFY)");
+        SetModalTMP(card, "View_Survey/Sec_Team/Pnl_ScoutController/Pnl_Race_ELVES/Txt_RaceTitle", "RACE_ELVES", "ELFY");
+        SetModalTMP(card, "View_Survey/Sec_EquipmentStatus/Txt_SectionHeader", "UI_EXPEDITION_GEAR_STATUS_HEADER", "STAN EKWIPUNKÓW ZWIADOWCÓW");
+        SetModalTMP(card, "View_Survey/Sec_EquipmentStatus/Pnl_GearCard/Pnl_GearSubheader/Pnl_Legend/Txt_LegFree", "UI_EXPEDITION_LEGEND_FREE", "WOLNY");
+        SetModalTMP(card, "View_Survey/Sec_EquipmentStatus/Pnl_GearCard/Pnl_GearSubheader/Pnl_Legend/Txt_LegBusy", "UI_EXPEDITION_LEGEND_BUSY", "W TRASIE");
+        SetModalTMP(card, "View_Survey/Sec_ReconCost/Txt_Header", "UI_EXPEDITION_COST_HEADER", "KOSZT ZWIADU");
+        SetModalTMP(card, "View_Survey/Pnl_SummaryCardsRow/Col_NeededElves/Txt_Label", "UI_EXPEDITION_MIN_SCOUTS_LABEL", "MINIMALNA LICZBA ZWIADOWCÓW");
+        SetModalTMP(card, "View_Survey/Pnl_SummaryCardsRow/Col_Time/Txt_Label", "UI_EXPEDITION_TIME_LABEL", "CZAS ZWIADU");
+
+        SetModalTMP(card, "View_Recon/Sec_ReconCost/Txt_Header", "UI_EXPEDITION_COST_HEADER", "KOSZT ZWIADU");
+        SetModalTMP(card, "View_Recon/Pnl_ReconSummaryCards/Col_Time/Txt_Label", "UI_EXPEDITION_TIME_LABEL", "CZAS ZWIADU");
+        SetModalTMP(card, "View_Recon/Pnl_ReconSummaryCards/Col_NeededElves/Txt_Label", "UI_EXPEDITION_ASSIGNMENT_LABEL", "PRZYDZIAŁ");
+
+        if (txtReconDesc != null)
+            txtReconDesc.text = LocalizationManager.Get("UI_EXPEDITION_RECON_DESC", "Szybki zwiad graniczny. 1 zwiadowca przedziera się przez mgłę, aby zmapować teren i odsłonić biomy przed główną wyprawą.");
+    }
+
+    private static void SetModalTMP(Transform root, string path, string key, string fallback)
+    {
+        if (root == null) return;
+        var tmp = root.Find(path)?.GetComponent<TextMeshProUGUI>();
+        if (tmp != null) tmp.text = LocalizationManager.Get(key, fallback);
+    }
+
     // =========================================================================
     // OBSŁUGA ZAKŁADEK (TABS)
     // =========================================================================
 
     private void SwitchTab(bool isSurvey)
     {
+        if (!isSurvey && !MapExpansionManager.IsTacticalReconUnlocked())
+        {
+            isSurvey = true;
+        }
+
         isSurveyTabActive = isSurvey;
 
         if (viewSurvey != null) viewSurvey.SetActive(isSurvey);
@@ -430,12 +476,19 @@ public class ChunkExpeditionModalUI : MonoBehaviour
 
     public void RefreshView()
     {
+        if (txtTitle != null)
+        {
+            txtTitle.text = LocalizationManager.GetFormat("UI_EXPEDITION_MODAL_TITLE_FMT", currentChunk.x, currentChunk.y);
+        }
+        RefreshStaticLabels();
+
         if (MapExpansionManager.Instance == null) return;
 
         var config = MapExpansionManager.Instance.costConfig;
         if (config == null) return;
 
         bool hasRecon = false;
+        bool isReconUnlocked = MapExpansionManager.IsTacticalReconUnlocked();
         ChunkReconIntel intel = null;
         if (MapExpansionManager.Instance.activeChunks.TryGetValue(currentChunk, out var chunkData))
         {
@@ -443,8 +496,22 @@ public class ChunkExpeditionModalUI : MonoBehaviour
             intel = chunkData.reconIntel;
         }
 
-        // Obsługa zakładki zwiadu, jeśli został już ukończony
-        if (hasRecon)
+        // Obsługa zakładki zwiadu, jeśli został już ukończony lub jest zablokowany w Meta
+        if (!isReconUnlocked)
+        {
+            if (btnTabRecon != null) btnTabRecon.interactable = false;
+            if (txtTabReconLabel != null)
+            {
+                txtTabReconLabel.text = LocalizationManager.Get("UI_RECON_LOCKED", "ZWIAD (ZABLOKOWANY)");
+                txtTabReconLabel.color = ColorTextMuted;
+            }
+            if (!isSurveyTabActive)
+            {
+                SwitchTab(true);
+                return;
+            }
+        }
+        else if (hasRecon)
         {
             if (btnTabRecon != null) btnTabRecon.interactable = false;
             if (txtTabReconLabel != null)
@@ -463,7 +530,8 @@ public class ChunkExpeditionModalUI : MonoBehaviour
             if (btnTabRecon != null) btnTabRecon.interactable = true;
             if (txtTabReconLabel != null)
             {
-                txtTabReconLabel.text = LocalizationManager.Get("UI_RECON_TACTICAL", "ZWIAD TAKTYCZNY");
+                txtTabReconLabel.text = LocalizationManager.Get("UI_TAB_RECON", "ZWIAD TAKTYCZNY");
+                txtTabReconLabel.color = !isSurveyTabActive ? ColorBlueActive : ColorTextMuted;
             }
         }
 
@@ -574,7 +642,9 @@ public class ChunkExpeditionModalUI : MonoBehaviour
 
         if (txtReconDuration != null)
         {
-            string cycleWord = config.reconDays == 1 ? "Cykl" : "Cykle";
+            string cycleWord = config.reconDays == 1
+                ? LocalizationManager.Get("UI_CYCLE_SINGULAR_CAP", "Cykl")
+                : LocalizationManager.Get("UI_CYCLES_PLURAL_CAP", "Cykle");
             txtReconDuration.text = $"{config.reconDays} {cycleWord}";
         }
 
@@ -753,7 +823,17 @@ public class ChunkExpeditionModalUI : MonoBehaviour
     {
         if (MapExpansionManager.Instance == null) return;
 
-        bool success = MapExpansionManager.Instance.TryStartSurvey(currentChunk, assignedElves);
+        bool success;
+        isSubmittingMission = true;
+        try
+        {
+            success = MapExpansionManager.Instance.TryStartSurvey(currentChunk, assignedElves);
+        }
+        finally
+        {
+            isSubmittingMission = false;
+        }
+
         if (success)
         {
             CloseWindow();
@@ -768,7 +848,17 @@ public class ChunkExpeditionModalUI : MonoBehaviour
     {
         if (MapExpansionManager.Instance == null) return;
 
-        bool success = MapExpansionManager.Instance.TryStartRecon(currentChunk);
+        bool success;
+        isSubmittingMission = true;
+        try
+        {
+            success = MapExpansionManager.Instance.TryStartRecon(currentChunk);
+        }
+        finally
+        {
+            isSubmittingMission = false;
+        }
+
         if (success)
         {
             CloseWindow();

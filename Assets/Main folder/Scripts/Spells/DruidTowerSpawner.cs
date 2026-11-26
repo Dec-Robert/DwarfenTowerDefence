@@ -21,6 +21,11 @@ public class DruidTowerSpawner : MonoBehaviour
         Instance = null;
     }
 
+    private const string DefaultPrefabResourcePath = "Druid cave prefab";
+    private const string DefaultBuildingDataResourcePath = "DruidCave";
+    private const string DefaultPrefabAssetPath = "Assets/Main folder/Prefabs/Buildings/Druid cave prefab.prefab";
+    private const string DefaultBuildingDataAssetPath = "Assets/Main folder/ScriptableObjects/Buildings/DruidCave.asset";
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -29,6 +34,32 @@ public class DruidTowerSpawner : MonoBehaviour
             return;
         }
         Instance = this;
+        EnsureDefaultAssetsLoaded();
+    }
+
+    public void EnsureDefaultAssetsLoaded()
+    {
+        if (druidTowerPrefab == null)
+        {
+            druidTowerPrefab = Resources.Load<GameObject>(DefaultPrefabResourcePath);
+#if UNITY_EDITOR
+            if (druidTowerPrefab == null)
+            {
+                druidTowerPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(DefaultPrefabAssetPath);
+            }
+#endif
+        }
+
+        if (druidTowerBuildingData == null)
+        {
+            druidTowerBuildingData = Resources.Load<BuildingData>(DefaultBuildingDataResourcePath);
+#if UNITY_EDITOR
+            if (druidTowerBuildingData == null)
+            {
+                druidTowerBuildingData = UnityEditor.AssetDatabase.LoadAssetAtPath<BuildingData>(DefaultBuildingDataAssetPath);
+            }
+#endif
+        }
     }
 
     private void Start()
@@ -71,18 +102,36 @@ public class DruidTowerSpawner : MonoBehaviour
         return MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.UnlockDruidTower);
     }
 
+    public bool HasRequiredMetaUnlock()
+    {
+        return ignoreMetaUnlockForTesting || IsMetaUnlocked();
+    }
+
     private void HandleChunkStateChanged(Vector2Int chunkCoord, ChunkState newState)
     {
         if (newState != ChunkState.Outskirts) return;
         if (HasSpawnedThisSession) return;
-        if (!ignoreMetaUnlockForTesting && !IsMetaUnlocked()) return;
+
+        if (!HasRequiredMetaUnlock())
+        {
+            Debug.Log($"[DruidTowerSpawner] Pominięto spawn na chunku {chunkCoord}: brak odblokowania meta-progresji (UnlockDruidTower). MetaUpgradeManager={(MetaUpgradeManager.Instance != null ? "OK" : "NULL")}.");
+            return;
+        }
 
         int currentDay = TimePhaseManager.Instance != null ? TimePhaseManager.Instance.CurrentDay : 1;
         int chance = CalculateSpawnChance(currentDay);
-        if (chance <= 0) return;
+        if (chance <= 0)
+        {
+            Debug.Log($"[DruidTowerSpawner] Pominięto spawn na chunku {chunkCoord}: dzień {currentDay} <= 10 (szansa 0%).");
+            return;
+        }
 
         int roll = UnityEngine.Random.Range(0, 100);
-        if (roll >= chance) return;
+        if (roll >= chance)
+        {
+            Debug.Log($"[DruidTowerSpawner] Rzut nieudany na chunku {chunkCoord} (dzień {currentDay}, szansa {chance}%, wylosowano {roll}).");
+            return;
+        }
 
         TrySpawnInChunk(chunkCoord);
     }
@@ -142,6 +191,8 @@ public class DruidTowerSpawner : MonoBehaviour
 
     private void SpawnDruidTowerOnCell(HexCell cell)
     {
+        EnsureDefaultAssetsLoaded();
+
         GameObject towerObj;
         if (druidTowerPrefab != null)
         {
@@ -155,7 +206,9 @@ public class DruidTowerSpawner : MonoBehaviour
         var entity = towerObj.GetComponent<DruidTowerEntity>();
         if (entity == null) entity = towerObj.AddComponent<DruidTowerEntity>();
 
-        BuildingData dataToUse = druidTowerBuildingData != null ? druidTowerBuildingData : CreateFallbackBuildingData();
+        BuildingData dataToUse = druidTowerBuildingData != null
+            ? druidTowerBuildingData
+            : (entity.data != null ? entity.data : CreateFallbackBuildingData());
         entity.Initialize(dataToUse);
         cell.SetBuilding(entity);
     }

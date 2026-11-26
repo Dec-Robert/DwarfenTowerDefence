@@ -354,10 +354,13 @@ public class DruidTowerEntity : BuildingEntity
     {
         if (ActiveSpell == null) return 0;
         SumModifiers(SpellUpgradeStatType.BonusCharges, out float bonus);
+        int metaBonusCharges = (ActiveSpell.castLimitMode == SpellCastLimitMode.RechargeableCharges && MetaUpgradeManager.Instance != null)
+            ? Mathf.RoundToInt(MetaUpgradeManager.Instance.GetValue(MetaEffectType.SpellBonusCharges))
+            : 0;
         int baseVal = ActiveSpell.castLimitMode == SpellCastLimitMode.LimitedUsesPerNight
             ? ActiveSpell.maxUsesPerNight
             : ActiveSpell.maxCharges;
-        return Mathf.Max(1, baseVal + Mathf.RoundToInt(bonus));
+        return Mathf.Max(1, baseVal + Mathf.RoundToInt(bonus) + metaBonusCharges);
     }
 
     private void RefreshVisualState()

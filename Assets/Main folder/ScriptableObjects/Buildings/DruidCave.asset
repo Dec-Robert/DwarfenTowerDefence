@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce34df5ebabdac64997bb41d4ba2cdf0, type: 3}
+  m_Name: DruidCave
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: Jama Druida
+  description: "Staro\u017Cytna jama szalonego druida pozwalaj\u0105ca rzuca\u0107
+    zakl\u0119cia podczas nocy."
+  icon: {fileID: 0}
+  type: 4
+  workerScalingFactor: 0.25
+  firstWorkerProduction: 0.7
+  efficiencyTable:
+  - 0
+  - 1
+  - 1.25
+  - 1.5
+  - 1.75
+  - 2
+  allowedTerrain: 
+  elevationRequirement:
+    mode: 0
+    minElevation: 0
+    maxElevation: 0
+    allowedElevations: 
+  allowOnRoad: 0
+  requiresOccupiedSpace: 0
+  requiresSpecificCitizen: 0
+  requiredCitizenRace: 1
+  isOutpost: 0
+  constructionCost: []
+  productionPerCycle: []
+  upkeepPerCycle: []
+  duskExecutionStep: 0
+  tier1Upgrades: []
+  prefab: {fileID: 805186248796621080, guid: 49d69d7e10744c9cba6d5de8bcb3ef4e, type: 3}
+  bonusRules: []
+  elevationBonus:
+    enabled: 0
+    resourceType: 0
+    onTopBonusPerLevel: 0
+    adjacentBonusPerLevel: 0
+    penaltyPerExtraBuilding: 0
+    searchRadius: 0
+  baseMaxWorkers: 1
+  isUnlocked: 0

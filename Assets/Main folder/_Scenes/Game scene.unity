@@ -10755,22 +10755,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b91069d34ff5f3488efdebd76671379, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DruidTowerWindowUI
-  pnlRebuildModal: {fileID: 0}
+  pnlRebuildModal: {fileID: 1327690734}
   txtRebuildTitle: {fileID: 1184306601}
   btnRebuildClose: {fileID: 1719111154}
   txtRebuildDescription: {fileID: 899857488}
   txtRebuildReqSettlement: {fileID: 409119090}
-  pnlRepairContainer: {fileID: 0}
-  singleResourcePrefab: {fileID: 0}
-  resourceVisuals: {fileID: 0}
+  pnlRepairContainer: {fileID: 460977176}
+  singleResourcePrefab: {fileID: 1052072117796695905, guid: 99cc2448f8796904cbf4c44b2265d9be, type: 3}
+  resourceVisuals: {fileID: 11400000, guid: f3907685d9f07ab4caa45f2b14f1bfbd, type: 2}
   btnRebuild: {fileID: 1833211892}
   txtRebuildButtonLabel: {fileID: 2089535470}
-  pnlSpellChoiceModal: {fileID: 0}
+  pnlSpellChoiceModal: {fileID: 1350874314}
   txtChoiceTitle: {fileID: 1458102452}
   txtChoicePrompt: {fileID: 379038679}
-  pnlCardsRow: {fileID: 0}
-  cardSpellPrefab: {fileID: 0}
-  pnlMainSpellModal: {fileID: 0}
+  pnlCardsRow: {fileID: 660538241}
+  cardSpellPrefab: {fileID: 729801842031701628, guid: bdde654daaa707549bab8c7a114181e0, type: 3}
+  pnlMainSpellModal: {fileID: 1897249216}
   txtMainTitle: {fileID: 1634216778}
   btnMainClose: {fileID: 720138708}
   imgMainSpellIcon: {fileID: 720479043}
@@ -10778,9 +10778,9 @@ MonoBehaviour:
   txtMainSpellDamage: {fileID: 589658660}
   txtMainSpellStats: {fileID: 2079673557}
   txtMainCastHint: {fileID: 0}
-  secUpgradePaths: {fileID: 0}
-  pnlLinearTiers: {fileID: 0}
-  cardSpellTierPrefab: {fileID: 0}
+  secUpgradePaths: {fileID: 1096658829}
+  pnlLinearTiers: {fileID: 483607612}
+  cardSpellTierPrefab: {fileID: 392076532578305921, guid: db07d751dd3c32b439ec96bca56715a6, type: 3}
 --- !u!1 &367526077
 GameObject:
   m_ObjectHideFlags: 0
@@ -45753,6 +45753,7 @@ GameObject:
   - component: {fileID: 1837610584}
   - component: {fileID: 1837610585}
   - component: {fileID: 1837610586}
+  - component: {fileID: 1837610587}
   m_Layer: 0
   m_Name: MAP MANAGER
   m_TagString: Untagged
@@ -45946,6 +45947,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   costConfig: {fileID: 0}
+--- !u!114 &1837610587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837610581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da7a14038ae1c984da1beb69d437b948, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DruidTowerSpawner
+  druidTowerPrefab: {fileID: 805186248796621080, guid: 49d69d7e10744c9cba6d5de8bcb3ef4e, type: 3}
+  druidTowerBuildingData: {fileID: 11400000, guid: 8a6bf171903f453b84b59a71ec23cf33, type: 2}
+  ignoreMetaUnlockForTesting: 0
 --- !u!1 &1843621850
 GameObject:
   m_ObjectHideFlags: 0
@@ -47586,7 +47602,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1897249217
 RectTransform:
   m_ObjectHideFlags: 0

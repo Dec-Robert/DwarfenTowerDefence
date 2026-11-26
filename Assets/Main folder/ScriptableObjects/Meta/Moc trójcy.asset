@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: trinity_force
   upgradeName: "Moc tr\xF3jcy"
-  description: "Odblokowywuje dost\u0119p od ku\u017Anie runiczje i \nwarsztatu narz\u0119dziowego"
+  category: 2
+  description: "Odblokowywuje dost\u0119p od ku\u017Anie runiczje i \nwarsztatu narz\u0119dziowego\nDaje
+    dost\u0119p do pozosta\u0142ych w\xF3ch ras rudzi i \nkrasnolud\xF3w"
   icon: {fileID: 0}
   cost: 100
   nodePosition: {x: 0, y: 0}
-  isUnlocked: 0
-  prerequisites:
-  - {fileID: 11400000, guid: d5b82056eb2ec564296df8ef5bab883a, type: 2}
+  isUnlocked: 1
+  prerequisites: []
   effectType: 131
   effectValue: 0
   effectValue2: 0

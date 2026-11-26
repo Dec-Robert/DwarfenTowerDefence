@@ -92,6 +92,8 @@ public class TimeUI : MonoBehaviour
 
     private void RefreshCurrentVisuals()
     {
+        RefreshNextPhaseButtonText();
+
         if (TimePhaseManager.Instance == null)
         {
             ChangeToMorning();
@@ -112,6 +114,16 @@ public class TimeUI : MonoBehaviour
             default:
                 ChangeToMorning();
                 break;
+        }
+    }
+
+    private void RefreshNextPhaseButtonText()
+    {
+        if (btnNextPhase == null) return;
+        var tmp = btnNextPhase.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (tmp != null)
+        {
+            tmp.text = LocalizationManager.Get("UI_BTN_NEXT_PHASE", "Następna faza");
         }
     }
     

@@ -56,9 +56,10 @@ public class BuildingTerrainComponent
                         {
                             if (yield.onTopProductionBonus > 0f)
                             {
+                                float metaOnTop = BuildingProductionCalculator.GetMetaTerrainOnTopFlatBonus(data, yield.resourceType);
                                 cachedOnTopBonuses[yield.resourceType] =
                                     (cachedOnTopBonuses.TryGetValue(yield.resourceType, out float existing) ? existing : 0f) +
-                                    yield.onTopProductionBonus;
+                                    yield.onTopProductionBonus + metaOnTop;
                             }
                         }
                     }
@@ -186,7 +187,8 @@ public class BuildingTerrainComponent
         if (data != null && data.elevationBonus.enabled && data.elevationBonus.resourceType == type && registeredOwnCell != null && GetEffectiveElevation(registeredOwnCell) > 0)
         {
             float effectiveLevel = GetElevationEffectiveLevel(registeredOwnCell);
-            bonus += effectiveLevel * data.elevationBonus.onTopBonusPerLevel;
+            float metaOnTop = BuildingProductionCalculator.GetMetaTerrainOnTopFlatBonus(data, type);
+            bonus += effectiveLevel * (data.elevationBonus.onTopBonusPerLevel + metaOnTop);
         }
         return bonus;
     }
@@ -243,8 +245,9 @@ public class BuildingTerrainComponent
 
                     foreach (var yield in rule.resourceYields)
                     {
+                        float metaAdj = BuildingProductionCalculator.GetMetaTerrainAdjacentFlatBonus(data, yield.resourceType);
                         float baseHexYield = yield.baseBonusPerHex - yield.penaltyPerUser * (usersCount - 1);
-                        baseHexYield = Mathf.Max(yield.minBonus, baseHexYield) + myFlatBonus;
+                        baseHexYield = Mathf.Max(yield.minBonus, baseHexYield) + myFlatBonus + metaAdj;
 
                         if (baseHexYield > 0f)
                         {
@@ -263,7 +266,8 @@ public class BuildingTerrainComponent
             {
                 if (cell == null) continue;
                 float effectiveLevel = GetElevationEffectiveLevel(cell);
-                float hexYield = effectiveLevel * data.elevationBonus.adjacentBonusPerLevel;
+                float metaAdj = BuildingProductionCalculator.GetMetaTerrainAdjacentFlatBonus(data, data.elevationBonus.resourceType);
+                float hexYield = effectiveLevel * (data.elevationBonus.adjacentBonusPerLevel + metaAdj);
 
                 if (hexYield > 0f)
                 {
@@ -367,7 +371,8 @@ public class BuildingTerrainComponent
         if (data.elevationBonus.enabled && registeredOwnCell != null && GetEffectiveElevation(registeredOwnCell) > 0)
         {
             float effectiveLevel = GetElevationEffectiveLevel(registeredOwnCell, simulatedExtraClaimedCells);
-            float onTopYield = effectiveLevel * data.elevationBonus.onTopBonusPerLevel;
+            float metaOnTop = BuildingProductionCalculator.GetMetaTerrainOnTopFlatBonus(data, data.elevationBonus.resourceType);
+            float onTopYield = effectiveLevel * (data.elevationBonus.onTopBonusPerLevel + metaOnTop);
 
             if (onTopYield > 0f)
             {
@@ -435,8 +440,9 @@ public class BuildingTerrainComponent
 
                     foreach (var yield in rule.resourceYields)
                     {
+                        float metaAdj = BuildingProductionCalculator.GetMetaTerrainAdjacentFlatBonus(data, yield.resourceType);
                         float baseHexYield = yield.baseBonusPerHex - yield.penaltyPerUser * (usersCount - 1);
-                        baseHexYield = Mathf.Max(yield.minBonus, baseHexYield) + myFlatBonus;
+                        baseHexYield = Mathf.Max(yield.minBonus, baseHexYield) + myFlatBonus + metaAdj;
 
                         if (baseHexYield > 0f)
                         {
@@ -454,7 +460,8 @@ public class BuildingTerrainComponent
             {
                 if (cell == null) continue;
                 float effectiveLevel = GetElevationEffectiveLevel(cell, simulatedExtraClaimedCells);
-                float hexYield = effectiveLevel * data.elevationBonus.adjacentBonusPerLevel;
+                float metaAdj = BuildingProductionCalculator.GetMetaTerrainAdjacentFlatBonus(data, data.elevationBonus.resourceType);
+                float hexYield = effectiveLevel * (data.elevationBonus.adjacentBonusPerLevel + metaAdj);
 
                 if (hexYield > 0f)
                 {

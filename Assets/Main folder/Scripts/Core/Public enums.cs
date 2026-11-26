@@ -176,6 +176,22 @@ public enum WallSystemMode
 ///     Reserved_A / Reserved_B / Reserved_C
 ///     Zarezerwowane dla przyszłych mechanik
 /// </summary>
+/// <summary>
+///     Kategoria organizacyjna meta-ulepszenia w grafie i konfiguracji.
+///     PLACEHOLDER oznacza węzeł tymczasowy / w przygotowaniu (ukryty przed graczem).
+/// </summary>
+public enum MetaUpgradeCategory
+{
+    General = 0,
+    Town = 1,
+    Economy = 2,
+    Defense = 3,
+    Expedition = 4,
+    Runes = 5,
+    Spells = 6,
+    PLACEHOLDER = 99
+}
+
 public enum MetaEffectType
 {
     None = 0,
@@ -194,6 +210,13 @@ public enum MetaEffectType
     BonusProductionWorkers = 22,
     ProductionSynergy_Elf = 23,
     ProductionSynergy_Human = 24,
+
+    // ── Budowa, domy startowe i płaskie bonusy budynkowe ────────────────────
+    SpecificBuildingConstructionCostReduction = 25,
+    HousingStartPopulation_Dwarves = 26,
+    RestoreStarterRuinedHouses = 27,
+    SpecificBuildingTerrainFlatBonus = 28,
+    SpecificBuildingFlatProduction = 29,
 
     // ── Produkcja budynków ────────────────────────────────────────────────────
     BuildingPassiveEfficiency = 30,
@@ -217,13 +240,18 @@ public enum MetaEffectType
     /// <summary>Zwiększa produktywnośc konkretnego typu budynku </summary>
     SpecificBuildingProductionBonus = 39,
 
-    // ── Wrogowie ──────────────────────────────────────────────────────────────
+    // ── Wrogowie (Legacy / Nieużywane) ────────────────────────────────────────
+    [System.Obsolete("Nieużywane w obecnym drzewku meta-progresji")]
     EliteChanceBoost = 40,
+    [System.Obsolete("Nieużywane w obecnym drzewku meta-progresji")]
     EnemySurvivorPenaltyArmor = 41,
+    [System.Obsolete("Nieużywane w obecnym drzewku meta-progresji")]
     EnemySurvivorPenaltySpeed = 42,
+    [System.Obsolete("Nieużywane w obecnym drzewku meta-progresji")]
     EnemySurvivorPenaltyDodge = 43,
 
     // ── Wieże ─────────────────────────────────────────────────────────────────
+    [System.Obsolete("Nieużywane w obecnym drzewku meta-progresji")]
     TowerNoAmmoNightPenalty = 50,
     BonusTowerCrewSlots = 51,
     TowerGlobalArmorPenetration = 52,
@@ -235,19 +263,29 @@ public enum MetaEffectType
     TowerCrewSynergy_Elf = 58,
     TowerCrewSynergy_Human = 59,
 
-    // ── Eksploracja ───────────────────────────────────────────────────────────
+    // ── Eksploracja i Zwiad ───────────────────────────────────────────────────
     ExpansionCostReduction = 60,
+    ExpeditionFreeChunkThresholdBonus = 61,
+    ExpeditionSurveyResourceProfit = 62,
+    UnlockTacticalRecon = 63,
+    ReconResourceGatherChance = 64,
+    ExpeditionExtraTerrainChance = 65,
 
-    // ── Miasto i bramy ────────────────────────────────────────────────────────
+    // ── Miasto, bramy i Palenisko ─────────────────────────────────────────────
     CityBaseHealth = 70,
     GateBaseHP = 71,
+    HearthUnlockHighLevels = 72,
+    HearthHighLevelCoalDiscount = 73,
+    HearthNextDayProductionBoost = 74,
 
     // ── System murów ──────────────────────────────────────────────────────────
     WallSystem_Solution1 = 80,
     WallSystem_Solution2 = 81,
 
-    // ── Przyszłe / zarezerwowane ──────────────────────────────────────────────
+    // ── Mapa / Placeholder / Zarezerwowane ────────────────────────────────────
     UniqueChunkUnlock = 90,
+    MapChunkModifier = 91,
+    Placeholder = 99,
     Reserved_A = 100,
     Reserved_B = 101,
     Reserved_C = 102,
@@ -273,8 +311,10 @@ public enum MetaEffectType
     // ── System Zaklęć i Wieża Szalonego Druida ────────────────────────────────
     UnlockDruidTower = 130,
 
-    // ── Odblokowanie kuźnie runicznej i ToolWorkshopu 
-    UnlockTrinityForce = 131
+    // ── Odblokowanie kuźnie runicznej i ToolWorkshopu ──────────────────────────
+    UnlockTrinityForce = 131,
+
+    SpellBonusCharges = 132
 }
 
 public enum SpellCastLimitMode
@@ -458,5 +498,6 @@ public class HexCellData
     public bool isPath { get => isRoad; set => isRoad = value; } // Alias wsteczny
 
     public BuildingData startingBuilding;
+    public int starterHouseBonusResidents = 0;
     [NonSerialized] public BuildingEntity occupyingBuilding;
 }

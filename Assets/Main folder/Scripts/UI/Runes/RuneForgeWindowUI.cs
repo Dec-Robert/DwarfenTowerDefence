@@ -768,6 +768,7 @@ public class RuneForgeWindowUI : MonoBehaviour
     {
         if (currentForge == null) return;
 
+        RefreshStaticLabels();
         RefreshTopBar();
         RefreshLeftNav();
         RefreshSocketingView();
@@ -775,6 +776,40 @@ public class RuneForgeWindowUI : MonoBehaviour
         RefreshInventoryView();
         RefreshBottomStats();
         RefreshRunesmiths();
+    }
+
+    private void RefreshStaticLabels()
+    {
+        Transform forgeRoot = transform.Find("Pnl_RuneForge") ?? transform;
+
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_LeftNav/Txt_NavTitle", "UI_RUNE_NAV_TITLE", "AKCJE RUNICZNE");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_LeftNav/Pnl_RuneTowersStatus/Txt_InfoTitle", "UI_RUNE_TOWERS_INFO_TITLE", "WIEŻE RUNICZNE WOKÓŁ:");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Socketing/Pnl_TipBar/Txt_TipText", "UI_RUNE_SOCKETING_TIP", "Przeciągnij runę z ekwipunku na odblokowany slot, aby ją osadzić. Nowa runa podmienia starą!");
+
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Fusion/Pnl_FusionTopBar/Txt_FusionTitle", "UI_RUNE_FUSION_TITLE", "FUZJA RUNICZNA");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Fusion/Pnl_FusionTopBar/Btn_BackToTower/Txt_Label", "UI_RUNE_BTN_BACK_TO_TOWER", "← POWRÓT DO WIEŻY");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Fusion/Pnl_FusionReqs/Txt_ReqDesc", "UI_RUNE_FUSION_REQ_DESC", "Fuzja łączy 2 runy tego samego poziomu w 1 runę o szczebel wyższą (100% szans).");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Fusion/Btn_CraftFusion/Txt_Label", "UI_RUNE_BTN_CRAFT_FUSION", "PRZEKUJ FUZJĘ");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Fusion/Txt_Hint", "UI_RUNE_ANVIL_HINT", "Przeciągnij lub kliknij runy z ekwipunku po prawej, aby umieścić je na kowadle.");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Fusion/Pnl_AnvilFusion/Slot_Fusion_Result/Txt_Label", "UI_RUNE_RESULT_LABEL", "Wynik");
+
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Transmutation/Pnl_TransmutationTopBar/Txt_FusionTitle", "UI_RUNE_TRANSMUTE_TITLE", "TRANSMUTACJA");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Transmutation/Pnl_TransmutationTopBar/Btn_BackToTower/Txt_Label", "UI_RUNE_BTN_BACK_TO_TOWER", "← POWRÓT DO WIEŻY");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Transmutation/Pnl_FusionReqs/Txt_ReqDesc", "UI_RUNE_TRANSMUTE_REQ_DESC", "Transmutacja łączy 3 różne runy o podobnej mocy w jedną losową, silniejszą runę wyższego poziomu.");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Transmutation/Btn_CraftTransmutation/Txt_Label", "UI_RUNE_BTN_CRAFT_TRANSMUTE", "TRANSMUTACJA");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Transmutation/Txt_Hint", "UI_RUNE_ANVIL_HINT", "Przeciągnij lub kliknij runy z ekwipunku po prawej, aby umieścić je na kowadle.");
+        SetForgeTMP(forgeRoot, "Pnl_BodyRow/Pnl_CenterAction/View_Transmutation/Pnl_AnvilFusion/Slot_Fusion_Result/Txt_Label", "UI_RUNE_RESULT_LABEL", "Wynik");
+
+        SetForgeTMP(forgeRoot, "Pnl_BottomPanel/Sec_TowerStats/Txt_StatsTitle", "UI_RUNE_TOWER_STATS_TITLE", "ZMODYFIKOWANE STATYSTYKI WIEŻY");
+        if (txtDwarfTitle != null)
+            txtDwarfTitle.text = LocalizationManager.Get("RACE_DWARVES", "KRASNOLUDY");
+    }
+
+    private static void SetForgeTMP(Transform root, string path, string key, string fallback)
+    {
+        if (root == null) return;
+        var tmp = root.Find(path)?.GetComponent<TextMeshProUGUI>();
+        if (tmp != null) tmp.text = LocalizationManager.Get(key, fallback);
     }
 
     private void RefreshTopBar()

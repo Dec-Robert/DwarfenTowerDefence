@@ -94,6 +94,7 @@ public class ChunkStateData
     // --- Zwiad (Recon) i Misje ---
     public ChunkReconIntel reconIntel = new ChunkReconIntel();
     public bool isReconActive;
+    public bool hasGatheredResources;
 
     public bool hasReconIntel => reconIntel != null && reconIntel.hasIntel;
     public bool isSurveyActive => baseState == ChunkState.Surveying;

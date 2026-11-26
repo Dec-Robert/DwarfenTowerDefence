@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: krasnoludy_2
   upgradeName: Krasnoludy 2
+  category: 5
   description: "Daje mozliwo\u015B\u0107 dropni\u0119cia uncommon run\n"
   icon: {fileID: 0}
   cost: 80

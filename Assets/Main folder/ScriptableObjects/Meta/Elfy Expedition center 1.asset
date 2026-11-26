@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: elfy_expedition_center_1
   upgradeName: Elfy Expedition center 1
+  category: 4
   description: "Centrum zwiadowcze staje si\u0119 ta\u0144sze w \nbudownie"
   icon: {fileID: 0}
   cost: 75
@@ -21,10 +22,10 @@ MonoBehaviour:
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: d293ea409cccef44986a8534662a171a, type: 2}
-  effectType: 33
+  effectType: 25
   effectValue: 0.15
   effectValue2: 0
-  targetBuilding: {fileID: 0}
+  targetBuilding: {fileID: 11400000, guid: 029572c96a95626488e314d1a18f1f8c, type: 2}
   hasVariants: 0
   isVariantOption: 0
   variantA: {fileID: 0}

@@ -101,7 +101,8 @@ public static class BuildingProductionCalculator
                     {
                         if (yield.onTopProductionBonus > 0f)
                         {
-                            AddAmount(onTopBonuses, yield.resourceType, yield.onTopProductionBonus);
+                            float metaOnTop = GetMetaTerrainOnTopFlatBonus(data, yield.resourceType);
+                            AddAmount(onTopBonuses, yield.resourceType, yield.onTopProductionBonus + metaOnTop);
                         }
                     }
                 }
@@ -124,7 +125,8 @@ public static class BuildingProductionCalculator
             int existingUsers = mods.quarryIgnoreElevationPenalty ? 0 : BuildingProductionRegistry.GetUsageCount(cell);
             float penalty = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
             float effectiveLevel = Mathf.Max(0f, ownElevation - penalty * existingUsers);
-            float onTopYield = effectiveLevel * data.elevationBonus.onTopBonusPerLevel;
+            float metaOnTop = GetMetaTerrainOnTopFlatBonus(data, data.elevationBonus.resourceType);
+            float onTopYield = effectiveLevel * (data.elevationBonus.onTopBonusPerLevel + metaOnTop);
 
             if (onTopYield > 0f)
             {
@@ -183,9 +185,10 @@ public static class BuildingProductionCalculator
 
                     foreach (var yield in rule.resourceYields)
                     {
-                        float grossYield = yield.baseBonusPerHex + mods.terrainFlatBonus;
+                        float metaAdj = GetMetaTerrainAdjacentFlatBonus(data, yield.resourceType);
+                        float grossYield = yield.baseBonusPerHex + mods.terrainFlatBonus + metaAdj;
                         float penalty = yield.penaltyPerUser * existingUsers;
-                        float netYield = Mathf.Max(yield.minBonus, yield.baseBonusPerHex - penalty) + mods.terrainFlatBonus;
+                        float netYield = Mathf.Max(yield.minBonus, yield.baseBonusPerHex - penalty) + mods.terrainFlatBonus + metaAdj;
 
                         if (netYield > 0f)
                         {
@@ -267,9 +270,10 @@ public static class BuildingProductionCalculator
                     : 0;
                 float penaltyPerBuilding = data.elevationBonus.penaltyPerExtraBuilding > 0f ? data.elevationBonus.penaltyPerExtraBuilding : 3f;
                 float effectiveLevel = Mathf.Max(0f, elevation - penaltyPerBuilding * existingUsers);
-                float netYield = effectiveLevel * data.elevationBonus.adjacentBonusPerLevel;
+                float metaAdj = GetMetaTerrainAdjacentFlatBonus(data, data.elevationBonus.resourceType);
+                float netYield = effectiveLevel * (data.elevationBonus.adjacentBonusPerLevel + metaAdj);
 
-                float grossYield = elevation * data.elevationBonus.adjacentBonusPerLevel;
+                float grossYield = elevation * (data.elevationBonus.adjacentBonusPerLevel + metaAdj);
 
                 if (netYield > 0f)
                 {
@@ -318,7 +322,7 @@ public static class BuildingProductionCalculator
             {
                 foreach (var cost in data.productionPerCycle)
                 {
-                    if (cost.type == rType) baseAmt += cost.amount;
+                    if (cost.type == rType) baseAmt += cost.amount + GetMetaFlatProductionBonus(data, rType);
                 }
             }
 
@@ -618,6 +622,49 @@ public static class BuildingProductionCalculator
         }
 
         return mods;
+    }
+
+    public static float GetMetaTerrainOnTopFlatBonus(BuildingData data, ResourceType resourceType)
+    {
+        if (MetaUpgradeManager.Instance == null || data == null) return 0f;
+        if (!BuildingMatchesTerrainResource(data, resourceType)) return 0f;
+        return MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingTerrainFlatBonus, data);
+    }
+
+    public static float GetMetaTerrainAdjacentFlatBonus(BuildingData data, ResourceType resourceType)
+    {
+        if (MetaUpgradeManager.Instance == null || data == null) return 0f;
+        if (!BuildingMatchesTerrainResource(data, resourceType)) return 0f;
+        return MetaUpgradeManager.Instance.GetBuildingSecondaryValue(MetaEffectType.SpecificBuildingTerrainFlatBonus, data);
+    }
+
+    public static float GetMetaFlatProductionBonus(BuildingData data, ResourceType resourceType)
+    {
+        if (MetaUpgradeManager.Instance == null || data == null) return 0f;
+        return MetaUpgradeManager.Instance.GetBuildingValue(MetaEffectType.SpecificBuildingFlatProduction, data);
+    }
+
+    private static bool BuildingMatchesTerrainResource(BuildingData data, ResourceType resourceType)
+    {
+        if (data.elevationBonus.enabled && data.elevationBonus.resourceType == resourceType)
+        {
+            return true;
+        }
+
+        var rules = data.GetEffectiveBonusRules();
+        if (rules != null)
+        {
+            foreach (var rule in rules)
+            {
+                if (rule.resourceYields == null) continue;
+                foreach (var yield in rule.resourceYields)
+                {
+                    if (yield.resourceType == resourceType) return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static void AddAmount(Dictionary<ResourceType, float> dict, ResourceType type, float amount)

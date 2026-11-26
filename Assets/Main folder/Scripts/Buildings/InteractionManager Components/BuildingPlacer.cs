@@ -187,8 +187,8 @@ public class BuildingPlacer
             }
         }
 
-        var costs = data.constructionCost;
-        if (costs != null && ResourceManager.Instance != null && !ResourceManager.Instance.SpendResources(costs))
+        var costs = data.GetEffectiveConstructionCosts();
+        if (costs.Count > 0 && ResourceManager.Instance != null && !ResourceManager.Instance.SpendResources(costs))
         {
             Debug.Log("<color=orange>Za mało surowców!</color>");
             return false;

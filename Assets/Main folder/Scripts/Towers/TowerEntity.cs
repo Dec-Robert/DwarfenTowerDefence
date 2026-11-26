@@ -151,21 +151,25 @@ public class TowerEntity : BuildingEntity
             // Krasnoludy: +8% obrażeń, +5% przebicia pancerza na krasnoluda
             if (dwarfCount > 0 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.TowerCrewSynergy_Dwarf) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.TowerCrewSynergy_Dwarf)))
             {
-                metaDamageMulti += 0.08f * dwarfCount;
-                metaArmorPen += 0.05f * dwarfCount;
+                float dmgPerDwarf = ResolveSynergyValue(MetaUpgradeManager.Instance.GetValue(MetaEffectType.TowerCrewSynergy_Dwarf), 0.08f);
+                float penPerDwarf = ResolveSynergyValue(MetaUpgradeManager.Instance.GetSecondaryValue(MetaEffectType.TowerCrewSynergy_Dwarf), 0.05f);
+                metaDamageMulti += dmgPerDwarf * dwarfCount;
+                metaArmorPen += penPerDwarf * dwarfCount;
             }
 
             // Elfy: +10% zasięgu, +5% szansy na trafienie krytyczne na elfa
             if (elfCount > 0 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.TowerCrewSynergy_Elf) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.TowerCrewSynergy_Elf)))
             {
-                metaRangeMulti += 0.10f * elfCount;
-                metaCritChance += 0.05f * elfCount;
+                float rangePerElf = ResolveSynergyValue(MetaUpgradeManager.Instance.GetValue(MetaEffectType.TowerCrewSynergy_Elf), 0.10f);
+                float critPerElf = ResolveSynergyValue(MetaUpgradeManager.Instance.GetSecondaryValue(MetaEffectType.TowerCrewSynergy_Elf), 0.05f);
+                metaRangeMulti += rangePerElf * elfCount;
+                metaCritChance += critPerElf * elfCount;
             }
 
-            // Ludzie (Ludzka wytrwałość II): conajmniej 4 ludzi daje +20% wydajności
+            // Ludzie (Ludzka wytrwałość II): conajmniej 4 ludzi daje bonus wydajności (np. +15% w assetcie SO, fallback +20% dla starszych testów z effectValue=1)
             if (humanCount >= 4 && (MetaUpgradeManager.Instance.HasEffect(MetaEffectType.TowerCrewSynergy_Human) || MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.TowerCrewSynergy_Human)))
             {
-                metaEfficiencyBonus += 0.20f;
+                metaEfficiencyBonus += ResolveSynergyValue(MetaUpgradeManager.Instance.GetValue(MetaEffectType.TowerCrewSynergy_Human), 0.20f);
             }
 
             // Globalne ulepszenia wież z MetaUpgradeManager
@@ -237,6 +241,11 @@ public class TowerEntity : BuildingEntity
         RecalculateStats();
     }
 
+
+    private static float ResolveSynergyValue(float configuredValue, float legacyFallback)
+    {
+        return (configuredValue > 0.0001f && configuredValue < 0.999f) ? configuredValue : legacyFallback;
+    }
 
     public override int GetGlobalWorkerBonus() => CityStatsManager.Instance?.globalBonusTowerCrewSlots ?? 0;
 

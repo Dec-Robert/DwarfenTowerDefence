@@ -82,6 +82,12 @@ public class SaveManager : MonoBehaviour
     [ContextMenu("Save Game")]
     public void SaveGame()
     {
+        if (DevRunConfig.IsActive)
+        {
+            try { Debug.Log($"<color=yellow>[DEV RUN] Pominięto zapis na dysk (tryb: {DevRunConfig.Mode}).</color>"); } catch { }
+            return;
+        }
+
         // 1. Przygotuj dane do zapisu (np. zaktualizuj list? ID z SO)
         // (Wi?kszo?? danych aktualizujemy w locie w currentSaveData)
 
@@ -114,6 +120,14 @@ public class SaveManager : MonoBehaviour
 
     public void LoadGame()
     {
+        if (DevRunConfig.IsActive)
+        {
+            EnsureTowersLoaded();
+            currentSaveData = DevRunConfig.BuildInMemorySaveData(null, allTowers, DefaultStarterTowerIDs, DevRunConfig.Mode);
+            try { Debug.Log($"<color=yellow>[DEV RUN] Aktywny tryb: {DevRunConfig.Mode}. Nadpisano progresję tylko w pamięci (plik zapisu nietknięty).</color>"); } catch { }
+            return;
+        }
+
         if (string.IsNullOrEmpty(savePath))
         {
             savePath = Path.Combine(Application.persistentDataPath, "player_progress.json");
@@ -169,7 +183,16 @@ public class SaveManager : MonoBehaviour
     // Pomocnicza metoda do synchronizacji SO z zapisanymi danymi
     public void SyncUpgradesWithSave(List<MetaUpgradeSO> allUpgrades)
     {
-        if (currentSaveData == null || allUpgrades == null) return;
+        if (allUpgrades == null) return;
+
+        if (DevRunConfig.IsActive)
+        {
+            if (currentSaveData == null) currentSaveData = new SaveData();
+            currentSaveData.unlockedUpgradeIDs = DevRunConfig.ApplyToUpgrades(allUpgrades, DevRunConfig.Mode);
+            return;
+        }
+
+        if (currentSaveData == null) return;
         if (currentSaveData.unlockedUpgradeIDs == null)
         {
             currentSaveData.unlockedUpgradeIDs = new System.Collections.Generic.List<string>();
@@ -294,6 +317,12 @@ public class SaveManager : MonoBehaviour
         if (currentSaveData.unlockedTowerIDs == null)
         {
             currentSaveData.unlockedTowerIDs = new List<string>(DefaultStarterTowerIDs);
+        }
+
+        if (DevRunConfig.IsActive)
+        {
+            currentSaveData.unlockedTowerIDs = DevRunConfig.ApplyToTowers(listToSync, DevRunConfig.Mode, DefaultStarterTowerIDs);
+            return;
         }
 
         foreach (var tower in listToSync)

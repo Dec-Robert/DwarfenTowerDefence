@@ -210,8 +210,10 @@ public class MetaNodeDetailsPanelUI : MonoBehaviour
         {
             if (req == null) continue;
             string colorHex = req.isUnlocked ? "#8DE68D" : "#E68D8D";
-            string status = req.isUnlocked ? "(Odblokowane)" : "(Zablokowane)";
-            reqStrings.Add($"• <color={colorHex}>{req.upgradeName} {status}</color>");
+            string status = req.isUnlocked
+                ? LocalizationManager.Get("UI_META_STATUS_UNLOCKED", "(Odblokowane)")
+                : LocalizationManager.Get("UI_META_STATUS_LOCKED", "(Zablokowane)");
+            reqStrings.Add($"• <color={colorHex}>{req.DisplayName} {status}</color>");
         }
 
         txtPrereqList.text = string.Join("\n", reqStrings);

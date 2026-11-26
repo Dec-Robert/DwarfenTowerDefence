@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: krasnoludy_kuznia_1
   upgradeName: "Krasnoludy Ku\u017Ania 1"
+  category: 5
   description: "Odblokowywuje mo\u017Cliwo\u015Bc fuzji w ku\u017Ani runicznej"
   icon: {fileID: 0}
   cost: 90

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: elfy_2
   upgradeName: Elfy 2
+  category: 4
   description: "Centrum ekspedycyjne pozwala wys\u0142a\u0107 zwiad\ntaktyczny. Trwa
     on 1 dzie\u0144 i zapewnia informacje\no conajmniej 1 polu kt\xF3re si\u0119
     znajduje na terenie\nbadany."
@@ -23,8 +24,8 @@ MonoBehaviour:
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: d293ea409cccef44986a8534662a171a, type: 2}
-  effectType: 0
-  effectValue: 0
+  effectType: 63
+  effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}
   hasVariants: 0

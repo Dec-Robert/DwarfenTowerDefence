@@ -44,3 +44,5 @@ MonoBehaviour:
     targetChunk: {x: -2, y: 1}
     requiredUpgrade: {fileID: 11400000, guid: db0b12e2296276e49904eafc809561f1, type: 2}
     modifierLayout: {fileID: 11400000, guid: f198ec528b0eb474ca080d7ec815a885, type: 2}
+  restoredElvenHouse: {fileID: 11400000, guid: fc6804a5dec031f4a96410c706a346bd, type: 2}
+  restoredDwarvenHouse: {fileID: 11400000, guid: aa89a7d041da34b45b7be77c10f79ae6, type: 2}

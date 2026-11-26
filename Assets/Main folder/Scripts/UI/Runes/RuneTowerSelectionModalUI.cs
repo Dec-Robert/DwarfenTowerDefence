@@ -139,9 +139,34 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
         Open(forge);
     }
 
+    private void OnEnable()
+    {
+        LocalizationManager.OnLanguageChanged -= HandleLanguageChanged;
+        LocalizationManager.OnLanguageChanged += HandleLanguageChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationManager.OnLanguageChanged -= HandleLanguageChanged;
+    }
+
+    private void HandleLanguageChanged()
+    {
+        RefreshStaticLabels();
+        if (gameObject.activeInHierarchy)
+        {
+            RefreshTowersList();
+            if (pnlConfirmWarningDialog != null && pnlConfirmWarningDialog.activeSelf && pendingSelectedTower != null && txtWarningMessage != null)
+            {
+                txtWarningMessage.text = LocalizationManager.GetFormat("UI_RUNE_SACRIFICE_PROMPT", pendingSelectedTower.DisplayName.ToUpper());
+            }
+        }
+    }
+
     public void Open(RuneForgeEntity forge)
     {
         AutoBindReferences();
+        RefreshStaticLabels();
         currentForge = forge;
         pendingSelectedTower = null;
 
@@ -299,6 +324,32 @@ public class RuneTowerSelectionModalUI : MonoBehaviour
             {
                 btnTxt.text = LocalizationManager.Get("UI_BTN_SELECT", "WYBIERZ");
             }
+        }
+    }
+
+    private void RefreshStaticLabels()
+    {
+        if (txtTitle != null)
+            txtTitle.text = LocalizationManager.Get("UI_RUNE_SELECT_TOWER_TITLE", "WYBÓR WIEŻY DLA KUŹNI RUNICZNEJ");
+
+        var introTmp = (transform.Find("Pnl_ModalWindow/Pnl_IntroBox/Txt_IntroDescription")
+                     ?? transform.Find("Pnl_IntroBox/Txt_IntroDescription"))?.GetComponent<TextMeshProUGUI>();
+        if (introTmp != null)
+            introTmp.text = LocalizationManager.Get("UI_RUNE_SELECT_INTRO_DESC", "Mistrz Runiczny musi poświęcić swój kowalski warsztat <b>jednemu konkretnemu typowi machiny obronnej</b>. Wszystkie osadzone i wykute tu runy będą nasycać wyłącznie wybraną konstrukcję w całej twierdzy!");
+
+        if (txtWarningTitle != null)
+            txtWarningTitle.text = LocalizationManager.Get("UI_RUNE_SACRIFICE_TITLE", "OSTRZEŻENIE: WIĄZANIE PERMANENTNE");
+
+        if (btnCancelChoice != null)
+        {
+            var cancelTmp = btnCancelChoice.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (cancelTmp != null) cancelTmp.text = LocalizationManager.Get("UI_BTN_CANCEL", "ANULUJ");
+        }
+
+        if (btnConfirmChoice != null)
+        {
+            var confirmTmp = btnConfirmChoice.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (confirmTmp != null) confirmTmp.text = LocalizationManager.Get("UI_RUNE_BTN_CONFIRM_CHOICE", "POTWIERDŹ WYBÓR");
         }
     }
 

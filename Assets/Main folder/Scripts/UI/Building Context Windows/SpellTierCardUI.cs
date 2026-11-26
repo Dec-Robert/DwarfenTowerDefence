@@ -21,15 +21,15 @@ public class SpellTierCardUI : MonoBehaviour
 
     public void AutoBindReferences()
     {
-        txtDescription ??= transform.Find("Pnl_Info/Txt_Desc")?.GetComponent<TextMeshProUGUI>();
-        txtCostLabel ??= transform.Find("Pnl_Info/Txt_Cost")?.GetComponent<TextMeshProUGUI>();
+        if (txtDescription == null) txtDescription = transform.Find("Pnl_Info/Txt_Desc")?.GetComponent<TextMeshProUGUI>();
+        if (txtCostLabel == null) txtCostLabel = transform.Find("Pnl_Info/Txt_Cost")?.GetComponent<TextMeshProUGUI>();
         if (pnlCostContainer == null)
         {
             var costTr = transform.Find("Pnl_Info/Pnl_Cost");
             if (costTr != null) pnlCostContainer = costTr;
         }
-        btnUpgrade ??= transform.Find("Btn_Upgrade")?.GetComponent<Button>();
-        txtUpgradeLabel ??= transform.Find("Btn_Upgrade/Txt_Label")?.GetComponent<TextMeshProUGUI>();
+        if (btnUpgrade == null) btnUpgrade = transform.Find("Btn_Upgrade")?.GetComponent<Button>();
+        if (txtUpgradeLabel == null) txtUpgradeLabel = transform.Find("Btn_Upgrade/Txt_Label")?.GetComponent<TextMeshProUGUI>();
     }
 
     public void Setup(
@@ -38,13 +38,15 @@ public class SpellTierCardUI : MonoBehaviour
         bool canAfford,
         GameObject fallbackSingleResourcePrefab,
         ResourceVisualsSO fallbackVisuals,
-        Action onUpgrade)
+        Action onUpgrade,
+        string spellId = null,
+        int tierIndex = -1)
     {
         AutoBindReferences();
         if (node == null) return;
 
         if (txtDescription != null)
-            txtDescription.text = node.description;
+            txtDescription.text = node.GetDisplayDescription(spellId, tierIndex);
 
         var prefabToUse = singleResourcePrefab != null ? singleResourcePrefab : fallbackSingleResourcePrefab;
         var visualsToUse = resourceVisuals != null ? resourceVisuals : fallbackVisuals;
@@ -57,7 +59,10 @@ public class SpellTierCardUI : MonoBehaviour
             visualsToUse);
 
         if (txtCostLabel != null)
+        {
+            txtCostLabel.text = LocalizationManager.Get("UI_SPELL_COSTS_LABEL", "Koszty:");
             txtCostLabel.gameObject.SetActive(hasCosts);
+        }
 
         if (pnlCostContainer != null)
             pnlCostContainer.gameObject.SetActive(hasCosts);

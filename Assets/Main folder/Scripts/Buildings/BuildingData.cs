@@ -166,6 +166,39 @@ public class BuildingData : ScriptableObject
     public bool isUnlocked = true;
 
     /// <summary>
+    /// Zwraca listę kosztów budowy z uwzględnieniem zniżek z Meta-Progresji
+    /// (SpecificBuildingConstructionCostReduction).
+    /// </summary>
+    public List<ResourceCost> GetEffectiveConstructionCosts()
+    {
+        if (constructionCost == null || constructionCost.Count == 0)
+            return new List<ResourceCost>();
+
+        float reduction = 0f;
+        if (!ReferenceEquals(MetaUpgradeManager.Instance, null))
+        {
+            reduction = Mathf.Clamp01(MetaUpgradeManager.Instance.GetBuildingValue(
+                MetaEffectType.SpecificBuildingConstructionCostReduction, this));
+        }
+
+        if (reduction <= 0.0001f)
+            return new List<ResourceCost>(constructionCost);
+
+        var result = new List<ResourceCost>(constructionCost.Count);
+        float mult = 1f - reduction;
+        for (int i = 0; i < constructionCost.Count; i++)
+        {
+            var cost = constructionCost[i];
+            if (cost.amount > 0)
+            {
+                cost.amount = Mathf.Max(1, Mathf.RoundToInt(cost.amount * mult));
+            }
+            result.Add(cost);
+        }
+        return result;
+    }
+
+    /// <summary>
     /// Inicjalizuje domyślną tabelę wydajności, jeśli lista jest pusta.
     /// </summary>
     public void EnsureDefaultEfficiencyTable()

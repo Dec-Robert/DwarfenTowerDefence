@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: krasnoludy_side_2
   upgradeName: Krasnoludy side 2
+  category: 1
   description: "Krasnoludy zaczynaj\u0105 z 1 populacj\u0105 wi\u0119cej \nw domach"
   icon: {fileID: 0}
   cost: 180
@@ -21,7 +22,7 @@ MonoBehaviour:
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: 47c7d7558ba6d8a4898d50a72954aff0, type: 2}
-  effectType: 34
+  effectType: 26
   effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}

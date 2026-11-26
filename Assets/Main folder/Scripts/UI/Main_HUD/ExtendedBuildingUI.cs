@@ -88,13 +88,35 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshTabLabels;
+        LocalizationManager.OnLanguageChanged += RefreshTabLabels;
         TrySubscribeToTimeManager();
+        RefreshTabLabels();
         HandleTimePhaseChanged();
     }
 
     private void OnDisable()
     {
+        LocalizationManager.OnLanguageChanged -= RefreshTabLabels;
         UnsubscribeFromTimeManager();
+    }
+
+    private void RefreshTabLabels()
+    {
+        SetButtonLabel(btnTabTowers, LocalizationManager.Get("UI_TAB_TOWERS", "Wieże"));
+        SetButtonLabel(btnTabProduction, LocalizationManager.Get("UI_TAB_PRODUCTION", "Produkcja"));
+        SetButtonLabel(btnTabHousing, LocalizationManager.Get("UI_TAB_HOUSING", "Domy"));
+        SetButtonLabel(btnTabSpecial, LocalizationManager.Get("UI_TAB_SPECIAL", "Specjalne"));
+    }
+
+    private static void SetButtonLabel(Button btn, string text)
+    {
+        if (btn == null) return;
+        var tmp = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>(true);
+        if (tmp != null)
+        {
+            tmp.text = text;
+        }
     }
 
     private void Start()
@@ -242,7 +264,7 @@ public class ExtendedBuildingUI : MonoBehaviour
 
         if (buildingSlotPrefab == null || buildingsContainer == null) return;
 
-        bool debugUnlockAllTowers = unlockAllTowersForDebug || (SaveManager.Instance != null && SaveManager.Instance.unlockAllTowersForDebug);
+        bool debugUnlockAllTowers = ShouldUnlockAllTowersForDebug();
 
         foreach (var building in allBuildingsDatabase)
         {
@@ -339,7 +361,7 @@ public class ExtendedBuildingUI : MonoBehaviour
 
     private void FilterSlots(BuildingType category)
     {
-        bool debugUnlockAllTowers = unlockAllTowersForDebug || (SaveManager.Instance != null && SaveManager.Instance.unlockAllTowersForDebug);
+        bool debugUnlockAllTowers = ShouldUnlockAllTowersForDebug();
 
         foreach (var entry in slotEntries)
         {
@@ -367,6 +389,16 @@ public class ExtendedBuildingUI : MonoBehaviour
                 entry.slotUI.UpdateAffordability();
             }
         }
+    }
+
+    private bool ShouldUnlockAllTowersForDebug()
+    {
+        if (DevRunConfig.IsActive)
+        {
+            return DevRunConfig.ShouldUnlockAllTowers();
+        }
+
+        return unlockAllTowersForDebug || (SaveManager.Instance != null && SaveManager.Instance.unlockAllTowersForDebug);
     }
 
     /// <summary>

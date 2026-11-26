@@ -264,4 +264,49 @@ public class BuildingWorkerOverlayTests
         Assert.IsTrue(warnCapsule.root.activeSelf);
         Assert.AreEqual("!", warnCapsule.countText.text);
     }
+
+    [Test]
+    public void Test09_NewBuildingConstructedWhileOverlayVisible_AutomaticallyGetsVisibleOverlay()
+    {
+        var regGo = new GameObject("TestBuildingRegistry");
+        testGameObjects.Add(regGo);
+        regGo.AddComponent<BuildingRegistry>();
+
+        var mgrGo = new GameObject("TestOverlayManager");
+        testGameObjects.Add(mgrGo);
+        var mgr = mgrGo.AddComponent<BuildingWorkerOverlayManager>();
+        mgr.SetVisible(true);
+
+        // Symulacja Instantiate -> OnEnable() (przed Initialize(data)), jak w BuildingPlacer.PerformBuild
+        var bGo = new GameObject("NewlyBuiltProduction");
+        testGameObjects.Add(bGo);
+        var b = bGo.AddComponent<BuildingEntity>();
+
+        // Przed Initialize() budynek nie ma jeszcze komponentu Workers
+        Assert.IsNull(b.GetComponentInChildren<BuildingWorkerOverlay>(true));
+
+        var bData = ScriptableObject.CreateInstance<BuildingData>();
+        bData.type = BuildingType.Economic;
+        bData.baseMaxWorkers = 3;
+        b.Initialize(bData);
+
+        // Po Initialize() nakładka powinna zostać automatycznie utworzona i od razu widoczna
+        var overlay = b.GetComponentInChildren<BuildingWorkerOverlay>(true);
+        Assert.IsNotNull(overlay);
+
+        var canvasField = typeof(BuildingWorkerOverlay).GetField("worldCanvas", BindingFlags.NonPublic | BindingFlags.Instance);
+        var containerField = typeof(BuildingWorkerOverlay).GetField("containerRect", BindingFlags.NonPublic | BindingFlags.Instance);
+        var warnField = typeof(BuildingWorkerOverlay).GetField("warningCapsule", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        var canvas = canvasField.GetValue(overlay) as Canvas;
+        var container = containerField.GetValue(overlay) as RectTransform;
+        var warnCapsule = warnField.GetValue(overlay) as BuildingWorkerOverlay.CapsuleView;
+
+        Assert.IsNotNull(canvas);
+        Assert.IsTrue(canvas.enabled);
+        Assert.IsNotNull(container);
+        Assert.IsTrue(container.gameObject.activeSelf);
+        Assert.IsTrue(warnCapsule.root.activeSelf);
+        Assert.AreEqual("!", warnCapsule.countText.text);
+    }
 }

@@ -108,15 +108,25 @@ public class BuildingWorkerOverlayManager : MonoBehaviour
         _instance = this;
     }
 
+    private void OnEnable()
+    {
+        SubscribeEvents();
+    }
+
     private void Start()
     {
-        SubscribeRegistry();
+        SubscribeEvents();
         EnsureOverlaysForAllBuildings();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeEvents();
     }
 
     private void OnDestroy()
     {
-        UnsubscribeRegistry();
+        UnsubscribeEvents();
         if (_instance == this) _instance = null;
     }
 
@@ -139,6 +149,19 @@ public class BuildingWorkerOverlayManager : MonoBehaviour
         IsVisible = visible;
     }
 
+    private void SubscribeEvents()
+    {
+        BuildingEntity.OnAnyBuildingInitialized -= HandleBuildingInitialized;
+        BuildingEntity.OnAnyBuildingInitialized += HandleBuildingInitialized;
+        SubscribeRegistry();
+    }
+
+    private void UnsubscribeEvents()
+    {
+        BuildingEntity.OnAnyBuildingInitialized -= HandleBuildingInitialized;
+        UnsubscribeRegistry();
+    }
+
     private void SubscribeRegistry()
     {
         if (BuildingRegistry.Instance != null)
@@ -159,9 +182,17 @@ public class BuildingWorkerOverlayManager : MonoBehaviour
         }
     }
 
+    private void HandleBuildingInitialized(BuildingEntity building)
+    {
+        if (building != null && building.isActiveAndEnabled && IsEligibleBuilding(building))
+        {
+            EnsureOverlayForBuilding(building);
+        }
+    }
+
     private void HandleBuildingRegistered(BuildingEntity building)
     {
-        if (IsEligibleBuilding(building))
+        if (building != null && building.isActiveAndEnabled && IsEligibleBuilding(building))
         {
             EnsureOverlayForBuilding(building);
         }

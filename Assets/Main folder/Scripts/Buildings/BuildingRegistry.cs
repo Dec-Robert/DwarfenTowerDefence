@@ -7,6 +7,7 @@ public class BuildingRegistry : MonoBehaviour
     public static BuildingRegistry Instance { get; private set; }
 
     private readonly List<BuildingEntity> buildings = new List<BuildingEntity>();
+    private bool isRescanDirty;
 
     public event System.Action<BuildingEntity> OnBuildingRegistered;
     public event System.Action<BuildingEntity> OnBuildingUnregistered;
@@ -61,17 +62,26 @@ public class BuildingRegistry : MonoBehaviour
     {
         if (newState == ChunkState.Outskirts || newState == ChunkState.Settled)
         {
-            RescanAllBuildings();
+            isRescanDirty = true;
         }
     }
 
     private void HandleChunkRevealed(Vector2Int coord)
     {
-        RescanAllBuildings();
+        isRescanDirty = true;
+    }
+
+    private void LateUpdate()
+    {
+        if (isRescanDirty)
+        {
+            RescanAllBuildings();
+        }
     }
 
     public void RescanAllBuildings()
     {
+        isRescanDirty = false;
         for (int i = 0; i < buildings.Count; i++)
         {
             if (buildings[i] != null && buildings[i].isBuildingActive)

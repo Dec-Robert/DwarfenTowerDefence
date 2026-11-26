@@ -137,7 +137,7 @@ public class MetaUpgradeItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpH
             invested = cost;
             if (txtProgress != null)
             {
-                txtProgress.text = "ODBLOKOWANE";
+                txtProgress.text = LocalizationManager.Get("META_UNLOCKED", "ODBLOKOWANE");
             }
             SetFillRatio(1f);
         }
@@ -145,7 +145,7 @@ public class MetaUpgradeItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpH
         {
             if (txtProgress != null)
             {
-                txtProgress.text = $"{invested} / {cost} Nadziei";
+                txtProgress.text = string.Format(LocalizationManager.Get("UI_META_PROGRESS_HOPE_FMT", "{0} / {1} Nadziei"), invested, cost);
             }
             SetFillRatio((float)invested / cost);
         }

@@ -97,12 +97,13 @@ public class MainMenuDemoUI : MonoBehaviour
     public GameObject SettingsModal => settingsPanel != null ? settingsPanel.gameObject : settingsModal;
 
 
-    // Elementy runtime dla modalu
+    private TextMeshProUGUI modalHeaderTitle;
     private TextMeshProUGUI modalCardTitle;
     private TextMeshProUGUI modalCardContent;
     private TextMeshProUGUI modalPageIndicator;
     private Button modalBtnPrev;
     private Button modalBtnNext;
+    private Button modalBtnCloseFooter;
     private readonly List<Button> tabButtons = new List<Button>();
 
     private void Awake()
@@ -123,9 +124,37 @@ public class MainMenuDemoUI : MonoBehaviour
     private void HandleLanguageChanged()
     {
         ApplyGeminiUIStandards();
+        RefreshHowToPlayModalLocalization();
         if (howToPlayModal != null && howToPlayModal.activeSelf)
         {
             ShowCard(currentCardIndex);
+        }
+    }
+
+    private void RefreshHowToPlayModalLocalization()
+    {
+        if (modalHeaderTitle != null)
+            modalHeaderTitle.text = LocalizationManager.Get("UI_GUIDE_HEADER_TITLE", "JAK GRAĆ • PORADNIK BASTIONU");
+
+        for (int i = 0; i < tabButtons.Count && i < cards.Count; i++)
+        {
+            if (tabButtons[i] != null)
+            {
+                var tmp = tabButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+                if (tmp != null) tmp.text = LocalizationManager.Get($"GUIDE_TAB_{i}", cards[i].tabTitle);
+            }
+        }
+
+        if (modalBtnPrev != null)
+        {
+            var tmp = modalBtnPrev.GetComponentInChildren<TextMeshProUGUI>();
+            if (tmp != null) tmp.text = LocalizationManager.Get("UI_GUIDE_BTN_PREV", "< Poprzednia");
+        }
+
+        if (modalBtnCloseFooter != null)
+        {
+            var tmp = modalBtnCloseFooter.GetComponentInChildren<TextMeshProUGUI>();
+            if (tmp != null) tmp.text = LocalizationManager.Get("UI_GUIDE_BTN_CLOSE", "Zamknij");
         }
     }
 
@@ -400,9 +429,11 @@ public class MainMenuDemoUI : MonoBehaviour
         if (modalPageIndicator != null)
         {
             string guideTitle = LocalizationManager.Get("UI_HEADER_HOW_TO_PLAY", "Poradnik Obrońcy");
-            modalPageIndicator.text = LocalizationManager.CurrentLanguage == "pl"
-                ? $"Karta {index + 1} z {cards.Count} • {guideTitle}"
-                : $"Card {index + 1} of {cards.Count} • {guideTitle}";
+            modalPageIndicator.text = string.Format(
+                LocalizationManager.Get("UI_GUIDE_PAGE_INDICATOR_FMT", "Karta {0} z {1} • {2}"),
+                index + 1,
+                cards.Count,
+                guideTitle);
         }
 
         if (modalBtnPrev != null)
@@ -417,7 +448,7 @@ public class MainMenuDemoUI : MonoBehaviour
             {
                 bool isLast = (index == cards.Count - 1);
                 string finishLabel = LocalizationManager.Get("UI_BTN_CLOSE", "Zakończ");
-                string nextLabel = LocalizationManager.CurrentLanguage == "pl" ? "Następna >" : "Next >";
+                string nextLabel = LocalizationManager.Get("UI_GUIDE_BTN_NEXT", "Następna >");
                 nextTxt.text = isLast ? finishLabel : nextLabel;
                 nextTxt.fontSize = 14f;
             }
@@ -510,6 +541,7 @@ public class MainMenuDemoUI : MonoBehaviour
         titleRect.offsetMax = new Vector2(-50f, 0f);
 
         TextMeshProUGUI headerTitle = titleTxtObj.GetComponent<TextMeshProUGUI>();
+        modalHeaderTitle = headerTitle;
         if (fontAsset != null) headerTitle.font = fontAsset;
         headerTitle.text = LocalizationManager.Get("UI_GUIDE_HEADER_TITLE", "JAK GRAĆ • PORADNIK BASTIONU");
         headerTitle.fontSize = 20f; // GEMINI.md: 20 pt nagłówek
@@ -545,7 +577,8 @@ public class MainMenuDemoUI : MonoBehaviour
         for (int i = 0; i < cards.Count; i++)
         {
             int cardIdx = i;
-            GameObject tabBtnObj = CreateSimpleButton(tabsContainer.transform, $"Tab_{i}", cards[i].tabTitle, fontAsset, 14f, new Vector2(180f, 36f));
+            string tabLabel = LocalizationManager.Get($"GUIDE_TAB_{i}", cards[i].tabTitle);
+            GameObject tabBtnObj = CreateSimpleButton(tabsContainer.transform, $"Tab_{i}", tabLabel, fontAsset, 14f, new Vector2(180f, 36f));
             Button tabBtn = tabBtnObj.GetComponent<Button>();
             tabBtn.onClick.AddListener(() => ShowCard(cardIdx));
             tabButtons.Add(tabBtn);
@@ -646,7 +679,8 @@ public class MainMenuDemoUI : MonoBehaviour
         modalBtnNext.onClick.AddListener(NextCard);
 
         GameObject btnCloseFooterObj = CreateSimpleButton(navBtnContainer.transform, "Btn_CloseFooter", LocalizationManager.Get("UI_GUIDE_BTN_CLOSE", "Zamknij"), fontAsset, 14f, new Vector2(110f, 36f));
-        btnCloseFooterObj.GetComponent<Button>().onClick.AddListener(CloseHowToPlay);
+        modalBtnCloseFooter = btnCloseFooterObj.GetComponent<Button>();
+        modalBtnCloseFooter.onClick.AddListener(CloseHowToPlay);
 
         howToPlayModal = modalObj;
     }

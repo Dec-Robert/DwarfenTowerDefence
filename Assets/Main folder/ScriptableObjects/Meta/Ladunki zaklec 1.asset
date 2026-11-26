@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bad5c619e7c79409ba5231814591c5, type: 3}
+  m_Name: Ladunki zaklec 1
+  m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
+  id: ladunki_zaklec_1
+  upgradeName: Ladunki zaklec 1
+  category: 6
+  description: "Ka\u017Cde zakl\u0119cia posiadaj\u0105ce \u0142adunki dostaje 1\n\u0142adunek
+    wi\u0119cej."
+  icon: {fileID: 0}
+  cost: 100
+  nodePosition: {x: 0, y: 0}
+  isUnlocked: 0
+  prerequisites:
+  - {fileID: 11400000, guid: 4b916ce7db25dc5419e142f90d7fe4ca, type: 2}
+  effectType: 132
+  effectValue: 1
+  effectValue2: 0
+  targetBuilding: {fileID: 0}
+  hasVariants: 0
+  isVariantOption: 0
+  variantA: {fileID: 0}
+  variantB: {fileID: 0}

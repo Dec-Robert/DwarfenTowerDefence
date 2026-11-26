@@ -415,7 +415,7 @@ public class ToolWorkshopResearchTests
         Assert.IsFalse(rowRoots[3].activeSelf);
         Assert.IsFalse(rowRoots[4].activeSelf);
 
-        Assert.AreEqual("Farm", txtSelectedBuilding.text);
+        Assert.AreEqual(farm.DisplayName, txtSelectedBuilding.text);
         Assert.AreEqual("Ukończone 0/2", txtProgress.text);
         StringAssert.Contains("Nieaktywny (2/3)", txtRequiredWorkers.text);
 
@@ -443,7 +443,7 @@ public class ToolWorkshopResearchTests
 
         // Przelaczenie na zakladke Mines
         tabButtons[1].onClick.Invoke();
-        Assert.AreEqual("Mines", txtSelectedBuilding.text);
+        Assert.AreEqual(mines.DisplayName, txtSelectedBuilding.text);
         StringAssert.Contains("pasma górskiego", txtEffects.text);
     }
 

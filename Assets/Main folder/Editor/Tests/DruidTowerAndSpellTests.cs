@@ -168,4 +168,95 @@ public class DruidTowerAndSpellTests
         Assert.IsFalse(tower.CanRebuild(out _));
         Assert.IsFalse(tower.TryRebuild());
     }
+
+    [Test]
+    public void DruidCavePrefab_HasConfiguredEntityVisualsLightAndSpawnerDefaults()
+    {
+        var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Main folder/Prefabs/Buildings/Druid cave prefab.prefab");
+        Assert.IsNotNull(prefab, "Brak prefabu Druid cave prefab.prefab");
+
+        var entity = prefab.GetComponent<DruidTowerEntity>();
+        Assert.IsNotNull(entity, "Prefab musi posiadać komponent DruidTowerEntity.");
+        Assert.IsNotNull(entity.data, "DruidTowerEntity musi mieć przypisany asset BuildingData.");
+        Assert.AreEqual(BuildingType.Unique, entity.data.type);
+
+        Assert.IsNotNull(entity.ruinedVisual, "Brak przypisanego ruinedVisual.");
+        Assert.IsNotNull(entity.activeVisual, "Brak przypisanego activeVisual.");
+        Assert.IsTrue(entity.ruinedVisual.activeSelf, "ruinedVisual powinien być domyślnie aktywny.");
+        Assert.IsFalse(entity.activeVisual.activeSelf, "activeVisual powinien być domyślnie nieaktywny.");
+        Assert.AreEqual(0.65f, entity.ruinedVisual.transform.localScale.y, 0.001f);
+
+        var settlementLight = prefab.GetComponentInChildren<SettlementLight>(true);
+        Assert.IsNotNull(settlementLight, "Prefab musi posiadać SettlementLight.");
+        Assert.IsFalse(settlementLight.CastShadows);
+        Assert.IsNotNull(settlementLight.TargetLight);
+        Assert.IsFalse(settlementLight.TargetLight.enabled);
+
+        var spawnerGo = Track(new GameObject("TestDruidSpawner"));
+        var spawner = spawnerGo.AddComponent<DruidTowerSpawner>();
+        spawner.EnsureDefaultAssetsLoaded();
+        Assert.AreEqual(prefab, spawner.druidTowerPrefab);
+        Assert.AreEqual(entity.data, spawner.druidTowerBuildingData);
+    }
+
+    [Test]
+    public void Spawner_IgnoreMetaUnlockForTesting_WorksEvenWhenDevRunModeIsNone()
+    {
+        try
+        {
+            DevRunConfig.SetTestOverride(true, DevRunMode.None);
+            var spawnerGo = Track(new GameObject("TestDruidSpawner_Bypass"));
+            var spawner = spawnerGo.AddComponent<DruidTowerSpawner>();
+            spawner.ignoreMetaUnlockForTesting = true;
+
+            Assert.IsFalse(DruidTowerSpawner.IsMetaUnlocked());
+            Assert.IsTrue(spawner.HasRequiredMetaUnlock(), "Flaga ignoreMetaUnlockForTesting powinna działać także przy aktywnym DevRunMode.None.");
+            spawner.ignoreMetaUnlockForTesting = false;
+            Assert.IsFalse(spawner.HasRequiredMetaUnlock());
+        }
+        finally
+        {
+            DevRunConfig.ClearTestOverride();
+        }
+    }
+
+    [Test]
+    public void DruidTowerWindowUI_SwitchesBetweenRebuildDraftAndMainModalsByState()
+    {
+        var root = Track(new GameObject("Pnl_DruidCave"));
+        var rebuild = Track(new GameObject("Pnl_RebuildModal"));
+        var choice = Track(new GameObject("Pnl_SpellChoiceModal"));
+        var main = Track(new GameObject("Pnl_MainSpellModal"));
+
+        rebuild.transform.SetParent(root.transform, false);
+        choice.transform.SetParent(root.transform, false);
+        main.transform.SetParent(root.transform, false);
+
+        // Symulacja błędnego stanu ze sceny: Pnl_MainSpellModal aktywny na starcie
+        rebuild.SetActive(false);
+        choice.SetActive(false);
+        main.SetActive(true);
+
+        var ui = root.AddComponent<DruidTowerWindowUI>();
+        var towerGo = Track(new GameObject("TestDruidTower_UI"));
+        var tower = towerGo.AddComponent<DruidTowerEntity>();
+
+        tower.SetStateForTesting(DruidTowerState.Ruined);
+        ui.Setup(tower);
+        Assert.IsTrue(rebuild.activeSelf, "Dla stanu Ruined powinien otworzyć się Pnl_RebuildModal.");
+        Assert.IsFalse(choice.activeSelf);
+        Assert.IsFalse(main.activeSelf);
+
+        tower.SetStateForTesting(DruidTowerState.RebuiltPendingDraft);
+        ui.Refresh();
+        Assert.IsFalse(rebuild.activeSelf);
+        Assert.IsTrue(choice.activeSelf, "Dla stanu RebuiltPendingDraft powinien otworzyć się Pnl_SpellChoiceModal.");
+        Assert.IsFalse(main.activeSelf);
+
+        tower.SetStateForTesting(DruidTowerState.Active);
+        ui.Refresh();
+        Assert.IsFalse(rebuild.activeSelf);
+        Assert.IsFalse(choice.activeSelf);
+        Assert.IsTrue(main.activeSelf, "Dla stanu Active powinien otworzyć się Pnl_MainSpellModal.");
+    }
 }

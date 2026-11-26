@@ -49,7 +49,6 @@ public class DruidTowerWindowUI : MonoBehaviour
     [SerializeField] private GameObject cardSpellTierPrefab;
 
     private DruidTowerEntity currentTower;
-    private bool listenersBound;
     private bool resourceEventsSubscribed;
     private readonly List<SingleResourceUI> repairCostItems = new List<SingleResourceUI>();
     private readonly List<SpellChoiceCardUI> choiceCardItems = new List<SpellChoiceCardUI>();
@@ -62,24 +61,24 @@ public class DruidTowerWindowUI : MonoBehaviour
 
     public void AutoBindReferences()
     {
-        // 1. Modal Odbudowy
-        pnlRebuildModal ??= FindGO("Pnl_RebuildModal");
-        txtRebuildTitle ??= FindTMP("Pnl_RebuildModal/Header/Txt_Title");
-        btnRebuildClose ??= FindButton("Pnl_RebuildModal/Header/Btn_Close");
-        txtRebuildDescription ??= FindTMP("Pnl_RebuildModal/Body/Txt_Description");
-        txtRebuildReqSettlement ??= FindTMP("Pnl_RebuildModal/Body/Pnl_Requirements/Txt_ReqSettlement");
+        // 1. Modal Odbudowy (jawne == null zamiast ??=, bo UnityEngine.Object ma przeciążony operator ==)
+        if (pnlRebuildModal == null) pnlRebuildModal = FindGO("Pnl_RebuildModal");
+        if (txtRebuildTitle == null) txtRebuildTitle = FindTMP("Pnl_RebuildModal/Header/Txt_Title");
+        if (btnRebuildClose == null) btnRebuildClose = FindButton("Pnl_RebuildModal/Header/Btn_Close");
+        if (txtRebuildDescription == null) txtRebuildDescription = FindTMP("Pnl_RebuildModal/Body/Txt_Description");
+        if (txtRebuildReqSettlement == null) txtRebuildReqSettlement = FindTMP("Pnl_RebuildModal/Body/Pnl_Requirements/Txt_ReqSettlement");
         if (pnlRepairContainer == null)
         {
             var repairGo = FindGO("Pnl_RebuildModal/Body/Pnl_Requirements/Pnl_RepairCost/Pnl_Repair");
             if (repairGo != null) pnlRepairContainer = repairGo.transform;
         }
-        btnRebuild ??= FindButton("Pnl_RebuildModal/Body/Btn_Rebuild");
-        txtRebuildButtonLabel ??= FindTMP("Pnl_RebuildModal/Body/Btn_Rebuild/Txt_Label");
+        if (btnRebuild == null) btnRebuild = FindButton("Pnl_RebuildModal/Body/Btn_Rebuild");
+        if (txtRebuildButtonLabel == null) txtRebuildButtonLabel = FindTMP("Pnl_RebuildModal/Body/Btn_Rebuild/Txt_Label");
 
         // 2. Modal Wyboru
-        pnlSpellChoiceModal ??= FindGO("Pnl_SpellChoiceModal");
-        txtChoiceTitle ??= FindTMP("Pnl_SpellChoiceModal/Pnl_Window/Txt_Title");
-        txtChoicePrompt ??= FindTMP("Pnl_SpellChoiceModal/Pnl_Window/Body/Txt_Prompt");
+        if (pnlSpellChoiceModal == null) pnlSpellChoiceModal = FindGO("Pnl_SpellChoiceModal");
+        if (txtChoiceTitle == null) txtChoiceTitle = FindTMP("Pnl_SpellChoiceModal/Pnl_Window/Txt_Title");
+        if (txtChoicePrompt == null) txtChoicePrompt = FindTMP("Pnl_SpellChoiceModal/Pnl_Window/Body/Txt_Prompt");
         if (pnlCardsRow == null)
         {
             var rowGo = FindGO("Pnl_SpellChoiceModal/Pnl_Window/Body/Pnl_CardsRow");
@@ -87,15 +86,15 @@ public class DruidTowerWindowUI : MonoBehaviour
         }
 
         // 3. Modal Główny
-        pnlMainSpellModal ??= FindGO("Pnl_MainSpellModal");
-        txtMainTitle ??= FindTMP("Pnl_MainSpellModal/Header/Txt_Title");
-        btnMainClose ??= FindButton("Pnl_MainSpellModal/Header/Btn_Close");
-        imgMainSpellIcon ??= FindImage("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Img_SpellIcon");
-        txtMainSpellDescription ??= FindTMP("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Pnl_SummaryText/Txt_SpellDescription");
-        txtMainSpellDamage ??= FindTMP("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Pnl_SummaryText/Txt_SpellDamage");
-        txtMainSpellStats ??= FindTMP("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Pnl_SummaryText/Txt_SpellStats");
-        txtMainCastHint ??= FindTMP("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Pnl_SummaryText/Txt_CastHint");
-        secUpgradePaths ??= FindGO("Pnl_MainSpellModal/Body/Sec_UpgradePaths");
+        if (pnlMainSpellModal == null) pnlMainSpellModal = FindGO("Pnl_MainSpellModal");
+        if (txtMainTitle == null) txtMainTitle = FindTMP("Pnl_MainSpellModal/Header/Txt_Title");
+        if (btnMainClose == null) btnMainClose = FindButton("Pnl_MainSpellModal/Header/Btn_Close");
+        if (imgMainSpellIcon == null) imgMainSpellIcon = FindImage("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Img_SpellIcon");
+        if (txtMainSpellDescription == null) txtMainSpellDescription = FindTMP("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Pnl_SummaryText/Txt_SpellDescription");
+        if (txtMainSpellDamage == null) txtMainSpellDamage = FindTMP("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Pnl_SummaryText/Txt_SpellDamage");
+        if (txtMainSpellStats == null) txtMainSpellStats = FindTMP("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Pnl_SummaryText/Txt_SpellStats");
+        if (txtMainCastHint == null) txtMainCastHint = FindTMP("Pnl_MainSpellModal/Body/Pnl_SpellSummary/Pnl_SummaryText/Txt_CastHint");
+        if (secUpgradePaths == null) secUpgradePaths = FindGO("Pnl_MainSpellModal/Body/Sec_UpgradePaths");
         if (pnlLinearTiers == null)
         {
             var tiersGo = FindGO("Pnl_MainSpellModal/Body/Sec_UpgradePaths/Pnl_LinearTiers");
@@ -105,9 +104,6 @@ public class DruidTowerWindowUI : MonoBehaviour
 
     private void BindStaticListeners()
     {
-        if (listenersBound) return;
-        listenersBound = true;
-
         if (btnRebuildClose != null)
         {
             btnRebuildClose.onClick.RemoveAllListeners();
@@ -129,11 +125,14 @@ public class DruidTowerWindowUI : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationManager.OnLanguageChanged -= Refresh;
+        LocalizationManager.OnLanguageChanged += Refresh;
         SubscribeResourceEvents();
     }
 
     private void OnDisable()
     {
+        LocalizationManager.OnLanguageChanged -= Refresh;
         UnsubscribeResourceEvents();
     }
 
@@ -221,7 +220,7 @@ public class DruidTowerWindowUI : MonoBehaviour
             txtRebuildTitle.text = LocalizationManager.Get("DRUID_CAVE_RUINED_TITLE", "Zawalona Jama");
 
         if (txtRebuildDescription != null)
-            txtRebuildDescription.text = "Starożytna, zawalona jama szalonego druida. Oczyść wejście i odbuduj ją, aby poznać potężne zaklęcie wspierające obronę podczas nocy.";
+            txtRebuildDescription.text = LocalizationManager.Get("DRUID_CAVE_RUINED_DESC", "Starożytna, zawalona jama szalonego druida. Oczyść wejście i odbuduj ją, aby poznać potężne zaklęcie wspierające obronę podczas nocy.");
 
         bool isSettled = currentTower.IsChunkSettled();
         bool canRebuild = currentTower.CanRebuild(out _);
@@ -229,12 +228,20 @@ public class DruidTowerWindowUI : MonoBehaviour
         if (txtRebuildReqSettlement != null)
         {
             txtRebuildReqSettlement.text = isSettled
-                ? "• Teren zasiedlony posterunkiem (Spełniono)"
-                : "• Wymagane: Zasiedl ten teren posterunkiem, aby odblokować odbudowę";
+                ? LocalizationManager.Get("DRUID_CAVE_REQ_SETTLED", "• Teren zasiedlony posterunkiem (Spełniono)")
+                : LocalizationManager.Get("DRUID_CAVE_REQ_UNSETTLED", "• Wymagane: Zasiedl ten teren posterunkiem, aby odblokować odbudowę");
             txtRebuildReqSettlement.color = isSettled ? new Color(0.55f, 0.92f, 0.62f) : new Color(0.95f, 0.55f, 0.45f);
         }
 
         RefreshRepairCostGrid();
+
+        var txtReqTitle = FindTMP("Pnl_RebuildModal/Body/Pnl_Requirements/Txt_ReqTitle");
+        if (txtReqTitle != null)
+            txtReqTitle.text = LocalizationManager.Get("DRUID_CAVE_REQ_TITLE", "Wymagania");
+
+        var txtRepairText = FindTMP("Pnl_RebuildModal/Body/Pnl_Requirements/Pnl_RepairCost/Txt_RepairText");
+        if (txtRepairText != null)
+            txtRepairText.text = LocalizationManager.Get("DRUID_CAVE_REPAIR_COST_LABEL", "Koszt odbudowy:");
 
         if (btnRebuild != null) btnRebuild.interactable = canRebuild;
         if (txtRebuildButtonLabel != null) txtRebuildButtonLabel.text = LocalizationManager.Get("DRUID_CAVE_REBUILD_BTN", "Odbuduj");
@@ -387,7 +394,10 @@ public class DruidTowerWindowUI : MonoBehaviour
         if (spell == null) return;
 
         if (txtMainTitle != null)
-            txtMainTitle.text = $"{spell.spellName} — Jama Druida";
+        {
+            string caveName = LocalizationManager.Get("BUILDING_JAMA_DRUIDA_NAME", "Jama Druida");
+            txtMainTitle.text = string.Format(LocalizationManager.Get("DRUID_CAVE_MAIN_TITLE_FMT", "{0} — {1}"), spell.DisplayName, caveName);
+        }
 
         if (imgMainSpellIcon != null)
         {
@@ -396,16 +406,24 @@ public class DruidTowerWindowUI : MonoBehaviour
         }
 
         if (txtMainSpellDescription != null)
-            txtMainSpellDescription.text = spell.description;
+            txtMainSpellDescription.text = spell.DisplayDescription;
 
         if (txtMainSpellDamage != null)
             txtMainSpellDamage.text = SpellChoiceCardUI.FormatDamageText(spell.damageType, currentTower.GetEffectiveDamage());
 
         if (txtMainSpellStats != null)
-            txtMainSpellStats.text = $"Zasięg: {currentTower.GetEffectiveRadius():0.0}  |  Odnowienie: {currentTower.GetEffectiveCooldown():0.0}s  |  {FormatLimitMode(spell)}";
+            txtMainSpellStats.text = string.Format(
+                LocalizationManager.Get("DRUID_CAVE_MAIN_STATS_FMT", "Zasięg: {0:0.0}  |  Odnowienie: {1:0.0}s  |  {2}"),
+                currentTower.GetEffectiveRadius(),
+                currentTower.GetEffectiveCooldown(),
+                FormatLimitMode(spell));
 
         if (txtMainCastHint != null)
-            txtMainCastHint.text = "W nocy aktywuj zaklęcie w menu zaklęć lub klawiszem [Q].";
+            txtMainCastHint.text = LocalizationManager.Get("DRUID_CAVE_CAST_HINT", "W nocy aktywuj zaklęcie w menu zaklęć lub klawiszem [Q].");
+
+        var txtLinearTitle = FindTMP("Pnl_MainSpellModal/Body/Sec_UpgradePaths/Txt_LinearTitle");
+        if (txtLinearTitle != null)
+            txtLinearTitle.text = LocalizationManager.Get("DRUID_CAVE_LINEAR_TITLE", "Wzmocnienie czarnoksięstwa");
 
         RefreshLinearTierCards(spell);
     }
@@ -466,7 +484,9 @@ public class DruidTowerWindowUI : MonoBehaviour
                 canAfford,
                 singleResourcePrefab,
                 resourceVisuals,
-                () => currentTower?.TryUpgradeNextLinearTier());
+                () => currentTower?.TryUpgradeNextLinearTier(),
+                spell.spellId,
+                i);
         }
 
         if (pnlLinearTiers is RectTransform rt)
@@ -484,9 +504,9 @@ public class DruidTowerWindowUI : MonoBehaviour
     {
         return spell.castLimitMode switch
         {
-            SpellCastLimitMode.LimitedUsesPerNight => $"{spell.maxUsesPerNight}/noc",
-            SpellCastLimitMode.RechargeableCharges => $"{spell.maxCharges} ład. ({spell.chargeRechargeSeconds:0}s)",
-            SpellCastLimitMode.CooldownOnly => $"CD {spell.cooldownSeconds:0}s",
+            SpellCastLimitMode.LimitedUsesPerNight => string.Format(LocalizationManager.Get("SPELL_LIMIT_PER_NIGHT_FMT", "{0}/noc"), spell.maxUsesPerNight),
+            SpellCastLimitMode.RechargeableCharges => string.Format(LocalizationManager.Get("SPELL_LIMIT_CHARGES_FMT", "{0} ład. ({1:0}s)"), spell.maxCharges, spell.chargeRechargeSeconds),
+            SpellCastLimitMode.CooldownOnly => string.Format(LocalizationManager.Get("SPELL_LIMIT_COOLDOWN_FMT", "CD {0:0}s"), spell.cooldownSeconds),
             _ => ""
         };
     }

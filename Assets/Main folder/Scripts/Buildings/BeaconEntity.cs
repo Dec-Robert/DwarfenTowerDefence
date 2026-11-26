@@ -164,7 +164,35 @@ public class BeaconEntity : BuildingEntity
     {
         if (levelData == null || levelData.levelIndex <= 1) return 0;
         int n = GetCurrentN();
-        return levelData.GetCoalCost(n);
+        int rawCost = levelData.GetCoalCost(n);
+        if (rawCost <= 0) return 0;
+
+        if (levelData.levelIndex >= 3 && MetaUpgradeManager.Instance != null)
+        {
+            float discount = Mathf.Clamp01(MetaUpgradeManager.Instance.GetValue(MetaEffectType.HearthHighLevelCoalDiscount));
+            if (discount > 0f)
+            {
+                return Mathf.Max(1, Mathf.RoundToInt(rawCost * (1f - discount)));
+            }
+        }
+
+        return rawCost;
+    }
+
+    public static bool IsLevelUnlocked(int levelIndex)
+    {
+        if (levelIndex <= 3) return true;
+        if (MetaUpgradeManager.Instance == null) return true;
+        return MetaUpgradeManager.Instance.IsUnlocked(MetaEffectType.HearthUnlockHighLevels);
+    }
+
+    public static float GetEffectiveNextDayProductionBonus(HearthLevelData levelData)
+    {
+        if (levelData == null) return 0f;
+        float metaBonus = MetaUpgradeManager.Instance != null
+            ? MetaUpgradeManager.Instance.GetHearthNextDayProductionBonus(levelData.levelIndex)
+            : 0f;
+        return levelData.nextDayProductionBonus + metaBonus;
     }
 
     /// <summary>
@@ -174,6 +202,12 @@ public class BeaconEntity : BuildingEntity
     public static bool TryIgniteAndStartNight(int levelIndex)
     {
         EnsureTimeSubscription();
+
+        if (!IsLevelUnlocked(levelIndex))
+        {
+            Debug.LogWarning($"[BeaconEntity] Poziom Paleniska {levelIndex} jest zablokowany w meta-progresji!");
+            return false;
+        }
 
         HearthConfigSO config = GetConfig();
         HearthLevelData levelData = config.GetLevelData(levelIndex);
@@ -198,7 +232,7 @@ public class BeaconEntity : BuildingEntity
 
         // Poprzedni dzień został już rozliczony przy wejściu w Dusk; kolejna produkcja nastąpi jutro
         ActiveDayProductionBonus = 0f;
-        PendingNextDayProductionBonus = levelData.nextDayProductionBonus;
+        PendingNextDayProductionBonus = GetEffectiveNextDayProductionBonus(levelData);
 
         // Modyfikatory wrogów, run i eteru na nadchodzącą noc
         ActiveNightEnemyStatsBonus = levelData.enemyStatsBonus;

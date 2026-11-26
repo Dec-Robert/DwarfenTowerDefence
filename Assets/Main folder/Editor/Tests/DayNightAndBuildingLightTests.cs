@@ -159,7 +159,7 @@ public class DayNightAndBuildingLightTests
         Assert.IsFalse(gateLight.CastShadows);
         checkedPrefabs++;
 
-        Assert.AreEqual(21, checkedPrefabs, "Oczekiwano 21 aktywnych prefabów (14 budynków + 6 wież + 1 brama).");
+        Assert.AreEqual(22, checkedPrefabs, "Oczekiwano 22 aktywnych prefabów (15 budynków + 6 wież + 1 brama).");
     }
 
     [Test]

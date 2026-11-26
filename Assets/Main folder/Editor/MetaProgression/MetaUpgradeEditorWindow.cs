@@ -47,6 +47,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
     private static readonly Color COLOR_UNLOCKED    = new Color(0.20f, 0.58f, 0.24f, 1f);
     private static readonly Color COLOR_LOCKED      = new Color(0.32f, 0.32f, 0.35f, 1f);
     private static readonly Color COLOR_AVAILABLE   = new Color(0.20f, 0.42f, 0.65f, 1f);
+    private static readonly Color COLOR_PLACEHOLDER = new Color(0.42f, 0.25f, 0.48f, 1f);
     private static readonly Color COLOR_SELECTED    = new Color(0.95f, 0.78f, 0.15f, 1f);
     private static readonly Color COLOR_SEARCH_HIT  = new Color(0.20f, 0.85f, 0.95f, 1f);
 
@@ -87,6 +88,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
     private float   zoomScale = 1f;
     private bool    snapToGrid = false;
     private string  searchQuery = "";
+    private int     categoryFilterIndex = -1; // -1 = wszystkie kategorie
 
     // Panning
     private bool    isPanning;
@@ -496,6 +498,20 @@ public class MetaUpgradeEditorWindow : EditorWindow
             x += 24f;
         }
 
+        // Filtr kategorii
+        var categoryNames = Enum.GetNames(typeof(MetaUpgradeCategory));
+        string[] filterLabels = new string[categoryNames.Length + 1];
+        filterLabels[0] = "Kat: Wszystkie";
+        for (int i = 0; i < categoryNames.Length; i++) filterLabels[i + 1] = categoryNames[i];
+
+        int newCatIdx = EditorGUI.Popup(new Rect(x, 5, 118, 18), categoryFilterIndex + 1, filterLabels, EditorStyles.toolbarPopup) - 1;
+        if (newCatIdx != categoryFilterIndex)
+        {
+            categoryFilterIndex = newCatIdx;
+            Repaint();
+        }
+        x += 122f;
+
         // Zoom info
         GUI.Label(new Rect(x, 4, 72, 22), $"Zoom: {zoomScale:F2}x", EditorStyles.miniLabel);
 
@@ -576,7 +592,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
 
     private void DrawEdges()
     {
-        bool hasSearch = !string.IsNullOrWhiteSpace(searchQuery);
+        bool hasSearch = !string.IsNullOrWhiteSpace(searchQuery) || categoryFilterIndex >= 0;
 
         foreach (var toNode in nodes)
         {
@@ -670,7 +686,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
 
     private void DrawNodes(Rect localGraphRect)
     {
-        bool hasSearch = !string.IsNullOrWhiteSpace(searchQuery);
+        bool hasSearch = !string.IsNullOrWhiteSpace(searchQuery) || categoryFilterIndex >= 0;
         Vector2 mousePos = Event.current.mousePosition;
 
         float baseFontSize = Mathf.Clamp(zoomScale * 11.5f, 7f, 14f);
@@ -723,6 +739,11 @@ public class MetaUpgradeEditorWindow : EditorWindow
                 borderColor = COLOR_SEARCH_HIT;
                 borderThickness = 2.5f;
             }
+            else if (node.upgrade.IsPlaceholder)
+            {
+                borderColor = new Color(0.85f, 0.45f, 0.95f, 0.9f);
+                borderThickness = 2f;
+            }
             else if (node.upgrade.hasVariants)
             {
                 borderColor = new Color(0.72f, 0.45f, 0.95f, 0.9f);
@@ -746,13 +767,19 @@ public class MetaUpgradeEditorWindow : EditorWindow
                 displayTitle = "🔀 " + displayTitle;
             }
 
-            float rightBadgeMargin = (node.upgrade.hasVariants || node.upgrade.isVariantOption) && zoomScale > 0.4f ? 36f : 12f;
+            float rightBadgeMargin = (node.upgrade.IsPlaceholder || node.upgrade.hasVariants || node.upgrade.isVariantOption) && zoomScale > 0.4f ? 42f : 12f;
             Rect nameRect = new Rect(
                 screenRect.x + 6f, screenRect.y + 4f,
                 screenRect.width - rightBadgeMargin, screenRect.height * 0.45f);
             GUI.Label(nameRect, displayTitle, cachedNameStyle);
 
-            if (node.upgrade.hasVariants && zoomScale > 0.4f)
+            if (node.upgrade.IsPlaceholder && zoomScale > 0.4f)
+            {
+                Rect badgeRect = new Rect(screenRect.xMax - 82f, screenRect.y + 3f, 78f, 13f);
+                EditorGUI.DrawRect(badgeRect, new Color(0.52f, 0.18f, 0.62f, 0.95f));
+                GUI.Label(badgeRect, "PLACEHOLDER", cachedIdBadgeStyle);
+            }
+            else if (node.upgrade.hasVariants && zoomScale > 0.4f)
             {
                 Rect badgeRect = new Rect(screenRect.xMax - 32f, screenRect.y + 3f, 28f, 13f);
                 EditorGUI.DrawRect(badgeRect, new Color(0.55f, 0.28f, 0.85f, 0.95f));
@@ -832,6 +859,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
 
     private Color GetNodeColor(UpgradeNode node)
     {
+        if (node.upgrade.IsPlaceholder)         return COLOR_PLACEHOLDER;
         if (node.upgrade.isUnlocked)            return COLOR_UNLOCKED;
         if (node.upgrade.ArePrerequisitesMet()) return COLOR_AVAILABLE;
         return COLOR_LOCKED;
@@ -891,6 +919,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
                 string newId   = EditorGUILayout.TextField("ID", upgrade.id);
                 GUI.SetNextControlName("SidePanel_UpgradeNameField");
                 string newName = EditorGUILayout.TextField("Nazwa", upgrade.upgradeName);
+                MetaUpgradeCategory newCategory = (MetaUpgradeCategory)EditorGUILayout.EnumPopup("Kategoria", upgrade.category);
 
                 if (focusNameFieldNextFrame)
                 {
@@ -916,33 +945,9 @@ public class MetaUpgradeEditorWindow : EditorWindow
                 EditorGUILayout.Space(8);
                 EditorGUILayout.LabelField("─── Efekt ───────────────────────", EditorStyles.miniLabel);
 
-                MetaEffectType newEffectType = (MetaEffectType)EditorGUILayout.EnumPopup("Typ Efektu", upgrade.effectType);
-                float newEffectValue  = upgrade.effectValue;
-                float newEffectValue2 = upgrade.effectValue2;
-                BuildingData newTargetBuilding = upgrade.targetBuilding;
-
-                if (newEffectType != MetaEffectType.None)
-                {
-                    newEffectValue = EditorGUILayout.FloatField(
-                        GetEffectValueLabel(newEffectType), upgrade.effectValue);
-
-                    if (newEffectType == MetaEffectType.EliteChanceBoost)
-                    {
-                        newEffectValue2 = EditorGUILayout.FloatField(
-                            "Od Fali (effectValue2)", upgrade.effectValue2);
-                    }
-
-                    bool needsBuilding =
-                        newEffectType == MetaEffectType.SpecificBuildingUpgradeCostReduction ||
-                        newEffectType == MetaEffectType.BuildingTerrainBonusMultiplier ||
-                        newEffectType == MetaEffectType.SpecificBuildingProductionBonus;
-
-                    if (needsBuilding)
-                    {
-                        newTargetBuilding = (BuildingData)EditorGUILayout.ObjectField(
-                            "Budynek Docelowy", upgrade.targetBuilding, typeof(BuildingData), false);
-                    }
-                }
+                DrawEffectParameters(
+                    upgrade.effectType, upgrade.effectValue, upgrade.effectValue2, upgrade.targetBuilding,
+                    out MetaEffectType newEffectType, out float newEffectValue, out float newEffectValue2, out BuildingData newTargetBuilding);
 
                 // Sekcja powiązań z MetaMapConfig
                 if (mapConfigLinks.TryGetValue(upgrade, out var links) && links.Count > 0)
@@ -967,6 +972,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
                     Undo.RecordObject(upgrade, "Edycja MetaUpgradeSO");
                     upgrade.id             = newId;
                     upgrade.upgradeName    = newName;
+                    upgrade.category       = newCategory;
                     upgrade.description    = newDesc;
                     upgrade.cost           = Mathf.Max(0, newCost);
                     upgrade.icon           = newIcon;
@@ -2097,28 +2103,9 @@ public class MetaUpgradeEditorWindow : EditorWindow
         EditorGUI.BeginChangeCheck();
         string vName = EditorGUILayout.TextField("Nazwa", variant.upgradeName);
         string vDesc = EditorGUILayout.TextField("Opis", variant.description);
-        MetaEffectType vEffect = (MetaEffectType)EditorGUILayout.EnumPopup("Typ Efektu", variant.effectType);
-        float vVal = variant.effectValue;
-        float vVal2 = variant.effectValue2;
-        BuildingData vBld = variant.targetBuilding;
-
-        if (vEffect != MetaEffectType.None)
-        {
-            vVal = EditorGUILayout.FloatField(GetEffectValueLabel(vEffect), variant.effectValue);
-            if (vEffect == MetaEffectType.EliteChanceBoost)
-            {
-                vVal2 = EditorGUILayout.FloatField("Od Fali", variant.effectValue2);
-            }
-            bool needsBuilding =
-                vEffect == MetaEffectType.SpecificBuildingUpgradeCostReduction ||
-                vEffect == MetaEffectType.BuildingTerrainBonusMultiplier ||
-                vEffect == MetaEffectType.SpecificBuildingProductionBonus;
-
-            if (needsBuilding)
-            {
-                vBld = (BuildingData)EditorGUILayout.ObjectField("Budynek Docelowy", variant.targetBuilding, typeof(BuildingData), false);
-            }
-        }
+        DrawEffectParameters(
+            variant.effectType, variant.effectValue, variant.effectValue2, variant.targetBuilding,
+            out MetaEffectType vEffect, out float vVal, out float vVal2, out BuildingData vBld);
         Sprite vIcon = (Sprite)EditorGUILayout.ObjectField("Ikona", variant.icon, typeof(Sprite), false);
 
         if (EditorGUI.EndChangeCheck())
@@ -2158,6 +2145,7 @@ public class MetaUpgradeEditorWindow : EditorWindow
         var copy = CreateInstance<MetaUpgradeSO>();
         copy.upgradeName    = nextDisplayName;
         copy.id             = GetUniqueUpgradeId(fileName);
+        copy.category       = src.category;
         copy.description    = src.description;
         copy.icon           = src.icon;
         copy.cost           = src.cost;
@@ -2884,6 +2872,10 @@ public class MetaUpgradeEditorWindow : EditorWindow
     private bool IsNodeMatchingSearch(UpgradeNode node)
     {
         if (node?.upgrade == null) return false;
+
+        if (categoryFilterIndex >= 0 && (int)node.upgrade.category != categoryFilterIndex)
+            return false;
+
         if (string.IsNullOrWhiteSpace(searchQuery)) return true;
 
         string q = searchQuery.Trim();
@@ -2983,36 +2975,122 @@ public class MetaUpgradeEditorWindow : EditorWindow
             MetaEffectType.StartingFood                         => $"+{v} jedzenia",
             MetaEffectType.BonusShifts                          => $"+{v} zmian",
             MetaEffectType.BonusWorkersPerShift                 => $"+{v} prac./zmianę",
+            MetaEffectType.BonusProductionWorkers               => $"+{v} slotów prod.",
+            MetaEffectType.BonusTowerCrewSlots                  => $"+{v} slotów wież",
+            MetaEffectType.RestoreStarterRuinedHouses           => "Odbudowuje ruiny startowe (0,0)",
+            MetaEffectType.HousingStartPopulation_Dwarves       => $"+{v} krasnoludów na start",
             MetaEffectType.BuildingPassiveEfficiency            => $"+{v * 100:F0}% pasywnie",
             MetaEffectType.BuildingWorkerEfficiencyBonus        => $"+{v * 100:F0}% za prac.",
             MetaEffectType.BuildingTerrainBonusMultiplier       => $"x{v} bonus terenu{bld}",
+            MetaEffectType.SpecificBuildingConstructionCostReduction => $"-{v * 100:F0}% koszt budowy{bld}",
             MetaEffectType.SpecificBuildingUpgradeCostReduction => $"-{v * 100:F0}% koszt ulepsz.{bld}",
             MetaEffectType.SpecificBuildingProductionBonus      => $"+{v * 100:F0}% produkcji{bld}",
+            MetaEffectType.SpecificBuildingTerrainFlatBonus     => $"+{v} on-top / +{upgrade.effectValue2} adj{bld}",
+            MetaEffectType.SpecificBuildingFlatProduction       => $"+{v} baz. produkcji{bld}",
+            MetaEffectType.ProductionSynergy_Human              => $"+{v * 100:F0}% prod. (4+ Ludzi)",
+            MetaEffectType.ProductionSynergy_Elf                => $"+{v * 100:F0}%/Elfa (Tartak/Farma)",
             MetaEffectType.HousingStartPopulation               => $"+{v} mieszk. (start)",
             MetaEffectType.HousingMaxResidents                  => $"+{v} max pop (wszyscy)",
             MetaEffectType.HousingMaxResidents_Humans           => $"+{v} max pop (ludzie)",
             MetaEffectType.HousingMaxResidents_Elves            => $"+{v} max pop (elfy)",
             MetaEffectType.HousingMaxResidents_Dwarves          => $"+{v} max pop (krasnoludy)",
-            MetaEffectType.EliteChanceBoost                     => $"+{v * 100:F0}% elit (od f.{upgrade.effectValue2})",
-            MetaEffectType.EnemySurvivorPenaltyArmor            => $"-{v * 100:F0}% pancerz ocalałych",
-            MetaEffectType.EnemySurvivorPenaltySpeed            => $"-{v * 100:F0}% prędkość ocalałych",
-            MetaEffectType.EnemySurvivorPenaltyDodge            => $"-{v * 100:F0}% dodge ocalałych",
-            MetaEffectType.TowerNoAmmoNightPenalty              => $"x{v} stats bez amunicji",
+            MetaEffectType.TowerGlobalArmorPenetration          => $"+{v * 100:F0}% Armor Pen wież",
+            MetaEffectType.TowerGlobalMagicPenetration          => $"+{v * 100:F0}% Magic Pen wież",
+            MetaEffectType.TowerGlobalDamage                    => $"+{v} dmg wież",
+            MetaEffectType.TowerGlobalFireRate                  => $"+{v * 100:F0}% szybkostrz. wież",
+            MetaEffectType.TowerDraftUnlock                     => "Draft nowej wieży",
+            MetaEffectType.TowerCrewSynergy_Dwarf               => $"+{v * 100:F0}% dmg, +{upgrade.effectValue2 * 100:F0}% pen / Krasnol.",
+            MetaEffectType.TowerCrewSynergy_Elf                 => $"+{v * 100:F0}% zas., +{upgrade.effectValue2 * 100:F0}% kryt / Elfa",
+            MetaEffectType.TowerCrewSynergy_Human               => $"+{v * 100:F0}% wydaj. wież (4+ Ludzi)",
             MetaEffectType.ExpansionCostReduction               => $"-{v * 100:F0}% koszt ekspansji",
+            MetaEffectType.ExpeditionFreeChunkThresholdBonus    => $"+{v} limit darm. chunków",
+            MetaEffectType.ExpeditionSurveyResourceProfit       => $"+{v} sur./heks z Survey",
+            MetaEffectType.UnlockTacticalRecon                  => "Odblokowuje Zwiad (Recon)",
+            MetaEffectType.ReconResourceGatherChance            => $"{v * 100:F0}% szansy zbioru przy Zwiadzie",
+            MetaEffectType.ExpeditionExtraTerrainChance         => $"{v * 100:F0}% szansy cechy terenu (Survey)",
             MetaEffectType.CityBaseHealth                       => $"+{v} HP miasta",
             MetaEffectType.GateBaseHP                           => $"+{v} HP bram",
+            MetaEffectType.HearthUnlockHighLevels               => "Odblokowuje poziomy 4–5 Paleniska",
+            MetaEffectType.HearthHighLevelCoalDiscount          => $"-{v * 100:F0}% węgla (Palenisko poz. 3–5)",
+            MetaEffectType.HearthNextDayProductionBoost         => upgrade.effectValue2 > 0.0001f
+                                                                    ? $"Palenisko poz.4 +{v * 100:F0}%, poz.5 +{upgrade.effectValue2 * 100:F0}%"
+                                                                    : $"Palenisko poz.3–4 +{v * 100:F0}%",
             MetaEffectType.WallSystem_Solution1                 => "Mury: Baza",
             MetaEffectType.WallSystem_Solution2                 => "Mury: Linia Frontu",
             MetaEffectType.UniqueChunkUnlock                    => "Unikatowy chunk",
+            MetaEffectType.MapChunkModifier                     => "Modyfikator chunka (MetaMapConfig)",
             MetaEffectType.RuneDropChance_Uncommon              => $"+{v * 100:F0}% szansy run (Uncommon)",
             MetaEffectType.RuneDropChance_Rare                  => $"+{v * 100:F0}% szansy run (Rare)",
             MetaEffectType.RuneDropChance_Legendary             => $"+{v * 100:F0}% szansy run (Legendary)",
             MetaEffectType.RuneDropChance_Cursed                => $"+{v * 100:F0}% szansy run (Cursed)",
-            MetaEffectType.RuneTowerLimit                       => $"+{v} limit wież runicznych",
+            MetaEffectType.RuneTowerLimit                       => $"+{v} do limitu wież runicznych",
+            MetaEffectType.UnlockRuneRarity_Uncommon            => "Odblokowuje runy Uncommon",
+            MetaEffectType.UnlockRuneRarity_Rare                => "Odblokowuje runy Rare",
+            MetaEffectType.UnlockRuneRarity_Legendary           => "Odblokowuje runy Legendary",
+            MetaEffectType.UnlockRuneRarity_Cursed              => "Odblokowuje runy Cursed",
+            MetaEffectType.UnlockRuneFusion                     => "Odblokowuje łączenie run",
+            MetaEffectType.UnlockRuneTransmutation              => "Odblokowuje transmutację run",
+            MetaEffectType.UnlockCursedCrafting                 => "Odblokowuje przeklęte runy (Kuźnia)",
+            MetaEffectType.UnlockDruidTower                     => "Odblokowuje Jaskinię Druida",
             MetaEffectType.UnlockTrinityForce                   => "Odblokowuje Kuźnię Runiczną i Warsztat Narzędziowy",
+            MetaEffectType.SpellBonusCharges                    => $"+{v} max ładunków zaklęć",
+            MetaEffectType.Placeholder                          => "[PLACEHOLDER]",
             _                                                   => upgrade.effectType.ToString()
         };
     }
+
+    private void DrawEffectParameters(
+        MetaEffectType currentType,
+        float currentVal,
+        float currentVal2,
+        BuildingData currentBld,
+        out MetaEffectType newType,
+        out float newVal,
+        out float newVal2,
+        out BuildingData newBld)
+    {
+        newType = (MetaEffectType)EditorGUILayout.EnumPopup("Typ Efektu", currentType);
+        newVal  = currentVal;
+        newVal2 = currentVal2;
+        newBld  = currentBld;
+
+        if (newType == MetaEffectType.None || newType == MetaEffectType.Placeholder) return;
+
+        newVal = EditorGUILayout.FloatField(GetEffectValueLabel(newType), currentVal);
+
+        bool usesSecond =
+            newType == MetaEffectType.SpecificBuildingTerrainFlatBonus ||
+            newType == MetaEffectType.HearthNextDayProductionBoost ||
+            newType == MetaEffectType.TowerCrewSynergy_Dwarf ||
+            newType == MetaEffectType.TowerCrewSynergy_Elf;
+
+        if (usesSecond)
+        {
+            newVal2 = EditorGUILayout.FloatField(GetSecondEffectValueLabel(newType), currentVal2);
+        }
+
+        bool needsBuilding =
+            newType == MetaEffectType.SpecificBuildingConstructionCostReduction ||
+            newType == MetaEffectType.SpecificBuildingUpgradeCostReduction ||
+            newType == MetaEffectType.BuildingTerrainBonusMultiplier ||
+            newType == MetaEffectType.SpecificBuildingProductionBonus ||
+            newType == MetaEffectType.SpecificBuildingTerrainFlatBonus ||
+            newType == MetaEffectType.SpecificBuildingFlatProduction;
+
+        if (needsBuilding)
+        {
+            newBld = (BuildingData)EditorGUILayout.ObjectField("Budynek Docelowy", currentBld, typeof(BuildingData), false);
+        }
+    }
+
+    private string GetSecondEffectValueLabel(MetaEffectType type) => type switch
+    {
+        MetaEffectType.SpecificBuildingTerrainFlatBonus => "Adjacent Bonus (effectValue2)",
+        MetaEffectType.HearthNextDayProductionBoost     => "Poz.5 Bonus (effectValue2)",
+        MetaEffectType.TowerCrewSynergy_Dwarf           => "Armor Pen / Krasnol. (v2)",
+        MetaEffectType.TowerCrewSynergy_Elf             => "Crit Chance / Elfa (v2)",
+        _                                               => "effectValue2"
+    };
 
     private string GetEffectValueLabel(MetaEffectType type) => type switch
     {
@@ -3021,32 +3099,49 @@ public class MetaUpgradeEditorWindow : EditorWindow
             or MetaEffectType.StartingStone
             or MetaEffectType.StartingIron
             or MetaEffectType.StartingCoal
-            or MetaEffectType.StartingFood     => "Ilość",
-        MetaEffectType.BonusShifts
+            or MetaEffectType.StartingFood
+            or MetaEffectType.BonusShifts
             or MetaEffectType.BonusWorkersPerShift
+            or MetaEffectType.BonusProductionWorkers
+            or MetaEffectType.BonusTowerCrewSlots
             or MetaEffectType.HousingStartPopulation
+            or MetaEffectType.HousingStartPopulation_Dwarves
             or MetaEffectType.HousingMaxResidents
             or MetaEffectType.HousingMaxResidents_Humans
             or MetaEffectType.HousingMaxResidents_Elves
             or MetaEffectType.HousingMaxResidents_Dwarves
+            or MetaEffectType.ExpeditionFreeChunkThresholdBonus
+            or MetaEffectType.ExpeditionSurveyResourceProfit
             or MetaEffectType.CityBaseHealth
             or MetaEffectType.GateBaseHP
-            or MetaEffectType.RuneTowerLimit   => "Wartość (całkowita)",
+            or MetaEffectType.RuneTowerLimit
+            or MetaEffectType.SpellBonusCharges
+            or MetaEffectType.SpecificBuildingTerrainFlatBonus
+            or MetaEffectType.SpecificBuildingFlatProduction
+            or MetaEffectType.TowerGlobalDamage => "Wartość (liczba)",
         MetaEffectType.BuildingPassiveEfficiency
             or MetaEffectType.BuildingWorkerEfficiencyBonus
-            or MetaEffectType.EliteChanceBoost
-            or MetaEffectType.EnemySurvivorPenaltyArmor
-            or MetaEffectType.EnemySurvivorPenaltySpeed
-            or MetaEffectType.EnemySurvivorPenaltyDodge
             or MetaEffectType.ExpansionCostReduction
+            or MetaEffectType.SpecificBuildingConstructionCostReduction
             or MetaEffectType.SpecificBuildingUpgradeCostReduction
             or MetaEffectType.SpecificBuildingProductionBonus
+            or MetaEffectType.ProductionSynergy_Human
+            or MetaEffectType.ProductionSynergy_Elf
+            or MetaEffectType.TowerGlobalArmorPenetration
+            or MetaEffectType.TowerGlobalMagicPenetration
+            or MetaEffectType.TowerGlobalFireRate
+            or MetaEffectType.TowerCrewSynergy_Dwarf
+            or MetaEffectType.TowerCrewSynergy_Elf
+            or MetaEffectType.TowerCrewSynergy_Human
+            or MetaEffectType.ReconResourceGatherChance
+            or MetaEffectType.ExpeditionExtraTerrainChance
+            or MetaEffectType.HearthHighLevelCoalDiscount
+            or MetaEffectType.HearthNextDayProductionBoost
             or MetaEffectType.RuneDropChance_Uncommon
             or MetaEffectType.RuneDropChance_Rare
             or MetaEffectType.RuneDropChance_Legendary
             or MetaEffectType.RuneDropChance_Cursed => "Wartość (0.0–1.0 = %)",
-        MetaEffectType.TowerNoAmmoNightPenalty
-            or MetaEffectType.BuildingTerrainBonusMultiplier => "Mnożnik",
+        MetaEffectType.BuildingTerrainBonusMultiplier => "Mnożnik",
         _ => "effectValue"
     };
 }

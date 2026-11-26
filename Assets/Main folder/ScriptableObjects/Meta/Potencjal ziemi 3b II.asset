@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaUpgradeSO
   id: potencjal_ziemi_3b_ii
   upgradeName: Potencjal ziemi 3b II
+  category: 1
   description: "Wzmacnia chunk dodatkow o budynek\n(dodatkowe g\xF3ry)"
   icon: {fileID: 0}
   cost: 600
@@ -21,7 +22,7 @@ MonoBehaviour:
   isUnlocked: 0
   prerequisites:
   - {fileID: 11400000, guid: db0b12e2296276e49904eafc809561f1, type: 2}
-  effectType: 32
+  effectType: 91
   effectValue: 1
   effectValue2: 0
   targetBuilding: {fileID: 0}

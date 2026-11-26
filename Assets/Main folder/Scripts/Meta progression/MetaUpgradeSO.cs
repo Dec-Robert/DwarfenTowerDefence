@@ -31,6 +31,7 @@ public class MetaUpgradeSO : ScriptableObject
     [Header("── Identyfikacja ────────────────────────")]
     public string id;
     public string upgradeName;
+    public MetaUpgradeCategory category = MetaUpgradeCategory.General;
     [TextArea] public string description;
     public Sprite icon;
     public int cost;
@@ -98,11 +99,26 @@ public class MetaUpgradeSO : ScriptableObject
     // HELPERS (tylko edytor + runtime)
     // =========================================================================
 
+    /// <summary>Czy węzeł należy do kategorii PLACEHOLDER (ukryty w grze i pomijany przez logikę)?</summary>
+    public bool IsPlaceholder =>
+        category == MetaUpgradeCategory.PLACEHOLDER ||
+        effectType == MetaEffectType.Placeholder;
+
     /// <summary>Czy ten upgrade wymaga wskazania konkretnego budynku?</summary>
     public bool RequiresTargetBuilding =>
+        effectType == MetaEffectType.SpecificBuildingConstructionCostReduction ||
         effectType == MetaEffectType.SpecificBuildingUpgradeCostReduction ||
-        effectType == MetaEffectType.BuildingTerrainBonusMultiplier||
-        effectType == MetaEffectType.SpecificBuildingProductionBonus;
+        effectType == MetaEffectType.BuildingTerrainBonusMultiplier ||
+        effectType == MetaEffectType.SpecificBuildingProductionBonus ||
+        effectType == MetaEffectType.SpecificBuildingTerrainFlatBonus ||
+        effectType == MetaEffectType.SpecificBuildingFlatProduction;
+
+    /// <summary>Czy ten upgrade korzysta z drugiego parametru (effectValue2)?</summary>
+    public bool UsesSecondEffectValue =>
+        effectType == MetaEffectType.SpecificBuildingTerrainFlatBonus ||
+        effectType == MetaEffectType.HearthNextDayProductionBoost ||
+        effectType == MetaEffectType.TowerCrewSynergy_Dwarf ||
+        effectType == MetaEffectType.TowerCrewSynergy_Elf;
 
     /// <summary>
     /// Zwraca aktywny wariant ("A", "B" lub null) na podstawie listy odblokowanych ID.

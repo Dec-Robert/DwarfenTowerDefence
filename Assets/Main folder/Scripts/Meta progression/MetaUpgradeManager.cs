@@ -46,7 +46,33 @@ public class MetaUpgradeManager : MonoBehaviour
     public string gameSceneName = "Game scene";
 
     private readonly Dictionary<MetaEffectType, float> appliedValues = new Dictionary<MetaEffectType, float>();
+    private readonly Dictionary<MetaEffectType, float> appliedSecondaryValues = new Dictionary<MetaEffectType, float>();
     private readonly Dictionary<(MetaEffectType, string), float> buildingSpecificValues = new Dictionary<(MetaEffectType, string), float>();
+    private readonly Dictionary<(MetaEffectType, string), float> buildingSpecificSecondaryValues = new Dictionary<(MetaEffectType, string), float>();
+    private readonly Dictionary<int, float> hearthLevelProductionBonuses = new Dictionary<int, float>();
+    private int appliedGameSceneHandle = -1;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void AutoInitializeForDevRun()
+    {
+        if (!DevRunConfig.IsActive) return;
+
+        if (Instance == null)
+        {
+            var existing = FindAnyObjectByType<MetaUpgradeManager>();
+            if (existing != null)
+            {
+                Instance = existing;
+            }
+            else
+            {
+                var go = new GameObject("[MetaUpgradeManager - DEV RUN]");
+                Instance = go.AddComponent<MetaUpgradeManager>();
+            }
+        }
+
+        Instance.InitializeForDevRunIfNeeded();
+    }
 
     // =========================================================================
     // UNITY CYKL ŻYCIA
@@ -66,6 +92,12 @@ public class MetaUpgradeManager : MonoBehaviour
 
     private void Start()
     {
+        if (DevRunConfig.IsActive)
+        {
+            InitializeForDevRunIfNeeded();
+            return;
+        }
+
         // Na samym starcie gry (w Main Menu), synchronizujemy stan z SaveManagerem
         if (SaveManager.Instance != null)
         {
@@ -89,19 +121,86 @@ public class MetaUpgradeManager : MonoBehaviour
     {
         if (scene.name == gameSceneName)
         {
+            if (appliedGameSceneHandle == scene.handle) return;
+            appliedGameSceneHandle = scene.handle;
+
             Debug.Log("[MetaUpgradeManager] Wykryto scenę gry.");
+
+            if (DevRunConfig.IsActive)
+            {
+                LoadAllEditorUpgradesIfNeeded();
+            }
             
             // --- POPRAWKA: WYMUŚ SYNCHRONIZACJĘ JESZCZE RAZ ---
             if (SaveManager.Instance != null)
             {
                 SaveManager.Instance.SyncUpgradesWithSave(allUpgrades);
+                SaveManager.Instance.SyncTowersWithSave(GetAllTowers());
                 Debug.Log("[MetaUpgradeManager] Wymuszono synchronizację save'a przed grą.");
+            }
+            else if (DevRunConfig.IsActive)
+            {
+                DevRunConfig.ApplyToUpgrades(allUpgrades, DevRunConfig.Mode);
+                DevRunConfig.ApplyToTowers(GetAllTowers(), DevRunConfig.Mode, SaveManager.DefaultStarterTowerIDs);
             }
             // ----------------------------------------------------
 
             CollectValues();
             ApplyAllEffects();
         }
+        else
+        {
+            appliedGameSceneHandle = -1;
+        }
+    }
+
+    private void InitializeForDevRunIfNeeded()
+    {
+        if (!DevRunConfig.IsActive) return;
+
+        LoadAllEditorUpgradesIfNeeded();
+        List<TowerData> towers = GetAllTowers();
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SyncUpgradesWithSave(allUpgrades);
+            SaveManager.Instance.SyncTowersWithSave(towers);
+        }
+        else
+        {
+            DevRunConfig.ApplyToUpgrades(allUpgrades, DevRunConfig.Mode);
+            DevRunConfig.ApplyToTowers(towers, DevRunConfig.Mode, SaveManager.DefaultStarterTowerIDs);
+        }
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (activeScene.name == gameSceneName && appliedGameSceneHandle != activeScene.handle)
+        {
+            appliedGameSceneHandle = activeScene.handle;
+            CollectValues();
+            ApplyAllEffects();
+        }
+    }
+
+    private void LoadAllEditorUpgradesIfNeeded()
+    {
+        if (allUpgrades == null) allUpgrades = new List<MetaUpgradeSO>();
+
+#if UNITY_EDITOR
+        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:MetaUpgradeSO");
+        if (guids != null && guids.Length > 0)
+        {
+            var existingSet = new HashSet<MetaUpgradeSO>(allUpgrades);
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[i]);
+                MetaUpgradeSO upgrade = UnityEditor.AssetDatabase.LoadAssetAtPath<MetaUpgradeSO>(path);
+                if (upgrade != null && existingSet.Add(upgrade))
+                {
+                    allUpgrades.Add(upgrade);
+                }
+            }
+        }
+#endif
     }
 
     // =========================================================================
@@ -117,24 +216,33 @@ public class MetaUpgradeManager : MonoBehaviour
     {
         Debug.LogWarning("[MetaUpgradeManager] Rozpoczynam CollectValues()...");
         appliedValues.Clear();
+        appliedSecondaryValues.Clear();
         buildingSpecificValues.Clear();
+        buildingSpecificSecondaryValues.Clear();
+        hearthLevelProductionBonuses.Clear();
 
         foreach (var upgrade in allUpgrades)
         {
             if (upgrade == null || !upgrade.isUnlocked) continue;
-            if (upgrade.effectType == MetaEffectType.None) continue;
+            if (upgrade.IsPlaceholder) continue;
+            if (upgrade.effectType == MetaEffectType.None || upgrade.effectType == MetaEffectType.Placeholder) continue;
 
             if (upgrade.RequiresTargetBuilding && upgrade.targetBuilding != null)
             {
                 var key = (upgrade.effectType, upgrade.targetBuilding.name);
-                
+
                 // SUMOWANIE WARTOŚCI
                 if (buildingSpecificValues.ContainsKey(key))
                     buildingSpecificValues[key] += upgrade.effectValue;
                 else
                     buildingSpecificValues[key] = upgrade.effectValue;
 
-                Debug.Log($"[MetaUpgradeManager] Dodano efekt budynkowy ({upgrade.targetBuilding.name}): {upgrade.effectType} o wartości {upgrade.effectValue}. Suma: {buildingSpecificValues[key]}");
+                if (buildingSpecificSecondaryValues.ContainsKey(key))
+                    buildingSpecificSecondaryValues[key] += upgrade.effectValue2;
+                else
+                    buildingSpecificSecondaryValues[key] = upgrade.effectValue2;
+
+                Debug.Log($"[MetaUpgradeManager] Dodano efekt budynkowy ({upgrade.targetBuilding.name}): {upgrade.effectType} o wartości {upgrade.effectValue} (v2={upgrade.effectValue2}). Suma: {buildingSpecificValues[key]}");
             }
             else
             {
@@ -144,11 +252,53 @@ public class MetaUpgradeManager : MonoBehaviour
                 else
                     appliedValues[upgrade.effectType] = upgrade.effectValue;
 
+                if (appliedSecondaryValues.ContainsKey(upgrade.effectType))
+                    appliedSecondaryValues[upgrade.effectType] += upgrade.effectValue2;
+                else
+                    appliedSecondaryValues[upgrade.effectType] = upgrade.effectValue2;
+
+                if (upgrade.effectType == MetaEffectType.HearthNextDayProductionBoost)
+                {
+                    AccumulateHearthProductionBoost(upgrade);
+                }
+
                 Debug.Log($"[MetaUpgradeManager] Dodano efekt: {upgrade.effectType} o wartości {upgrade.effectValue}. Suma: {appliedValues[upgrade.effectType]}");
             }
         }
 
+        if (DevRunConfig.IsActive && DevRunConfig.ShouldInjectDruidTowerUnlock(DevRunConfig.Mode))
+        {
+            if (!appliedValues.ContainsKey(MetaEffectType.UnlockDruidTower))
+            {
+                appliedValues[MetaEffectType.UnlockDruidTower] = 1f;
+            }
+        }
+
         Debug.Log($"[MetaUpgradeManager] Zebrano zsumowane efekty. Globalne: {appliedValues.Count}, Specyficzne dla budynków: {buildingSpecificValues.Count}.");
+    }
+
+    private void AccumulateHearthProductionBoost(MetaUpgradeSO upgrade)
+    {
+        if (upgrade.effectValue2 > 0.0001f)
+        {
+            // Konwencja Hearth Producion 1: effectValue -> poziom 4, effectValue2 -> poziom 5
+            AddHearthLevelBonus(4, upgrade.effectValue);
+            AddHearthLevelBonus(5, upgrade.effectValue2);
+        }
+        else if (upgrade.effectValue > 0.0001f)
+        {
+            // Konwencja Hearth Producion 2: effectValue -> poziomy 3 i 4
+            AddHearthLevelBonus(3, upgrade.effectValue);
+            AddHearthLevelBonus(4, upgrade.effectValue);
+        }
+    }
+
+    private void AddHearthLevelBonus(int levelIndex, float bonus)
+    {
+        if (Mathf.Approximately(bonus, 0f)) return;
+        hearthLevelProductionBonuses[levelIndex] = hearthLevelProductionBonuses.TryGetValue(levelIndex, out float cur)
+            ? cur + bonus
+            : bonus;
     }
 
     // =========================================================================
@@ -213,7 +363,9 @@ public class MetaUpgradeManager : MonoBehaviour
 
             // ── Domy ──────────────────────────────────────────────────────────
             case MetaEffectType.HousingStartPopulation:
-                // HousingEntity odpytuje GetValue() przy Initialize()
+            case MetaEffectType.HousingStartPopulation_Dwarves:
+            case MetaEffectType.RestoreStarterRuinedHouses:
+                // HousingEntity / TerrainGenerator odpytują w runtime
                 break;
 
             // ── Limit mieszkańców ─────────────────────────────────────────────
@@ -234,13 +386,53 @@ public class MetaUpgradeManager : MonoBehaviour
                 ChunkWallManager.Instance?.SetMode(WallSystemMode.Solution2_FrontLine);
                 break;
 
-            // ── Efekty budynkowe (targetBuilding) — odpytywane z zewnątrz ─────
+            // ── Efekty odpytywane w runtime (budynki, wieże, ekspedycje, palenisko, runy, zaklęcia) ─────
+            case MetaEffectType.ProductionSynergy_Elf:
+            case MetaEffectType.ProductionSynergy_Human:
+            case MetaEffectType.BuildingPassiveEfficiency:
+            case MetaEffectType.BuildingWorkerEfficiencyBonus:
             case MetaEffectType.BuildingTerrainBonusMultiplier:
+            case MetaEffectType.SpecificBuildingConstructionCostReduction:
             case MetaEffectType.SpecificBuildingUpgradeCostReduction:
             case MetaEffectType.SpecificBuildingProductionBonus:
+            case MetaEffectType.SpecificBuildingTerrainFlatBonus:
+            case MetaEffectType.SpecificBuildingFlatProduction:
+            case MetaEffectType.TowerGlobalArmorPenetration:
+            case MetaEffectType.TowerGlobalMagicPenetration:
+            case MetaEffectType.TowerGlobalFireRate:
+            case MetaEffectType.TowerGlobalDamage:
+            case MetaEffectType.TowerDraftUnlock:
+            case MetaEffectType.TowerCrewSynergy_Dwarf:
+            case MetaEffectType.TowerCrewSynergy_Elf:
+            case MetaEffectType.TowerCrewSynergy_Human:
+            case MetaEffectType.ExpansionCostReduction:
+            case MetaEffectType.ExpeditionFreeChunkThresholdBonus:
+            case MetaEffectType.ExpeditionSurveyResourceProfit:
+            case MetaEffectType.UnlockTacticalRecon:
+            case MetaEffectType.ReconResourceGatherChance:
+            case MetaEffectType.ExpeditionExtraTerrainChance:
+            case MetaEffectType.HearthUnlockHighLevels:
+            case MetaEffectType.HearthHighLevelCoalDiscount:
+            case MetaEffectType.HearthNextDayProductionBoost:
+            case MetaEffectType.UniqueChunkUnlock:
+            case MetaEffectType.MapChunkModifier:
+            case MetaEffectType.RuneDropChance_Uncommon:
+            case MetaEffectType.RuneDropChance_Rare:
+            case MetaEffectType.RuneDropChance_Legendary:
+            case MetaEffectType.RuneDropChance_Cursed:
+            case MetaEffectType.RuneTowerLimit:
+            case MetaEffectType.UnlockRuneRarity_Uncommon:
+            case MetaEffectType.UnlockRuneRarity_Rare:
+            case MetaEffectType.UnlockRuneRarity_Legendary:
+            case MetaEffectType.UnlockRuneRarity_Cursed:
+            case MetaEffectType.UnlockRuneFusion:
+            case MetaEffectType.UnlockRuneTransmutation:
+            case MetaEffectType.UnlockCursedCrafting:
             case MetaEffectType.UnlockDruidTower:
             case MetaEffectType.UnlockTrinityForce:
-                // Obsługiwane przez odpytywanie IsUnlocked() / GetBuildingValue()
+            case MetaEffectType.SpellBonusCharges:
+            case MetaEffectType.Placeholder:
+                // Obsługiwane przez odpytywanie IsUnlocked() / GetValue() / GetBuildingValue()
                 break;
 
             default:
@@ -262,6 +454,18 @@ public class MetaUpgradeManager : MonoBehaviour
         return appliedValues.TryGetValue(type, out var v) ? v : 0f;
     }
 
+    /// <summary>Zwraca drugi parametr (effectValue2) globalnego efektu. 0f jeśli brak.</summary>
+    public float GetSecondaryValue(MetaEffectType type)
+    {
+        return appliedSecondaryValues.TryGetValue(type, out var v) ? v : 0f;
+    }
+
+    /// <summary>Zwraca dodatkowy bonus produkcji następnego dnia dla danego poziomu Paleniska (1..5).</summary>
+    public float GetHearthNextDayProductionBonus(int levelIndex)
+    {
+        return hearthLevelProductionBonuses.TryGetValue(levelIndex, out float bonus) ? bonus : 0f;
+    }
+
     /// <summary>Czy dany efekt jest odblokowany?</summary>
     public bool IsUnlocked(MetaEffectType type)
     {
@@ -280,6 +484,14 @@ public class MetaUpgradeManager : MonoBehaviour
         if (building == null) return 0f;
         var key = (type, building.name);
         return buildingSpecificValues.TryGetValue(key, out var v) ? v : 0f;
+    }
+
+    /// <summary>Zwraca drugi parametr (effectValue2) efektu specyficznego dla danego budynku.</summary>
+    public float GetBuildingSecondaryValue(MetaEffectType type, BuildingData building)
+    {
+        if (building == null) return 0f;
+        var key = (type, building.name);
+        return buildingSpecificSecondaryValues.TryGetValue(key, out var v) ? v : 0f;
     }
 
     /// <summary>

@@ -64,6 +64,8 @@ public class MetaGraphControllerUI : MonoBehaviour
         SetupTabs();
         SetupCloseButton();
         EnsureUpgradesLoaded();
+        RefreshStaticLocalization();
+        LocalizationManager.OnLanguageChanged += HandleLanguageChanged;
 
         if (graphRoot != null)
         {
@@ -73,10 +75,36 @@ public class MetaGraphControllerUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        LocalizationManager.OnLanguageChanged -= HandleLanguageChanged;
         if (Instance == this)
         {
             Instance = null;
         }
+    }
+
+    private void HandleLanguageChanged()
+    {
+        RefreshStaticLocalization();
+        RefreshHopeUI();
+        if (IsOpen)
+        {
+            RefreshUpgradesList();
+        }
+    }
+
+    private void RefreshStaticLocalization()
+    {
+        SetButtonText(tabTown, LocalizationManager.Get("UI_META_TAB_TOWN", "Dziedzictwo Miasta"));
+        SetButtonText(tabPower, LocalizationManager.Get("UI_META_TAB_POWER", "Dziedzictwo Mocy"));
+        SetButtonText(tabDefence, LocalizationManager.Get("UI_META_TAB_DEFENCE", "Dziedzictwo Obrony"));
+        SetButtonText(btnClose, LocalizationManager.Get("UI_BTN_MENU", "MENU"));
+    }
+
+    private static void SetButtonText(Button btn, string label)
+    {
+        if (btn == null) return;
+        var tmp = btn.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (tmp != null) tmp.text = label;
     }
 
     private void Update()
@@ -225,6 +253,7 @@ public class MetaGraphControllerUI : MonoBehaviour
     {
         FindReferencesIfNull();
         EnsureUpgradesLoaded();
+        RefreshStaticLocalization();
 
         if (graphRoot != null)
         {
@@ -252,7 +281,7 @@ public class MetaGraphControllerUI : MonoBehaviour
             {
                 hope = SaveManager.Instance.currentSaveData.totalHope;
             }
-            txtHopeCurrency.text = $"{hope} Nadziei";
+            txtHopeCurrency.text = string.Format(LocalizationManager.Get("UI_META_COST_HOPE_FMT", "{0} Nadziei"), hope);
         }
     }
 
@@ -315,8 +344,8 @@ public class MetaGraphControllerUI : MonoBehaviour
         {
             if (u == null) continue;
 
-            // Wyklucz warianty A/B zgodnie z ustaleniami
-            if (u.hasVariants || u.isVariantOption) continue;
+            // Wyklucz warianty A/B oraz niegotowe węzły PLACEHOLDER zgodnie z ustaleniami
+            if (u.hasVariants || u.isVariantOption || u.IsPlaceholder) continue;
 
             // Sprawdź czy ulepszenie jest już odblokowane w SaveManager
             if (SaveManager.Instance != null && SaveManager.Instance.currentSaveData != null)

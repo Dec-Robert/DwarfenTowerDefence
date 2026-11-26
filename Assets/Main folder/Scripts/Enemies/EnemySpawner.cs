@@ -58,6 +58,7 @@ public class EnemySpawner : MonoBehaviour
     private int currentWaveNumber = 0;
     private Coroutine spawnCoroutine;
     private List<SpawnRoute> allPotentialRoutes = new List<SpawnRoute>();
+    private bool isRoutesDirty;
 
     [System.Serializable]
     public class SpawnRoute
@@ -637,10 +638,19 @@ public class EnemySpawner : MonoBehaviour
         InitializeRoutes();
     }
 
-    void OnChunkRevealedHandler(Vector2Int _) => RecalculateActiveRoutes();
+    private void LateUpdate()
+    {
+        if (isRoutesDirty)
+        {
+            RecalculateActiveRoutes();
+        }
+    }
+
+    void OnChunkRevealedHandler(Vector2Int _) => isRoutesDirty = true;
 
     public void RecalculateActiveRoutes()
     {
+        isRoutesDirty = false;
         activeRoutes.Clear();
 
         if (allPotentialRoutes == null || allPotentialRoutes.Count == 0) return;

@@ -82,6 +82,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Button btnRetry;
     [SerializeField] private string mainMenuSceneName = "MainMenu Demo scene";
 
+    private static readonly string[] RarityLabelKeys = { "UI_ENDGAME_RARITY_0", "UI_ENDGAME_RARITY_1", "UI_ENDGAME_RARITY_2", "UI_ENDGAME_RARITY_3" };
     private static readonly string[] RarityLabels = { "Ranga: Zwykła", "Ranga: Rzadka", "Ranga: Epicka", "Ranga: Legendarna" };
 
     private readonly List<HopeSessionManager.GroupedHopeCardData> groupedCards = new List<HopeSessionManager.GroupedHopeCardData>();
@@ -170,6 +171,8 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
     private void TrySubscribe()
     {
+        LocalizationManager.OnLanguageChanged -= HandleLanguageChanged;
+        LocalizationManager.OnLanguageChanged += HandleLanguageChanged;
         if (isSubscribed || HopeSessionManager.Instance == null) return;
         HopeSessionManager.Instance.OnSessionEnded += Show;
         isSubscribed = true;
@@ -177,9 +180,55 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
     private void Unsubscribe()
     {
+        LocalizationManager.OnLanguageChanged -= HandleLanguageChanged;
         if (!isSubscribed || HopeSessionManager.Instance == null) return;
         HopeSessionManager.Instance.OnSessionEnded -= Show;
         isSubscribed = false;
+    }
+
+    private void HandleLanguageChanged()
+    {
+        RefreshStaticLabels();
+        if (currentSummary != null && panelRoot != null && panelRoot.activeInHierarchy)
+        {
+            PopulateHeader(currentSummary);
+            PopulateFooter(currentSummary);
+            SetHopeCounters(currentSummary.finalTotalHope, currentSummary.totalAccountHope, currentSummary.multiplier);
+            PopulateCards(prepareForReveal: false);
+        }
+    }
+
+    private void RefreshStaticLabels()
+    {
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        if (root == null) return;
+
+        Transform win = root.Find("Pnl_Window") ?? root;
+        SetStaticText(win, "Pnl_Middle/Pnl_HopeSummarySection/Txt_SectionTitle", "UI_ENDGAME_SUMMARY_TITLE", "PODSUMOWANIE");
+        SetStaticText(win, "Pnl_Middle/Pnl_HopeSummarySection/Pnl_SummaryContent/Lbl_RunHope", "UI_ENDGAME_RUN_HOPE_LABEL", "Z tego runu:");
+        SetStaticText(win, "Pnl_Middle/Pnl_HopeSummarySection/Pnl_SummaryContent/Pnl_TotalAccountHope/Lbl_AccountHope", "UI_ENDGAME_TOTAL_HOPE_LABEL", "Łączna Nadzieja");
+        SetStaticText(win, "Pnl_Middle/Pnl_HopeCarouselSection/Txt_SectionTitle", "UI_ENDGAME_EARNED_HOPE_TITLE", "ZDOBYTA NADZIEJA");
+        SetStaticText(win, "Pnl_Middle/Pnl_HopeCarouselSection/Pnl_CarouselRow/Pnl_CardsContainer/Txt_EmptyCardsInfo", "UI_ENDGAME_NO_ACHIEVEMENTS", "Brak zdobytych osiągnięć w tym runie");
+        SetStaticText(win, "Pnl_RunStatsSection/Txt_SectionTitle", "UI_ENDGAME_STATS_TITLE", "STATYSTYKI OBRONY");
+        SetStaticText(win, "Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Enemies/Lbl", "UI_ENDGAME_STAT_ENEMIES", "Zabici wrogowie");
+        SetStaticText(win, "Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Bosses/Lbl", "UI_ENDGAME_STAT_BOSSES", "Zabici bossowie");
+        SetStaticText(win, "Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Towers/Lbl", "UI_ENDGAME_STAT_TOWERS", "Zbudowane wieże");
+        SetStaticText(win, "Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Production/Lbl", "UI_ENDGAME_STAT_PRODUCTION", "Budynki prod.");
+        SetStaticText(win, "Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Expeditions/Lbl", "UI_ENDGAME_STAT_EXPEDITIONS", "Ekspedycje");
+        SetStaticText(win, "Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Population/Lbl", "UI_ENDGAME_STAT_POPULATION", "Populacja");
+        SetStaticText(win, "Pnl_RunStatsSection/Pnl_StatsGrid/Stat_Runes/Lbl", "UI_ENDGAME_STAT_RUNES", "Wytworzone runy");
+        SetStaticText(win, "Pnl_Footer/Pnl_ActionButtons/Btn_Retry/Txt", "UI_ENDGAME_BTN_RETRY", "POWTÓRZ OBRONĘ");
+        SetStaticText(win, "Pnl_Footer/Pnl_ActionButtons/Btn_Menu/Txt", "UI_BTN_MENU", "MENU");
+        SetStaticText(win, "Pnl_Footer/Pnl_RunRecord/Badge_NewRecord/Txt_NewRecord", "UI_ENDGAME_NEW_RECORD", "NOWY REKORD!");
+        SetStaticText(win, "Pnl_Footer/Pnl_ActionButtons/Btn_Menu/Badge_MetaAvailable/Txt_MetaAvailable", "UI_ENDGAME_META_AVAILABLE", "ULEPSZENIA!");
+    }
+
+    private static void SetStaticText(Transform root, string path, string key, string fallback)
+    {
+        Transform t = root.Find(path);
+        if (t == null) return;
+        var tmp = t.GetComponent<TextMeshProUGUI>();
+        if (tmp != null) tmp.text = LocalizationManager.Get(key, fallback);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -221,6 +270,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         }
 
         AutoBindScrollReferences();
+        RefreshStaticLabels();
         HideCardTooltip();
         PopulateHeader(summary);
         PopulateStats(summary);
@@ -345,7 +395,9 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
         if (txtHeaderTitle != null)
         {
-            txtHeaderTitle.text = summary.isVictory ? "ZWYCIĘSTWO!" : "TWIERDZA UPADŁA";
+            txtHeaderTitle.text = summary.isVictory
+                ? LocalizationManager.Get("UI_ENDGAME_VICTORY", "ZWYCIĘSTWO!")
+                : LocalizationManager.Get("UI_ENDGAME_DEFEAT", "TWIERDZA UPADŁA");
             txtHeaderTitle.color = headerColor;
         }
 
@@ -356,7 +408,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
 
         if (txtNightsSurvived != null)
         {
-            txtNightsSurvived.text = $"Przetrwano nocy: {summary.nightsSurvived}";
+            txtNightsSurvived.text = string.Format(LocalizationManager.Get("UI_ENDGAME_NIGHTS_SURVIVED_FMT", "Przetrwano nocy: {0}"), summary.nightsSurvived);
         }
     }
 
@@ -384,7 +436,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
             txtMultiplierInfo.gameObject.SetActive(showMult);
             if (showMult)
             {
-                txtMultiplierInfo.text = $"Mnożnik: x{multiplier:0.##}";
+                txtMultiplierInfo.text = string.Format(LocalizationManager.Get("UI_ENDGAME_MULTIPLIER_FMT", "Mnożnik: x{0:0.##}"), multiplier);
             }
         }
 
@@ -401,12 +453,12 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
             int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(summary.runDurationSeconds));
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            txtRunDuration.text = $"Czas gry: {minutes:00}:{seconds:00}";
+            txtRunDuration.text = string.Format(LocalizationManager.Get("UI_ENDGAME_DURATION_FMT", "Czas gry: {0:00}:{1:00}"), minutes, seconds);
         }
 
         if (txtBestRecord != null)
         {
-            txtBestRecord.text = $"Rekord: {summary.bestNightsSurvived} nocy";
+            txtBestRecord.text = string.Format(LocalizationManager.Get("UI_ENDGAME_RECORD_FMT", "Rekord: {0} nocy"), summary.bestNightsSurvived);
         }
 
         if (objNewRecordBadge != null)
@@ -435,7 +487,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         for (int i = 0; i < upgrades.Count; i++)
         {
             var node = upgrades[i];
-            if (node == null || node.isUnlocked) continue;
+            if (node == null || node.isUnlocked || node.IsPlaceholder) continue;
             if (save != null && save.unlockedUpgradeIDs != null && save.unlockedUpgradeIDs.Contains(node.id)) continue;
 
             bool prereqsMet = true;
@@ -691,7 +743,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
         if (txtTooltipRarity != null)
         {
             int tier = Mathf.Clamp(data.rarityTier, 0, RarityLabels.Length - 1);
-            txtTooltipRarity.text = RarityLabels[tier];
+            txtTooltipRarity.text = LocalizationManager.Get(RarityLabelKeys[tier], RarityLabels[tier]);
             txtTooltipRarity.color = GetRarityFallbackColor(tier);
         }
 
@@ -708,7 +760,7 @@ public class EndGameScreenUI : MonoBehaviour, IPointerClickHandler
                 }
                 if (data.breakdownLines.Count > maxLines)
                 {
-                    sb.Append($"\n... (+{data.breakdownLines.Count - maxLines} więcej)");
+                    sb.Append('\n').Append(string.Format(LocalizationManager.Get("UI_ENDGAME_MORE_LINES_FMT", "... (+{0} więcej)"), data.breakdownLines.Count - maxLines));
                 }
                 txtTooltipBreakdown.text = sb.ToString();
             }

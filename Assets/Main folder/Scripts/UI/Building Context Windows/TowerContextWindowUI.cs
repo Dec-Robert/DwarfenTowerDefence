@@ -671,6 +671,7 @@ public class TowerContextWindowUI : MonoBehaviour
         if (currentTower == null) return;
 
         // 1. Tytuł wieży
+        RefreshStaticLabels();
         if (txtTowerName != null)
         {
             string towerName = currentTower.data != null ? currentTower.data.DisplayName : currentTower.name;
@@ -686,6 +687,23 @@ public class TowerContextWindowUI : MonoBehaviour
 
         // Wymuś przebudowę układu
         ForceRebuildLayout();
+    }
+
+    private void RefreshStaticLabels()
+    {
+        SetTMP("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_Upkeep/Txt_UpkeepTitle", "UI_TOWER_UPKEEP_TITLE", "UTRZYMANIE");
+        SetTMP("Pnl_ColumnsContainer/Pnl_LeftColumn/Sec_Workers/Txt_WorkersTitle", "UI_TOWER_WORKERS_TITLE", "OBSADA WIEŻY");
+        if (txtThresholdLabel != null)
+            txtThresholdLabel.text = LocalizationManager.Get("UI_TOWER_THRESHOLD_LABEL", "PROGI WYDAJNOŚCI [0-4]:");
+        SetTMP("Pnl_ColumnsContainer/Pnl_RightColumn/Txt_PriorityTitle", "UI_TOWER_PRIORITY_TITLE", "PRIORYTET OSTRZAŁU");
+        SetTMP("Pnl_ColumnsContainer/Pnl_RightColumn/Txt_PrioritySlotsLabel", "UI_TOWER_PRIORITY_SLOTS_LABEL", "Sloty priorytetów:");
+        SetTMP("Pnl_ColumnsContainer/Pnl_RightColumn/Txt_OptionsLabel", "UI_TOWER_OPTIONS_LABEL", "Wybierz cel:");
+    }
+
+    private void SetTMP(string path, string key, string fallback)
+    {
+        var tmp = transform.Find(path)?.GetComponent<TextMeshProUGUI>();
+        if (tmp != null) tmp.text = LocalizationManager.Get(key, fallback);
     }
 
     // ── Utrzymanie (Upkeep) ───────────────────────────────────────────────────
